@@ -6,7 +6,6 @@ import java.util.Date;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
-import au.edu.usyd.reviewer.client.core.Entry;
 import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
 import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
 import au.edu.usyd.reviewer.client.core.QuestionReview;
@@ -19,7 +18,6 @@ import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.util.StyleLib;
 import au.edu.usyd.reviewer.client.core.util.UrlLib;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -32,13 +30,10 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FormHandler;
 import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
-import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
 import com.google.gwt.user.client.ui.FormSubmitCompleteEvent;
 import com.google.gwt.user.client.ui.FormSubmitEvent;
 import com.google.gwt.user.client.ui.HTML;
@@ -46,8 +41,6 @@ import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -67,9 +60,10 @@ public class WritingTasks extends Composite {
 	@SuppressWarnings("deprecation")
 	private void addDocEntiresToTable(final Course course) {
 		int row = documentFlexTable.getRowCount();
-		documentFlexTable.setHTML(row, 0, course.getName());
+		documentFlexTable.setHTML(row, 0, "<b>"+course.getName()+"</b>");
 		documentFlexTable.setHTML(row, 4, "");
-		documentFlexTable.getRowFormatter().setStyleName(row, "documentsTableRow");
+		//documentFlexTable.getRowFormatter().setStyleName(row, "documentsTableRow");
+		documentFlexTable.getRowFormatter().setStyleName(row, "documentsTableRowHeader");
 		row = documentFlexTable.getRowCount();
 		
 		for (final WritingActivity writingActivity : course.getWritingActivities()) {
@@ -231,7 +225,13 @@ public class WritingTasks extends Composite {
 				// due date
 				VerticalPanel dueDate = new VerticalPanel();
 				for (Deadline deadline : writingActivity.getDeadlines()) {
-					dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(deadline.getStatus(), Deadline.STATUS_DEADLINE_FINISH) + "'>"+deadline.getName()+": " + StyleLib.dueDateFormat(deadline.getFinishDate()) + "</div>"));
+					boolean logBook = false;
+					if (docEntry instanceof LogbookDocEntry) {
+						logBook = true;
+					}
+					//dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(deadline.getStatus(), Deadline.STATUS_DEADLINE_FINISH) + "'>"+deadline.getName()+": " + StyleLib.dueDateFormat(deadline.getFinishDate()) + "</div>"));
+					Date dateTime=new Date();
+					dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(dateTime,deadline.getFinishDate(),logBook) + "'>"+deadline.getName()+": " + StyleLib.dueDateFormat(deadline.getFinishDate()) + "</div>"));
 				}
 
 				// pdf download links
@@ -324,9 +324,9 @@ public class WritingTasks extends Composite {
 							downloadLink.setHref(UrlLib.pdfDownloadUrl(writingActivity.getName() + " - "+deadline.getName()+".pdf", docEntry.getDocumentId(), deadline.getId()));
 							if(i < writingActivity.getDeadlines().size() - 1) {
 								//downloadLink.setHTML("<div style='padding-top: 1px;'><img height='10px' src='images/icon-pdf.gif'></img><span>"+deadline.getName()+"-SNAPSHOT</span></div>");								
-								downloadLink.setHTML("<img src='images/icon-pdf.gif'></img><span>"+deadline.getName()+"-SNAPSHOT</span>");
+								downloadLink.setHTML("<div style='padding-top: 4.5px;'><img src='images/icon-pdf.gif'></img><span>"+deadline.getName()+"-SNAPSHOT</span></div>");
 							} else {
-								downloadLink.setHTML("<img src='images/icon-pdf.gif'></img><span>"+deadline.getName()+"</span>");
+								downloadLink.setHTML("<div style='padding-top: 4.5px;'><img src='images/icon-pdf.gif'></img><span>"+deadline.getName()+"</span></div>");
 							}
 							downloadLink.setTitle("Download");
 							downloadLinks.add(downloadLink);

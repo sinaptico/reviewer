@@ -264,7 +264,7 @@
              <artifactId>tomcat-catalina</artifactId>
              <version>7.0.0</version>
              <scope>provided</scope>
-        </dependency>   		
+        </dependency>     		
 	</dependencies>	
 		
 	<reporting>

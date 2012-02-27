@@ -3,6 +3,7 @@ package au.edu.usyd.reviewer.client.assignment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,7 +73,8 @@ public class InstructorPanel extends Composite {
 		int row = activityFlexTable.getRowCount();
 		activityFlexTable.setWidget(row, 0, courseTree);
 		activityFlexTable.setHTML(row, 3, "");
-		activityFlexTable.getRowFormatter().setStyleName(row, "documentsTableRow");
+		//activityFlexTable.getRowFormatter().setStyleName(row, "documentsTableRow");
+		activityFlexTable.getRowFormatter().setStyleName(row, "documentsTableRowHeader");
 		row = activityFlexTable.getRowCount();
 
 		for (final WritingActivity writingActivity : course.getWritingActivities()) {
@@ -192,10 +194,12 @@ public class InstructorPanel extends Composite {
 			// due date
 			VerticalPanel dueDate = new VerticalPanel();
 			for (Deadline deadline : writingActivity.getDeadlines()) {
-				dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(deadline.getStatus(), Deadline.STATUS_DEADLINE_FINISH) + "'>"+deadline.getName()+": " + StyleLib.dueDateFormat(deadline.getFinishDate()) + "</div>"));
+				Date dateTime=new Date();
+				//dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(deadline.getStatus(), Deadline.STATUS_DEADLINE_FINISH) + "'>"+deadline.getName()+": " + StyleLib.dueDateFormat(deadline.getFinishDate()) + "</div>"));
+				dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(dateTime, deadline.getFinishDate()) + "'>"+deadline.getName()+": " + StyleLib.dueDateFormat(deadline.getFinishDate()) + "</div>"));
 				for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
 					if(deadline.equals(reviewingActivity.getStartDate())) {
-						dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(reviewingActivity.getStatus(), Activity.STATUS_FINISH) + "'>"+reviewingActivity.getName()+": " + StyleLib.dueDateFormat(reviewingActivity.getFinishDate()) + "</div>"));
+						dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(dateTime,reviewingActivity.getFinishDate()) + "'>"+reviewingActivity.getName()+": " + StyleLib.dueDateFormat(reviewingActivity.getFinishDate()) + "</div>"));
 					}
 				}
 			}

@@ -30,6 +30,35 @@ public class DocEntryWidget extends Composite {
 		initWidget(panel);
 	}
 
+//	private void formatHTML() {
+//		panel.clear();
+//		Anchor link = new Anchor();
+//		link.setTitle("Open in Google Docs");
+//		link.setTarget("_blank");
+//		if (id.startsWith("document:")) {
+//			link.setHref(UrlLib.documentUrl(id, domainName));
+//			link.setHTML("<img src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+//		} else if (id.startsWith("presentation:")) {
+//			link.setHref(UrlLib.presentationUrl(id, domainName));
+//			link.setHTML("<img src='images/" + (!locked ? "google/icon_6_pres.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+//		} else if (id.startsWith("spreadsheet:")) {
+//			link.setHref(UrlLib.spreadsheetUrl(id, domainName));
+//			link.setHTML("<img src='images/" + (!locked ? "google/icon_6_spread.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+//		} else if (id.startsWith("folder:")) {
+//			link.setHref(UrlLib.folderUrl(id, domainName));
+//			link.setHTML("<img src='images/" + (!locked ? "google/icon_6_folder.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+//		} else if (id.startsWith("file:")) {
+//			link.setHref(UrlLib.pdfDownloadUrl(id, id));
+//			//if (docEntrylocal.isUploaded()){
+//			  link.setHTML("<img src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+//			//}
+//		}else {
+//			// nothing;
+//		}
+//		panel.add(link);
+//	}
+	
+	
 	private void formatHTML() {
 		panel.clear();
 		Anchor link = new Anchor();
@@ -37,24 +66,24 @@ public class DocEntryWidget extends Composite {
 		link.setTarget("_blank");
 		if (id.startsWith("document:")) {
 			link.setHref(UrlLib.documentUrl(id, domainName));
-			link.setHTML("<img src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("presentation:")) {
 			link.setHref(UrlLib.presentationUrl(id, domainName));
-			link.setHTML("<img src='images/" + (!locked ? "google/icon_6_pres.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_pres.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("spreadsheet:")) {
 			link.setHref(UrlLib.spreadsheetUrl(id, domainName));
-			link.setHTML("<img src='images/" + (!locked ? "google/icon_6_spread.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_spread.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("folder:")) {
 			link.setHref(UrlLib.folderUrl(id, domainName));
-			link.setHTML("<img src='images/" + (!locked ? "google/icon_6_folder.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_folder.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("file:")) {
 			link.setHref(UrlLib.pdfDownloadUrl(id, id));
 			//if (docEntrylocal.isUploaded()){
-			  link.setHTML("<img src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a>");
+			  link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 			//}
 		}else {
 			// nothing;
 		}
 		panel.add(link);
-	}
+	}	
 }

@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.assignment;
 
 import java.util.Collection;
+import java.util.Date;
 
 import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.Course;
@@ -27,15 +28,18 @@ public class ReviewingTasks extends Composite {
 
 	private void addReviewsToTable(final Course course) {
 		int row = reviewFlexTable.getRowCount();
-		reviewFlexTable.setHTML(row, 0, course.getName());
+		reviewFlexTable.setHTML(row, 0, "<b>"+course.getName()+"</b>");
 		reviewFlexTable.setHTML(row, 4, "");
-		reviewFlexTable.getRowFormatter().setStyleName(row, "documentsTableRow");
+		//reviewFlexTable.getRowFormatter().setStyleName(row, "documentsTableRow");
+		reviewFlexTable.getRowFormatter().setStyleName(row, "documentsTableRowHeader");
 		row = reviewFlexTable.getRowCount();
 
 		for (final WritingActivity writingActivity : course.getWritingActivities()) {
 			for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
 				if (reviewingActivity !=null) {
-					String style = StyleLib.dueDateStyle(reviewingActivity.getStatus(), Activity.STATUS_FINISH);
+					Date dateTime=new Date();
+					//String style = StyleLib.dueDateStyle(reviewingActivity.getStatus(), Activity.STATUS_FINISH);
+					String style = StyleLib.dueDateStyle(dateTime,reviewingActivity.getFinishDate());
 					for (final ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
 						// due date
 						HTML dueDate = new HTML("<div style='" + style + "'>" + StyleLib.dueDateFormat(reviewingActivity.getFinishDate()) + "</div>");

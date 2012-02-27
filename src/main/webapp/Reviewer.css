@@ -5,7 +5,7 @@ body,#mainPanel {
 
 a:link,a:visited,a:active {
 	cursor: pointer;
-	color: #0000AA !important;
+	color: #12416C !important;
 	text-decoration: none;
 }
 
@@ -60,6 +60,13 @@ a span {
 .documentsTableRow {
 	border-bottom: thin solid #D0E4F6 !important;
 }
+
+.documentsTableRowHeader {
+	border-bottom: thin solid #D0E4F6 !important;
+	/*background-color: #E0E0E0 !important; #92C1F0*/
+	background-color: #92C1F0 !important; 
+}
+
 
 .reviewContent {
 	border: thin solid #000000;

@@ -101,8 +101,8 @@
 		</auth-constraint>
 	</security-constraint>
 	<login-config>
-		<!--<auth-method>BASIC</auth-method>-->     
-		<auth-method>FORM</auth-method>        
+		<auth-method>BASIC</auth-method>     
+		<!--<auth-method>FORM</auth-method>-->        
 		<realm-name>iWrite</realm-name>
 		<form-login-config>
 			<form-login-page>/Login.html</form-login-page>
