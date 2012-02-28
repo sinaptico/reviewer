@@ -473,7 +473,7 @@ public class ReviewEntryPoint implements EntryPoint {
 							        gridTree.setModelType(TreeModelType.PARENT);
 							        gridTree.setNameProperty("Name");
 							        
-							        RubricsTreeNode rootNode = new RubricsTreeNode((long) 0, "DocumentType", null, null, "DocumentType", 0, 0, buildRubricsTree(documentTypes));
+							        RubricsTreeNode rootNode = new RubricsTreeNode((long) 0, "DocumentType", null, null, "DocumentType", 0, 0, "", "", buildRubricsTree(documentTypes));
 						        	gridTree.setRoot(rootNode);
 									gridTree.getRoot().setCanAcceptDrop(false);	
 
@@ -533,11 +533,11 @@ public class ReviewEntryPoint implements EntryPoint {
 											
 											Review tmpReview = ((CommentsReviewForm) reviewForm).getReview();
 											if (tmpReview.getContent().isEmpty() || tmpReview.getContent().equalsIgnoreCase("<br>")){
-												tmpReview.setContent(buildFeedbackWithRubrics(records, docEntry, reviewEntry, writingActivityForMail));
+												tmpReview.setContent(buildFeedbackWithRubrics(records, docEntry, reviewEntry, writingActivityForMail, reviewingActivity));
 												((CommentsReviewForm) reviewForm).setReview(tmpReview);
 											}else{
 												if (Window.confirm("Do you want to overwrite the current content of your feedback summary?")) {
-													tmpReview.setContent(buildFeedbackWithRubrics(records, docEntry, reviewEntry, writingActivityForMail));
+													tmpReview.setContent(buildFeedbackWithRubrics(records, docEntry, reviewEntry, writingActivityForMail, reviewingActivity));
 													((CommentsReviewForm) reviewForm).setReview(tmpReview);
 												}
 											}
@@ -674,6 +674,8 @@ public class ReviewEntryPoint implements EntryPoint {
 		            setAttribute("IsRubric", "", true);
 		            setAttribute("IsDoctype", "", true);
 		            setAttribute("GradeNum", "", true);
+		            setAttribute("DescriptionA", "", true);
+		            setAttribute("DescriptionB", "", true);
 		            setAttribute("Id", "", true);
 		            setShowSelectedStyle(false);  
 		            setShowPartialSelection(true);  
@@ -684,7 +686,7 @@ public class ReviewEntryPoint implements EntryPoint {
 
 		    public static class RubricsTreeNode extends TreeNode {
 		        
-		        public RubricsTreeNode(Long Id, String name, String link, String icon, String text, int type, int gradeNum, RubricsTreeNode... children) {
+		        public RubricsTreeNode(Long Id, String name, String link, String icon, String text, int type, int gradeNum, String descriptionA, String descriptionB, RubricsTreeNode... children) {
 		        	setAttribute("Name", name);
 		            setAttribute("Text", text);
 		            setAttribute("Id", Id);
@@ -707,15 +709,38 @@ public class ReviewEntryPoint implements EntryPoint {
 		            if (gradeNum != 0)
 		            	setAttribute("GradeNum",gradeNum);
 		            
+		            if (descriptionA != null){
+		            	setAttribute("DescriptionA",descriptionA);
+		            }else{
+		            	setAttribute("DescriptionA","");
+		            }
+		            	
+		            if (descriptionB != null){
+		            	setAttribute("DescriptionB",descriptionB);
+		            }else{
+		            	setAttribute("DescriptionB","");
+		            }		            
+		            
 		            if (children != null)
 		            	setAttribute("children", children);		            		           		            
 		        }
 		    }	
 		    
-			private String buildFeedbackWithRubrics(ListGridRecord[] records, DocEntry docEntry, ReviewEntry reviewEntry, WritingActivity writingActivity) {
+			private String buildFeedbackWithRubrics(ListGridRecord[] records, DocEntry docEntry, ReviewEntry reviewEntry, WritingActivity writingActivity, ReviewingActivity reviewingActivity) {
 				List<String> selectedRubrics =new ArrayList<String>();
 				String test = "";
 				int i=0;
+				String typeFeedbackTemplate = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_DEFAULT;
+				
+				if (reviewingActivity.getFeedbackTemplateType().equalsIgnoreCase(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_A)){
+					typeFeedbackTemplate = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_A;					
+				}
+				if (reviewingActivity.getFeedbackTemplateType().equalsIgnoreCase(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_B)){
+					typeFeedbackTemplate = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_B;
+				}
+				
+				reviewForm.getReview().setFeedbackTemplateType(typeFeedbackTemplate);
+				
 				reviewForm.getReview().getFeedback_templates().clear();
 				for (int j = 0; j < records.length; j++) {
 					if (records[j].getAttributeAsBoolean("IsRubric")){
@@ -727,7 +752,18 @@ public class ReviewEntryPoint implements EntryPoint {
 						}
 					}					
 					if (records[j].getAttributeAsBoolean("IsTemplate")){
-						selectedRubrics.add(records[j].getAttribute("Text").toLowerCase()+". ");
+						String templateFeedbackToInsert = "";
+						if (typeFeedbackTemplate.equalsIgnoreCase(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_A)){
+							templateFeedbackToInsert = records[j].getAttribute("DescriptionA").toLowerCase();
+						}
+						if (typeFeedbackTemplate.equalsIgnoreCase(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_B)){
+							templateFeedbackToInsert = records[j].getAttribute("DescriptionB").toLowerCase();
+						}
+						if (templateFeedbackToInsert.isEmpty()){
+							templateFeedbackToInsert = records[j].getAttribute("Text").toLowerCase();
+						}												
+						
+						selectedRubrics.add(templateFeedbackToInsert+". ");
 						String suggest = "I suggest you do the online tutorial on this topic available at: ";
 						if (records[j].getAttributeAsString("Link") != null && !records[j].getAttributeAsString("Link").isEmpty()){
 							if (checkGradeNum(records[j].getAttributeAsInt("GradeNum"))){
@@ -805,19 +841,19 @@ public class ReviewEntryPoint implements EntryPoint {
 		        		for (FeedbackTemplate feedbackTemplate : rubric.getFeedbackTemplates()){
 		        			strToDisplay = feedbackTemplate.getNumber()+" <b>("+feedbackTemplate.getGrade()+")</b> - "+feedbackTemplate.getText();
 				        	strTextContent = feedbackTemplate.getText();									        								   	
-		        			feedbackTemplateNodes[k] = new RubricsTreeNode(feedbackTemplate.getId(), strToDisplay, rubric.getLink(), "text.png", strTextContent, 2, feedbackTemplate.getGradeNum());
+		        			feedbackTemplateNodes[k] = new RubricsTreeNode(feedbackTemplate.getId(), strToDisplay, rubric.getLink(), "text.png", strTextContent, 2, feedbackTemplate.getGradeNum(), feedbackTemplate.getDescriptionA(), feedbackTemplate.getDescriptionB());
 							feedbackTemplateNodes[k].setCanAcceptDrop(false);
 							k++;
 		        		}							        		
 		        		strToDisplay = rubric.getNumber()+" - "+rubric.getName();
 			        	strTextContent = rubric.getName();								        							   	
-		        		rubricNodes[j] =  new RubricsTreeNode((long) 0, strToDisplay, rubric.getLink(), null, strTextContent, 1, 0, feedbackTemplateNodes);
+		        		rubricNodes[j] =  new RubricsTreeNode((long) 0, strToDisplay, rubric.getLink(), null, strTextContent, 1, 0, "", "", feedbackTemplateNodes);
 		        		rubricNodes[j].setCanAcceptDrop(false);
 		        		j++;
 		        	}
 		        	strToDisplay = docType.getNumber()+" - "+docType.getName();
 		        	strTextContent = docType.getName();
-		        	documentTypeNodes[i] = new RubricsTreeNode((long) 0, strToDisplay, null, null, strTextContent, 0, 0, rubricNodes);
+		        	documentTypeNodes[i] = new RubricsTreeNode((long) 0, strToDisplay, null, null, strTextContent, 0, 0, "", "", rubricNodes);
 		        	documentTypeNodes[i].setCanAcceptDrop(false);
 		        	i++;  
 				}								

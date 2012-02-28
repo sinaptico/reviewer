@@ -10,6 +10,10 @@ public class FeedbackTemplate implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
+	public static final String FEEDBACK_TYPE_DESCRIPTION_DEFAULT = "Default";
+	public static final String FEEDBACK_TYPE_DESCRIPTION_A = "A";
+	public static final String FEEDBACK_TYPE_DESCRIPTION_B = "B";
+	
 	@Id
 	@GeneratedValue
 	protected Long id;
@@ -17,7 +21,9 @@ public class FeedbackTemplate implements Serializable {
 	private String text;
 	private String grade;	
 	private int gradeNum;
-	//private String link;	
+	//private String link;
+	private String descriptionA;
+	private String descriptionB;
 
 	@Override
 	public boolean equals(Object obj) {
@@ -90,6 +96,22 @@ public class FeedbackTemplate implements Serializable {
 
 	public int getGradeNum() {
 		return gradeNum;
+	}
+
+	public void setDescriptionA(String descriptionA) {
+		this.descriptionA = descriptionA;
+	}
+
+	public String getDescriptionA() {
+		return descriptionA;
+	}
+
+	public void setDescriptionB(String descriptionB) {
+		this.descriptionB = descriptionB;
+	}
+
+	public String getDescriptionB() {
+		return descriptionB;
 	}
 
 }

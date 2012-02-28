@@ -30,6 +30,7 @@ public class ReviewingActivity extends Activity<ReviewEntry> {
 	private long reviewTemplateId;
 	private Boolean earlySubmit = false; //display early submit button
 	//private Boolean studentMarks = false; //allow students to mark a peer
+	private String feedbackTemplateType = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_DEFAULT;
 
 	public String getAllocationStrategy() {
 		return allocationStrategy;
@@ -125,6 +126,14 @@ public class ReviewingActivity extends Activity<ReviewEntry> {
 
 	public void setEarlySubmit(Boolean earlySubmit) {
 		this.earlySubmit = earlySubmit;
+	}
+
+	public void setFeedbackTemplateType(String feedbackTemplateType) {
+		this.feedbackTemplateType = feedbackTemplateType;
+	}
+
+	public String getFeedbackTemplateType() {
+		return feedbackTemplateType;
 	}
 
 //	public Boolean getStudentMarks() {

@@ -37,6 +37,7 @@ public class Review implements Serializable {
 	@JoinTable(name = "Review_FeedbackTemplates")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<FeedbackTemplate> feedback_templates = new HashSet<FeedbackTemplate>();
+	private String feedbackTemplateType = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_DEFAULT;
 
 	@Override
 	public boolean equals(Object obj) {
@@ -105,5 +106,13 @@ public class Review implements Serializable {
 
 	public Set<FeedbackTemplate> getFeedback_templates() {
 		return feedback_templates;
+	}
+
+	public void setFeedbackTemplateType(String feedbackTemplateType) {
+		this.feedbackTemplateType = feedbackTemplateType;
+	}
+
+	public String getFeedbackTemplateType() {
+		return feedbackTemplateType;
 	}
 }

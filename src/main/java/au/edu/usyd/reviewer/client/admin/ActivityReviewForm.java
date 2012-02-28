@@ -3,6 +3,7 @@ package au.edu.usyd.reviewer.client.admin;
 import java.util.Collection;
 import java.util.List;
 
+import au.edu.usyd.reviewer.client.core.FeedbackTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
@@ -46,6 +47,8 @@ public class ActivityReviewForm extends Composite {
 	private WritingActivity writingActivity;
 	private final CheckBox earlySubmit = new CheckBox();
 	//private final CheckBox marking = new CheckBox();
+	private final ListBox feedbackTemplateType = new ListBox();
+	
 	private final static AdminServiceAsync adminService = (AdminServiceAsync) GWT.create(AdminService.class);
 	
 	
@@ -88,6 +91,11 @@ public class ActivityReviewForm extends Composite {
 		
 		//Automatic Feed Back - Review TEmplates
 		reviewType.addItem(ReviewingActivity.REVIEW_TYPE_TEMPLATE);
+		
+		//Feedback template Type
+		feedbackTemplateType.addItem(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_DEFAULT);
+		feedbackTemplateType.addItem(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_A);
+		feedbackTemplateType.addItem(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_B);
 	}	
 	
 	public ReviewingActivity getActivityReview() {
@@ -104,6 +112,8 @@ public class ActivityReviewForm extends Composite {
 		reviewingActivity.setNumAutomaticReviewers((int) numAutomaticReviewers.getSpinner().getValue());
 		reviewingActivity.setEarlySubmit(earlySubmit.getValue());
 		//reviewingActivity.setStudentMarks(marking.getValue());
+		reviewingActivity.setFeedbackTemplateType(feedbackTemplateType.getValue(feedbackTemplateType.getSelectedIndex()));
+		
 		return reviewingActivity;
 	}
 	
@@ -144,7 +154,7 @@ public class ActivityReviewForm extends Composite {
 				//reviewersTable.setReviewingActivity(reviewingActivity);
 			}});		
 
-		Grid reviewGrid = new Grid(11, 2);
+		Grid reviewGrid = new Grid(12, 2);
 		reviewGrid.setWidget(0, 0, new Label("Name:"));
 		reviewGrid.setWidget(0, 1, name);
 		reviewGrid.setWidget(1, 0, new Label("Status:"));
@@ -166,7 +176,10 @@ public class ActivityReviewForm extends Composite {
 		reviewGrid.setWidget(9, 0, new Label("Early submit option:"));
 		reviewGrid.setWidget(9, 1, earlySubmit);			
 		reviewGrid.setWidget(10, 0, new Label("Reviewers list:"));
-		reviewGrid.setWidget(10, 1, reviewersListButton);		
+		reviewGrid.setWidget(10, 1, reviewersListButton);
+		reviewGrid.setWidget(11, 0, new Label("Feedback Template Type:"));
+		reviewGrid.setWidget(11, 1, feedbackTemplateType);		
+		
 		//reviewGrid.setWidget(11, 0, new Label("Allow peer marking:"));
 		//reviewGrid.setWidget(11, 1, marking);		
 		
@@ -212,5 +225,12 @@ public class ActivityReviewForm extends Composite {
 				break;
 			}
 		}
+		for (int i = 0; i < feedbackTemplateType.getItemCount(); i++) {
+			if (feedbackTemplateType.getValue(i).equals(reviewingActivity.getFeedbackTemplateType())) {
+				feedbackTemplateType.setSelectedIndex(i);
+				break;
+			}
+		}		
 	}
+
 }
