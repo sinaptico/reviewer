@@ -55,6 +55,7 @@ a span {
 
 .documentsTableHeader {
 	border-bottom: thin solid #D0E4F6 !important;
+	background-color: #92C1F0 !important; 
 }
 
 .documentsTableRow {
@@ -63,8 +64,8 @@ a span {
 
 .documentsTableRowHeader {
 	border-bottom: thin solid #D0E4F6 !important;
-	/*background-color: #E0E0E0 !important; #92C1F0*/
-	background-color: #92C1F0 !important; 
+	background-color: #E0E0E0 !important; /*#92C1F0*/
+	/*background-color: #92C1F0 !important;*/ 
 }
 
 
