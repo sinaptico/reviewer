@@ -365,7 +365,11 @@ public class AssignmentRepository {
 			User user = new User();
 			user.setId(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
 			if (!owners.contains(user) && aclEntry.getRole().equals(AclRole.WRITER)) {
-				aclEntry.delete();
+				if (docEntry instanceof LogpageDocEntry) {
+					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());
+				}else{
+					aclEntry.delete();
+				}
 			}
 		}	
 	}	
