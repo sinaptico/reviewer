@@ -975,6 +975,7 @@ public class AssignmentManager {
 							review = new Review();
 						}
 					}
+					review.setFeedbackTemplateType(reviewingActivity.getFeedbackTemplateType());
 					assignmentDao.save(review);
 					
 					// Tracking monitor for study

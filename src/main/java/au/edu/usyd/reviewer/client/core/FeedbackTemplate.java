@@ -1,6 +1,8 @@
 package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -22,7 +24,9 @@ public class FeedbackTemplate implements Serializable {
 	private String grade;	
 	private int gradeNum;
 	//private String link;
+	@Column(length = 65535)
 	private String descriptionA;
+	@Column(length = 65535)
 	private String descriptionB;
 
 	@Override

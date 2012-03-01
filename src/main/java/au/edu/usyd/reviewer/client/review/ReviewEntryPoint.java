@@ -744,12 +744,12 @@ public class ReviewEntryPoint implements EntryPoint {
 				reviewForm.getReview().getFeedback_templates().clear();
 				for (int j = 0; j < records.length; j++) {
 					if (records[j].getAttributeAsBoolean("IsRubric")){
-						if (i==0){
-							selectedRubrics.add("With regards to <b>" + records[j].getAttribute("Text").toLowerCase() + "</b>, I think ");
-							i++;
-						}else{
-							selectedRubrics.add("The <b>"+records[j].getAttribute("Text").toLowerCase()+"</b> ");
-						}
+						//if (i==0){
+							selectedRubrics.add("With regards to <b>" + records[j].getAttribute("Text").toLowerCase() + "</b>, ");
+						//	i++;
+						//}else{
+						//	selectedRubrics.add("The <b>"+records[j].getAttribute("Text").toLowerCase()+"</b> ");
+						//}
 					}					
 					if (records[j].getAttributeAsBoolean("IsTemplate")){
 						String templateFeedbackToInsert = "";
@@ -763,12 +763,12 @@ public class ReviewEntryPoint implements EntryPoint {
 							templateFeedbackToInsert = records[j].getAttribute("Text").toLowerCase();
 						}												
 						
-						selectedRubrics.add(templateFeedbackToInsert+". ");
+						selectedRubrics.add(templateFeedbackToInsert+"<br /><br />");
 						String suggest = "I suggest you do the online tutorial on this topic available at: ";
 						if (records[j].getAttributeAsString("Link") != null && !records[j].getAttributeAsString("Link").isEmpty()){
 							if (checkGradeNum(records[j].getAttributeAsInt("GradeNum"))){
 								String link = "<a href="+records[j].getAttributeAsString("Link")+">"+records[j].getAttributeAsString("Link")+"</a>";
-								selectedRubrics.add(suggest+link+". <br>");	
+								selectedRubrics.add(suggest+link+". <br />");	
 							}
 							
 						}
@@ -792,11 +792,11 @@ public class ReviewEntryPoint implements EntryPoint {
 						}
 					}
 				}
-				finalContent = finalContent + "After reading the assignment you submitted on "+ submitedDate +", I would like to provide you with some extra feedback on the different aspects of your work that were assessed: <br /><br />";
+				finalContent = finalContent + "After reading the assignment you submitted on "+ submitedDate +", I would like to provide you with some feedback on the different aspects of your work: <br /><br />";
 				
 				for (String rubric : selectedRubrics){ finalContent = finalContent + rubric; }
 				
-				finalContent = finalContent.replace(" .", ".").replace("..", ".") + "<br/><br/> I hope you can use this feedback at a later stage. <br/><br/> Regards, <br />"+reviewEntry.getOwner().getFirstname()+" "+reviewEntry.getOwner().getLastname();
+				finalContent = finalContent + "<br/> I hope you can use this feedback at a later stage. <br/><br/> Regards, <br />"+reviewEntry.getOwner().getFirstname()+" "+reviewEntry.getOwner().getLastname();
 
 				return finalContent;
 			}	
