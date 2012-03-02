@@ -437,10 +437,12 @@ public class AssignmentDao {
 		return templateReplies.size() > 0;
 	}
 
-	public Collection<DocumentType> loadDocumentTypes() {
+	public Collection<DocumentType> loadDocumentTypes(String genre) {
+		String query = "from DocumentType documentType " + 
+		"where genre=:genre";
 		Session session = this.getSession();
 		session.beginTransaction();
-		List<DocumentType> documentTypes = session.createCriteria(DocumentType.class).list();
+		List<DocumentType> documentTypes = session.createQuery(query).setParameter("genre",genre).list();
 		session.getTransaction().commit();
 		return documentTypes;
 	}	

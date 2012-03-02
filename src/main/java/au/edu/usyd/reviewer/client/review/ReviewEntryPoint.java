@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.review;
 
 import java.util.ArrayList;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -57,15 +58,12 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.smartgwt.client.types.DragDataAction;
 import com.smartgwt.client.types.SelectionAppearance;
 import com.smartgwt.client.types.TreeModelType;
 import com.smartgwt.client.types.VisibilityMode;
-import com.smartgwt.client.widgets.Canvas;
-import com.smartgwt.client.widgets.HTMLFlow;  
-import com.smartgwt.client.widgets.form.fields.CheckboxItem;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
-import com.smartgwt.client.widgets.layout.HStack;
+import com.smartgwt.client.widgets.grid.events.SelectionChangedHandler;
+import com.smartgwt.client.widgets.grid.events.SelectionEvent;
 import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VStack;
@@ -450,7 +448,7 @@ public class ReviewEntryPoint implements EntryPoint {
 							
 							/***************************  CELL BROWSER **********************************/
 							final WritingActivity writingActivityForMail = writingActivity;
-							reviewService.getDocumentTypes(new AsyncCallback<Collection<DocumentType>>() {
+							reviewService.getDocumentTypes(writingActivity.getGenre(), new AsyncCallback<Collection<DocumentType>>() {
 
 								@Override
 								public void onFailure(Throwable caught) {
@@ -479,6 +477,14 @@ public class ReviewEntryPoint implements EntryPoint {
 
 							        final RubricsTreeGrid rubricsGrid = new RubricsTreeGrid();
 							        rubricsGrid.setData(gridTree);
+							        
+//							        rubricsGrid.addSelectionChangedHandler(new SelectionChangedHandler() {
+//										@Override
+//										public void onSelectionChanged(SelectionEvent event) {											
+//											Window.alert(event.getRecord().getAttribute("Text"));											
+//										}
+//							        	
+//							        });
 							        //rubricsGrid.getTree().openAll();							        
 							        
 							        VStack grids = new VStack();
@@ -666,7 +672,7 @@ public class ReviewEntryPoint implements EntryPoint {
 		            setShowHeader(false);
 		            setLeaveScrollbarGap(false);
 		            setEmptyMessage("<br>There's no rubrics uploaded into iWrite");
-		            setSelectionAppearance(SelectionAppearance.CHECKBOX);
+		            setSelectionAppearance(SelectionAppearance.CHECKBOX);		            
 		            setAttribute("selectionProperty", "isSelected", false);
 		            setAttribute("Link", "", true);
 		            setAttribute("Text", "", true);
@@ -680,7 +686,7 @@ public class ReviewEntryPoint implements EntryPoint {
 		            setShowSelectedStyle(false);  
 		            setShowPartialSelection(true);  
 		            setCascadeSelection(true);  
-		            setFixedFieldWidths(false);			            		            
+		            setFixedFieldWidths(false);
 		        }
 		    }
 
@@ -727,9 +733,8 @@ public class ReviewEntryPoint implements EntryPoint {
 		    }	
 		    
 			private String buildFeedbackWithRubrics(ListGridRecord[] records, DocEntry docEntry, ReviewEntry reviewEntry, WritingActivity writingActivity, ReviewingActivity reviewingActivity) {
-				List<String> selectedRubrics =new ArrayList<String>();
-				String test = "";
-				int i=0;
+				List<String> selectedRubrics =new ArrayList<String>();				
+				
 				String typeFeedbackTemplate = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_DEFAULT;
 				
 				if (reviewingActivity.getFeedbackTemplateType().equalsIgnoreCase(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_A)){
@@ -780,7 +785,7 @@ public class ReviewEntryPoint implements EntryPoint {
 					}
 				}			
 				
-				String finalContent = test+" Dear"+ docEntry.getTitle().substring(docEntry.getTitle().indexOf(",")+1)+ "<br /><br />";
+				String finalContent = "Dear"+ docEntry.getTitle().substring(docEntry.getTitle().indexOf(",")+1)+ "<br /><br />";
 				String submitedDate = "";
 				
 				if (docEntry.getEarlySubmitDate() != null){

@@ -24,6 +24,7 @@ public class DocumentType implements Serializable {
 	protected Long id;
 	private Integer number;
 	private String name;
+	private String genre;
 	@OneToMany(cascade = CascadeType.ALL)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name = "DocumentType_Rubrics")
@@ -85,6 +86,14 @@ public class DocumentType implements Serializable {
 
 	public Integer getNumber() {
 		return number;
+	}
+
+	public void setGenre(String genre) {
+		this.genre = genre;
+	}
+
+	public String getGenre() {
+		return genre;
 	}
 
 	

@@ -28,5 +28,5 @@ public interface ReviewServiceAsync {
 	
 	public <R extends Review> void submitReview(R review, AsyncCallback<R> asyncCallback);
 	
-	public void getDocumentTypes(AsyncCallback<Collection<DocumentType>> callback);
+	public void getDocumentTypes(String genre, AsyncCallback<Collection<DocumentType>> callback);
 }

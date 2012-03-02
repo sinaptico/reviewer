@@ -31,5 +31,5 @@ public interface ReviewService extends RemoteService {
 	
 	public <R extends Review> R submitReview(R review) throws Exception;
 	
-	public Collection<DocumentType> getDocumentTypes() throws Exception;
+	public Collection<DocumentType> getDocumentTypes(String genre) throws Exception;
 }

@@ -276,10 +276,10 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	}
 	
 	@Override	
-	public Collection<DocumentType> getDocumentTypes() throws Exception {
+	public Collection<DocumentType> getDocumentTypes(String genre) throws Exception {
 		Collection<DocumentType> documentTypes = null;
 		//if (isAdmin()) {
-			documentTypes = assignmentDao.loadDocumentTypes();
+			documentTypes = assignmentDao.loadDocumentTypes(genre);
 		//}
 		return CloneUtil.clone(documentTypes);
 	}	
