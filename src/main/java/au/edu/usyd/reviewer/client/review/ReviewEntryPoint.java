@@ -478,13 +478,6 @@ public class ReviewEntryPoint implements EntryPoint {
 							        final RubricsTreeGrid rubricsGrid = new RubricsTreeGrid();
 							        rubricsGrid.setData(gridTree);
 							        
-//							        rubricsGrid.addSelectionChangedHandler(new SelectionChangedHandler() {
-//										@Override
-//										public void onSelectionChanged(SelectionEvent event) {											
-//											Window.alert(event.getRecord().getAttribute("Text"));											
-//										}
-//							        	
-//							        });
 							        //rubricsGrid.getTree().openAll();							        
 							        
 							        VStack grids = new VStack();
@@ -520,7 +513,8 @@ public class ReviewEntryPoint implements EntryPoint {
 									gridInsterLinks.setWidget(0, 16, addHighLink);
 									gridInsterLinks.setWidget(0, 17, new Label("High Distinction"));
 								    
-									insertTextPanel.add(gridInsterLinks);
+									//Disabled temporally (Links will be included in description) 
+									//insertTextPanel.add(gridInsterLinks);
 									
 								    grids.addMember(insertTextPanel);							        
 							        grids.draw();							        
@@ -759,10 +753,10 @@ public class ReviewEntryPoint implements EntryPoint {
 					if (records[j].getAttributeAsBoolean("IsTemplate")){
 						String templateFeedbackToInsert = "";
 						if (typeFeedbackTemplate.equalsIgnoreCase(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_A)){
-							templateFeedbackToInsert = records[j].getAttribute("DescriptionA").toLowerCase();
+							templateFeedbackToInsert = records[j].getAttribute("DescriptionA");
 						}
 						if (typeFeedbackTemplate.equalsIgnoreCase(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_B)){
-							templateFeedbackToInsert = records[j].getAttribute("DescriptionB").toLowerCase();
+							templateFeedbackToInsert = records[j].getAttribute("DescriptionB");
 						}
 						if (templateFeedbackToInsert.isEmpty()){
 							templateFeedbackToInsert = records[j].getAttribute("Text").toLowerCase();
