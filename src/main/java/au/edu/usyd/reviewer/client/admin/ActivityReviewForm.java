@@ -3,6 +3,7 @@ package au.edu.usyd.reviewer.client.admin;
 import java.util.Collection;
 import java.util.List;
 
+import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.FeedbackTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
@@ -19,7 +20,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -154,6 +154,27 @@ public class ActivityReviewForm extends Composite {
 				//reviewersTable.setReviewingActivity(reviewingActivity);
 			}});		
 
+		Button reportFeedbackTrackButton = new Button("Report");
+		reportFeedbackTrackButton.addClickHandler(new ClickHandler(){
+
+			@Override
+			public void onClick(ClickEvent event) {
+				final DialogBox dialogBox = new DialogBox();
+				
+				final FeedbackTrackReport feedbackReportTable = new FeedbackTrackReport(reviewingActivity);
+				
+				VerticalPanel panel = new VerticalPanel();
+				//panel.add(buttonsPanel);
+				panel.add(feedbackReportTable);				
+				//dialogBox.setHTML("<b>Reviewers List. "+ reviewingActivity.getName()+" With deadline: "+ StyleLib.dueDateFormat(reviewingActivity.getFinishDate()) +"</b>");
+				dialogBox.setWidget(panel);
+				dialogBox.center();
+				dialogBox.show();								
+			}
+			
+		});
+		
+		
 		Grid reviewGrid = new Grid(12, 2);
 		reviewGrid.setWidget(0, 0, new Label("Name:"));
 		reviewGrid.setWidget(0, 1, name);
@@ -178,7 +199,12 @@ public class ActivityReviewForm extends Composite {
 		reviewGrid.setWidget(10, 0, new Label("Reviewers list:"));
 		reviewGrid.setWidget(10, 1, reviewersListButton);
 		reviewGrid.setWidget(11, 0, new Label("Feedback Template Type:"));
-		reviewGrid.setWidget(11, 1, feedbackTemplateType);		
+		reviewGrid.setWidget(11, 1, feedbackTemplateType);	
+		
+		if (reviewingActivity.getStatus() > Activity.STATUS_NONE){
+			reviewGrid.setWidget(11, 0, new Label("Track Feedback Report:"));
+			reviewGrid.setWidget(11, 1, reportFeedbackTrackButton);	
+		}
 		
 		//reviewGrid.setWidget(11, 0, new Label("Allow peer marking:"));
 		//reviewGrid.setWidget(11, 1, marking);		
@@ -233,4 +259,62 @@ public class ActivityReviewForm extends Composite {
 		}		
 	}
 
+	
+//	  public class FeedbackTrackReport extends Composite {
+//		  private VerticalPanel mainPanel = new VerticalPanel();
+//		  
+//	        public FeedbackTrackReport() {
+//	        	initWidget(mainPanel);
+//	        }		
+//	        
+//	        
+//	    	@Override
+//	    	public void onLoad() {
+//	    		Grid trackReportGrid = new Grid(reviewingActivity.getEntries().size()+1, 10);
+//	    		trackReportGrid.setWidget(0, 0, new Label("Unikey;"));
+//	    		trackReportGrid.setWidget(0, 1, new Label("Feedback;"));
+//	    		trackReportGrid.setWidget(0, 2, new Label("Rubric Details;"));
+//	    		
+//	    		int i=1;	    		
+//	    		for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
+//	    			trackReportGrid.setWidget(i, 0, new Label(reviewEntry.getDocEntry().getOwner().getId()));
+//	    			Review review = reviewEntry.getReview();
+//	    			if (review.getContent()!=null){
+//	    				trackReportGrid.setWidget(i, 1, new HTML(review.getContent()+";"));
+//	    			}
+//	    			if (review.getFeedback_templates().size()>0){
+//	    				Grid rubricsGrid = new Grid(review.getFeedback_templates().size()+1, 3);
+//	    				rubricsGrid.setWidget(0, 0, new Label("Rubric;"));
+//	    				rubricsGrid.setWidget(0, 1, new Label("Grade;"));	    				
+//	    				rubricsGrid.setWidget(0, 2, new Label("Description;"));
+//	    				int j=1;	    				
+//
+//	    				for (FeedbackTemplate feedbackTemplate: review.getFeedback_templates()){	    				
+//	    					rubricsGrid.setWidget(j, 0, new Label("* "+feedbackTemplate.getNumber()+";"));
+//	    					rubricsGrid.setWidget(j, 1, new Label(feedbackTemplate.getGrade()+";"));	
+//	    					if (review.getFeedbackTemplateType().equalsIgnoreCase(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_A)){
+//	    						rubricsGrid.setWidget(j, 2, new HTML(feedbackTemplate.getDescriptionA()+";"));
+//	    					}
+//	    					if (review.getFeedbackTemplateType().equalsIgnoreCase(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_B)){
+//	    						rubricsGrid.setWidget(j, 2, new HTML(feedbackTemplate.getDescriptionB()+";"));
+//	    					}
+//	    					j++;
+//	    				}
+//	    				
+//	    				trackReportGrid.setWidget(i, 2, rubricsGrid);
+//	    			}
+//	    			
+//	    			i++;	    			
+//	    		}
+//	    		
+//	    		mainPanel.add(trackReportGrid);
+//	    		mainPanel.add(new Button("Close", new ClickHandler() {
+//					@Override
+//					public void onClick(ClickEvent event) {
+//						((DialogBox) mainPanel.getParent().getParent().getParent().getParent()).hide();
+//					}
+//				}));	    		
+//	    	}
+//	}
+	
 }

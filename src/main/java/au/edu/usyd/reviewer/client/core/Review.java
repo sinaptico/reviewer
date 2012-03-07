@@ -36,6 +36,7 @@ public class Review implements Serializable {
 	@ManyToMany
 	@JoinTable(name = "Review_FeedbackTemplates")
 	@LazyCollection(LazyCollectionOption.FALSE)
+	@javax.persistence.OrderBy("number")
 	private Set<FeedbackTemplate> feedback_templates = new HashSet<FeedbackTemplate>();
 	private String feedbackTemplateType = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_DEFAULT;
 
