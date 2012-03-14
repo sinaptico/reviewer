@@ -22,7 +22,7 @@ public interface AdminService extends RemoteService {
 
 	public WritingActivity deleteWritingActivity(WritingActivity writingActivity) throws Exception;
 
-	public Collection<Course> getCourses() throws Exception;
+	public Collection<Course> getCourses(Integer semester, Integer year) throws Exception;
 
 	public Collection<UserStats> getWritingActivityStats(Long writingActivityId) throws Exception;
 

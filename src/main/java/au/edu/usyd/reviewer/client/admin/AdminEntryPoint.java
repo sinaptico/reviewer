@@ -32,6 +32,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -60,6 +61,10 @@ public class AdminEntryPoint implements EntryPoint {
 	private String cssDivStyle = "align='left' STYLE='margin: 0 0 0 0;'";
 	private Tree reviewTemplateTree = new Tree();
 	private VerticalPanel reviewTemplatesContentPanel = new VerticalPanel();
+	private HorizontalPanel yearSemesterPanel = new HorizontalPanel();
+	private ListBox courseSemester = WidgetFactory.createNewListBoxWithId("courseSemester");	
+	private ListBox courseYear = WidgetFactory.createNewListBoxWithId("courseYear");
+	private SubmitButton refreshCourseTreeButton = new SubmitButton("Load", "Loading courses, please wait...", "Load");
 
 	@Override
 	public void onModuleLoad() {
@@ -569,6 +574,32 @@ public class AdminEntryPoint implements EntryPoint {
 		
 		RootPanel.get("adminPanel").add(new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">IWRITE ADMIN PAGE</h1><a href='Assignments.html'><< Go to the Assignments List</a></br></br><img src='images/icon-info.gif'/> If you have selected the option 'Impersonate User' then by clicking the link above you will see the assignments list of that user. </br>In order to go back to your normal 'Assignments list' you have to click the 'Assginments' link at the top of the page again.</div></br>"));
 		
+		refreshCourseTreeButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {				
+				refreshCoursesTree();				
+			}
+	    	
+	    });
+
+		courseSemester.addItem("1", "1");
+		courseSemester.addItem("2", "2");
+		
+		courseYear.addItem("2012", "2012");
+		courseYear.addItem("2011", "2011");
+		courseYear.addItem("2010", "2010");
+		courseYear.addItem("2009", "2009");
+		
+	    yearSemesterPanel.add(new HTML("<span>Semester-Year:</span>"));
+	    yearSemesterPanel.add(new HTML("<span style='margin-left:20px;'></span>"));
+	    yearSemesterPanel.add(courseSemester);
+	    yearSemesterPanel.add(courseYear);
+	    yearSemesterPanel.add(refreshCourseTreeButton);
+	    
+	    RootPanel.get("adminPanel").add(yearSemesterPanel);
+	    RootPanel.get("adminPanel").add(new HTML("</br>"));
+				
 		RootPanel.get("adminPanel").add(adminPanel);
 		this.refreshCoursesTree();
 	}
@@ -598,20 +629,29 @@ public class AdminEntryPoint implements EntryPoint {
 
 
 	private void refreshCoursesTree() {
+		refreshCourseTreeButton.updateStateSubmitting();
+		
 		courseStackPanel.clear();
 		courseStackPanel.setWidth("200px");
 		courseStackPanel.add(coursesTree);
 		coursesTree.clear();
 		activityLabel.setHTML("<b>&nbsp;</b>");
-		activityLabel.setStyleName("activityLabel");
-		adminService.getCourses(new AsyncCallback<Collection<Course>>() {
+		activityLabel.setStyleName("activityLabel");		
+		
+		Integer semester = Integer.valueOf(courseSemester.getItemText(courseSemester.getSelectedIndex()));
+		Integer year = Integer.valueOf(courseYear.getItemText(courseYear.getSelectedIndex()));
+
+		
+		adminService.getCourses(semester, year, new AsyncCallback<Collection<Course>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Failed get courses: " + caught.getMessage());
+				refreshCourseTreeButton.updateStateSubmit();
 			}
 
 			@Override
 			public void onSuccess(Collection<Course> courseList) {
+				refreshCourseTreeButton.updateStateSubmit();
 				courses = courseList;
 				// courses tree
 				for (Course course : courses) {

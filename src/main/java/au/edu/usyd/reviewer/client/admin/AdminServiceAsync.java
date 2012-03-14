@@ -19,7 +19,7 @@ interface AdminServiceAsync {
 
 	public void deleteWritingActivity(WritingActivity writingActivity, AsyncCallback<WritingActivity> callback);
 
-	public void getCourses(AsyncCallback<Collection<Course>> callback);
+	public void getCourses(Integer semester, Integer year, AsyncCallback<Collection<Course>> callback);
 
 	public void getWritingActivityStats(Long writingActivityId, AsyncCallback<Collection<UserStats>> callback);
 

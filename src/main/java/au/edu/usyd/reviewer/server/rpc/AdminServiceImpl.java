@@ -61,12 +61,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public Collection<Course> getCourses() throws Exception {
+	public Collection<Course> getCourses(Integer semester, Integer year) throws Exception {
 		Collection<Course> courses;
 		if (isAdmin()) {
-			courses = assignmentDao.loadCourses();
+			courses = assignmentDao.loadCourses(semester, year);
 		} else {
-			courses = assignmentDao.loadLecturerCourses(getUser());
+			courses = assignmentDao.loadLecturerCourses(semester, year, getUser());
 		}
 		return CloneUtil.clone(courses);
 	}

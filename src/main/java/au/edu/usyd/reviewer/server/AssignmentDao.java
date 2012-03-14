@@ -61,11 +61,20 @@ public class AssignmentDao {
 	}
 
 	public List<Course> loadCourses() {
+        Session session = this.getSession();
+        session.beginTransaction();
+        List<Course> courses = session.createCriteria(Course.class).list();
+        session.getTransaction().commit();
+        return courses;
+	}	
+
+	public List<Course> loadCourses(Integer semester, Integer year) {
+		String query = "from Course course " + "where course.semester=:semester AND course.year=:year";
 		Session session = this.getSession();
 		session.beginTransaction();
-		List<Course> courses = session.createCriteria(Course.class).list();
+		List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).list();		
 		session.getTransaction().commit();
-		return courses;
+		return courses;		
 	}
 
 	public Course loadCourseWhereDeadline(Deadline deadline) {
@@ -173,11 +182,11 @@ public class AssignmentDao {
 		return grade;
 	}
 
-	public List<Course> loadLecturerCourses(User lecturer) {
-		String query = "from Course course " + "join fetch course.lecturers lecturer " + "where lecturer=:lecturer";
+	public List<Course> loadLecturerCourses(Integer semester, Integer year, User lecturer) {
+		String query = "from Course course " + "join fetch course.lecturers lecturer " + "where lecturer=:lecturer and course.semester=:semester AND course.year=:year";
 		Session session = this.getSession();
 		session.beginTransaction();
-		List<Course> courses = session.createQuery(query).setParameter("lecturer", lecturer).list();
+		List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).setParameter("lecturer", lecturer).list();
 		session.getTransaction().commit();
 		return courses;
 	}

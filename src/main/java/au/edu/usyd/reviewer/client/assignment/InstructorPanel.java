@@ -84,64 +84,69 @@ public class InstructorPanel extends Composite {
 			TreeItem activityItem = new TreeItem(activityLink);
 			List<DocEntry> sortedDocEntries = new ArrayList<DocEntry>(writingActivity.getEntries());
 			Collections.sort(sortedDocEntries, new EntryTitleComparator());
-			for (final DocEntry docEntry : sortedDocEntries) {
-				final SimplePanel documentLink = new SimplePanel();
-				documentLink.setWidget(new DocEntryWidget(docEntry, (docEntry.getOwner() != null ? docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() : "Group " + docEntry.getOwnerGroup().getName())));
-				Image editDocumentImage = new Image("images/icon-edit.gif");
-				editDocumentImage.setTitle("Edit Permissions");
-				editDocumentImage.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						final DialogBox dialogBox = new DialogBox();
-						final DocEntryForm docEntryForm = new DocEntryForm();
-						docEntryForm.setDocEntry(docEntry);
-						final SubmitButton updateButton = new SubmitButton("Update", "Updating...", "Updated");
-						updateButton.addClickHandler(new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								if (Window.confirm("Are you sure you want to update '" + docEntry.getTitle() + "'?")) {
-									updateButton.updateStateSubmitting();
-									assignmentService.updateDocEntry(docEntryForm.getDocEntry(), new AsyncCallback<DocEntry>() {
-										@Override
-										public void onFailure(Throwable caught) {
-											Window.alert("Failed to update document: " + caught.getMessage());
-											updateButton.updateStateSubmit();
-										}
-
-										@Override
-										public void onSuccess(DocEntry docEntry) {
-											documentLink.setWidget(new DocEntryWidget(docEntry, (docEntry.getOwner() != null ? docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() : "Group " + docEntry.getOwnerGroup().getName())));
-											updateButton.updateStateSubmit();
-											dialogBox.hide();
-										}
-									});
+			if (sortedDocEntries.size() < 6) {				
+				for (final DocEntry docEntry : sortedDocEntries) {
+					final SimplePanel documentLink = new SimplePanel();
+					documentLink.setWidget(new DocEntryWidget(docEntry, (docEntry.getOwner() != null ? docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() : "Group " + docEntry.getOwnerGroup().getName())));
+					Image editDocumentImage = new Image("images/icon-edit.gif");
+					editDocumentImage.setTitle("Edit Permissions");
+					editDocumentImage.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							final DialogBox dialogBox = new DialogBox();
+							final DocEntryForm docEntryForm = new DocEntryForm();
+							docEntryForm.setDocEntry(docEntry);
+							final SubmitButton updateButton = new SubmitButton("Update", "Updating...", "Updated");
+							updateButton.addClickHandler(new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									if (Window.confirm("Are you sure you want to update '" + docEntry.getTitle() + "'?")) {
+										updateButton.updateStateSubmitting();
+										assignmentService.updateDocEntry(docEntryForm.getDocEntry(), new AsyncCallback<DocEntry>() {
+											@Override
+											public void onFailure(Throwable caught) {
+												Window.alert("Failed to update document: " + caught.getMessage());
+												updateButton.updateStateSubmit();
+											}
+	
+											@Override
+											public void onSuccess(DocEntry docEntry) {
+												documentLink.setWidget(new DocEntryWidget(docEntry, (docEntry.getOwner() != null ? docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() : "Group " + docEntry.getOwnerGroup().getName())));
+												updateButton.updateStateSubmit();
+												dialogBox.hide();
+											}
+										});
+									}
 								}
-							}
-						});
-
-						HorizontalPanel buttonsPanel = new HorizontalPanel();
-						buttonsPanel.setWidth("100%");
-						buttonsPanel.add(updateButton);
-						buttonsPanel.add(new Button("Close", new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								dialogBox.hide();
-							}
-						}));
-
-						VerticalPanel panel = new VerticalPanel();
-						panel.add(docEntryForm);
-						panel.add(buttonsPanel);
-						dialogBox.setHTML("<b>Document</b>");
-						dialogBox.setWidget(panel);
-						dialogBox.center();
-						dialogBox.show();
-					}
-				});
-				HorizontalPanel documentLinks = new HorizontalPanel();
-				documentLinks.add(editDocumentImage);
-				documentLinks.add(documentLink);
-				activityItem.addItem(documentLinks);
+							});
+	
+							HorizontalPanel buttonsPanel = new HorizontalPanel();
+							buttonsPanel.setWidth("100%");
+							buttonsPanel.add(updateButton);
+							buttonsPanel.add(new Button("Close", new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									dialogBox.hide();
+								}
+							}));
+	
+							VerticalPanel panel = new VerticalPanel();
+							panel.add(docEntryForm);
+							panel.add(buttonsPanel);
+							dialogBox.setHTML("<b>Document</b>");
+							dialogBox.setWidget(panel);
+							dialogBox.center();
+							dialogBox.show();
+						}
+					});
+					HorizontalPanel documentLinks = new HorizontalPanel();
+					documentLinks.add(editDocumentImage);
+					documentLinks.add(documentLink);
+					activityItem.addItem(documentLinks);
+				}
+			}else{
+				DocEntryWidget groupActivityLink = new DocEntryWidget(writingActivity.getFolderId(), "* See "+activityName+" in Google Docs", course.getDomainName(), false);
+				activityItem.addItem(groupActivityLink);
 			}
 			Tree editLinks = new Tree();
 			editLinks.addItem(activityItem);
