@@ -14,7 +14,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface AssignmentService extends RemoteService {
 	public Collection<Course> getUserActivities(int semester, int year) throws Exception;
 
-	public Collection<Course> getUserReviewingTasks(int semester, int year) throws Exception;
+	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews) throws Exception;
 
 	public Collection<Course> getUserWritingTasks(int semester, int year) throws Exception;
 

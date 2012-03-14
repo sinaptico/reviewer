@@ -223,14 +223,14 @@ public class AssignmentManagerUnitTest {
     	// student review
     	doReturn(student2).when(assignmentServiceImpl).getUser();
     	doReturn(student2).when(reviewServiceImpl).getUser();
-        Collection<Course> student2Reviews = assignmentServiceImpl.getUserReviewingTasks(1,2009);
+        Collection<Course> student2Reviews = assignmentServiceImpl.getUserReviewingTasks(1,2009,false);
         Review student2Review = student2Reviews.iterator().next().getWritingActivities().iterator().next().getReviewingActivities().iterator().next().getEntries().iterator().next().getReview();
         student2Review = reviewServiceImpl.saveReview(student2Review);      
            
         // tutor review
         doReturn(tutor1).when(assignmentServiceImpl).getUser();
         doReturn(tutor1).when(reviewServiceImpl).getUser();
-        Collection<Course> tutor1Reviews = assignmentServiceImpl.getUserReviewingTasks(1,2009);
+        Collection<Course> tutor1Reviews = assignmentServiceImpl.getUserReviewingTasks(1,2009,false);
         Review tutor1Review = tutor1Reviews.iterator().next().getWritingActivities().iterator().next().getReviewingActivities().iterator().next().getEntries().iterator().next().getReview();
         tutor1Review = reviewServiceImpl.saveReview(tutor1Review);       
     }
@@ -292,7 +292,7 @@ public class AssignmentManagerUnitTest {
         // student review
     	doReturn(student2).when(assignmentServiceImpl).getUser();
     	doReturn(student2).when(reviewServiceImpl).getUser();
-        Collection<Course> student2Reviews = assignmentServiceImpl.getUserReviewingTasks(1,2009);
+        Collection<Course> student2Reviews = assignmentServiceImpl.getUserReviewingTasks(1,2009,false);
         ReviewEntry student2ReviewEntry = student2Reviews.iterator().next().getWritingActivities().iterator().next().getReviewingActivities().get(0).getEntries().iterator().next();
         try {
         	reviewServiceImpl.saveReview(student2ReviewEntry.getReview());
@@ -310,7 +310,7 @@ public class AssignmentManagerUnitTest {
         // tutor review
         doReturn(tutor1).when(assignmentServiceImpl).getUser();
         doReturn(tutor1).when(reviewServiceImpl).getUser();
-        Collection<Course> tutor1Reviews = assignmentServiceImpl.getUserReviewingTasks(1,2009);
+        Collection<Course> tutor1Reviews = assignmentServiceImpl.getUserReviewingTasks(1,2009,false);
         ReviewEntry tutor1ReviewEntry = tutor1Reviews.iterator().next().getWritingActivities().iterator().next().getReviewingActivities().get(0).getEntries().iterator().next();
         reviewServiceImpl.saveReview(tutor1ReviewEntry.getReview());
     }

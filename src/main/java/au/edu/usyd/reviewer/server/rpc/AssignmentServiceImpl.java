@@ -35,8 +35,8 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	}
 
 	@Override
-	public Collection<Course> getUserReviewingTasks(int semester, int year) throws Exception {
-		return CloneUtil.clone(assignmentDao.loadUserReviewingTasks(semester, year,this.getUser()));
+	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews) throws Exception {
+		return CloneUtil.clone(assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, this.getUser()));
 	}
 
 	@Override

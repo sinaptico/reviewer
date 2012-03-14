@@ -11,7 +11,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 interface AssignmentServiceAsync {
 	public void getUserActivities(int semester, int year,AsyncCallback<Collection<Course>> asyncCallback);
 
-	public void getUserReviewingTasks(int semester, int year,AsyncCallback<Collection<Course>> asyncCallback);
+	public void getUserReviewingTasks(int semester, int year,Boolean includeFinishedReviews, AsyncCallback<Collection<Course>> asyncCallback);
 
 	public void getUserWritingTasks(int semester, int year, AsyncCallback<Collection<Course>> asyncCallback);
 

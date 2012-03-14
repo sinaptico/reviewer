@@ -330,7 +330,7 @@ public class AssignmentDao {
 		return course;
 	}
 
-	public List<Course> loadUserReviewingTasks(int semester, int year, User user) {
+	public List<Course> loadUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, User user) {
 		logger.debug("Loading user reviews: user.id=" + user.getId());
 		String query = "select distinct course from Course course " 
 			+ "left join fetch course.lecturers lecturer " 
@@ -345,6 +345,12 @@ public class AssignmentDao {
 			+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) "
 			+ "AND (reviewEntry.owner=:user)"
 			+ "AND (course.semester=:semester AND course.year=:year)";
+		
+		if (!includeFinishedReviews){
+			query = query + "AND (reviewingAcitvity.status = 1)";	
+		}
+			
+			
 		Session session = this.getSession();
 		session.beginTransaction();
 		List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();

@@ -13,6 +13,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
@@ -37,6 +38,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 	private HorizontalPanel yearSemesterPanel = new HorizontalPanel();
 	private ListBox courseSemester = WidgetFactory.createNewListBoxWithId("courseSemester");	
 	private ListBox courseYear = WidgetFactory.createNewListBoxWithId("courseYear");
+	private CheckBox includeFinishedReviews = new CheckBox();
 
 	@Override
 	public void onModuleLoad() {
@@ -134,6 +136,10 @@ public class AssignmentEntryPoint implements EntryPoint {
 		courseYear.addItem("2010", "2010");
 		courseYear.addItem("2009", "2009");
 		
+		//Checkbox to include reviewing tasks
+		includeFinishedReviews.setText("Show finished reviewing activities");
+		
+		
 		// assignments panel
 		final WritingTasks writingTasks = new WritingTasks(assignmentService);
 		final TabPanel documentsPanel = new TabPanel();
@@ -189,7 +195,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 				//mainPanel.remove(reviewsPanel);
 				refreshPanelButton.updateStateSubmitting();
 				reviewingTasks.setLoadingMessage();
-				assignmentService.getUserReviewingTasks(semester, year, new AsyncCallback<Collection<Course>>() {
+				assignmentService.getUserReviewingTasks(semester, year, includeFinishedReviews.getValue(), new AsyncCallback<Collection<Course>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						 //Window.alert("Failed to get reviews. ");
@@ -233,6 +239,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 	    yearSemesterPanel.add(courseSemester);
 	    yearSemesterPanel.add(courseYear);
 	    yearSemesterPanel.add(refreshPanelButton);
+	    yearSemesterPanel.add(includeFinishedReviews);
 	    
 	    mainPanel.add(yearSemesterPanel);
 	    mainPanel.add(new HTML("</br>"));

@@ -405,7 +405,7 @@ public class AssignmentDaoUnitTest {
 	@Test
 	public void testUserReviewingTasksQuery() {
 		// student
-		List<Course> user1Courses = assignmentDao.loadUserReviewingTasks(2,2011,user1);
+		List<Course> user1Courses = assignmentDao.loadUserReviewingTasks(2,2011,false,user1);
 		assertThat(user1Courses.size(), is(1));
 		assertThat(user1Courses.get(0).getStudentGroups().size(), is(1));
 		assertThat(user1Courses.get(0).getWritingActivities().size(), is(1));
@@ -415,7 +415,7 @@ public class AssignmentDaoUnitTest {
 		assertThat(user1ActivityReview.getEntries().iterator().next().getReview(), equalTo(review1));
 
 		// tutor
-		List<Course> tutor1Courses = assignmentDao.loadUserReviewingTasks(2,2011,tutor1);
+		List<Course> tutor1Courses = assignmentDao.loadUserReviewingTasks(2,2011,false,tutor1);
 		assertThat(tutor1Courses.size(), is(1));
 		assertThat(tutor1Courses.get(0).getWritingActivities().size(), is(2));
 		Set<WritingActivity> tutor1Activities = tutor1Courses.get(0).getWritingActivities();
