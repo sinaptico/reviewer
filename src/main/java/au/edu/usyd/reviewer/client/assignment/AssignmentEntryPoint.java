@@ -14,8 +14,11 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HTMLTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -162,7 +165,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 		activitiesPanel.selectTab(0);
 		final HTML htmlAdminLink = new HTML("<br/><p "+cssTextStyle +" >As an Administrator user of the iWrite application, you can go to the Admin page and set up Writing Activities and Reviews. <a href='Admin.html'>Admin Page</a> </p></br>");
 		
-		final SubmitButton refreshPanelButton = new SubmitButton("Load", "Loading activities, please wait...", "Load");
+		final SubmitButton refreshPanelButton = new SubmitButton("Load activities", "Loading activities, please wait...", "Load");
         
 	    refreshPanelButton.addClickHandler(new ClickHandler() {
 			@Override
@@ -233,15 +236,32 @@ public class AssignmentEntryPoint implements EntryPoint {
 				/****************************************************************************/
 			}
 		});				
-		
-	    yearSemesterPanel.add(new HTML("<span>Semester-Year:</span>"));
-	    yearSemesterPanel.add(new HTML("<span style='margin-left:20px;'></span>"));
-	    yearSemesterPanel.add(courseSemester);
-	    yearSemesterPanel.add(courseYear);
-	    yearSemesterPanel.add(refreshPanelButton);
-	    yearSemesterPanel.add(includeFinishedReviews);
 	    
-	    mainPanel.add(yearSemesterPanel);
+	    FlexTable filterActivitiesGrid = new FlexTable();
+	    filterActivitiesGrid.setWidget(0, 0, new Label("Semester-Year:"));
+		filterActivitiesGrid.setWidget(0, 1, courseSemester);
+		filterActivitiesGrid.setWidget(0, 2, courseYear);
+		filterActivitiesGrid.setWidget(0, 3, refreshPanelButton);
+		filterActivitiesGrid.setWidget(1, 0, includeFinishedReviews);
+		filterActivitiesGrid.getFlexCellFormatter().setColSpan(1, 0, 3);
+		filterActivitiesGrid.getFlexCellFormatter().setRowSpan(0, 3, 2);
+		
+		filterActivitiesGrid.getRowFormatter().setStyleName(0, "centerFilterTable");
+		filterActivitiesGrid.getRowFormatter().setStyleName(1, "centerFilterTable");
+		filterActivitiesGrid.getCellFormatter().setWidth(0, 3, "150px");
+		//etStyleName(2, "colWidthFilterTable");		
+	        
+
+		
+	    //yearSemesterPanel.add(new HTML("<span>Semester-Year:</span>"));
+	    //yearSemesterPanel.add(new HTML("<span style='margin-left:20px;'></span>"));
+	    //yearSemesterPanel.add(courseSemester);
+	    //yearSemesterPanel.add(courseYear);	    
+	    //yearSemesterPanel.add(includeFinishedReviews);
+	    //yearSemesterPanel.add(refreshPanelButton);
+	    
+	    //mainPanel.add(yearSemesterPanel);
+		mainPanel.add(filterActivitiesGrid);
 	    mainPanel.add(new HTML("</br>"));
 		
 	    // assignments panel

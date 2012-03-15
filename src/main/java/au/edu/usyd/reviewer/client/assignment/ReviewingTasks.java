@@ -29,7 +29,7 @@ public class ReviewingTasks extends Composite {
 	private void addReviewsToTable(final Course course) {
 		int row = reviewFlexTable.getRowCount();
 		reviewFlexTable.setHTML(row, 0, "<b>"+course.getName()+"</b>");
-		reviewFlexTable.setHTML(row, 4, "");
+		reviewFlexTable.setHTML(row, 2, "");
 		//reviewFlexTable.getRowFormatter().setStyleName(row, "documentsTableRow");
 		reviewFlexTable.getRowFormatter().setStyleName(row, "documentsTableRowHeader");
 		row = reviewFlexTable.getRowCount();

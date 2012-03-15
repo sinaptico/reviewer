@@ -201,3 +201,7 @@ a span {
 .grammarError {
 	border-bottom: 1px dashed #006800;
 }
+
+.centerFilterTable {
+	text-align: center !important;	
+}

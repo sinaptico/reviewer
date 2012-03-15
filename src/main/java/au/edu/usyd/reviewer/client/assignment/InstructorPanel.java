@@ -84,7 +84,7 @@ public class InstructorPanel extends Composite {
 			TreeItem activityItem = new TreeItem(activityLink);
 			List<DocEntry> sortedDocEntries = new ArrayList<DocEntry>(writingActivity.getEntries());
 			Collections.sort(sortedDocEntries, new EntryTitleComparator());
-			if (sortedDocEntries.size() < 6) {				
+			if (sortedDocEntries.size() < 31) {				
 				for (final DocEntry docEntry : sortedDocEntries) {
 					final SimplePanel documentLink = new SimplePanel();
 					documentLink.setWidget(new DocEntryWidget(docEntry, (docEntry.getOwner() != null ? docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() : "Group " + docEntry.getOwnerGroup().getName())));
