@@ -249,16 +249,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 		filterActivitiesGrid.getRowFormatter().setStyleName(0, "centerFilterTable");
 		filterActivitiesGrid.getRowFormatter().setStyleName(1, "centerFilterTable");
 		filterActivitiesGrid.getCellFormatter().setWidth(0, 3, "150px");
-		//etStyleName(2, "colWidthFilterTable");		
-	        
 
-		
-	    //yearSemesterPanel.add(new HTML("<span>Semester-Year:</span>"));
-	    //yearSemesterPanel.add(new HTML("<span style='margin-left:20px;'></span>"));
-	    //yearSemesterPanel.add(courseSemester);
-	    //yearSemesterPanel.add(courseYear);	    
-	    //yearSemesterPanel.add(includeFinishedReviews);
-	    //yearSemesterPanel.add(refreshPanelButton);
 	    
 	    //mainPanel.add(yearSemesterPanel);
 		mainPanel.add(filterActivitiesGrid);
@@ -271,9 +262,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 		mainPanel.add(new HTML("<br/>"));
 		mainPanel.add(reviewsPanel);		
 
-		// activities panel		
-		
-
+		// activities panel	
 		RootPanel.get("mainPanel").add(mainPanel);
 		refreshPanelButton.click();
 	}
