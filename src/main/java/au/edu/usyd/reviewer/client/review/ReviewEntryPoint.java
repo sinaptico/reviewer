@@ -447,128 +447,130 @@ public class ReviewEntryPoint implements EntryPoint {
 							
 							
 							/***************************  CELL BROWSER **********************************/
-							final WritingActivity writingActivityForMail = writingActivity;
-							reviewService.getDocumentTypes(writingActivity.getGenre(), new AsyncCallback<Collection<DocumentType>>() {
-
-								@Override
-								public void onFailure(Throwable caught) {
-									// TODO Auto-generated method stub
-									
-								}
-
-								@Override
-								public void onSuccess(Collection<DocumentType> documentTypes) {
-								    final SectionStack sectionStack = new SectionStack();  
-							        sectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);  
-							        sectionStack.setWidth("895px"); 
-							        sectionStack.setHeight("25px");
+							if (isCourseInstructor(course, reviewEntry)){
+								final WritingActivity writingActivityForMail = writingActivity;
+								reviewService.getDocumentTypes(writingActivity.getGenre(), new AsyncCallback<Collection<DocumentType>>() {
+	
+									@Override
+									public void onFailure(Throwable caught) {
+										// TODO Auto-generated method stub
+										
+									}
+	
+									@Override
+									public void onSuccess(Collection<DocumentType> documentTypes) {
+									    final SectionStack sectionStack = new SectionStack();  
+								        sectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);  
+								        sectionStack.setWidth("895px"); 
+								        sectionStack.setHeight("25px");
+									        
+										final SectionStackSection section1 = new SectionStackSection("Show <b>SpeedBack</b> options");
+								        section1.setID("SPEEDBACK_OPTIONS");
+								        section1.setCanCollapse(true);  
 								        
-									final SectionStackSection section1 = new SectionStackSection("Show <b>SpeedBack</b> options");
-							        section1.setID("SPEEDBACK_OPTIONS");
-							        section1.setCanCollapse(true);  
-							        
-							        final Tree gridTree = new Tree();
-							        gridTree.setModelType(TreeModelType.PARENT);
-							        gridTree.setNameProperty("Name");
-							        
-							        RubricsTreeNode rootNode = new RubricsTreeNode((long) 0, "DocumentType", null, null, "DocumentType", 0, 0, "", "", buildRubricsTree(documentTypes));
-						        	gridTree.setRoot(rootNode);
-									gridTree.getRoot().setCanAcceptDrop(false);	
-
-							        final RubricsTreeGrid rubricsGrid = new RubricsTreeGrid();
-							        rubricsGrid.setData(gridTree);
-							        
-							        //rubricsGrid.getTree().openAll();							        
-							        
-							        VStack grids = new VStack();
-							        //grids.setHeight("283px");
-							        grids.addMember(rubricsGrid);
-							        
-							        
-							        final HorizontalPanel insertTextPanel = new HorizontalPanel();
-							        final SubmitButton insertSelectedTextButton = new SubmitButton("Insert selected rubrics", "Inserting...", "Inserted");
-								    insertSelectedTextButton.setWidth("180px");
-								    insertTextPanel.setHeight("25px");
-								    insertTextPanel.add(insertSelectedTextButton);
-								    
-							        addFailLink.setValue(true);
-							        addPassLink.setValue(true);
-							        
-							        Grid gridInsterLinks = new Grid(1, 19);
-							        gridInsterLinks.setWidth("696px");							        
-							        gridInsterLinks.setWidget(0, 3, new Label("Insert tutorial links for:"));
-							        
-							        gridInsterLinks.setWidget(0, 4, addFailLink);
-							        gridInsterLinks.setWidget(0, 5, new Label("Fail"));
-							        gridInsterLinks.setWidget(0, 6, new Label(" - "));
-									gridInsterLinks.setWidget(0, 7, addPassLink);
-									gridInsterLinks.setWidget(0, 8, new Label("Pass"));
-									gridInsterLinks.setWidget(0, 9, new Label(" - "));
-									gridInsterLinks.setWidget(0, 10, addCreditLink);
-									gridInsterLinks.setWidget(0, 11, new Label("Credit"));
-									gridInsterLinks.setWidget(0, 12, new Label(" - "));
-									gridInsterLinks.setWidget(0, 13, addDistinctionLink);
-									gridInsterLinks.setWidget(0, 14, new Label("Distinction"));
-									gridInsterLinks.setWidget(0, 15, new Label(" - "));
-									gridInsterLinks.setWidget(0, 16, addHighLink);
-									gridInsterLinks.setWidget(0, 17, new Label("High Distinction"));
-								    
-									//Disabled temporally (Links will be included in description) 
-									//insertTextPanel.add(gridInsterLinks);
-									
-								    grids.addMember(insertTextPanel);							        
-							        grids.draw();							        
-
-								    templateGridsPanel.setWidth("100%");								    
-								    templateGridsPanel.setBorderWidth(1);
-								    templateGridsPanel.add(grids);
-								    
-							        
-								    insertSelectedTextButton.addClickHandler(new ClickHandler() {
-										@Override
-										public void onClick(ClickEvent event) {
-											insertSelectedTextButton.updateStateSubmitting();
-
-											ListGridRecord[] records = rubricsGrid.getSelection();
-											
-											Review tmpReview = ((CommentsReviewForm) reviewForm).getReview();
-											if (tmpReview.getContent().isEmpty() || tmpReview.getContent().equalsIgnoreCase("<br>")){
-												tmpReview.setContent(buildFeedbackWithRubrics(records, docEntry, reviewEntry, writingActivityForMail, reviewingActivity));
-												((CommentsReviewForm) reviewForm).setReview(tmpReview);
-											}else{
-												if (Window.confirm("Do you want to overwrite the current content of your feedback summary?")) {
+								        final Tree gridTree = new Tree();
+								        gridTree.setModelType(TreeModelType.PARENT);
+								        gridTree.setNameProperty("Name");
+								        
+								        RubricsTreeNode rootNode = new RubricsTreeNode((long) 0, "DocumentType", null, null, "DocumentType", 0, 0, "", "", buildRubricsTree(documentTypes));
+							        	gridTree.setRoot(rootNode);
+										gridTree.getRoot().setCanAcceptDrop(false);	
+	
+								        final RubricsTreeGrid rubricsGrid = new RubricsTreeGrid();
+								        rubricsGrid.setData(gridTree);
+								        
+								        //rubricsGrid.getTree().openAll();							        
+								        
+								        VStack grids = new VStack();
+								        //grids.setHeight("283px");
+								        grids.addMember(rubricsGrid);
+								        
+								        
+								        final HorizontalPanel insertTextPanel = new HorizontalPanel();
+								        final SubmitButton insertSelectedTextButton = new SubmitButton("Insert selected rubrics", "Inserting...", "Inserted");
+									    insertSelectedTextButton.setWidth("180px");
+									    insertTextPanel.setHeight("25px");
+									    insertTextPanel.add(insertSelectedTextButton);
+									    
+								        addFailLink.setValue(true);
+								        addPassLink.setValue(true);
+								        
+								        Grid gridInsterLinks = new Grid(1, 19);
+								        gridInsterLinks.setWidth("696px");							        
+								        gridInsterLinks.setWidget(0, 3, new Label("Insert tutorial links for:"));
+								        
+								        gridInsterLinks.setWidget(0, 4, addFailLink);
+								        gridInsterLinks.setWidget(0, 5, new Label("Fail"));
+								        gridInsterLinks.setWidget(0, 6, new Label(" - "));
+										gridInsterLinks.setWidget(0, 7, addPassLink);
+										gridInsterLinks.setWidget(0, 8, new Label("Pass"));
+										gridInsterLinks.setWidget(0, 9, new Label(" - "));
+										gridInsterLinks.setWidget(0, 10, addCreditLink);
+										gridInsterLinks.setWidget(0, 11, new Label("Credit"));
+										gridInsterLinks.setWidget(0, 12, new Label(" - "));
+										gridInsterLinks.setWidget(0, 13, addDistinctionLink);
+										gridInsterLinks.setWidget(0, 14, new Label("Distinction"));
+										gridInsterLinks.setWidget(0, 15, new Label(" - "));
+										gridInsterLinks.setWidget(0, 16, addHighLink);
+										gridInsterLinks.setWidget(0, 17, new Label("High Distinction"));
+									    
+										//Disabled temporally (Links will be included in description) 
+										//insertTextPanel.add(gridInsterLinks);
+										
+									    grids.addMember(insertTextPanel);							        
+								        grids.draw();							        
+	
+									    templateGridsPanel.setWidth("100%");								    
+									    templateGridsPanel.setBorderWidth(1);
+									    templateGridsPanel.add(grids);
+									    
+								        
+									    insertSelectedTextButton.addClickHandler(new ClickHandler() {
+											@Override
+											public void onClick(ClickEvent event) {
+												insertSelectedTextButton.updateStateSubmitting();
+	
+												ListGridRecord[] records = rubricsGrid.getSelection();
+												
+												Review tmpReview = ((CommentsReviewForm) reviewForm).getReview();
+												if (tmpReview.getContent().isEmpty() || tmpReview.getContent().equalsIgnoreCase("<br>")){
 													tmpReview.setContent(buildFeedbackWithRubrics(records, docEntry, reviewEntry, writingActivityForMail, reviewingActivity));
 													((CommentsReviewForm) reviewForm).setReview(tmpReview);
+												}else{
+													if (Window.confirm("Do you want to overwrite the current content of your feedback summary?")) {
+														tmpReview.setContent(buildFeedbackWithRubrics(records, docEntry, reviewEntry, writingActivityForMail, reviewingActivity));
+														((CommentsReviewForm) reviewForm).setReview(tmpReview);
+													}
 												}
+												insertSelectedTextButton.updateStateSubmit();
+												saveButton.updateStateSubmit();
 											}
-											insertSelectedTextButton.updateStateSubmit();
-											saveButton.updateStateSubmit();
-										}
-
-									});								    
-								    
-								    
-								    sectionStack.addSection(section1);							        
-							        sectionStack.addSectionHeaderClickHandler(new SectionHeaderClickHandler() {
-							            @Override
-							            public void onSectionHeaderClick(SectionHeaderClickEvent sectionHeaderClickEvent) {							            	
-							                if (sectionHeaderClickEvent.getSection().getID().equalsIgnoreCase("SPEEDBACK_OPTIONS") && sectionStack.sectionIsExpanded("SPEEDBACK_OPTIONS")) {
-							                	section1.setTitle("Show <b>SpeedBack</b> options");
-							                	feedbackBrowser.remove(templateGridsPanel);
-							               }else{
-							            	   section1.setTitle("<b>SpeedBack</b> options (All the rubircs you select will be inserted in your feedback summary below where you can edit them)");
-							            	   feedbackBrowser.add(templateGridsPanel);
-							               }
-							            }
-							        });	
-							        
-							        feedbackBrowser.add(sectionStack);
-							        section1.setExpanded(false);  
-								}
-
-							});					        
-					  
-							submitPanel.add(feedbackBrowser);
+	
+										});								    
+									    
+									    
+									    sectionStack.addSection(section1);							        
+								        sectionStack.addSectionHeaderClickHandler(new SectionHeaderClickHandler() {
+								            @Override
+								            public void onSectionHeaderClick(SectionHeaderClickEvent sectionHeaderClickEvent) {							            	
+								                if (sectionHeaderClickEvent.getSection().getID().equalsIgnoreCase("SPEEDBACK_OPTIONS") && sectionStack.sectionIsExpanded("SPEEDBACK_OPTIONS")) {
+								                	section1.setTitle("Show <b>SpeedBack</b> options");
+								                	feedbackBrowser.remove(templateGridsPanel);
+								               }else{
+								            	   section1.setTitle("<b>SpeedBack</b> options (All the rubircs you select will be inserted in your feedback summary below where you can edit them)");
+								            	   feedbackBrowser.add(templateGridsPanel);
+								               }
+								            }
+								        });	
+								        
+								        feedbackBrowser.add(sectionStack);
+								        section1.setExpanded(false);  
+									}
+	
+								});					        
+						  
+								submitPanel.add(feedbackBrowser);
+							}
 							/****************************************************************************/								
 
 							buttonsPanel.add(saveButton);
