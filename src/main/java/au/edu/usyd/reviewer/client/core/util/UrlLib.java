@@ -27,7 +27,7 @@ public class UrlLib {
 	}
 
 	public static String glosserUrl(Long siteId, String docId) {		
-		return "/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
+		return "http://129.78.13.24:8080/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
 	}
 
 	public static String pdfDownloadUrl(String filename, String docId, Long deadlineId) {		
