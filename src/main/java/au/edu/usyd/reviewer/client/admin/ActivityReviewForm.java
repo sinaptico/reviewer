@@ -28,6 +28,10 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.widgetideas.client.ValueSpinner;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ActivityReviewForm.
+ */
 public class ActivityReviewForm extends Composite {
 	
 	private VerticalPanel mainPanel = new VerticalPanel();
@@ -52,6 +56,9 @@ public class ActivityReviewForm extends Composite {
 	private final static AdminServiceAsync adminService = (AdminServiceAsync) GWT.create(AdminService.class);
 	
 	
+	/**
+	 * Instantiates a new activity review form.
+	 */
 	public ActivityReviewForm() {
 		//populate list box with review templates
 		reviewTemplateLst.addItem("None", String.valueOf(0));
@@ -98,6 +105,11 @@ public class ActivityReviewForm extends Composite {
 		feedbackTemplateType.addItem(FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_B);
 	}	
 	
+	/**
+	 * Gets the activity review.
+	 *
+	 * @return the activity review
+	 */
 	public ReviewingActivity getActivityReview() {
 		reviewingActivity.setName(name.getValue());
 		reviewingActivity.setStartDate(writingActivity.getDeadlines().get(startDate.getSelectedIndex()));
@@ -117,6 +129,9 @@ public class ActivityReviewForm extends Composite {
 		return reviewingActivity;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.google.gwt.user.client.ui.Widget#onLoad()
+	 */
 	@Override
 	public void onLoad() {
 		numLecturerReviewers.getTextBox().setWidth("20px");
@@ -212,6 +227,13 @@ public class ActivityReviewForm extends Composite {
 		mainPanel.add(reviewGrid);
 	}
 	
+	/**
+	 * Sets the activity review.
+	 *
+	 * @param writingActivity the writing activity
+	 * @param reviewingActivity the reviewing activity
+	 * @param deadLineNameList the dead line name list
+	 */
 	public void setActivityReview(WritingActivity writingActivity, ReviewingActivity reviewingActivity, List<String> deadLineNameList) {
 		this.writingActivity = writingActivity;
 		this.reviewingActivity = reviewingActivity;

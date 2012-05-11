@@ -15,7 +15,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -25,36 +24,125 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
+
+// TODO: Auto-generated Javadoc
+//TODO link to Template form
+//TODO link to Question generation module
+//TODO link to "SpeedBack" options description
+
+/**
+ * <p>Main GWT form for "Writing Activities" creation. The information collected in this form is:<p>
+ * 
+ * <ul>
+ *	<li><p><b>Course details and notifications:</b></p>
+ *		<ul>
+ *			<li><b>Course:</b> Course name for the current activity. (Drop-menu with the courses in the system).</li>
+ *			<li><b>Tutorial:</b> Tutorial name for the current activity. (Drop-menu with the tutorial names for the selected course).</li>
+ *			<li><b>Notifications:</b> Check box to indicate if the system will send email notifications about this writing activity to students.</li>
+ *			<li><b>Early submit option:</b> Check box to indicate if students can submit their documents manually.</li>
+ *		</ul>
+ *	</li>
+ *
+ *	<li><p><b>Feedback:</b></p>
+ *		<ul>
+ *			<li><b>Track reviews:</b> Check box to indicate if the dates where students read feedback is stored.</li>
+ *			<li><b>Glosser:</b> Drop-menu with the Glosser sites recorded in the system. Once selected, students will see the Glosser link in their assignments.</li>
+ *			<li><b>MyStats:</b> Check box to indicate if the writing statistics are shown to students.</li>
+ *		</ul>
+ *	</li>
+ *
+ *	<li><p><b>Writing Task details:</b></p>
+ *		<ul>
+ *			<li><b>Name:</b> Name of the writing activity. (Used for the link that students see).</li>
+ *			<li><b>Document type-genre:</b> 2 Drop-menus, one with the document types (document, presentation, spreadsheet, logbook and file upload) and the other one with the genre types (proposal, lab report, field trip, thesis and lab book).</li>
+ *			<li><b>Document template:</b> Drop-menu with the list of saved templates for the course in the Google apps account. (If selected, students receive a copy of this document as their "empty" document for the writing activity).</li>
+ *			<li><b>Groups:</b> Check box to indicate if the document are created for groups. (Group details are extracted from the student list saved for the course in the Google apps account.</li>
+ *			<li><b>Start date:</b> Date where the documents are created and the activity starts.</li>
+ *		</ul>
+ *	</li>
+ *	
+ *	<li><p><b>Deadlines</b></p>
+  *		<ul>
+ *			<li><b>Name:</b> Name of the deadline. (Used for the deadline notifications that students see).</li>
+ *			<li><b>Max Grade:</b> Maximun grade number that can be given by student/tutor/lecturer that reviews this deadline.</li>
+ *			<li><b>Finish date:</b> Date where the documents are locked and the activity deadline finishes.</li>
+ *		</ul>
+ *	</li>
+ *	
+ *	<li><p><b>Reviewing Tasks</b></p>
+ *		<ul>
+ *			<li><b>Name:</b> Name of the reviewing activity. (Used for the link that students see).</li>
+ *			<li><b>Review start (Deadline):</b> Drop-menu with activity deadlines. The reviewing activity starts at this date.</li>
+ *			<li><b>Review finish (Date):</b> Date when the reviewing activity finishes.</li>
+ *			<li><b>Form type:</b> Drop-menu with a list including "Comment", "Questions" and "Template".
+ *				<ul>
+ *					<li>The "Comment" option is the most used one, it shows a text area for students/tutors/lecturers to write their comments.</li>
+ *					<li>The "Questions" options is for an integration with the "Question generations" module.</li>
+ *					<li>The "Template" option includes a predefined review structure with different sections.</li>  
+ *				</ul>
+ *			</li>
+ *			<li><b>Template:</b> Drop-menu with a list of the templates recorded in the system. Only works if the Form Type option is switched to "Template".</li>
+ *			<li><b>Allocation strategy:</b> Indicates the number of reviewer for each review. It can be separated by type of user (lecturers/tutors/students/Automatic).</li>
+ *			<li><b>Ratings:</b> Check box that indicates if peers are allowed to rate their reviews. </li>
+ *			<li><b>Early submit option:</b> Check box that indicates if a review can be submitted manually before its deadline.</li>
+ *			<li><b>Feedback Template Type:</b> Type of feedback that is inserted in the comment box from the SpeedBack options.</li>
+ *		</ul>
+ *  </li>
+ * </ul> 
+ * 
+ */
 
 public class ActivityForm extends Composite {
 
-	private VerticalPanel mainPanel = new VerticalPanel();
-	private WritingActivity writingActivity;
-	private Course course = null;
-	private Collection<Course> courses;
-	private final CheckBox emailStudents = new CheckBox();
-	private final CheckBox showStats = new CheckBox();
-	private final ListBox courseList = new ListBox();
-	private final ListBox status = new ListBox();
-	private final ListBox glosserList = new ListBox();
-	private final ListBox tutorialList = new ListBox();
-	private final TextBox name = new TextBox();
-	private final CheckBox groups = new CheckBox();
-	private final ListBox documentType = new ListBox();
-	private final ListBox documentTemplate = new ListBox();
+	/** The main panel of the form where all the fileds and widgets are placed. */
+	private VerticalPanel mainPanel = new VerticalPanel();	
+	/** The writing activity that is managed by the form. */
+	private WritingActivity writingActivity;	
+	/** The course of the writing activity that is managed by the form. */
+	private Course course = null;	
+	/** Collection of courses list recorded in the system that are available in the form for the writing activity that is managed by the form. */
+	private Collection<Course> courses;	
+	/** Check box "Send email notifications to students" to indicate if the system will send email notifications about this writing activity to students. */
+	private final CheckBox emailStudents = new CheckBox();	
+	/** Check box to indicate if the writing statistics are shown to students. */
+	private final CheckBox showStats = new CheckBox();	
+	/** ListBox with the course list and their details of year and semmester. */
+	private final ListBox courseList = new ListBox();	
+	/** ListBox with the courses list recorded in the system with their details of the year and semester. */
+	private final ListBox status = new ListBox();	
+	/** ListBox with the Glosser sites recorded in the system. */
+	private final ListBox glosserList = new ListBox();	
+	/** ListBox with the tutorial names for the selected course. */
+	private final ListBox tutorialList = new ListBox();	
+	/** TextBox with the name of the writing activity managed in the form. */
+	private final TextBox name = new TextBox();	
+	/** CheckBox that indicates if the documents are created for groups. */
+	private final CheckBox groups = new CheckBox();	
+	/** ListBox with document types: document, presentation, spreadsheet, logbook and file upload. */
+	private final ListBox documentType = new ListBox();	
+	/** ListBox with the list of saved templates for the course in the Google apps account. */
+	private final ListBox documentTemplate = new ListBox();	
+	/** DateBox with date where the documents are created and the activity starts. */
 	private final DateBox startDate = new DateBox();
-	private final FlexTable deadlineTable = new FlexTable();
-	private final FlexTable reviewTable = new FlexTable();
-	private final CheckBox allowSubmit = new CheckBox();
-	private final CheckBox trackReviews = new CheckBox();
-	private final ListBox genre = new ListBox();
+	/** FlexTable where dead lines details are placed in the form. */
+	private final FlexTable deadlineTable = new FlexTable();	
+	/** FlexTable where reviews details are placed in teh form. */
+	private final FlexTable reviewTable = new FlexTable();	
+	/** CheckBox that indicates if early submits are allowed for the writing activity. */
+	private final CheckBox allowSubmit = new CheckBox();	
+	/** CheckBox that indicates if the dates when students read reviews are recorded. */
+	private final CheckBox trackReviews = new CheckBox();	
+	/** ListBox with the genre types: proposal, lab report, field trip, thesis and lab book. */
+	private final ListBox genre = new ListBox();	
+	/** TextBox List with the deadlines defined for the writing activity. */
 	private List<TextBox> deadLineTextBoxList = new ArrayList<TextBox>();
 
+	/**
+	 * Instantiates a new activity form and configures the "Static" Drop-menus with the "Document Types", "Document genres" and "Activity statuses".  
+	 */
 	public ActivityForm() {
 		initWidget(mainPanel);
 		
@@ -78,6 +166,13 @@ public class ActivityForm extends Composite {
 		status.addItem("FINISH");
 	}
 
+	/**
+	 * Adds a new deadline to the form. The details added to the form include: deadline status, name, 
+	 * max grade, dead line date and remove button (To delete an existing deadline). It also populates the "deadLineTextBoxList" 
+	 * to be used in the creation of reviewing activities. 
+	 *
+	 * @param deadline - The deadline to be added.
+	 */
 	private void addDeadline(Deadline deadline) {
 		ListBox status = new ListBox();
 		status.setEnabled(false);
@@ -117,6 +212,11 @@ public class ActivityForm extends Composite {
 		deadLineTextBoxList.add(name);
 	}
 
+	/**
+	 * Adds a reviewing activity. The details added to the form include: deadline list, 
+	 *
+	 * @param reviewingActivity the reviewing activity
+	 */
 	protected void addReviewingActivity(ReviewingActivity reviewingActivity) {
 		ActivityReviewForm reviewForm = new ActivityReviewForm();	
 		List<String> deadLineNameList = new ArrayList<String>();
@@ -142,10 +242,20 @@ public class ActivityForm extends Composite {
 		reviewTable.setWidget(row, 1, remove);	
 	}
 
+	/**
+	 * Gets the course.
+	 *
+	 * @return the course
+	 */
 	public Course getCourse() {
 		return course;
 	}
 
+	/**
+	 * Gets the writing activity.
+	 *
+	 * @return the writing activity
+	 */
 	public WritingActivity getWritingActivity() {
 		writingActivity.setGlosserSite(Long.valueOf(glosserList.getValue(glosserList.getSelectedIndex())));
 		writingActivity.setTutorial(tutorialList.getValue(tutorialList.getSelectedIndex()));
@@ -173,6 +283,9 @@ public class ActivityForm extends Composite {
 		return writingActivity;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.google.gwt.user.client.ui.Widget#onLoad()
+	 */
 	@Override
 	public void onLoad() {
 		// course
@@ -279,6 +392,11 @@ public class ActivityForm extends Composite {
 		mainPanel.add(new HTML("<br/>"));
 	}
 
+	/**
+	 * Sets the course.
+	 *
+	 * @param course the new course
+	 */
 	private void setCourse(Course course) {
 		this.course = course;
 		
@@ -296,6 +414,11 @@ public class ActivityForm extends Composite {
 		}
 	}
 	
+	/**
+	 * Sets the courses.
+	 *
+	 * @param courses the new courses
+	 */
 	public void setCourses(Collection<Course> courses) {
 		this.courses = courses;
 		courseList.clear();
@@ -327,6 +450,11 @@ public class ActivityForm extends Composite {
 		}
 	}
 
+	/**
+	 * Sets the glosser sites.
+	 *
+	 * @param glosserSites the new glosser sites
+	 */
 	public void setGlosserSites(List<SiteForm> glosserSites) {
 		glosserList.clear();
 		glosserList.addItem("none", String.valueOf(WritingActivity.GLOSSER_SITE_NONE));
@@ -337,6 +465,11 @@ public class ActivityForm extends Composite {
 		}
 	}
 
+	/**
+	 * Sets the writing activity.
+	 *
+	 * @param writingActivity the new writing activity
+	 */
 	public void setWritingActivity(WritingActivity writingActivity) {
 		this.writingActivity = writingActivity;
 		status.setSelectedIndex(writingActivity.getStatus());
@@ -403,6 +536,12 @@ public class ActivityForm extends Composite {
 		}
 	}
 
+	/**
+	 * Sets the writing activity and course.
+	 *
+	 * @param writingActivity the writing activity
+	 * @param course the course
+	 */
 	public void setWritingActivityAndCourse(WritingActivity writingActivity, Course course) {
 		this.setCourse(course);
 		courseList.clear();
