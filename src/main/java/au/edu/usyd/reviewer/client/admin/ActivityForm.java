@@ -28,10 +28,11 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 
-// TODO: Auto-generated Javadoc
+//TODO: Auto-generated Javadoc
 //TODO link to Template form
 //TODO link to Question generation module
 //TODO link to "SpeedBack" options description
+//TODO add reviwing activity details 
 
 /**
  * <p>Main GWT form for "Writing Activities" creation. The information collected in this form is:<p>
@@ -167,7 +168,7 @@ public class ActivityForm extends Composite {
 	}
 
 	/**
-	 * Adds a new deadline to the form. The details added to the form include: deadline status, name, 
+	 * Adds a new deadline to the form. The deadline details added to the form include: deadline status, name, 
 	 * max grade, dead line date and remove button (To delete an existing deadline). It also populates the "deadLineTextBoxList" 
 	 * to be used in the creation of reviewing activities. 
 	 *
@@ -243,7 +244,7 @@ public class ActivityForm extends Composite {
 	}
 
 	/**
-	 * Gets the course.
+	 * Gets the course of the writing Activity that is managed in the form.
 	 *
 	 * @return the course
 	 */
@@ -252,7 +253,7 @@ public class ActivityForm extends Composite {
 	}
 
 	/**
-	 * Gets the writing activity.
+	 * Gets the writing activity. It takes the writing activity field and updates it with the value of all the components of the form.
 	 *
 	 * @return the writing activity
 	 */
@@ -283,8 +284,10 @@ public class ActivityForm extends Composite {
 		return writingActivity;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.google.gwt.user.client.ui.Widget#onLoad()
+	/**
+	 * It loads all the defined components (Horizontal and Vertical panels, CheckBoxes, TextBoxes, ListBoxes ...) into the form.
+	 *
+	 * 
 	 */
 	@Override
 	public void onLoad() {
@@ -451,7 +454,7 @@ public class ActivityForm extends Composite {
 	}
 
 	/**
-	 * Sets the glosser sites.
+	 * Sets the glosser sites (updates the "Glosser List").
 	 *
 	 * @param glosserSites the new glosser sites
 	 */
@@ -466,7 +469,7 @@ public class ActivityForm extends Composite {
 	}
 
 	/**
-	 * Sets the writing activity.
+	 * Sets the writing activity values extracted from the writing activity object into the form.
 	 *
 	 * @param writingActivity the new writing activity
 	 */
