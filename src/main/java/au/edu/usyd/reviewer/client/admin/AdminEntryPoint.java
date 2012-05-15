@@ -43,29 +43,71 @@ import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-
+/**
+ * The Class AdminEntryPoint. Starting point of the "Admin" module.
+ */
 public class AdminEntryPoint implements EntryPoint {
 
+	/** Asynchronous admin service for model management. */
 	private final static AdminServiceAsync adminService = (AdminServiceAsync) GWT.create(AdminService.class);
+	
+	/** Asynchronous Glosser service for Glosser model management. */
 	private final GlosserServiceAsync glosserService = GWT.create(GlosserService.class);
+	
+	/** The assignments panel. */
 	private VerticalPanel assignmentsPanel = new VerticalPanel();
+	
+	/** The courses tree. */
 	private Tree coursesTree = new Tree();
+	
+	/** The courses. */
 	private Collection<Course> courses;
+	
+	/** The glosser sites. */
 	private List<SiteForm> glosserSites;
+	
+	/** The node panel. */
 	private SimplePanel nodePanel = new SimplePanel();
+	
+	/** The course stack panel. */
 	private VerticalPanel courseStackPanel = new VerticalPanel();
+	
+	/** The grade book panel. */
 	private SimplePanel gradeBookPanel = new SimplePanel();
+	
+	/** The reports panel. */
 	private SimplePanel reportsPanel = new SimplePanel();
+	
+	/** The activity label. */
 	private HTML activityLabel = new HTML("<b>&nbsp;</b>");
+	
+	/** The css h1 style. */
 	private String cssH1Style = "STYLE='text-align: left; color: #CE1126; clear: both; margin: 0 0 0 0; font-weight: normal; clear: left; font-size: 1.3em;'";
+	
+	/** The css div style. */
 	private String cssDivStyle = "align='left' STYLE='margin: 0 0 0 0;'";
+	
+	/** The review template tree. */
 	private Tree reviewTemplateTree = new Tree();
+	
+	/** The review templates content panel. */
 	private VerticalPanel reviewTemplatesContentPanel = new VerticalPanel();
+	
+	/** The year semester panel. */
 	private HorizontalPanel yearSemesterPanel = new HorizontalPanel();
+	
+	/** The course semester. */
 	private ListBox courseSemester = WidgetFactory.createNewListBoxWithId("courseSemester");	
+	
+	/** The course year. */
 	private ListBox courseYear = WidgetFactory.createNewListBoxWithId("courseYear");
+	
+	/** The refresh course tree button. */
 	private SubmitButton refreshCourseTreeButton = new SubmitButton("Load", "Loading courses, please wait...", "Load");
 
+	/* (non-Javadoc)
+	 * @see com.google.gwt.core.client.EntryPoint#onModuleLoad()
+	 */
 	@Override
 	public void onModuleLoad() {
 		// Glosser sites panel
@@ -605,6 +647,9 @@ public class AdminEntryPoint implements EntryPoint {
 	}
 
 	
+	/**
+	 * Refresh template tree.
+	 */
 	private void refreshTemplateTree() {
     	adminService.getReviewTemplates(new AsyncCallback<Collection<ReviewTemplate>>() {
 			@Override
@@ -628,6 +673,9 @@ public class AdminEntryPoint implements EntryPoint {
 	}
 
 
+	/**
+	 * Refresh courses tree.
+	 */
 	private void refreshCoursesTree() {
 		refreshCourseTreeButton.updateStateSubmitting();
 		

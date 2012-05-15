@@ -28,36 +28,97 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.widgetideas.client.ValueSpinner;
 
-// TODO: Auto-generated Javadoc
+
+//TODO Documentation - Include details of the spreadsheet definition for the allocation strategy
+
 /**
- * The Class ActivityReviewForm.
+ * <p>GWT form used in the "Writing activities" form for "Reviewing Activities" creation. The information collected in this form is:<p>
+ * 
+ * <ul>
+ *	<li><p><b>Reviewing Tasks</b></p>
+ *		<ul>
+ *			<li><b>Name:</b> Name of the reviewing activity. (Used for the link that students see).</li>
+ *			<li><b>Review start (Deadline):</b> Drop-menu with activity deadlines. The reviewing activity starts at this date.</li>
+ *			<li><b>Review finish (Date):</b> Date when the reviewing activity finishes.</li>
+ *			<li><b>Form type:</b> Drop-menu with a list including "Comment", "Questions" and "Template".
+ *				<ul>
+ *					<li>The "Comment" option is the most used one, it shows a text area for students/tutors/lecturers to write their comments.</li>
+ *					<li>The "Questions" options is for an integration with the "Question generations" module.</li>
+ *					<li>The "Template" option includes a predefined review structure with different sections.</li>  
+ *				</ul>
+ *			</li>
+ *			<li><b>Template:</b> Drop-menu with a list of the templates recorded in the system. Only works if the Form Type option is switched to "Template".</li>
+ *			<li><b>Allocation strategy:</b> Indicates if it's a random allocation of if it's done with a spreadsheet definition.</li>
+ *			<li><b>Number of reviewers:</b> Indicates the number of reviewers for each review. It can be separated by type of user (lecturers/tutors/students/Automatic).</li>
+ *			<li><b>Ratings:</b> Check box that indicates if peers are allowed to rate their reviews. </li>
+ *			<li><b>Early submit option:</b> Check box that indicates if a review can be submitted manually before its deadline.</li>
+ *			<li><b>Feedback Template Type:</b> Type of feedback that is inserted in the comment box from the SpeedBack options.</li>
+ *		</ul>
+ *  </li>  
+ * </ul> 
+ * 
  */
 public class ActivityReviewForm extends Composite {
 	
-	private VerticalPanel mainPanel = new VerticalPanel();
-	private final ListBox status = new ListBox();
-	private final TextBox name = new TextBox();
-	private final ListBox reviewType = new ListBox();
-	public final ListBox reviewTemplateLst = new ListBox();
-	private final ListBox allocationStrategy = new ListBox();
-	private final ListBox startDate = new ListBox();
-	private final DateBox finishDate = new DateBox();
-	private final CheckBox ratings = new CheckBox();
-	private final ValueSpinner numLecturerReviewers = new ValueSpinner(0, 0, 15);
-	private final ValueSpinner numTutorReviewers = new ValueSpinner(0, 0, 15);
-	private final ValueSpinner numStudentReviewers = new ValueSpinner(0, 0, 15);
-	private final ValueSpinner numAutomaticReviewers = new ValueSpinner(0, 0, 15);
-	private ReviewingActivity reviewingActivity;
-	private WritingActivity writingActivity;
+	/** The main panel of the form where all the fields and widgets are placed. */
+	private VerticalPanel mainPanel = new VerticalPanel();	
+	
+	/** ListBox with the status of the reviewing activity */
+	private final ListBox status = new ListBox();	
+	
+	/** TextBox with the name of the reviewing activity */
+	private final TextBox name = new TextBox();	
+	
+	/** ListBox with the review type. (Comments, questions or template) */
+	private final ListBox reviewType = new ListBox();	
+	
+	/** ListBox with the review templates recorded in the system. */
+	public final ListBox reviewTemplateLst = new ListBox();	
+	
+	/** ListBox with the allocation strategy (Random, Spreadsheet). */
+	private final ListBox allocationStrategy = new ListBox();	
+	
+	/** ListBox with the start date. */
+	private final ListBox startDate = new ListBox();	
+	
+	/** DateBox with the finish date. */
+	private final DateBox finishDate = new DateBox();	
+	
+	/** CheckBox that indicates if peers can mark reviews. */
+	private final CheckBox ratings = new CheckBox();	
+	
+	/** The number of lecturer reviewers. */
+	private final ValueSpinner numLecturerReviewers = new ValueSpinner(0, 0, 15);	
+	
+	/** The number of tutor reviewers. */
+	private final ValueSpinner numTutorReviewers = new ValueSpinner(0, 0, 15);	
+	
+	/** The number of student reviewers. */
+	private final ValueSpinner numStudentReviewers = new ValueSpinner(0, 0, 15);	
+	
+	/** The number of automatic reviewers. */
+	private final ValueSpinner numAutomaticReviewers = new ValueSpinner(0, 0, 15);	
+	
+	/** The reviewing activity managed in the form. */
+	private ReviewingActivity reviewingActivity;	
+	
+	/** The writing activity of the reviewing activity managed in the form. */
+	private WritingActivity writingActivity;	
+	
+	/** Check box that indicates if the review can be submitted manually before deadline. */
 	private final CheckBox earlySubmit = new CheckBox();
 	//private final CheckBox marking = new CheckBox();
-	private final ListBox feedbackTemplateType = new ListBox();
 	
+	/** The feedback template type (A or B). Used for the type of feedback inserted in the speedback options. */
+	private final ListBox feedbackTemplateType = new ListBox();	
+	
+	/** Asynchronous admin service for model management. */
 	private final static AdminServiceAsync adminService = (AdminServiceAsync) GWT.create(AdminService.class);
 	
 	
 	/**
-	 * Instantiates a new activity review form.
+	 * Instantiates a new activity review form and populates the "Static" Drop-menus with the "Statuses", 
+	 * "Review types", "Allocation strategy" and "FeedbackTemplate type".
 	 */
 	public ActivityReviewForm() {
 		//populate list box with review templates
@@ -106,7 +167,7 @@ public class ActivityReviewForm extends Composite {
 	}	
 	
 	/**
-	 * Gets the activity review.
+	 * Gets the reviewing activity. It takes the reviewing activity field and updates it with the value of all the components of the form.
 	 *
 	 * @return the activity review
 	 */
@@ -129,8 +190,10 @@ public class ActivityReviewForm extends Composite {
 		return reviewingActivity;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.google.gwt.user.client.ui.Widget#onLoad()
+	/**
+	 * It loads all the defined components (Horizontal and Vertical panels, CheckBoxes, 
+	 * TextBoxes, ListBoxes ...) into the form.	 
+	 * 
 	 */
 	@Override
 	public void onLoad() {
@@ -228,11 +291,11 @@ public class ActivityReviewForm extends Composite {
 	}
 	
 	/**
-	 * Sets the activity review.
+	 * Sets the reviewing activity values extracted from the reviewing and writing activities object into the form.
 	 *
-	 * @param writingActivity the writing activity
-	 * @param reviewingActivity the reviewing activity
-	 * @param deadLineNameList the dead line name list
+	 * @param writingActivity  - the writing activity
+	 * @param reviewingActivity  - the reviewing activity
+	 * @param deadLineNameList - the dead lines list
 	 */
 	public void setActivityReview(WritingActivity writingActivity, ReviewingActivity reviewingActivity, List<String> deadLineNameList) {
 		this.writingActivity = writingActivity;

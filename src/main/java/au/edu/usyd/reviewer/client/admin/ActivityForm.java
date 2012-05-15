@@ -28,11 +28,9 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DateBox;
 
-//TODO: Auto-generated Javadoc
-//TODO link to Template form
-//TODO link to Question generation module
-//TODO link to "SpeedBack" options description
-//TODO add reviwing activity details 
+//TODO Documentation - link to Template form
+//TODO Documentation - link to Question generation module
+//TODO Documentation - link to "SpeedBack" options description 
 
 /**
  * <p>Main GWT form for "Writing Activities" creation. The information collected in this form is:<p>
@@ -86,7 +84,8 @@ import com.google.gwt.user.datepicker.client.DateBox;
  *				</ul>
  *			</li>
  *			<li><b>Template:</b> Drop-menu with a list of the templates recorded in the system. Only works if the Form Type option is switched to "Template".</li>
- *			<li><b>Allocation strategy:</b> Indicates the number of reviewer for each review. It can be separated by type of user (lecturers/tutors/students/Automatic).</li>
+ *			<li><b>Allocation strategy:</b> Indicates if it's a random allocation of if it's done with a spreadsheet definition.</li>
+ *			<li><b>Number of reviewers:</b> Indicates the number of reviewers for each review. It can be separated by type of user (lecturers/tutors/students/Automatic).</li>
  *			<li><b>Ratings:</b> Check box that indicates if peers are allowed to rate their reviews. </li>
  *			<li><b>Early submit option:</b> Check box that indicates if a review can be submitted manually before its deadline.</li>
  *			<li><b>Feedback Template Type:</b> Type of feedback that is inserted in the comment box from the SpeedBack options.</li>
@@ -98,51 +97,74 @@ import com.google.gwt.user.datepicker.client.DateBox;
 
 public class ActivityForm extends Composite {
 
-	/** The main panel of the form where all the fileds and widgets are placed. */
+	/** The main panel of the form where all the fields and widgets are placed. */
 	private VerticalPanel mainPanel = new VerticalPanel();	
+	
 	/** The writing activity that is managed by the form. */
 	private WritingActivity writingActivity;	
+	
 	/** The course of the writing activity that is managed by the form. */
 	private Course course = null;	
+	
 	/** Collection of courses list recorded in the system that are available in the form for the writing activity that is managed by the form. */
 	private Collection<Course> courses;	
+	
 	/** Check box "Send email notifications to students" to indicate if the system will send email notifications about this writing activity to students. */
 	private final CheckBox emailStudents = new CheckBox();	
+	
 	/** Check box to indicate if the writing statistics are shown to students. */
 	private final CheckBox showStats = new CheckBox();	
-	/** ListBox with the course list and their details of year and semmester. */
-	private final ListBox courseList = new ListBox();	
+	
 	/** ListBox with the courses list recorded in the system with their details of the year and semester. */
+	private final ListBox courseList = new ListBox();	
+	
+	/** ListBox with the status of the writing activity */
 	private final ListBox status = new ListBox();	
+	
 	/** ListBox with the Glosser sites recorded in the system. */
 	private final ListBox glosserList = new ListBox();	
+	
 	/** ListBox with the tutorial names for the selected course. */
 	private final ListBox tutorialList = new ListBox();	
+	
 	/** TextBox with the name of the writing activity managed in the form. */
+	
 	private final TextBox name = new TextBox();	
 	/** CheckBox that indicates if the documents are created for groups. */
+	
 	private final CheckBox groups = new CheckBox();	
+	
 	/** ListBox with document types: document, presentation, spreadsheet, logbook and file upload. */
 	private final ListBox documentType = new ListBox();	
+	
 	/** ListBox with the list of saved templates for the course in the Google apps account. */
+	
 	private final ListBox documentTemplate = new ListBox();	
+	
 	/** DateBox with date where the documents are created and the activity starts. */
 	private final DateBox startDate = new DateBox();
+	
 	/** FlexTable where dead lines details are placed in the form. */
 	private final FlexTable deadlineTable = new FlexTable();	
-	/** FlexTable where reviews details are placed in teh form. */
+	
+	/** FlexTable where reviews details are placed in the form. */
 	private final FlexTable reviewTable = new FlexTable();	
+	
 	/** CheckBox that indicates if early submits are allowed for the writing activity. */
 	private final CheckBox allowSubmit = new CheckBox();	
+	
 	/** CheckBox that indicates if the dates when students read reviews are recorded. */
 	private final CheckBox trackReviews = new CheckBox();	
+	
 	/** ListBox with the genre types: proposal, lab report, field trip, thesis and lab book. */
 	private final ListBox genre = new ListBox();	
+	
 	/** TextBox List with the deadlines defined for the writing activity. */
 	private List<TextBox> deadLineTextBoxList = new ArrayList<TextBox>();
 
+	
 	/**
-	 * Instantiates a new activity form and configures the "Static" Drop-menus with the "Document Types", "Document genres" and "Activity statuses".  
+	 * Instantiates a new activity form and populates the "Static" Drop-menus with the "Document Types", "Document genres" and "Activity statuses".  
 	 */
 	public ActivityForm() {
 		initWidget(mainPanel);
@@ -214,7 +236,8 @@ public class ActivityForm extends Composite {
 	}
 
 	/**
-	 * Adds a reviewing activity. The details added to the form include: deadline list, 
+	 * Adds a reviewing activity. The details added to the form include Name of the reviewing activity, Deadline when it starts, Finish Date, 
+	 * Form type ("Comment", "Questions" or "Template"), Template, Allocation strategy, Ratings, Early submit option and Feedback Template Type.  
 	 *
 	 * @param reviewingActivity the reviewing activity
 	 */
@@ -285,8 +308,8 @@ public class ActivityForm extends Composite {
 	}
 	
 	/**
-	 * It loads all the defined components (Horizontal and Vertical panels, CheckBoxes, TextBoxes, ListBoxes ...) into the form.
-	 *
+	 * It loads all the defined components (Horizontal and Vertical panels, CheckBoxes, 
+	 * TextBoxes, ListBoxes ...) into the form.	 
 	 * 
 	 */
 	@Override
@@ -454,7 +477,7 @@ public class ActivityForm extends Composite {
 	}
 
 	/**
-	 * Sets the glosser sites (updates the "Glosser List").
+	 * Sets the glosser sites.
 	 *
 	 * @param glosserSites the new glosser sites
 	 */
