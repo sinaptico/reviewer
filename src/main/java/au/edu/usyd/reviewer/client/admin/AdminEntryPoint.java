@@ -43,6 +43,8 @@ import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+//TODO Documentation - include description of GlosserSite
+
 /**
  * The Class AdminEntryPoint. Starting point of the "Admin" module.
  */
@@ -54,19 +56,19 @@ public class AdminEntryPoint implements EntryPoint {
 	/** Asynchronous Glosser service for Glosser model management. */
 	private final GlosserServiceAsync glosserService = GWT.create(GlosserService.class);
 	
-	/** The assignments panel. */
+	/** VerticalPanel used in the assignments tab option. */
 	private VerticalPanel assignmentsPanel = new VerticalPanel();
 	
-	/** The courses tree. */
+	/** Tree with the courses and their writing activities. */
 	private Tree coursesTree = new Tree();
 	
-	/** The courses. */
+	/** Collection with the courses recored in the system. */
 	private Collection<Course> courses;
 	
-	/** The glosser sites. */
+	/** List of glosser sites recorded in the system. */
 	private List<SiteForm> glosserSites;
 	
-	/** The node panel. */
+	/** Simple panel used to load the information related to the selected node on the tree. */
 	private SimplePanel nodePanel = new SimplePanel();
 	
 	/** The course stack panel. */
