@@ -132,6 +132,10 @@ public class Reviewer {
 	public static String getEmptyFile() {
 		return config.getString("reviewer.empty.file");
 	}
+	
+	public static String getEmptyDocument() {
+		return config.getString("reviewer.empty.document");
+	}
 
 	public static EmailNotifier getEmailNotifier() {
 		return emailNotifier;

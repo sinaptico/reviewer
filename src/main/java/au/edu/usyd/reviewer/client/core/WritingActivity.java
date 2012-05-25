@@ -188,4 +188,17 @@ public class WritingActivity extends Activity<DocEntry> {
 		this.genre = genre;
 	}	
 	
+	public Deadline getCurrentDeadline(){
+		Deadline currentDeadline = null;
+		
+		for(Deadline deadline : getDeadlines()){
+			if (deadline.getStatus() == Deadline.STATUS_DEADLINE_NONE){
+				currentDeadline = deadline;
+				break;
+			}
+		}
+		
+		return currentDeadline;
+	}
+	
 }

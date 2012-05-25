@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class RandomReviewStratergy implements ReviewStratergy {
 
 		// assign students to review random documents
 		List<DocEntry> shuffledDocEntries = new ArrayList<DocEntry>(docEntries);
-		Collections.shuffle(shuffledDocEntries);
+		Collections.shuffle(shuffledDocEntries,new Random());
 		Iterator<DocEntry> docEntriesIterator = shuffledDocEntries.iterator();
 		for (User student : students) {
 			for (int i = 0; i < reviewingActivity.getNumStudentReviewers(); i++) {
@@ -67,7 +68,7 @@ public class RandomReviewStratergy implements ReviewStratergy {
 		for (DocEntry docEntry : reviewSetup.keySet()) {
 			for (User student : new HashSet<User>(reviewSetup.get(docEntry))) {
 				if (docEntry.getOwner() != null && docEntry.getOwner().equals(student) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(student)) {
-					Collections.shuffle(shuffledDocEntries);
+					Collections.shuffle(shuffledDocEntries,new Random());
 					SWAP: for (int iteration = 0; iteration < 2; iteration++) {
 						for (DocEntry swapDocEntry : shuffledDocEntries) {
 							if ((swapDocEntry.getOwner() == null || !swapDocEntry.getOwner().equals(student)) && (swapDocEntry.getOwnerGroup() == null || !swapDocEntry.getOwnerGroup().getUsers().contains(student))) {

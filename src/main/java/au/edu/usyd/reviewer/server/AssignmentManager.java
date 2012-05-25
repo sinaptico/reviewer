@@ -1,12 +1,19 @@
 package au.edu.usyd.reviewer.server;
 
+import glosser.app.doc.Doc;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,7 +38,12 @@ import org.apache.pdfbox.util.PDFMergerUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gdata.data.MediaContent;
+import com.google.gdata.data.OutOfLineContent;
+import com.google.gdata.data.docs.DocumentEntry;
 import com.google.gdata.data.docs.DocumentListEntry;
+import com.google.gdata.data.docs.RevisionEntry;
+import com.google.gdata.data.media.MediaSource;
 
 import au.edu.usyd.feedback.feedbacktracking.FeedbackTracking;
 import au.edu.usyd.feedback.feedbacktracking.FeedbackTrackingDao;
@@ -41,6 +53,7 @@ import au.edu.usyd.reviewer.client.core.Choice;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Entry;
 import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
 import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
 import au.edu.usyd.reviewer.client.core.Question;
@@ -834,7 +847,11 @@ public class AssignmentManager {
 			// get documents to be reviewed
 			List<DocEntry> docEntries = new ArrayList<DocEntry>();
 			if (reviewingActivity.getStatus() < Activity.STATUS_START) {
-				docEntries.addAll(writingActivity.getEntries());
+				try {
+					docEntries.addAll(selectNonEmptyEntries(writingActivity));
+				} catch (Exception e) {
+					logger.error("Error loading revisions.", e);					
+				}	
 			} else {
 				for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
 					if(reviewEntry.getDocEntry() != null) {
@@ -997,6 +1014,29 @@ public class AssignmentManager {
 			}
 		}
 	}
+	
+	private Set<DocEntry> selectNonEmptyEntries(WritingActivity writingActivity) throws Exception {
+		Set<DocEntry> entries = new HashSet<DocEntry>();
+		
+		for (DocEntry entry : writingActivity.getEntries()) {
+			Course course = assignmentDao.loadCourse(assignmentDao.loadCourseWhereWritingActivity(writingActivity).getId());
+			File file = new File(getDocumentsFolder(course.getId(), writingActivity.getId(), writingActivity.getCurrentDeadline().getId(), WritingActivity.TUTORIAL_ALL) + "/" + FileUtil.escapeFilename(entry.getDocumentId()) + ".pdf");
+			
+			try{
+				File empty = new File(Reviewer.getEmptyDocument());
+				
+				//Only add non empty entries
+				if (empty.length() != file.length()){
+					entries.add(entry);
+				}
+				
+			} catch (Exception e) {
+				logger.error("Error reading empty document.", e);					
+			}										
+		}
+		return entries;
+	}
+	
 	
 	public <D extends DocEntry> D updateDocument(D docEntry) throws Exception {
 		synchronized (docEntry.getDocumentId().intern()) {

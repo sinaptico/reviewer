@@ -788,7 +788,7 @@ public class ReviewEntryPoint implements EntryPoint {
 					submitedDate = StyleLib.submitDateFormat(docEntry.getEarlySubmitDate());
 				}else{
 					for (Deadline deadline: writingActivity.getDeadlines()){
-						if (deadline.getStatus() == 2){ 
+						if (deadline.getStatus() == Deadline.STATUS_DEADLINE_FINISH){ 
 							submitedDate = StyleLib.submitDateFormat(deadline.getFinishDate());
 						}
 					}
