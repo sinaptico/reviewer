@@ -102,45 +102,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		
 		
 		// check that students aren't assigned to review their own documents
-//		for (DocEntry docEntry : reviewSetup.keySet()) {
-//			for (User student : new HashSet<User>(reviewSetup.get(docEntry))) {
-//				if (docEntry.getOwner() != null && docEntry.getOwner().equals(student) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(student)) {
-//					Collections.shuffle(shuffledDocEntries,new Random());
-//					SWAP: for (int iteration = 0; iteration < 2; iteration++) {
-//						for (DocEntry swapDocEntry : shuffledDocEntries) {
-//							if ((swapDocEntry.getOwner() == null || !swapDocEntry.getOwner().equals(student)) && (swapDocEntry.getOwnerGroup() == null || !swapDocEntry.getOwnerGroup().getUsers().contains(student))) {
-//								switch (iteration) {
-//								case 0:
-//									// check if the student reviewer can be
-//									// swapped with the reviewer from the
-//									// another document
-//									for (User swapStudent : new HashSet<User>(reviewSetup.get(swapDocEntry))) {
-//										if ((docEntry.getOwner() == null || !docEntry.getOwner().equals(swapStudent)) && (docEntry.getOwnerGroup() == null || !docEntry.getOwnerGroup().getUsers().contains(swapStudent))) {
-//											reviewSetup.get(docEntry).remove(student);
-//											reviewSetup.get(docEntry).add(swapStudent);
-//											reviewSetup.get(swapDocEntry).remove(swapStudent);
-//											reviewSetup.get(swapDocEntry).add(student);
-//											break SWAP;
-//										}
-//									}
-//									break;
-//								case 1:
-//									// move student reviewer
-//									reviewSetup.get(docEntry).remove(student);
-//									reviewSetup.get(swapDocEntry).add(student);
-//									break SWAP;
-//								}
-//							}
-//						}
-//					}
-//					if (reviewSetup.get(docEntry).contains(student)) {
-//						logger.error("Failed to start review: unable to assign review to student.");
-//						return new HashMap<DocEntry, Set<User>>();
-//					}
-//				}
-//			}
-//		}
-		
+		// TODO check if we need a configuration option for this process.		
 		
 		return reviewSetup;
 	}
