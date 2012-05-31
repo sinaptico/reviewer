@@ -33,7 +33,7 @@ import com.google.gwt.user.datepicker.client.DateBox;
 //TODO Documentation - link to "SpeedBack" options description 
 
 /**
- * <p>Main GWT form for "Writing Activities" creation. The information collected in this form is:<p>
+ * <p>Main form for "Writing Activities" creation. The information collected in this form is:<p>
  * 
  * <ul>
  *	<li><p><b>Course details and notifications:</b></p>
@@ -71,26 +71,7 @@ import com.google.gwt.user.datepicker.client.DateBox;
  *		</ul>
  *	</li>
  *	
- *	<li><p><b>Reviewing Tasks</b></p>
- *		<ul>
- *			<li><b>Name:</b> Name of the reviewing activity. (Used for the link that students see).</li>
- *			<li><b>Review start (Deadline):</b> Drop-menu with activity deadlines. The reviewing activity starts at this date.</li>
- *			<li><b>Review finish (Date):</b> Date when the reviewing activity finishes.</li>
- *			<li><b>Form type:</b> Drop-menu with a list including "Comment", "Questions" and "Template".
- *				<ul>
- *					<li>The "Comment" option is the most used one, it shows a text area for students/tutors/lecturers to write their comments.</li>
- *					<li>The "Questions" options is for an integration with the "Question generations" module.</li>
- *					<li>The "Template" option includes a predefined review structure with different sections.</li>  
- *				</ul>
- *			</li>
- *			<li><b>Template:</b> Drop-menu with a list of the templates recorded in the system. Only works if the Form Type option is switched to "Template".</li>
- *			<li><b>Allocation strategy:</b> Indicates if it's a random allocation of if it's done with a spreadsheet definition.</li>
- *			<li><b>Number of reviewers:</b> Indicates the number of reviewers for each review. It can be separated by type of user (lecturers/tutors/students/Automatic).</li>
- *			<li><b>Ratings:</b> Check box that indicates if peers are allowed to rate their reviews. </li>
- *			<li><b>Early submit option:</b> Check box that indicates if a review can be submitted manually before its deadline.</li>
- *			<li><b>Feedback Template Type:</b> Type of feedback that is inserted in the comment box from the SpeedBack options.</li>
- *		</ul>
- *  </li>
+ *	<li><p><b>Reviewing Tasks: </b> The information related to the reviewing task is collected by the form {@link ActivityReviewForm Activity Review Form}.</p></li>
  * </ul> 
  * 
  */

@@ -29,10 +29,10 @@ import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.widgetideas.client.ValueSpinner;
 
 
-//TODO Documentation - Include details of the spreadsheet definition for the allocation strategy
+//TODO Documentation - Include details of the "allocation strategies"
 
 /**
- * <p>GWT form used in the "Writing activities" form for "Reviewing Activities" creation. The information collected in this form is:<p>
+ * <p>Form used in the "Writing activities" form for "Reviewing Activities" creation. The information collected in this form is:<p>
  * 
  * <ul>
  *	<li><p><b>Reviewing Tasks</b></p>
@@ -48,7 +48,7 @@ import com.google.gwt.widgetideas.client.ValueSpinner;
  *				</ul>
  *			</li>
  *			<li><b>Template:</b> Drop-menu with a list of the templates recorded in the system. Only works if the Form Type option is switched to "Template".</li>
- *			<li><b>Allocation strategy:</b> Indicates if it's a random allocation of if it's done with a spreadsheet definition.</li>
+ *			<li><b>Allocation strategy:</b> Indicates if it's a random allocation or if it's done with a spreadsheet definition.</li>
  *			<li><b>Number of reviewers:</b> Indicates the number of reviewers for each review. It can be separated by type of user (lecturers/tutors/students/Automatic).</li>
  *			<li><b>Ratings:</b> Check box that indicates if peers are allowed to rate their reviews. </li>
  *			<li><b>Early submit option:</b> Check box that indicates if a review can be submitted manually before its deadline.</li>

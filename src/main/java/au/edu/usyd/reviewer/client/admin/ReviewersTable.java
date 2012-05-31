@@ -31,16 +31,35 @@ import com.smartgwt.client.widgets.grid.events.CellSavedEvent;
 import com.smartgwt.client.widgets.grid.events.CellSavedHandler;
 import com.smartgwt.client.widgets.Canvas;
   
+// TODO: Change smart GWT components?
 
+/**
+ * The Class ReviewersTable that shows reviewers distribution of a particular review and allows to modify them.
+ */
 public class ReviewersTable extends Composite {
 
+	/** Asynchronous admin service for model management. */
 	private final AdminServiceAsync adminService;
+	
+	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
+	
+	/** The reviewing activity that is managed by the form. */
 	private ReviewingActivity reviewingActivity;
+	
+	/** The writing activity where the reviewing activity belongs. */
 	private WritingActivity writingActivity;
+	
+	/** The close button of the form. */
 	private com.google.gwt.user.client.ui.Button closeButton = new com.google.gwt.user.client.ui.Button("Close");
+	
+	/** The new entry button to add a new review. */
 	private com.google.gwt.user.client.ui.Button newEntryButton = new com.google.gwt.user.client.ui.Button("Add Review");
+	
+	/** The status message. */
 	private HTML statusMessage = new HTML("Done.");
+	
+	/** The reviewers grid. */
 	private ListGrid reviewersGrid = new ListGrid() {
 		
 		@Override
@@ -80,6 +99,13 @@ public class ReviewersTable extends Composite {
         }
     };
 	
+	/**
+	 * Instantiates a new reviewers table.
+	 *
+	 * @param adminService the admin service
+	 * @param writingActivity the writing activity
+	 * @param reviewingActivity the reviewing activity
+	 */
 	public ReviewersTable(AdminServiceAsync adminService, WritingActivity writingActivity, ReviewingActivity reviewingActivity) {
 		this.adminService = adminService;
 		initWidget(mainPanel);		
@@ -88,6 +114,13 @@ public class ReviewersTable extends Composite {
 		this.updateReviewersTable();
 	}
 	
+	/**
+	 * Creates a user record that can be added to the main grid.
+	 *
+	 * @param user the user
+	 * @param reviewEntry the review entry
+	 * @return the list grid record
+	 */
 	private ListGridRecord createUserRecord(User user, ReviewEntry reviewEntry) {
 		ListGridRecord record = new ListGridRecord();
 		record.setAttribute("ID", reviewEntry.getId());
@@ -100,6 +133,9 @@ public class ReviewersTable extends Composite {
 		return record;
 	}
 	
+	/**
+	 * Places all components in the form, including the records for the reviewers grid.
+	 */
 	private void updateReviewersTable() {
 		List<ListGridField> fields = new LinkedList<ListGridField>();
 		ListGridField idField = new ListGridField("ID");
@@ -261,6 +297,12 @@ public class ReviewersTable extends Composite {
 		mainPanel.add(controlsPanel);
 	}
 	
+	/**
+	 * Validates that the doc id exists for the writing activity.
+	 *
+	 * @param newDocEntryValue the new doc entry value
+	 * @return true, if successful
+	 */
 	private boolean validateNewId(String newDocEntryValue) {		
 		if (isNumber(newDocEntryValue)){
 			for (DocEntry docEntry : writingActivity.getEntries()) {
@@ -272,6 +314,12 @@ public class ReviewersTable extends Composite {
 		return false;
 	}
 	
+	/**
+	 * Validates that the unikey exists for the writing activity.
+	 *
+	 * @param unikeyValue the unikey value
+	 * @return true, if successful
+	 */
 	private boolean validateUnikey(String unikeyValue) {		
 
 		for (DocEntry docEntry : writingActivity.getEntries()) {
@@ -290,20 +338,27 @@ public class ReviewersTable extends Composite {
 		return false;
 	}	
 
+	/**
+	 * Checks if the string is a valid number.
+	 *
+	 * @param in the in
+	 * @return true, if is number
+	 */
 	private boolean isNumber(String in) { try { Integer.parseInt(in); } catch (NumberFormatException ex) { return false; } return true; }
 	
+	/**
+	 * Sets the up the configuration of the reviewers grid.
+	 */
 	private void setUpGrid() {
 		reviewersGrid.setShowRecordComponents(true);        
 		reviewersGrid.setShowRecordComponentsByCell(true);
-		//reviewersGrid.setCanRemoveRecords(true);
 		reviewersGrid.setWidth(730);
-		reviewersGrid.setHeight(610);
-	//	reviewersGrid.setAlternateRecordStyles(true);
+		reviewersGrid.setHeight(610);	
 		reviewersGrid.setShowAllRecords(true);
 		reviewersGrid.setCellHeight(22);
 		reviewersGrid.setCanEdit(true);
 		reviewersGrid.setEditEvent(ListGridEditEvent.CLICK);
 		reviewersGrid.setSortField("buttonField");	
-
+		//reviewersGrid.setCanRemoveRecords(true); //reviewersGrid.setAlternateRecordStyles(true);
 	}	
 }

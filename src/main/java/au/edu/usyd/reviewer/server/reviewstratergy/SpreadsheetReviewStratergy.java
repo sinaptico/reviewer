@@ -101,7 +101,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		}
 		
 		
-		// check that students aren't assigned to review their own documents
+		// check that students aren't assigned to review their own documents if the writing activity is in GROUPS
 		// TODO check if we need a configuration option for this process.		
 		
 		return reviewSetup;

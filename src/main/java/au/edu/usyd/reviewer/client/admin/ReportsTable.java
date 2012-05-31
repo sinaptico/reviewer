@@ -25,25 +25,52 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+//TODO: Auto-generated Javadoc
+//TODO Implement form, Not functional yet.
+
+/**
+ * Form not functional yet.
+ */
 public class ReportsTable extends Composite {
 
+	/** The admin service. */
 	private final AdminServiceAsync adminService;
+	
+	/** The main panel. */
 	private SimplePanel mainPanel = new SimplePanel();
 
+	/**
+	 * Instantiates a new reports table.
+	 *
+	 * @param adminService the admin service
+	 */
 	public ReportsTable(AdminServiceAsync adminService) {
 		this.adminService = adminService;
 		initWidget(mainPanel);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.google.gwt.user.client.ui.Widget#onLoad()
+	 */
 	@Override
 	public void onLoad() {
 
 	}
 
+	/**
+	 * Sets the writing activity.
+	 *
+	 * @param writingActivity the new writing activity
+	 */
 	public void setWritingActivity(WritingActivity writingActivity) {
 		this.updateReportsTable(writingActivity);
 	}
 
+	/**
+	 * Update reports table.
+	 *
+	 * @param writingActivity the writing activity
+	 */
 	private void updateReportsTable(final WritingActivity writingActivity) {
 		final VerticalPanel reportsContent = new VerticalPanel();
 		final SubmitButton generateReport = new SubmitButton("Generate Report", "Generating...", "Generated");

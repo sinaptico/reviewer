@@ -29,17 +29,39 @@ import com.smartgwt.client.widgets.grid.events.CellSavedEvent;
 import com.smartgwt.client.widgets.grid.events.CellSavedHandler;
 import com.google.gwt.user.client.ui.Button;  
 
+
+/**
+ * The Class GradeBook manages the grades given to the selected writing activity. 
+ * The details include the grades for each defined deadline of the writing activity.
+ */
 public class GradeBook extends Composite {
 
+	/** Asynchronous admin service for model management. */
 	private final AdminServiceAsync adminService;
+	
+	/** ListGrid with the grades. */
 	private final ListGrid gradesGrid = new ListGrid();
+	
+	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
 
+	/**
+	 * Instantiates a new grade book.
+	 *
+	 * @param adminService the admin service
+	 */
 	public GradeBook(AdminServiceAsync adminService) {
 		this.adminService = adminService;
 		initWidget(mainPanel);
 	}
 	
+	/**
+	 * Creates the user record that can be added to the grid.
+	 *
+	 * @param user the user
+	 * @param grades the grades
+	 * @return the record
+	 */
 	private Record createUserRecord(User user, Collection<Grade> grades) {
 		Record record = new ListGridRecord();
 		record.setAttribute("Unikey", user.getId());
@@ -51,10 +73,23 @@ public class GradeBook extends Composite {
 		return record;
 	}
 
+	/**
+	 * Gets the column name from the deadline received.
+	 *
+	 * @param deadline the deadline
+	 * @return the column name
+	 */
 	private String getColName(Deadline deadline) {
 		return deadline.getName() + " (" + deadline.getMaxGrade() + ")";
 	}
 
+	/**
+	 * Gets the grades from the writing activity and user received.
+	 *
+	 * @param writingActivity the writing activity
+	 * @param user the user
+	 * @return the grades
+	 */
 	private Collection<Grade> getGrades(WritingActivity writingActivity, User user)  {
 		List<Grade> grades = new LinkedList<Grade>();
 		for(Grade grade : writingActivity.getGrades()) {
@@ -65,6 +100,9 @@ public class GradeBook extends Composite {
 		return grades;
 	}
 
+	/**
+	 * Method that configures the grades grid and adds the "Download CSV" button. 
+	 */
 	@SuppressWarnings("deprecation")
 	@Override
 	public void onLoad() {
@@ -103,6 +141,12 @@ public class GradeBook extends Composite {
 		mainPanel.add(gradesGrid);		
 	}
 	
+	/**
+	 * Returns a string in CSV format from the ListGrid received.
+	 *
+	 * @param listGrid the list grid
+	 * @return the string
+	 */
 	private String exportCSV(ListGrid listGrid) {
 			StringBuilder stringBuilder = new StringBuilder(); 
 			
@@ -136,6 +180,11 @@ public class GradeBook extends Composite {
 	}
 
     
+	/**
+	 * Sets the writing activity grades into the main grid.
+	 *
+	 * @param writingActivity the new writing activity
+	 */
 	public void setWritingActivity(WritingActivity writingActivity) {
 		this.updateGradesTable(writingActivity.getDeadlines());
 		for (DocEntry docEntry : writingActivity.getEntries()) {
@@ -152,6 +201,11 @@ public class GradeBook extends Composite {
 		}
 	}
 	
+	/**
+	 * Update grades from the values in the main grid.
+	 *
+	 * @param deadlines the deadlines
+	 */
 	private void updateGradesTable(Collection<Deadline> deadlines) {
 		gradesGrid.clear();
 		List<ListGridField> fields = new LinkedList<ListGridField>();

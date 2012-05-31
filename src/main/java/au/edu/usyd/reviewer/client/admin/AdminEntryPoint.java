@@ -44,9 +44,34 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 //TODO Documentation - include description of GlosserSite
+//TODO Move CSS style to external files
+//TODO Move out Glosser admin tab to GLOSSER project
 
 /**
- * The Class AdminEntryPoint. Starting point of the "Admin" module.
+ * <p>Starting point of the "Admin" module. The options available in this form include:<p>
+ * 
+ * <ul>
+ *	<li><p><b>Menus for Course, Activity and Review Template:</b></p>
+ *		<ul>
+ *			<li><b>Course: </b>This option of the menu allows users to create new courses in the system. 
+ *				The details for the course creation are gathered by the form: 
+ *				{@link CourseForm Course form}.
+ *			</li>
+ *			<li><b>Activity: </b>This option of the menu allows users to create new writing and reviewing activities.
+ *								 The details for this activities are collected by the form:
+ *								 {@link ActivityForm Activity Form}
+ *			</li>
+ *			<li><b>Review template: </b>This options allows users to create review templates.
+ *										The details for this templates are collected by the form:
+ *										{@link ReviewTemplateForm Review Template Form}
+ *			</li>
+ *		</ul>
+ *	</li>
+ *
+ *	<li><p><b>Impersonate user: </b>This menu calls the form {@link UserForm User Form} and uses it to collect an ID that is then used to mock an User.</p></li>
+ *	
+ *  </li>
+ * </ul> 
  */
 public class AdminEntryPoint implements EntryPoint {
 
@@ -80,7 +105,7 @@ public class AdminEntryPoint implements EntryPoint {
 	/** The reports panel. */
 	private SimplePanel reportsPanel = new SimplePanel();
 	
-	/** The activity label. */
+	/** Label used to show information about the selected course - activity from the courses tree. */
 	private HTML activityLabel = new HTML("<b>&nbsp;</b>");
 	
 	/** The css h1 style. */
@@ -95,20 +120,23 @@ public class AdminEntryPoint implements EntryPoint {
 	/** The review templates content panel. */
 	private VerticalPanel reviewTemplatesContentPanel = new VerticalPanel();
 	
-	/** The year semester panel. */
+	/** Panel for the main filter. */
 	private HorizontalPanel yearSemesterPanel = new HorizontalPanel();
 	
-	/** The course semester. */
+	/** The course's semester included in the filter. */
 	private ListBox courseSemester = WidgetFactory.createNewListBoxWithId("courseSemester");	
 	
-	/** The course year. */
+	/** The course's year included in the filter. */
 	private ListBox courseYear = WidgetFactory.createNewListBoxWithId("courseYear");
 	
-	/** The refresh course tree button. */
+	/** The refresh filter button. */
 	private SubmitButton refreshCourseTreeButton = new SubmitButton("Load", "Loading courses, please wait...", "Load");
 
-	/* (non-Javadoc)
-	 * @see com.google.gwt.core.client.EntryPoint#onModuleLoad()
+	/** 
+	 * <p>Main method of the entry point that loads the "Glosser sites" and menus for user impersonation, courses, activities and review 
+	 * templates creation. It also loads the panels and trees with the course and review templates lists according to the defined filter (Year - Semester).</p>
+	 * 
+	 * 
 	 */
 	@Override
 	public void onModuleLoad() {
@@ -650,7 +678,7 @@ public class AdminEntryPoint implements EntryPoint {
 
 	
 	/**
-	 * Refresh template tree.
+	 * Gets the review templates recorded in the system and populates the Review Template Tree.
 	 */
 	private void refreshTemplateTree() {
     	adminService.getReviewTemplates(new AsyncCallback<Collection<ReviewTemplate>>() {
@@ -676,7 +704,7 @@ public class AdminEntryPoint implements EntryPoint {
 
 
 	/**
-	 * Refresh courses tree.
+	 * Gets the courses recorded in the system according to the defined filter year - semester and populates the Courses Tree.
 	 */
 	private void refreshCoursesTree() {
 		refreshCourseTreeButton.updateStateSubmitting();

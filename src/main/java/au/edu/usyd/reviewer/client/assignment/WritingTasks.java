@@ -188,40 +188,6 @@ public class WritingTasks extends Composite {
 				 }				
 				/////////////////////
 
-//				/////////////////////////////////////////////////////
-//				//Early Submit
-//				if (writingActivity.getEarlySubmit() && !docEntry.getLocked()){
-//					final SubmitButton earlySubmitButton = new SubmitButton("<img src='images/icon-upload.gif'></img><span> Submit </span>", "<img src='images/google/apps_upload_icon.gif'></img> <span> Submit </span>", "Submitted");
-//					earlySubmitButton.setTitle("Submit Document");
-//					earlySubmitButton.addClickHandler(new ClickHandler() {
-//						private DocEntry localDocEntry = docEntry;
-//						
-//						@Override
-//						public void onClick(ClickEvent event) {
-//							if (Window.confirm("Are you sure you want to submit the document?")) {
-//								earlySubmitButton.updateStateSubmitting();
-//								assignmentService.submitDocEntry(localDocEntry, new AsyncCallback<DocEntry>() {
-//									@Override
-//									public void onFailure(Throwable caught) {
-//										Window.alert("Failed to submit document: " + caught.getMessage());
-//										earlySubmitButton.updateStateSubmit();
-//									}
-//
-//									@Override
-//									public void onSuccess(DocEntry submittedDocEntry) {
-//										Window.alert("'" + localDocEntry.getTitle() + "' has been successfully submitted.");
-//										localDocEntry = submittedDocEntry;
-//										earlySubmitButton.updateStateSubmit();
-//										Window.Location.reload();
-//									}
-//								});
-//							}
-//						}
-//					});	
-//					documentLinks.add(earlySubmitButton);
-//				 }				
-//				/////////////////////
-				
 				// due date
 				VerticalPanel dueDate = new VerticalPanel();
 				for (Deadline deadline : writingActivity.getDeadlines()) {

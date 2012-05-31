@@ -23,20 +23,40 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-
+/**
+ * Main form for the creation and editing of "Review templates".
+ */
 @SuppressWarnings("deprecation")
 public class ReviewTemplateForm extends Composite {
 
+	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
+	
+	/** The review template name. */
 	private final TextBox reviewTemplateName = WidgetFactory.createNewTextBoxWithId("reviewTemplateName");
+	
+	/** The review template description. */
 	private final TextArea reviewTemplateDescription = WidgetFactory.createNewTextAreaWithId("reviewTemplateDescription");
+	
+	/** The section table. */
 	public FlexTable sectionTable = new FlexTable();
+	
+	/** The review template that is managed by the form. */
 	private ReviewTemplate reviewTemplate = new ReviewTemplate();
 
+	/**
+	 * Instantiates a new review template form.
+	 */
 	public ReviewTemplateForm() {
 		initWidget(mainPanel);		
 	}
 	
+	/**
+	 * Adds a choice record to the selected section.
+	 *
+	 * @param sectionRow the section row
+	 * @param newChoice the new choice
+	 */
 	public void addChoice(int sectionRow, Choice newChoice) {
 		final FlexTable currentChoiceTable = (FlexTable) ((VerticalPanel) sectionTable.getWidget(sectionRow, 1)).getWidget(1);	
 		
@@ -67,6 +87,11 @@ public class ReviewTemplateForm extends Composite {
 		currentChoiceTable.setWidget(row, 2, remove);
 	}	
 
+	/**
+	 * Adds a section to the review template.
+	 *
+	 * @param section the section
+	 */
 	private void addSection(final Section section) {
 		final ListBox type = new ListBox();
 		type.addItem("Open Text");
@@ -151,15 +176,33 @@ public class ReviewTemplateForm extends Composite {
 		
 	}	
 	
+	/**
+	 * Removes the widget from section table.
+	 *
+	 * @param sectionRow the section row
+	 * @param column the column
+	 */
 	public void removeWidgetFromSectionTable(int sectionRow, int column){
 		try {((VerticalPanel) sectionTable.getWidget(sectionRow, column)).remove(1); 
 		} catch (Exception e) {	/*The widget to delete doesn't exist.  Just continue */ }
 	}
 	
+	/**
+	 * Adds a widget to the specified section table.
+	 *
+	 * @param sectionRow the section row
+	 * @param column the column
+	 * @param widget the widget
+	 */
 	public void addWidgetToSectionTable(int sectionRow, int column, Widget widget){		
 		((VerticalPanel) sectionTable.getWidget(sectionRow, column)).add(widget);
 	}
 	
+	/**
+	 * Adds a choices table to the specified section row.
+	 *
+	 * @param sectionRow the section row
+	 */
 	public void addChoicesTable(final int sectionRow) {
 		FlexTable choiceTable = new FlexTable();
 		
@@ -186,6 +229,13 @@ public class ReviewTemplateForm extends Composite {
 		addWidgetToSectionTable(sectionRow,1,choiceTable);
 	} 	
 	
+	/**
+	 * Adds a scale table to the specified section row.
+	 *
+	 * @param sectionRow the section row
+	 * @param selectedFrom the selected from
+	 * @param selectedTo the selected to
+	 */
 	public void addScaleTable(final int sectionRow, int selectedFrom, int selectedTo) {
 		FlexTable scaleTable = new FlexTable();		
 		final ListBox to = new ListBox();
@@ -204,6 +254,11 @@ public class ReviewTemplateForm extends Composite {
 		addWidgetToSectionTable(sectionRow,1,scaleTable);
 	} 		
 	
+	/**
+	 * Gets the review template with all the values from the form.
+	 *
+	 * @return the review template
+	 */
 	public ReviewTemplate getReviewTemplate() {
 		reviewTemplate.setName(reviewTemplateName.getText());
 		reviewTemplate.setDescription(reviewTemplateDescription.getText());		
@@ -254,6 +309,11 @@ public class ReviewTemplateForm extends Composite {
 	  return reviewTemplate;
    }   
 	
+	/**
+	 * Sets the review template values in the form from the reviewtemplate object received.
+	 *
+	 * @param reviewTemplate the new review template
+	 */
 	public void setReviewTemplate(ReviewTemplate reviewTemplate) {
 		sectionTable = new FlexTable();
 		
@@ -279,6 +339,11 @@ public class ReviewTemplateForm extends Composite {
 		}
 	}	
 
+	/**
+	 * It loads all the defined components (Horizontal and Vertical panels, CheckBoxes, 
+	 * TextBoxes, ListBoxes ...) into the form.	 
+	 * 
+	 */
 	@Override
 	public void onLoad() {
 		Grid grid = new Grid(2, 2);

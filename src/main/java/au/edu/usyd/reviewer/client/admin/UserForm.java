@@ -11,24 +11,55 @@ import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * The User Form used for password and user details changes. It is also re-used for the Administration module to capture details of an user in order to mock its login in the system. 
+ */
 public class UserForm extends Composite {
 
+	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
+	
+	/** TextBox with user's id. */
 	private final TextBox id = new TextBox();
+	
+	/** TextBox with user's first name. */
 	private final TextBox firstname = new TextBox();
+	
+	/** TextBox with user's last name. */
 	private final TextBox lastname = new TextBox();
+	
+	/** TextBox with user's email. */
 	private final TextBox email = new TextBox();
+	
+	/** PasswordTextBox with user's current password. */
 	private final PasswordTextBox currentPassword = new PasswordTextBox();
+	
+	/** PasswordTextBox with user's new password. */
 	private final PasswordTextBox newPassword = new PasswordTextBox();
+	
+	/** PasswordTextBox with user's repeated new password. */
 	private final PasswordTextBox newPassword2 = new PasswordTextBox();
+	
+	/** The error label where validation messages are shown. */
 	private final Label errorLabel = new Label();
-	private final Label infoLabel = new Label();
+	
+	//private final Label infoLabel = new Label();
+	
+	/** The user that is managed by the form. */
 	private User user = new User();
 
+	/**
+	 * Instantiates a new user form.
+	 */
 	public UserForm() {
 		initWidget(mainPanel);
 	}
 
+	/**
+	 * Gets the user.
+	 *
+	 * @return the user
+	 */
 	public User getUser() {
 		user.setId(id.getValue());
 		user.setFirstname(firstname.getValue());
@@ -38,6 +69,9 @@ public class UserForm extends Composite {
 		return user;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.google.gwt.user.client.ui.Widget#onLoad()
+	 */
 	@Override
 	public void onLoad() {
 		errorLabel.setStyleName("error");
@@ -62,6 +96,11 @@ public class UserForm extends Composite {
 		mainPanel.add(new HTML("<br/>"));
 	}
 
+	/**
+	 * Sets the user.
+	 *
+	 * @param user the new user
+	 */
 	public void setUser(User user) {
 		this.user = user;
 		id.setValue(user.getId());
@@ -70,6 +109,9 @@ public class UserForm extends Composite {
 		email.setValue(user.getEmail());
 	}
 	
+	/**
+	 * Disable not updatable fileds.
+	 */
 	public void disableNotUpdatableFileds(){
 		id.setEnabled(false);
 		firstname.setEnabled(false);
@@ -77,6 +119,11 @@ public class UserForm extends Composite {
 		email.setEnabled(false);
 	}
 	
+	/**
+	 * Validate new password.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean validateNewPassword() {
 		if (StringUtil.isNotBlank(newPassword.getText()) && StringUtil.isNotBlank(newPassword2.getText())) {
 			if (newPassword.getText().length() > 4) {
@@ -97,6 +144,11 @@ public class UserForm extends Composite {
 		}
 	}	
 	
+	/**
+	 * Validate current password.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean validateCurrentPassword() {
 		if (StringUtil.isNotBlank(currentPassword.getText())) {
 			errorLabel.setText("");
@@ -107,6 +159,11 @@ public class UserForm extends Composite {
 		}
 	}
 
+	/**
+	 * Gets the new password.
+	 *
+	 * @return the new password
+	 */
 	public String getNewPassword() {
 		return newPassword.getText();
 	}	

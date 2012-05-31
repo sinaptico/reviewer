@@ -79,6 +79,24 @@
 					<server>iwrite.sydney.edu.au</server>
 				</configuration>
 			</plugin>
+			<plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-javadoc-plugin</artifactId>
+		        <version>2.8.1</version>
+		        <configuration>
+				  <doclet>org.umlgraph.doclet.UmlGraphDoc</doclet>
+		          <!-- <docletPath>/path/to/UmlGraph.jar</docletPath> -->
+		          <docletArtifact>
+		            <groupId>org.umlgraph</groupId>
+		            <artifactId>doclet</artifactId>
+		            <version>5.1</version>
+		          </docletArtifact>
+		          <additionalparam>-views</additionalparam>
+		          <useStandardDocletOptions>true</useStandardDocletOptions>	
+		          <show>private</show>
+		          <noHelp>true</noHelp>		          	        
+		        </configuration>
+		    </plugin>				
 		</plugins>
 	</build>
 	<distributionManagement>
@@ -285,6 +303,6 @@
 				<artifactId>maven-surefire-report-plugin</artifactId>
 				<version>2.5</version>
 			</plugin>
-		</plugins>
+		</plugins>		
 	</reporting>
 </project>
