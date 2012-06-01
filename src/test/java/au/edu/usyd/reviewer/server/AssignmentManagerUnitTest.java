@@ -142,6 +142,7 @@ public class AssignmentManagerUnitTest {
         writingActivity.getDeadlines().add(new Deadline("Final"));
         writingActivity.getReviewingActivities().add(reviewingActivity);
         writingActivity.setEmailStudents(false);
+        writingActivity.setExcludeEmptyDocsInReviews(false);
         assignmentManager.saveActivity(course, writingActivity);
         assertThat(writingActivity.getId(), notNullValue());
         assertThat(reviewingActivity.getStartDate(), equalTo(draftDeadline));

@@ -43,7 +43,9 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		this.writingActivity = writingActivity;
 		this.assignmentDao = assignmentDao;
 		this.assignmentRepository = assignmentRepository;
-		this.folder = getDocumentsFolder(course.getId(),writingActivity.getId(),writingActivity.getCurrentDeadline().getId(),WritingActivity.TUTORIAL_ALL);
+		if (assignmentRepository != null){
+			this.folder = getDocumentsFolder(course.getId(),writingActivity.getId(),writingActivity.getCurrentDeadline().getId(),WritingActivity.TUTORIAL_ALL);
+		}
 	}
 	
 	public String getDocumentsFolder(long courseId, long activityId, long activityDeadlineId, String tutorial) {

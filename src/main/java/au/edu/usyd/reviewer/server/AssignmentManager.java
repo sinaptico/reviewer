@@ -848,7 +848,11 @@ public class AssignmentManager {
 			List<DocEntry> docEntries = new ArrayList<DocEntry>();
 			if (reviewingActivity.getStatus() < Activity.STATUS_START) {
 				try {
-					docEntries.addAll(selectNonEmptyEntries(writingActivity));
+					if (writingActivity.getExcludeEmptyDocsInReviews()){
+						docEntries.addAll(selectNonEmptyEntries(writingActivity));
+					}else{
+						docEntries.addAll(writingActivity.getEntries());
+					}
 				} catch (Exception e) {
 					logger.error("Error loading revisions.", e);					
 				}	

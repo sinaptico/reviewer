@@ -67,6 +67,7 @@ public class WritingActivity extends Activity<DocEntry> {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name = "WritingActivity_Grades_Grade")
 	private Set<Grade> grades = new HashSet<Grade>();
+	private Boolean excludeEmptyDocsInReviews = true;
 	
 	public List<Deadline> getDeadlines() {
 		return deadlines;
@@ -200,5 +201,13 @@ public class WritingActivity extends Activity<DocEntry> {
 		
 		return currentDeadline;
 	}
-	
+
+	public void setExcludeEmptyDocsInReviews(Boolean excludeEmptyDocsInReviews) {
+		this.excludeEmptyDocsInReviews = excludeEmptyDocsInReviews;
+	}
+
+	public Boolean getExcludeEmptyDocsInReviews() {
+		return excludeEmptyDocsInReviews;
+	}
+
 }
