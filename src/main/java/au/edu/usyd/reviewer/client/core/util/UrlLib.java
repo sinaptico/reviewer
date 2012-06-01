@@ -39,7 +39,7 @@ public class UrlLib {
 	}	
 
 	public static String presentationUrl(String id, String domain) {
-		return "http://docs.google.com/a/" + domain + "/present/edit?id=" + id.replace("presentation:", "");
+		return "http://docs.google.com/a/" + domain + "/presentation/edit?id=" + id.replace("presentation:", "");
 	}
 
 	public static String spreadsheetUrl(String id, String domain) {			
