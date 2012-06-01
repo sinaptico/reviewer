@@ -162,6 +162,7 @@ public class AssignmentManagerUnitTest {
         groupActivity.getDeadlines().add(groupActivityDeadline);
         groupActivity.getReviewingActivities().add(groupActivityReview);
         groupActivity.setTutorial("monday");
+        groupActivity.setExcludeEmptyDocsInReviews(false);
 
         assignmentManager.saveActivity(course, groupActivity);
         assertThat(groupActivity.getId(), notNullValue());
