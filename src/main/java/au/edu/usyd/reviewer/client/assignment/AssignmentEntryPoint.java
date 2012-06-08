@@ -47,7 +47,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 	public void onModuleLoad() {
 		
 		//Assignment pages header
-		mainPanel.add(new HTML("<h1 "+cssH1Style +" >ASSIGMENTS LIST</h1></br>"));
+		mainPanel.add(new HTML("<h1 "+cssH1Style +" >ASSIGNMENTS LIST</h1></br>"));
 		mainPanel.add(new HTML("<p "+cssTextStyle +" >This section of the website provides an environment for students and academics to manage their written assignments, and reviews. The assignment</br> submission system is based on Google Docs. How does the assignment submission system work? Visit our Help page to learn more. If you have trouble, </br>please see the Troubleshooting Guide on the Help page for solutions to common problems or contact <a href='mailto:i.write@sydney.edu.au'>i.write@sydney.edu.au</a> for futher support.</p></br>"));
 		
 		//Tomcat login, check if current user is not a WASM user
