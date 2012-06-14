@@ -46,23 +46,40 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * Panel that includes Writing activities with list of deadlines, links to PDF files created at each deadline and links to feedback received from peers/tutors/lecturers/Glosser.
+ */
+@SuppressWarnings("deprecation")
 public class WritingTasks extends Composite {
 
+	/** FlexTable with the writing activities. */
 	private FlexTable documentFlexTable = new FlexTable();
+	
+	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
+	
+	/** Asynchronous assignment service for model management. */
 	private AssignmentServiceAsync assignmentService;	
 
+	/**
+	 * Instantiates a new writing tasks.
+	 *
+	 * @param assignmentService the assignment service
+	 */
 	public WritingTasks(AssignmentServiceAsync assignmentService) {
 		this.assignmentService = assignmentService;
 		initWidget(mainPanel);
 	}
 
-	@SuppressWarnings("deprecation")
-	private void addDocEntiresToTable(final Course course) {
+	/**
+	 * Adds Courses, document entries, PDF and Feedback links to the main flex table.
+	 *
+	 * @param course the course
+	 */
+	private void addDocEntriesToTable(final Course course) {
 		int row = documentFlexTable.getRowCount();
 		documentFlexTable.setHTML(row, 0, "<b>"+course.getName()+"</b>");
 		documentFlexTable.setHTML(row, 4, "");
-		//documentFlexTable.getRowFormatter().setStyleName(row, "documentsTableRow");
 		documentFlexTable.getRowFormatter().setStyleName(row, "documentsTableRowHeader");
 		row = documentFlexTable.getRowCount();
 		
@@ -357,6 +374,9 @@ public class WritingTasks extends Composite {
 		}
 	}
 
+	/** 
+	 * <p>Main method of the panel that loads the Activity flex table where the data is then updated.</p>
+	 */
 	@Override
 	public void onLoad() {
 		documentFlexTable.setWidth("100%");
@@ -364,6 +384,11 @@ public class WritingTasks extends Composite {
 		mainPanel.add(documentFlexTable);
 	}
 
+	/**
+	 * Sets the entries table headlines and populates them by calling the addDocEntriesToTable method.
+	 *
+	 * @param courses the new table entries
+	 */
 	public void setTableEntries(Collection<Course> courses) {
 		if (courses.size() > 0){
 			documentFlexTable.clear();
@@ -378,7 +403,7 @@ public class WritingTasks extends Composite {
 	
 			for (Course course : courses) {
 				if (course.getWritingActivities().size() > 0) {
-					addDocEntiresToTable(course);
+					addDocEntriesToTable(course);
 				}
 			}
 		}else{
@@ -389,6 +414,9 @@ public class WritingTasks extends Composite {
 		}		
 	}
 	
+	/**
+	 * Sets the loading message while the activities are loaded into the main flex table.
+	 */
 	public void setLoadingMessage() {
 			documentFlexTable.clear();
 			documentFlexTable.removeAllRows();

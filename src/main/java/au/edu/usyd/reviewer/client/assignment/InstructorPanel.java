@@ -42,18 +42,36 @@ import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * Panel that includes courses, documents and zip files with PDF versions of the submitted documents for the tutor/lecturer logged in.
+ */
 public class InstructorPanel extends Composite {
 
+	/** FlexTable with the writing activities. */
 	private FlexTable activityFlexTable = new FlexTable();
+	
+	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
+	
+	/** Asynchronous assignment service for model management. */
 	private AssignmentServiceAsync assignmentService;
 
+	/**
+	 * Instantiates a new instructor panel.
+	 *
+	 * @param assignmentService the assignment service
+	 */
 	public InstructorPanel(AssignmentServiceAsync assignmentService) {
 		this.assignmentService = assignmentService;
 		initWidget(mainPanel);
 	}
 
-	private void addDocEntiresToTable(final Course course) {
+	/**
+	 * Adds Courses, student lists links and document entries to the main flex table.
+	 *
+	 * @param course the course
+	 */
+	private void addDocEntriesToTable(final Course course) {
 
 		// course folder tree
 		Anchor editCourseLink = new Anchor();
@@ -218,6 +236,9 @@ public class InstructorPanel extends Composite {
 		}
 	}
 
+	/** 
+	 * <p>Main method of the panel that loads the Activity flex table where the data is then updated.</p>
+	 */
 	@Override
 	public void onLoad() {
 		activityFlexTable.setWidth("100%");
@@ -225,6 +246,11 @@ public class InstructorPanel extends Composite {
 		mainPanel.add(activityFlexTable);
 	}
 
+	/**
+	 * Sets the entries table headlines and populates them by calling the addDocEntriesToTable method.
+	 *
+	 * @param courses the new table entries
+	 */
 	public void setTableEntries(Collection<Course> courses) {
 		if (courses.size() > 0){
 			activityFlexTable.clear();
@@ -236,7 +262,7 @@ public class InstructorPanel extends Composite {
 			activityFlexTable.getRowFormatter().setStyleName(0, "documentsTableHeader");
 
 			for (Course course : courses) {
-				addDocEntiresToTable(course);
+				addDocEntriesToTable(course);
 			}
 		}else{
 			activityFlexTable.clear();

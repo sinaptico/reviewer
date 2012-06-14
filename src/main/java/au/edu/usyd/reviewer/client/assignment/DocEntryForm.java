@@ -15,24 +15,47 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * The Class DocEntryForm used from the instructor panel to lock/un-lock specific documents.
+ */
 public class DocEntryForm extends Composite {
 
+	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
+	
+	/** CheckBox to be use for lock/un-lock documents. */
 	private final CheckBox locked = new CheckBox();
+	
+	/** The authors of the document. */
 	private final HTML authors = new HTML();
+	
+	/** SimplePanel where the link to the document is added. */
 	private final SimplePanel document = new SimplePanel();
+	
+	/** The document entry. */
 	private DocEntry docEntry;
 
 	
+	/**
+	 * Instantiates a new doc entry form.
+	 */
 	public DocEntryForm() {
 		initWidget(mainPanel);
 	}
 
+	/**
+	 * Gets the doc entry.
+	 *
+	 * @return the doc entry
+	 */
 	public DocEntry getDocEntry() {
 		docEntry.setLocked(locked.getValue());
 		return docEntry;
 	}
 
+	/** 
+	 * <p>Main method of the form that loads the document link, authors and check box to update the document.</p>
+	 */
 	@Override
 	public void onLoad() {
 		Grid grid = new Grid(3, 2);
@@ -47,6 +70,11 @@ public class DocEntryForm extends Composite {
 		mainPanel.add(new HTML("<br/>"));
 	}
 
+	/**
+	 * Sets the doc entry.
+	 *
+	 * @param docEntry the new doc entry
+	 */
 	public void setDocEntry(final DocEntry docEntry) {
 		this.docEntry = docEntry;
 		document.setWidget(new DocEntryWidget(docEntry.getDocumentId(), docEntry.getTitle(), docEntry.getDomainName(), docEntry.getLocked()));

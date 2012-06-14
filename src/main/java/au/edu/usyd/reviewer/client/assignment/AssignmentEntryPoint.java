@@ -3,20 +3,18 @@ package au.edu.usyd.reviewer.client.assignment;
 import java.util.ArrayList;
 import java.util.Collection;
 
-
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
+import au.edu.usyd.reviewer.client.admin.UserForm;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HTMLTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -27,27 +25,66 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.TabPanel;
-
-import au.edu.usyd.reviewer.client.admin.UserForm;
 import com.google.gwt.user.client.ui.DialogBox;
 
+//TODO: move css style out to independent file
+
+/**
+ * <p>Starting point of the "Assignments" section for students. The options available in this section of the application include:<p>
+ * 
+ * <ul>
+ *	<li><p><b>Panels with "Writing tasks", "Reviewing tasks" and "Instructor panel":</b></p>
+ *		<ul>
+ *			<li><b>Writing tasks: </b>This panel of the form allows students to manage their Google documents. 
+ *				The details for the writing tasks management are gathered by the panel: 
+ *				{@link WritingTasks Writing tasks}.
+ *			</li>
+ *			<li><b>Reviewing tasks: </b>This panel of the form allows students to manage their peer reviews. 
+ *				The details for the reviewing tasks management are gathered by the panel: 
+ *				{@link ReviewingTasks Reviewing tasks}.
+ *			<li><b>Instructor panel: </b>Only available for tutor/lecturers. This panel allows them to see the Google docs that the students are working on at any given time and download their final versions once the activities are finished. 
+ *				The details gathered by this panel are described here: 
+ *				{@link InstructorPanel Instructor panel}.
+ *			</li>
+ *		</ul>
+ *	</li>
+ */
+@SuppressWarnings("deprecation")
 public class AssignmentEntryPoint implements EntryPoint {
 
+	/** Asynchronous assignment service for model management. */
 	private AssignmentServiceAsync assignmentService = (AssignmentServiceAsync) GWT.create(AssignmentService.class);
+	
+	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
+	
+	/** The panel width. */
 	private String panelWidth = "900px";
+	
+	/** The css h1 style. */
 	private String cssH1Style = "STYLE='color: #CE1126; clear: both; margin: 0 0 0 0; font-weight: normal; clear: left; font-size: 1.3em;'";
+	
+	/** The css text style. */
 	private String cssTextStyle = "STYLE='font: normal 13px Arial,Helvetica,sans-serif; color: #333;'";
-	private HorizontalPanel yearSemesterPanel = new HorizontalPanel();
+	
+	/** ListBox with semesters for the year-semester filter. */
 	private ListBox courseSemester = WidgetFactory.createNewListBoxWithId("courseSemester");	
+	
+	/** ListBox with years for the year-semester filter. */
 	private ListBox courseYear = WidgetFactory.createNewListBoxWithId("courseYear");
+	
+	/** CheckBox that enables the inclusion of finished reviews. */
 	private CheckBox includeFinishedReviews = new CheckBox();
-
+	
+	/** 
+	 * <p>Main method of the entry point that loads the panels for writing and reviewing activities as well as the instructor panel for lecturers and tutors. 
+	 * It also loads Year-Semester filter for the activities.</p>
+	 */
 	@Override
 	public void onModuleLoad() {
 		
 		//Assignment pages header
-		mainPanel.add(new HTML("<h1 "+cssH1Style +" >ASSIGMENTS LIST</h1></br>"));
+		mainPanel.add(new HTML("<h1 "+cssH1Style +" >ASSIGNMENTS LIST</h1></br>"));
 		mainPanel.add(new HTML("<p "+cssTextStyle +" >This section of the website provides an environment for students and academics to manage their written assignments, and reviews. The assignment</br> submission system is based on Google Docs. How does the assignment submission system work? Visit our Help page to learn more. If you have trouble, </br>please see the Troubleshooting Guide on the Help page for solutions to common problems or contact <a href='mailto:i.write@sydney.edu.au'>i.write@sydney.edu.au</a> for futher support.</p></br>"));
 		
 		//Tomcat login, check if current user is not a WASM user
@@ -63,7 +100,6 @@ public class AssignmentEntryPoint implements EntryPoint {
 
 			@Override
 			public void onSuccess(final User user) {
-				//Window.alert("You are now logged in as '" + user.getId() + "'");
 				if (!user.getWasmuser()){
 					
 					userDetailsFlexTable.clear();
@@ -71,7 +107,6 @@ public class AssignmentEntryPoint implements EntryPoint {
 					mainPanel.add(userDetailsFlexTable);
 					mainPanel.add(new HTML("</br>"));					
 					
-					final TabPanel userDetailsPanel = new TabPanel();
 					userDetailsFlexTable.setHTML(0, 0, "<p "+cssTextStyle +" >If you need to change your password, please click here: </p>");							
 					userDetailsFlexTable.setWidget(0, 1, userDetailsButton);
 					mainPanel.add(new HTML("</br>"));
@@ -131,9 +166,9 @@ public class AssignmentEntryPoint implements EntryPoint {
 			}
 		});		
 		
-		courseSemester.addItem("1", "1");
 		courseSemester.addItem("2", "2");
-		
+		courseSemester.addItem("1", "1");
+				
 		courseYear.addItem("2012", "2012");
 		courseYear.addItem("2011", "2011");
 		courseYear.addItem("2010", "2010");
@@ -251,7 +286,6 @@ public class AssignmentEntryPoint implements EntryPoint {
 		filterActivitiesGrid.getCellFormatter().setWidth(0, 3, "150px");
 
 	    
-	    //mainPanel.add(yearSemesterPanel);
 		mainPanel.add(filterActivitiesGrid);
 	    mainPanel.add(new HTML("</br>"));
 		
