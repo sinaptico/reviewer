@@ -17,9 +17,9 @@ import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Activity Class.
+ * <p>Class for writing and reviewing activities management includes 
+ * the fields Status, activity name and Entries.</p>
  *
  * @param <E> the element type
  */

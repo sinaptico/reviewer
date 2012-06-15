@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 /**
- * The Choice Class used on the review template forms.
+ * <p> Class used on the {@link ReviewTemplate Review Templates} as possible answers/options in multiple selection questions. </p>
  */
 @Entity
 public class Choice implements Serializable {
@@ -20,7 +20,7 @@ public class Choice implements Serializable {
 	@GeneratedValue
 	protected Long id;
 	
-	/** The number. */
+	/** The number used for ordering the choices in the review templates. */
 	private Integer number;
 	
 	/** The text. */

@@ -9,20 +9,33 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 
+/**
+ * <p>Main class used to manage feedback ratings, it includes the document entry and owner.  
+ * This class is extended by {@link GeneralRating GeneralRating} and {@link QuestionRating QuestionRating}. </p>
+ */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Rating implements Serializable {
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
+	/** The id. */
 	@Id
 	@GeneratedValue
 	protected Long id;
+	
+	/** The entry. */
 	@ManyToOne
 	protected Entry entry;
+	
+	/** The owner. */
 	@ManyToOne
 	protected User owner;
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -40,18 +53,36 @@ public class Rating implements Serializable {
 		return true;
 	}
 
+	/**
+	 * Gets the entry.
+	 *
+	 * @return the entry
+	 */
 	public Entry getEntry() {
 		return entry;
 	}
 
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	public Long getId() {
 		return id;
 	}
 
+	/**
+	 * Gets the owner.
+	 *
+	 * @return the owner
+	 */
 	public User getOwner() {
 		return owner;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -60,14 +91,29 @@ public class Rating implements Serializable {
 		return result;
 	}
 
+	/**
+	 * Sets the entry.
+	 *
+	 * @param entry the new entry
+	 */
 	public void setEntry(Entry entry) {
 		this.entry = entry;
 	}
 
+	/**
+	 * Sets the id.
+	 *
+	 * @param id the new id
+	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
+	/**
+	 * Sets the owner.
+	 *
+	 * @param owner the new owner
+	 */
 	public void setOwner(User owner) {
 		this.owner = owner;
 	}

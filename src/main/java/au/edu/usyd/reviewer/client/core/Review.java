@@ -20,26 +20,46 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 
+/**
+ * <p>Class used to save the reviews that are given by peers/tutors/lecturers, it includes the content
+ * and date when it's saved as well as the feedback templates that were used to write it (when tutor/lectures use the Speed Back option).</p>
+ */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorValue(ReviewingActivity.REVIEW_TYPE_COMMENTS)
 public class Review implements Serializable {
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+	
+	/** The id. */
 	@Id
 	@GeneratedValue
 	protected Long id;
+	
+	/** The content. */
 	@Column(length = 65535)
 	protected String content;
+	
+	/** The saved Date. */
 	protected Date saved;
+	
+	/** The early submitted. */
 	protected Boolean earlySubmitted = false;
+	
+	/** The feedback_templates. */
 	@ManyToMany
 	@JoinTable(name = "Review_FeedbackTemplates")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@javax.persistence.OrderBy("number")
 	private Set<FeedbackTemplate> feedback_templates = new HashSet<FeedbackTemplate>();
+	
+	/** The feedback template type. */
 	private String feedbackTemplateType = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_DEFAULT;
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -57,18 +77,36 @@ public class Review implements Serializable {
 		return true;
 	}
 
+	/**
+	 * Gets the content.
+	 *
+	 * @return the content
+	 */
 	public String getContent() {
 		return content;
 	}
 
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	public Long getId() {
 		return id;
 	}
 
+	/**
+	 * Gets the saved.
+	 *
+	 * @return the saved
+	 */
 	public Date getSaved() {
 		return saved;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -77,42 +115,92 @@ public class Review implements Serializable {
 		return result;
 	}
 
+	/**
+	 * Checks if is blank.
+	 *
+	 * @return true, if is blank
+	 */
 	public boolean isBlank() {
 		return StringUtil.isBlank(content);
 	}
 
+	/**
+	 * Sets the content.
+	 *
+	 * @param content the new content
+	 */
 	public void setContent(String content) {
 		this.content = content;
 	}
 
+	/**
+	 * Sets the id.
+	 *
+	 * @param id the new id
+	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
+	/**
+	 * Sets the saved.
+	 *
+	 * @param saved the new saved
+	 */
 	public void setSaved(Date saved) {
 		this.saved = saved;
 	}
 
+	/**
+	 * Gets the early submitted.
+	 *
+	 * @return the early submitted
+	 */
 	public Boolean getEarlySubmitted() {
 		return earlySubmitted;
 	}
 
+	/**
+	 * Sets the early submitted.
+	 *
+	 * @param earlySubmitted the new early submitted
+	 */
 	public void setEarlySubmitted(Boolean earlySubmitted) {
 		this.earlySubmitted = earlySubmitted;
 	}
 
+	/**
+	 * Sets the feedback_templates.
+	 *
+	 * @param feedback_templates the new feedback_templates
+	 */
 	public void setFeedback_templates(Set<FeedbackTemplate> feedback_templates) {
 		this.feedback_templates = feedback_templates;
 	}
 
+	/**
+	 * Gets the feedback_templates.
+	 *
+	 * @return the feedback_templates
+	 */
 	public Set<FeedbackTemplate> getFeedback_templates() {
 		return feedback_templates;
 	}
 
+	/**
+	 * Sets the feedback template type.
+	 *
+	 * @param feedbackTemplateType the new feedback template type
+	 */
 	public void setFeedbackTemplateType(String feedbackTemplateType) {
 		this.feedbackTemplateType = feedbackTemplateType;
 	}
 
+	/**
+	 * Gets the feedback template type.
+	 *
+	 * @return the feedback template type
+	 */
 	public String getFeedbackTemplateType() {
 		return feedbackTemplateType;
 	}

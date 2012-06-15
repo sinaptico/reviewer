@@ -16,9 +16,9 @@ import javax.persistence.OneToMany;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class Course.
+ * <p>Class used for courses management, include the details of name, year, semester and the if 
+ * of the Google documents folder for templates and writing activities.</P
  */
 @Entity
 public class Course implements Serializable {

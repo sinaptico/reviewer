@@ -7,20 +7,37 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+//TODO: Improve the model so more than one mark can be given for a deadline.
+
+/**
+ * <p>Class used to save the marks given to students, the model handles 1 mark 
+ * per student per deadline.</p>
+ */
 @Entity
 public class Grade implements Serializable {
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 	
+	/** The id. */
 	@Id
 	@GeneratedValue
 	protected Long id;
+	
+	/** The deadline. */
 	@ManyToOne
 	private Deadline deadline;
+	
+	/** The user. */
 	@ManyToOne
 	private User user;
+	
+	/** The value. */
 	private Double value;
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -38,22 +55,45 @@ public class Grade implements Serializable {
 		return true;
 	}
 	
+	/**
+	 * Gets the deadline.
+	 *
+	 * @return the deadline
+	 */
 	public Deadline getDeadline() {
 		return deadline;
 	}
 	
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	public Long getId() {
 		return id;
 	}
 	
+	/**
+	 * Gets the user.
+	 *
+	 * @return the user
+	 */
 	public User getUser() {
 		return user;
 	}
 	
+	/**
+	 * Gets the value.
+	 *
+	 * @return the value
+	 */
 	public Double getValue() {
 		return value;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -62,18 +102,38 @@ public class Grade implements Serializable {
 		return result;
 	}
 
+	/**
+	 * Sets the deadline.
+	 *
+	 * @param deadline the new deadline
+	 */
 	public void setDeadline(Deadline deadline) {
 		this.deadline = deadline;
 	}
 
+	/**
+	 * Sets the id.
+	 *
+	 * @param id the new id
+	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
+	/**
+	 * Sets the user.
+	 *
+	 * @param user the new user
+	 */
 	public void setUser(User user) {
 		this.user = user;
 	}
 
+	/**
+	 * Sets the value.
+	 *
+	 * @param value the new value
+	 */
 	public void setValue(Double value) {
 		this.value = value;
 	}
