@@ -16,11 +16,20 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 
+/**
+ * <p>Class that extends {@link Review Review} class and it is used for reviews with a predefined 'Template' (For example: A test template).
+ * Templates define sections("Questions") and the "answers" to those questions are the list of 
+ * List<{@link TemplateReply TemplateReply}> stored in this Class.
+ * </p>
+ */
 @Entity
 @DiscriminatorValue(ReviewingActivity.REVIEW_TYPE_TEMPLATE)
 public class ReviewReply extends Review implements Serializable {
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+	
+	/** The template replies/answers to the review template sections. */
 	@OneToMany
 	@IndexColumn(name = "replyIndex")
 	@Cascade(CascadeType.SAVE_UPDATE)
@@ -28,13 +37,27 @@ public class ReviewReply extends Review implements Serializable {
 	private List<TemplateReply> templateReplies = new ArrayList<TemplateReply>();
 	
 	
+	/**
+	 * Gets the template replies.
+	 *
+	 * @return the template replies
+	 */
 	public List<TemplateReply> getTemplateReplies() {
 		return templateReplies;
 	}
+	
+	/**
+	 * Sets the template replies.
+	 *
+	 * @param templateReplies the new template replies
+	 */
 	public void setTemplateReplies(List<TemplateReply> templateReplies) {
 		this.templateReplies = templateReplies;
 	}
 	
+	/* (non-Javadoc)
+	 * @see au.edu.usyd.reviewer.client.core.Review#isBlank()
+	 */
 	@Override
 	public boolean isBlank() {
 		for (TemplateReply templateReply : templateReplies) {

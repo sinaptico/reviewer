@@ -91,8 +91,38 @@
 		            <artifactId>doclet</artifactId>
 		            <version>5.1</version>
 		          </docletArtifact>
+
+		          <additionalparam>
+		          	<!-- -views  -->
+		          	<!-- -operations --> 
+		          	<!-- -types --> 
+		          	-postfixpackage  
+		          	-nodefontpackagesize 6 
+		          	-nodefontclasssize 9 
+		          	-nodefontsize 8 
+		          	-edgefontsize 7 
+		          	-nodesep 0.05 
+		          	-ranksep 0.1
+		          	-quiet  
+		            -inferdep   
+		            -inferrel   
+		            <!-- -inferdepinpackage  -->   
+		            <!-- -visibility  -->
+		            -hide java.*|javax.*|com.google.gwt.*
+				  </additionalparam>
+				  
+          		  <useStandardDocletOptions>true</useStandardDocletOptions>
+		          <!-- 
+		          <additionalparam>-all -constructors</additionalparam>
+		          <additionalparam>-views -attributes -operations 
+					-types -postfixpackage -nodefontpackagesize 6 -nodefontclasssize 8 
+					-nodefontsize 7 -edgefontsize 7 -nodesep 0.05 -ranksep 0.1 -visibility 
+					-inferdep -inferrel -inferdepinpackage -hide 
+					java.*|javax.*
+				  </additionalparam>
 		          <additionalparam>-views</additionalparam>
-		          <useStandardDocletOptions>true</useStandardDocletOptions>	
+		          <useStandardDocletOptions>true</useStandardDocletOptions>
+		          	 -->
 		          <show>private</show>
 		          <noHelp>true</noHelp>		          	        
 		        </configuration>

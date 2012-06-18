@@ -14,12 +14,19 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 /**
- * <p>Class that extends {@link Entry Entry} class and it is used for document managements, it contains
+ * <p>Class that extends {@link Entry Entry} class and it is used for document management, it contains
  * the document id (Google Doc), owner(s) and the date it was submitted (if early submission is allowed)</>.
+ * 
  */
 @Entity
 public class DocEntry extends Entry {
 
+	
+	/*
+	 *  * @opt attributes
+	 * @opt operations
+	 */
+	
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 	

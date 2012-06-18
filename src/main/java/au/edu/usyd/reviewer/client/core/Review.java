@@ -22,7 +22,7 @@ import au.edu.usyd.reviewer.client.core.util.StringUtil;
 
 /**
  * <p>Class used to save the reviews that are given by peers/tutors/lecturers, it includes the content
- * and date when it's saved as well as the feedback templates that were used to write it (when tutor/lectures use the Speed Back option).</p>
+ * and date when it's saved as well as the feedback templates that were used to write it when tutor/lectures use the Speed Back option.</p>
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -44,10 +44,10 @@ public class Review implements Serializable {
 	/** The saved Date. */
 	protected Date saved;
 	
-	/** The early submitted. */
+	/** Flag to show if it was submitted before the deadline. */
 	protected Boolean earlySubmitted = false;
 	
-	/** The feedback_templates. */
+	/** The feedback templates used on the 'Speed Back' option. */
 	@ManyToMany
 	@JoinTable(name = "Review_FeedbackTemplates")
 	@LazyCollection(LazyCollectionOption.FALSE)
