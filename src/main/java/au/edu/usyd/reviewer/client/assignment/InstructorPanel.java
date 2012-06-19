@@ -43,7 +43,7 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
- * Panel that includes courses, documents and zip files with PDF versions of the submitted documents for the tutor/lecturer logged in.
+ * <p>Panel that includes courses, documents and zip files with PDF versions of the submitted documents for the tutor/lecturer logged in.</p>
  */
 public class InstructorPanel extends Composite {
 

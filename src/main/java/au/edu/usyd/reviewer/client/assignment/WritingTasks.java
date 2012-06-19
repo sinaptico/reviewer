@@ -47,7 +47,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
- * Panel that includes Writing activities with list of deadlines, links to PDF files created at each deadline and links to feedback received from peers/tutors/lecturers/Glosser.
+ * <p>Panel that includes Writing activities with list of deadlines, links to PDF files created at each deadline and links to feedback 
+ * received from peers/tutors/lecturers/Glosser.</p>
  */
 @SuppressWarnings("deprecation")
 public class WritingTasks extends Composite {

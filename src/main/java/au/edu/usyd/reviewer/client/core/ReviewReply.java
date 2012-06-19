@@ -55,8 +55,8 @@ public class ReviewReply extends Review implements Serializable {
 		this.templateReplies = templateReplies;
 	}
 	
-	/* (non-Javadoc)
-	 * @see au.edu.usyd.reviewer.client.core.Review#isBlank()
+	/** 
+	 * Check if all the answers given to the template are empty. (Return true if they are).
 	 */
 	@Override
 	public boolean isBlank() {

@@ -16,7 +16,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
- * The Class DocEntryForm used from the instructor panel to lock/un-lock specific documents.
+ * <p>The Class DocEntryForm used from the instructor panel to lock/un-lock specific documents.</p>
  */
 public class DocEntryForm extends Composite {
 

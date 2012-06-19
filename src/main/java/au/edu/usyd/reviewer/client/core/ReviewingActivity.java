@@ -7,7 +7,7 @@ import javax.persistence.ManyToOne;
 /**
  * <p>Class that extends {@link Activity Activity} class and it is used for Reviewing Activities management, it contains
  * the start and finish dates, allocation strategy (random or spread sheet), type of form (Questions, comments, Template), 
- * as well as the reviewers number/type (lecturer/tutor/student) of the reviews.</p>
+ * as well as the number of reviewers (lecturer/tutor/student) per review.</p>
  */
 @Entity
 public class ReviewingActivity extends Activity<ReviewEntry> {
