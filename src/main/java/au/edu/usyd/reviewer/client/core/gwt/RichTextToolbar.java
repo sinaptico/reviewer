@@ -44,9 +44,19 @@ import com.google.gwt.user.client.ui.RichTextArea.Formatter;
 import com.google.gwt.user.client.ui.ToggleButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * Class that includes "Rich text option" into Review forms. 
+ */
 public class RichTextToolbar extends Composite implements HasChangeHandlers {
-	/** Click Handler of the Toolbar **/
+	
+	/**
+	 * Click Handler of the Toolbar *.
+	 */
 	private class EventHandler implements ClickHandler, KeyUpHandler, ChangeHandler {
+		
+		/* (non-Javadoc)
+		 * @see com.google.gwt.event.dom.client.ChangeHandler#onChange(com.google.gwt.event.dom.client.ChangeEvent)
+		 */
 		@Override
 		public void onChange(ChangeEvent event) {
 			if (event.getSource().equals(fontlist)) {
@@ -64,6 +74,9 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 			}
 		}
 
+		/* (non-Javadoc)
+		 * @see com.google.gwt.event.dom.client.ClickHandler#onClick(com.google.gwt.event.dom.client.ClickEvent)
+		 */
 		@Override
 		public void onClick(ClickEvent event) {
 			if (event.getSource().equals(bold)) {
@@ -192,19 +205,24 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 			updateStatus();
 		}
 
+		/* (non-Javadoc)
+		 * @see com.google.gwt.event.dom.client.KeyUpHandler#onKeyUp(com.google.gwt.event.dom.client.KeyUpEvent)
+		 */
 		@Override
 		public void onKeyUp(KeyUpEvent event) {
 			updateStatus();
 		}
 	}
 
-	/** Local CONSTANTS **/
+	/** Local CONSTANTS *. */
 	// ImageMap and CSS related
 	private static final String HTTP_STATIC_ICONS_GIF = "http://blog.elitecoderz.net/wp-includes/js/tinymce/themes/advanced/img/icons.gif";
 
+	/** The Constant CSS_ROOT_NAME. */
 	private static final String CSS_ROOT_NAME = "RichTextToolbar";
 	// Color and Fontlists - First Value (key) is the Name to display, Second
 	// Value (value) is the HTML-Definition
+	/** The Constant GUI_COLORLIST. */
 	public final static HashMap<String, String> GUI_COLORLIST = new HashMap<String, String>();
 	static {
 		GUI_COLORLIST.put("White", "#FFFFFF");
@@ -214,6 +232,8 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 		GUI_COLORLIST.put("Yellow", "yellow");
 		GUI_COLORLIST.put("Blue", "blue");
 	}
+	
+	/** The Constant GUI_FONTLIST. */
 	public final static HashMap<String, String> GUI_FONTLIST = new HashMap<String, String>();
 
 	static {
@@ -225,62 +245,140 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 		GUI_FONTLIST.put("Verdana", "Verdana");
 	}
 	// HTML Related (styles made by SPAN and DIV)
+	/** The Constant HTML_STYLE_CLOSE_SPAN. */
 	private static final String HTML_STYLE_CLOSE_SPAN = "</span>";
+	
+	/** The Constant HTML_STYLE_CLOSE_DIV. */
 	private static final String HTML_STYLE_CLOSE_DIV = "</div>";
+	
+	/** The Constant HTML_STYLE_OPEN_BOLD. */
 	private static final String HTML_STYLE_OPEN_BOLD = "<span style=\"font-weight: bold;\">";
+	
+	/** The Constant HTML_STYLE_OPEN_ITALIC. */
 	private static final String HTML_STYLE_OPEN_ITALIC = "<span style=\"font-weight: italic;\">";
+	
+	/** The Constant HTML_STYLE_OPEN_UNDERLINE. */
 	private static final String HTML_STYLE_OPEN_UNDERLINE = "<span style=\"font-weight: underline;\">";
+	
+	/** The Constant HTML_STYLE_OPEN_LINETHROUGH. */
 	private static final String HTML_STYLE_OPEN_LINETHROUGH = "<span style=\"font-weight: line-through;\">";
+	
+	/** The Constant HTML_STYLE_OPEN_ALIGNLEFT. */
 	private static final String HTML_STYLE_OPEN_ALIGNLEFT = "<div style=\"text-align: left;\">";
+	
+	/** The Constant HTML_STYLE_OPEN_ALIGNCENTER. */
 	private static final String HTML_STYLE_OPEN_ALIGNCENTER = "<div style=\"text-align: center;\">";
+	
+	/** The Constant HTML_STYLE_OPEN_ALIGNRIGHT. */
 	private static final String HTML_STYLE_OPEN_ALIGNRIGHT = "<div style=\"text-align: right;\">";
 
+	/** The Constant HTML_STYLE_OPEN_INDENTRIGHT. */
 	private static final String HTML_STYLE_OPEN_INDENTRIGHT = "<div style=\"margin-left: 40px;\">";
 	// HTML Related (styles made by custom HTML-Tags)
+	/** The Constant HTML_STYLE_OPEN_SUBSCRIPT. */
 	private static final String HTML_STYLE_OPEN_SUBSCRIPT = "<sub>";
+	
+	/** The Constant HTML_STYLE_CLOSE_SUBSCRIPT. */
 	private static final String HTML_STYLE_CLOSE_SUBSCRIPT = "</sub>";
+	
+	/** The Constant HTML_STYLE_OPEN_SUPERSCRIPT. */
 	private static final String HTML_STYLE_OPEN_SUPERSCRIPT = "<sup>";
+	
+	/** The Constant HTML_STYLE_CLOSE_SUPERSCRIPT. */
 	private static final String HTML_STYLE_CLOSE_SUPERSCRIPT = "</sup>";
+	
+	/** The Constant HTML_STYLE_OPEN_ORDERLIST. */
 	private static final String HTML_STYLE_OPEN_ORDERLIST = "<ol><li>";
+	
+	/** The Constant HTML_STYLE_CLOSE_ORDERLIST. */
 	private static final String HTML_STYLE_CLOSE_ORDERLIST = "</ol></li>";
+	
+	/** The Constant HTML_STYLE_OPEN_UNORDERLIST. */
 	private static final String HTML_STYLE_OPEN_UNORDERLIST = "<ul><li>";
 
+	/** The Constant HTML_STYLE_CLOSE_UNORDERLIST. */
 	private static final String HTML_STYLE_CLOSE_UNORDERLIST = "</ul></li>";
 
 	// HTML Related (styles without closing Tag)
+	/** The Constant HTML_STYLE_HLINE. */
 	private static final String HTML_STYLE_HLINE = "<hr style=\"width: 100%; height: 2px;\">";
 	// GUI Related stuff
+	/** The Constant GUI_DIALOG_INSERTURL. */
 	private static final String GUI_DIALOG_INSERTURL = "Enter a link URL:";
 
+	/** The Constant GUI_DIALOG_IMAGEURL. */
 	private static final String GUI_DIALOG_IMAGEURL = "Enter an image URL:";
+	
+	/** The Constant GUI_LISTNAME_COLORS. */
 	private static final String GUI_LISTNAME_COLORS = "Colors";
 
+	/** The Constant GUI_LISTNAME_FONTS. */
 	private static final String GUI_LISTNAME_FONTS = "Fonts";
+	
+	/** The Constant GUI_HOVERTEXT_SWITCHVIEW. */
 	private static final String GUI_HOVERTEXT_SWITCHVIEW = "Switch View HTML/Source";
+	
+	/** The Constant GUI_HOVERTEXT_REMOVEFORMAT. */
 	private static final String GUI_HOVERTEXT_REMOVEFORMAT = "Remove Formatting";
+	
+	/** The Constant GUI_HOVERTEXT_IMAGE. */
 	private static final String GUI_HOVERTEXT_IMAGE = "Insert Image";
+	
+	/** The Constant GUI_HOVERTEXT_HLINE. */
 	private static final String GUI_HOVERTEXT_HLINE = "Insert Horizontal Line";
+	
+	/** The Constant GUI_HOVERTEXT_BREAKLINK. */
 	private static final String GUI_HOVERTEXT_BREAKLINK = "Break Link";
+	
+	/** The Constant GUI_HOVERTEXT_LINK. */
 	private static final String GUI_HOVERTEXT_LINK = "Generate Link";
+	
+	/** The Constant GUI_HOVERTEXT_IDENTLEFT. */
 	private static final String GUI_HOVERTEXT_IDENTLEFT = "Ident Left";
+	
+	/** The Constant GUI_HOVERTEXT_IDENTRIGHT. */
 	private static final String GUI_HOVERTEXT_IDENTRIGHT = "Ident Right";
+	
+	/** The Constant GUI_HOVERTEXT_UNORDERLIST. */
 	private static final String GUI_HOVERTEXT_UNORDERLIST = "Unordered List";
+	
+	/** The Constant GUI_HOVERTEXT_ORDERLIST. */
 	private static final String GUI_HOVERTEXT_ORDERLIST = "Ordered List";
+	
+	/** The Constant GUI_HOVERTEXT_ALIGNRIGHT. */
 	private static final String GUI_HOVERTEXT_ALIGNRIGHT = "Align Right";
+	
+	/** The Constant GUI_HOVERTEXT_ALIGNCENTER. */
 	private static final String GUI_HOVERTEXT_ALIGNCENTER = "Align Center";
+	
+	/** The Constant GUI_HOVERTEXT_ALIGNLEFT. */
 	private static final String GUI_HOVERTEXT_ALIGNLEFT = "Align Left";
+	
+	/** The Constant GUI_HOVERTEXT_SUPERSCRIPT. */
 	private static final String GUI_HOVERTEXT_SUPERSCRIPT = "Superscript";
+	
+	/** The Constant GUI_HOVERTEXT_SUBSCRIPT. */
 	private static final String GUI_HOVERTEXT_SUBSCRIPT = "Subscript";
+	
+	/** The Constant GUI_HOVERTEXT_STROKE. */
 	private static final String GUI_HOVERTEXT_STROKE = "Stroke";
+	
+	/** The Constant GUI_HOVERTEXT_UNDERLINE. */
 	private static final String GUI_HOVERTEXT_UNDERLINE = "Underline";
+	
+	/** The Constant GUI_HOVERTEXT_ITALIC. */
 	private static final String GUI_HOVERTEXT_ITALIC = "Italic";
 
+	/** The Constant GUI_HOVERTEXT_BOLD. */
 	private static final String GUI_HOVERTEXT_BOLD = "Bold";
 
 	/**
 	 * Native JavaScript that returns the selected text and position of the
-	 * start
-	 **/
+	 * start.
+	 *
+	 * @param elem the elem
+	 * @return the selection
+	 */
 	public static native JsArrayString getSelection(Element elem) /*-{
 																	var txt = "";
 																	var pos = 0;
@@ -306,48 +404,96 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 																	return [""+txt,""+pos];
 																	}-*/;
 
-	/** Private Variables **/
+	/** Private Variables *. */
 	// The main (Vertical)-Panel and the two inner (Horizontal)-Panels
 	private VerticalPanel outer;
 
+	/** The top panel. */
 	private HorizontalPanel topPanel;
+	
+	/** The bottom panel. */
 	private HorizontalPanel bottomPanel;
 
 	// The RichTextArea this Toolbar referes to and the Interfaces to access the
 	// RichTextArea
+	/** The style text. */
 	private RichTextArea styleText;
 
+	/** The style text formatter. */
 	private Formatter styleTextFormatter;
 	// We use an internal class of the ClickHandler and the KeyUpHandler to be
 	// private to others with these events
+	/** The ev handler. */
 	private EventHandler evHandler;
 	// The Buttons of the Menubar
+	/** The bold. */
 	private ToggleButton bold;
+	
+	/** The italic. */
 	private ToggleButton italic;
+	
+	/** The underline. */
 	private ToggleButton underline;
+	
+	/** The stroke. */
 	private ToggleButton stroke;
+	
+	/** The subscript. */
 	private ToggleButton subscript;
+	
+	/** The superscript. */
 	private ToggleButton superscript;
+	
+	/** The alignleft. */
 	private PushButton alignleft;
+	
+	/** The alignmiddle. */
 	private PushButton alignmiddle;
+	
+	/** The alignright. */
 	private PushButton alignright;
+	
+	/** The orderlist. */
 	private PushButton orderlist;
+	
+	/** The unorderlist. */
 	private PushButton unorderlist;
+	
+	/** The indentleft. */
 	private PushButton indentleft;
+	
+	/** The indentright. */
 	private PushButton indentright;
+	
+	/** The generatelink. */
 	private PushButton generatelink;
+	
+	/** The breaklink. */
 	private PushButton breaklink;
+	
+	/** The insertline. */
 	private PushButton insertline;
+	
+	/** The insertimage. */
 	private PushButton insertimage;
 
+	/** The removeformatting. */
 	private PushButton removeformatting;
+	
+	/** The texthtml. */
 	private ToggleButton texthtml;
 
+	/** The fontlist. */
 	private ListBox fontlist;
 
+	/** The colorlist. */
 	private ListBox colorlist;
 
-	/** Constructor of the Toolbar **/
+	/**
+	 * Constructor of the Toolbar *.
+	 *
+	 * @param richtext the richtext
+	 */
 	public RichTextToolbar(RichTextArea richtext) {
 		// Initialize the main-panel
 		outer = new VerticalPanel();
@@ -390,6 +536,9 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 		buildTools();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.google.gwt.event.dom.client.HasChangeHandlers#addChangeHandler(com.google.gwt.event.dom.client.ChangeHandler)
+	 */
 	@Override
 	public HandlerRegistration addChangeHandler(final ChangeHandler handler) {
 
@@ -418,7 +567,9 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 		return handlerRegistration;
 	}
 
-	/** Initialize the options on the toolbar **/
+	/**
+	 * Initialize the options on the toolbar *.
+	 */
 	private void buildTools() {
 		// Init the TOP Panel forst
 		topPanel.add(bold = createToggleButton(HTTP_STATIC_ICONS_GIF, 0, 0, 20, 20, GUI_HOVERTEXT_BOLD));
@@ -454,7 +605,12 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 		bottomPanel.add(colorlist = createColorList());
 	}
 
-	/** Method called to toggle the style in HTML-Mode **/
+	/**
+	 * Method called to toggle the style in HTML-Mode *.
+	 *
+	 * @param startTag the start tag
+	 * @param stopTag the stop tag
+	 */
 	private void changeHtmlStyle(String startTag, String stopTag) {
 		JsArrayString tx = getSelection(styleText.getElement());
 		String txbuffer = styleText.getText();
@@ -463,7 +619,11 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 		styleText.setText(txbuffer.substring(0, startpos) + startTag + selectedText + stopTag + txbuffer.substring(startpos + selectedText.length()));
 	}
 
-	/** Method to create the colorlist for the toolbar **/
+	/**
+	 * Method to create the colorlist for the toolbar *.
+	 *
+	 * @return the list box
+	 */
 	private ListBox createColorList() {
 		ListBox mylistBox = new ListBox();
 		mylistBox.addChangeHandler(evHandler);
@@ -477,7 +637,11 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 		return mylistBox;
 	}
 
-	/** Method to create the fontlist for the toolbar **/
+	/**
+	 * Method to create the fontlist for the toolbar *.
+	 *
+	 * @return the list box
+	 */
 	private ListBox createFontList() {
 		ListBox mylistBox = new ListBox();
 		mylistBox.addChangeHandler(evHandler);
@@ -491,7 +655,17 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 		return mylistBox;
 	}
 
-	/** Method to create a Push button for the toolbar **/
+	/**
+	 * Method to create a Push button for the toolbar *.
+	 *
+	 * @param url the url
+	 * @param top the top
+	 * @param left the left
+	 * @param width the width
+	 * @param height the height
+	 * @param tip the tip
+	 * @return the push button
+	 */
 	private PushButton createPushButton(String url, Integer top, Integer left, Integer width, Integer height, String tip) {
 		Image extract = new Image(url, left, top, width, height);
 		PushButton tb = new PushButton(extract);
@@ -504,7 +678,17 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 		return tb;
 	}
 
-	/** Method to create a Toggle button for the toolbar **/
+	/**
+	 * Method to create a Toggle button for the toolbar *.
+	 *
+	 * @param url the url
+	 * @param top the top
+	 * @param left the left
+	 * @param width the width
+	 * @param height the height
+	 * @param tip the tip
+	 * @return the toggle button
+	 */
 	private ToggleButton createToggleButton(String url, Integer top, Integer left, Integer width, Integer height, String tip) {
 		Image extract = new Image(url, left, top, width, height);
 		ToggleButton tb = new ToggleButton(extract);
@@ -519,16 +703,18 @@ public class RichTextToolbar extends Composite implements HasChangeHandlers {
 
 	/**
 	 * Private method with a more understandable name to get if HTML mode is on
-	 * or not
-	 **/
+	 * or not.
+	 *
+	 * @return the boolean
+	 */
 	private Boolean isHTMLMode() {
 		return texthtml.isDown();
 	}
 
 	/**
 	 * Private method to set the toggle buttons and disable/enable buttons which
-	 * do not work in html-mode
-	 **/
+	 * do not work in html-mode.
+	 */
 	private void updateStatus() {
 		if (styleTextFormatter != null) {
 			bold.setDown(styleTextFormatter.isBold());
