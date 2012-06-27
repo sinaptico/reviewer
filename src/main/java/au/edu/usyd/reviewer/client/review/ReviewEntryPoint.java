@@ -62,8 +62,6 @@ import com.smartgwt.client.types.SelectionAppearance;
 import com.smartgwt.client.types.TreeModelType;
 import com.smartgwt.client.types.VisibilityMode;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
-import com.smartgwt.client.widgets.grid.events.SelectionChangedHandler;
-import com.smartgwt.client.widgets.grid.events.SelectionEvent;
 import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VStack;
@@ -73,17 +71,47 @@ import com.smartgwt.client.widgets.tree.Tree;
 import com.smartgwt.client.widgets.tree.TreeGrid;
 import com.smartgwt.client.widgets.tree.TreeNode;
 
+//TODO Move CSS style to external files
 
+/**
+ * <p>Class That serves as the entry point for the review functionality; Includes:
+ * <ul>
+ * 	<li>Deadline.</li>
+ * 	<li>Link to the document and Link to the document in Glosser.</li>
+ * 	<li>Mark/Grade option.</li>
+ * 	<li>SpeedBack options (Semi-automated feedback).</li>
+ * 	<li>TextBox for comments.</li>
+ * </ul>
+ * </p> 
+ */
 public class ReviewEntryPoint implements EntryPoint {
+	
+	/** CheckBox that indicates if links to tutorials are added if the selected rubric is "fail". */
 	final CheckBox addFailLink = WidgetFactory.createNewCheckBoxWithId("addFailLink","addFailLink", "");  
+    
+	/** CheckBox that indicates if links to tutorials are added if the selected rubric is "Pass". */
     final CheckBox addPassLink = WidgetFactory.createNewCheckBoxWithId("addPassLink","addPassLink", "");  
+    
+    /** CheckBox that indicates if links to tutorials are added if the selected rubric is "Credit". */
     final CheckBox addCreditLink = WidgetFactory.createNewCheckBoxWithId("addFailLink","addCreditLink", "");  
+    
+    /** CheckBox that indicates if links to tutorials are added if the selected rubric is "Distinction". */
     final CheckBox addDistinctionLink = WidgetFactory.createNewCheckBoxWithId("addPassLink","addDistinctionLink", "");  
+    
+    /** CheckBox that indicates if links to tutorials are added if the selected rubric is "High Distinction". */
     final CheckBox addHighLink = WidgetFactory.createNewCheckBoxWithId("addPassLink","addHighLink", "");
 
+	/** Asynchronous review service for model management. */
 	private ReviewServiceAsync reviewService = (ReviewServiceAsync) GWT.create(ReviewService.class);
+	
+	/** The review form. */
 	ReviewForm<?> reviewForm;
 
+	/** 
+	 * <p>Main method of the entry point that loads all the panels and components for the form.</p>
+	 * 
+	 * @see com.google.gwt.core.client.EntryPoint#onModuleLoad()
+	 */
 	@Override
 	public void onModuleLoad() {
 		String view = Window.Location.getParameter("view");
@@ -446,7 +474,7 @@ public class ReviewEntryPoint implements EntryPoint {
 							//submitPanel.add(saveDate);
 							
 							
-							/***************************  CELL BROWSER **********************************/
+							/***************************  CELL BROWSER (SpeedBack Function) **********************************/
 							if (isCourseInstructor(course, reviewEntry)){
 								final WritingActivity writingActivityForMail = writingActivity;
 								reviewService.getDocumentTypes(writingActivity.getGenre(), new AsyncCallback<Collection<DocumentType>>() {
@@ -658,8 +686,15 @@ public class ReviewEntryPoint implements EntryPoint {
 		RootPanel.get("reviewPanel").add(reviewPanel);
 	}
 	
-		  public static class RubricsTreeGrid extends TreeGrid {
-		        public RubricsTreeGrid() {
+		/**
+  		 * Class that defines the rubrics "Tree" for the SpeedBack option.  
+  		 */
+  		public static class RubricsTreeGrid extends TreeGrid {
+		        
+        		/**
+        		 * Instantiates a new rubrics tree grid.
+        		 */
+        		public RubricsTreeGrid() {
 		            setWidth("887px");
 		            setHeight("256px");
 		            setShowEdges(true);
@@ -686,9 +721,26 @@ public class ReviewEntryPoint implements EntryPoint {
 		        }
 		    }
 
-		    public static class RubricsTreeNode extends TreeNode {
+		    /**
+    		 * Class that defines nodes for the rubrics "Tree".
+    		 */
+    		public static class RubricsTreeNode extends TreeNode {
 		        
-		        public RubricsTreeNode(Long Id, String name, String link, String icon, String text, int type, int gradeNum, String descriptionA, String descriptionB, RubricsTreeNode... children) {
+		        /**
+        		 * Instantiates a new rubrics tree node.
+        		 *
+        		 * @param Id the id
+        		 * @param name the name
+        		 * @param link the link
+        		 * @param icon the icon
+        		 * @param text the text
+        		 * @param type the type
+        		 * @param gradeNum the grade
+        		 * @param descriptionA the description a
+        		 * @param descriptionB the description b
+        		 * @param children the children
+        		 */
+        		public RubricsTreeNode(Long Id, String name, String link, String icon, String text, int type, int gradeNum, String descriptionA, String descriptionB, RubricsTreeNode... children) {
 		        	setAttribute("Name", name);
 		            setAttribute("Text", text);
 		            setAttribute("Id", Id);
@@ -728,6 +780,16 @@ public class ReviewEntryPoint implements EntryPoint {
 		        }
 		    }	
 		    
+			/**
+			 * Builds the feedback with rubrics.
+			 *
+			 * @param records the records
+			 * @param docEntry the doc entry
+			 * @param reviewEntry the review entry
+			 * @param writingActivity the writing activity
+			 * @param reviewingActivity the reviewing activity
+			 * @return the string
+			 */
 			private String buildFeedbackWithRubrics(ListGridRecord[] records, DocEntry docEntry, ReviewEntry reviewEntry, WritingActivity writingActivity, ReviewingActivity reviewingActivity) {
 				List<String> selectedRubrics =new ArrayList<String>();				
 				
@@ -802,6 +864,12 @@ public class ReviewEntryPoint implements EntryPoint {
 				return finalContent;
 			}	
 			
+			/**
+			 * Check grade mark and CheckBox that indicates if links to tutorials are added.
+			 *
+			 * @param gradeNum the grade
+			 * @return true, if successful
+			 */
 			private boolean checkGradeNum(Integer gradeNum) {
 				boolean result =false;
 				
@@ -824,6 +892,12 @@ public class ReviewEntryPoint implements EntryPoint {
 			}
 			
 			
+			/**
+			 * Builds the rubrics tree.
+			 *
+			 * @param documentTypes the document types
+			 * @return the rubrics tree node[]
+			 */
 			private RubricsTreeNode[] buildRubricsTree(Collection<DocumentType> documentTypes) {
 				RubricsTreeNode[] documentTypeNodes = new RubricsTreeNode[documentTypes.size()];
 				int i=0;

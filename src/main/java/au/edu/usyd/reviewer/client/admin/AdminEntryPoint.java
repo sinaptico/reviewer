@@ -136,7 +136,6 @@ public class AdminEntryPoint implements EntryPoint {
 	 * <p>Main method of the entry point that loads the "Glosser sites" and menus for user impersonation, courses, activities and review 
 	 * templates creation. It also loads the panels and trees with the course and review templates lists according to the defined filter (Year - Semester).</p>
 	 * 
-	 * 
 	 */
 	@Override
 	public void onModuleLoad() {

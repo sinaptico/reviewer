@@ -10,7 +10,8 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
- * The Interface AssignmentService used to manage user activities (Writing and Reviewing), submit documents and update password for non wasm users.
+ * <p>The Interface AssignmentService used to manage user activities (Writing 
+ * and Reviewing), submit documents and update password for non wasm users.</p>
  * 
  */
 @RemoteServiceRelativePath("assignmentService")

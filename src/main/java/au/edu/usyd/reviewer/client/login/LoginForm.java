@@ -15,12 +15,26 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 
+/**
+ * <p>Class with the login fields for non-UniKey access.</p>
+ */
 public class LoginForm extends Composite {
+	
+	/** TextBox with user name. */
 	private TextBox username = new TextBox();
+	
+	/** Password TextBox. */
 	private PasswordTextBox password = new PasswordTextBox();
+	
+	/** Label for error messages. */
 	private Label errorLabel = new Label();
+	
+	/** The login button. */
 	private Button loginButton = new Button("Log in");
 
+	/**
+	 * Instantiates a new login form.
+	 */
 	public LoginForm() {
 
 		Grid grid = new Grid(4, 2);
@@ -57,8 +71,15 @@ public class LoginForm extends Composite {
 		initWidget(form);
 	}
 
-	private boolean validateLogin(String usename, String password) {
-		if (StringUtil.isNotBlank(usename) && StringUtil.isNotBlank(password)) {
+	/**
+	 * Validates login.
+	 *
+	 * @param username the username
+	 * @param password the password
+	 * @return true, if successful
+	 */
+	private boolean validateLogin(String username, String password) {
+		if (StringUtil.isNotBlank(username) && StringUtil.isNotBlank(password)) {
 			errorLabel.setText("");
 			return true;
 		} else {
