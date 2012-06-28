@@ -8,15 +8,32 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * <p>Class that includes grading items for reviews, it is used by students to rate the quality of the received feedback.</p>
+ */
 public class GeneralRatingForm extends RatingForm<GeneralRating> {
 
+	/** The main panel of the form where all the fields and widgets are placed. */
 	private VerticalPanel mainPanel = new VerticalPanel();
+	
+	/** TextArea where the comments are written. */
 	private TextArea comment = new TextArea();
+	
+	/** The overall score. */
 	private ListBox overallScore = new ListBox();
+	
+	/** The usefulness score. */
 	private ListBox usefulnessScore = new ListBox();
+	
+	/** The evidence score. */
 	private ListBox evidenceScore = new ListBox();
+	
+	/** The content score. */
 	private ListBox contentScore = new ListBox();
 
+	/**
+	 * Instantiates a new general rating form.
+	 */
 	public GeneralRatingForm() {
 		overallScore.addItem("");
 		overallScore.addItem("Excelent");
@@ -39,6 +56,9 @@ public class GeneralRatingForm extends RatingForm<GeneralRating> {
 		initWidget(mainPanel);
 	}
 
+	/* (non-Javadoc)
+	 * @see au.edu.usyd.reviewer.client.review.form.RatingForm#getRating()
+	 */
 	@Override
 	public GeneralRating getRating() {
 		rating.setComment(comment.getValue());
@@ -49,6 +69,9 @@ public class GeneralRatingForm extends RatingForm<GeneralRating> {
 		return rating;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.google.gwt.user.client.ui.Widget#onLoad()
+	 */
 	@Override
 	public void onLoad() {
 		comment.setSize("300px", "100px");
@@ -66,6 +89,9 @@ public class GeneralRatingForm extends RatingForm<GeneralRating> {
 		mainPanel.add(ratingGrid);
 	}
 
+	/* (non-Javadoc)
+	 * @see au.edu.usyd.reviewer.client.review.form.RatingForm#setRating(au.edu.usyd.reviewer.client.core.Rating)
+	 */
 	@Override
 	public void setRating(GeneralRating rating) {
 		this.rating = rating;

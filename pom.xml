@@ -110,6 +110,7 @@
 		            <!-- -visibility  -->
 		            -hide java.*|javax.*|com.google.gwt.*
 				  </additionalparam>
+				  <docfilessubdirs>true</docfilessubdirs>   
 				  
           		  <useStandardDocletOptions>true</useStandardDocletOptions>
 		          <!-- 
