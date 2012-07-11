@@ -10,8 +10,8 @@
 		<!-- Connection -->
 		<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
 		<property name="connection.url">jdbc:mysql://localhost/glosser?autoReconnect=true</property>
-		<property name="connection.username">root</property>
-		<property name="connection.password">itsyourfault!</property>
+		<property name="connection.username">iwrite</property>
+		<property name="connection.password">iwrite</property>
 
 		<!-- SQL dialect -->
 		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
@@ -23,7 +23,7 @@
 		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
 
 		<!-- Echo all executed SQL to stdout -->
-		<property name="show_sql">false</property>
+		<property name="show_sql">true</property>
 		
 		<!-- Update the database schema on startup -->
         <property name="hibernate.hbm2ddl.auto">update</property>

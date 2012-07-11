@@ -428,9 +428,10 @@ public class AssignmentManager {
 		return writingActivity;
 	}
 
-	public Course saveCourse(Course course) throws Exception {
-		//Set up folders and templates		
+	private void setUpFoldersAndTemplates(Course course) throws Exception{
+		
 		List<DocumentListEntry> templates = assignmentRepository.setUpFolders(course);
+
 		course.getTemplates().clear();
 		for (DocumentListEntry template : templates) {
 			DocEntry tempDocEntry = assignmentDao.loadDocEntry(template.getResourceId());
@@ -446,34 +447,38 @@ public class AssignmentManager {
 		
 		// create course folder
 		assignmentRepository.updateCourse(course);
+	}
+	
+	private void saveStudentUsers(Course course) throws Exception {
 		
-		///Google Users//////////////////////////////////////////////////////
-		// save student users
 		for (UserGroup studentGroup : course.getStudentGroups()) {
 			for (User student : studentGroup.getUsers()) {
 				if (!assignmentDao.containsUser(student)) {
 					assignmentRepository.createUser(student);
 				}
 			}
-		}
+		}	
+	}
+	
+	private void saveLecturerUsers(Course course) throws Exception{
 		
-		// save lecturer users
 		for (User lecturer : course.getLecturers()) {
 			if (!assignmentDao.containsUser(lecturer)) {
 					assignmentRepository.createUser(lecturer);
 			}
 		}
+	}
+	
+	private void saveTutorUsers(Course course) throws Exception {
 		
-		// save tutor users
 		for (User tutor : course.getTutors()) {
 			if (!assignmentDao.containsUser(tutor)) {
 					assignmentRepository.createUser(tutor);
 			}
-		}				
-		///////////////////////////////////////////////////////////////////////		
-		
-		///Local DataBase//////////////////////////////////////////////////////
-		// save course
+		}
+	}
+	
+	private void saveLecturerDB(Course course) throws Exception{
 		for(User lecturer : course.getLecturers()) {
 			if(!assignmentDao.containsUser(lecturer)){
 				//send password notification if not a wasm user
@@ -484,6 +489,9 @@ public class AssignmentManager {
 				assignmentDao.save(lecturer);
 			}
 		}
+	}
+	
+	private void saveTutorDB(Course course) throws Exception {
 		for(User tutor : course.getTutors()) {
 			if(!assignmentDao.containsUser(tutor)){
 				//send password notification if not a wasm user
@@ -494,6 +502,9 @@ public class AssignmentManager {
 				assignmentDao.save(tutor);	
 			}				
 		}
+	}
+	
+	private void saveUserGroupDB(Course course)throws Exception{
 		for(UserGroup studentGroup : course.getStudentGroups()) {
 			for(User student : studentGroup.getUsers()) {
 				if(!assignmentDao.containsUser(student)){
@@ -506,14 +517,11 @@ public class AssignmentManager {
 				}
 			}
 			assignmentDao.save(studentGroup);
-		}		
-		///Local DataBase//////////////////////////////////////////////////////
+		}
+	}
+	
+	private void processActivitiesForNewUsers(Course course) throws Exception {
 		
-		assignmentRepository.updateCourseDocumentPermissions(course);
-		
-		course.setDomainName(Reviewer.getGoogleDomain());
-		assignmentDao.save(course);
-
 		for (WritingActivity writingActivity : course.getWritingActivities()) {
 			// create documents for new users
 			if (writingActivity.getStatus() >= Activity.STATUS_START && writingActivity.getStatus() < Activity.STATUS_FINISH) {
@@ -526,6 +534,47 @@ public class AssignmentManager {
 				}
 			}
 		}
+	}
+	
+	public Course saveCourse(Course course) throws Exception {
+		//Set up folders and templates	
+		setUpFoldersAndTemplates(course);
+		
+		///Google Users//////////////////////////////////////////////////////
+		// save student users
+		saveStudentUsers(course);
+		
+		// save lecturer users
+		saveLecturerUsers(course);
+		
+		// save tutor users
+		saveTutorUsers(course);
+		
+		///////////////////////////////////////////////////////////////////////		
+		
+		///Local DataBase//////////////////////////////////////////////////////
+		// save lecture in DB
+		saveLecturerDB(course);
+		
+		// save tutor in DB
+		saveTutorDB(course);
+		
+		// save user group in DB
+		saveUserGroupDB(course);
+		
+		// update course document permissions
+		assignmentRepository.updateCourseDocumentPermissions(course);
+			
+		course.setDomainName(Reviewer.getGoogleDomain());
+		
+		// save course in DB
+		assignmentDao.save(course);		
+		
+		///Local DataBase//////////////////////////////////////////////////////
+		
+		// for each activity create documents and reviewers for new users
+		processActivitiesForNewUsers(course);
+		
 		return course;
 	}
 
@@ -1066,7 +1115,6 @@ public class AssignmentManager {
 
 	public ReviewTemplate saveReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 		ReviewTemplate reviewTemplateToSave = new ReviewTemplate();
-		
 		reviewTemplateToSave.setName(reviewTemplate.getName());
 		reviewTemplateToSave.setDescription(reviewTemplate.getDescription());
 		reviewTemplateToSave.setSections(reviewTemplate.getSections());		
@@ -1083,8 +1131,7 @@ public class AssignmentManager {
 			}
 			assignmentDao.save(section);
 		}
-		
-		assignmentDao.save(reviewTemplateToSave);		
+		assignmentDao.save(reviewTemplateToSave);
 		return reviewTemplateToSave;		
 	}
 	

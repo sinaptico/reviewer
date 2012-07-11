@@ -7,13 +7,16 @@
 	<session-factory>
 
 		<!-- Connection -->
-		<property name="connection.driver_class">org.hsqldb.jdbcDriver</property>
-		<property name="connection.url">jdbc:hsqldb:mem:reviewer</property>
-		<property name="connection.username">sa</property>
-		<property name="connection.password"></property>
+		<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+		<!--property name="connection.url"> jdbc::db:mem:reviewer</property-->
+		<property name="connection.url">jdbc:mysql://localhost/reviewerTest</property>
+		<property name="connection.username">iwrite</property>
+		<property name="connection.password">iwrite</property>
+		<property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
 
 		<!-- SQL dialect -->
-		<property name="dialect">org.hibernate.dialect.HSQLDialect</property>
+		<!--property name="dialect">org.hibernate.dialect.HSQLDialect</property-->
+		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 
 		<!-- Enable Hibernate's automatic session context management -->
 		<property name="current_session_context_class">thread</property>

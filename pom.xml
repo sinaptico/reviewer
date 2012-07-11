@@ -72,11 +72,11 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>tomcat-maven-plugin</artifactId>
+				<version>1.1</version>
 				<configuration>
 					<path>/reviewer</path>
-					<url>http://eie-web-pro-1.ucc.usyd.edu.au/manager</url>
-					<!-- <url>http://iwrite.sydney.edu.au:8080/manager</url>  -->
-					<server>iwrite.sydney.edu.au</server>
+					<url>http://localhost:8080/manager</url>					
+					<server>TomcatServer</server>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -130,13 +130,16 @@
 		</plugins>
 	</build>
 	<distributionManagement>
+<!--
 		<repository>
 			<id>whale.ee.usyd.edu.au</id>
 			<name>LATTE Repository</name>
 			<url>scpexe://maven@whale.ee.usyd.edu.au/home/maven/.m2/repository</url>
 		</repository>
+-->
 	</distributionManagement>	
 	<repositories>
+<!--
 		<repository>
 			<id>www.smartclient.com</id>
 			<url>http://www.smartclient.com/maven2</url>
@@ -145,6 +148,7 @@
 			<id>eie-web-dev-1-web.ucc.usyd.edu.au</id>
 			<url>http://eie-web-dev-1-web.ucc.usyd.edu.au:81/maven</url>
 		</repository>
+-->
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
