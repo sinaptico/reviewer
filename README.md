@@ -56,6 +56,15 @@ To install the code:
 
 To install the database:
 
+    $ mysql
+    mysql> create database reviewer;
+    mysql> use reviewer;
+    mysql> CREATE USER 'reviewer'@'localhost' IDENTIFIED BY 'reviewer';
+    mysql> GRANT ALL ON reviewer.* TO 'reviewer'@'localhost';
+    mysql> exit
+    
 
+    
+    
         
 
