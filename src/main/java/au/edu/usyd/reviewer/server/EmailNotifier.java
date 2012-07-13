@@ -24,10 +24,12 @@ public class EmailNotifier {
 
 	//private static final String SMTP_HOST = "smtp.gmail.com";
 	//private static final String SMTP_PORT = "465";
-	private static final String SMTP_HOST = "smtp.usyd.edu.au";
-	private static final String SMTP_PORT = "25";	//576 //993(ssl)
+//	private static final String SMTP_HOST = "smtp.usyd.edu.au";
+//	private static final String SMTP_PORT = "25";	//576 //993(ssl)
 	private String username;
 	private String password;
+	private String smtpHost;
+	private String smtpPort;
 	private Properties properties;
 	private Session mailSession;
 	private Transport transport;
@@ -43,13 +45,24 @@ public class EmailNotifier {
 	private final String STUDENT_REVIEW_FINISH_MESSAGE = "Dear %s," + "\n\nThe '%s' %s assessment has finished " + "\nReviews are now available." + "\n\n" + fromName;
 	private final String STUDENT_RECEIVED_REVIEW_MESSAGE = "Dear %s," + "\n\nYou have received feedback from the activity '%s'. " + "\nYou can go to %s to read it." + "\n\n" + fromName;
  
-	public EmailNotifier(String username, String password) throws NoSuchProviderException {
+	public EmailNotifier(String username, String password, String smtpHost, String smtpPort) throws NoSuchProviderException {
 		this.username = username;
-		this.password = password;		
+		this.password = password;
+		this.smtpHost = smtpHost;
+		this.smtpPort = smtpPort;
+		
 		properties = new Properties();
 		properties.put("mail.transport.protocol", "smtp");
-		properties.put("mail.smtp.host", SMTP_HOST);
-		properties.put("mail.smtp.port", SMTP_PORT);
+		properties.put("mail.smtp.host", this.smtpHost);
+		properties.put("mail.smtp.port", this.smtpPort);
+		
+		properties.put("mail.smtp.auth", "true");
+		properties.put("mail.smtp.socketFactory.port", smtpPort);
+		properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		properties.put("mail.smtp.socketFactory.fallback", "false");
+		
+		//properties.put("mail.smtp.host", SMTP_HOST);
+		//properties.put("mail.smtp.port", SMTP_PORT);
 		//properties.put("mail.smtp.auth", "false");
 		//properties.put("mail.smtp.socketFactory.port", SMTP_PORT);
 		//properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");

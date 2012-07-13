@@ -51,12 +51,14 @@ public class Reviewer {
 			String documentsHome = Reviewer.getDocumentsHome();
 			String emailUsername = Reviewer.getEmailUsername();
 			String emailPassword = Reviewer.getEmailPassword();
+			String smtpHost = Reviewer.getSMTPHost();
+			String smtpPort = Reviewer.getSMTPPort();
 			
 
 			try {
 				AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 				AssignmentRepository assignmentRepository = new AssignmentRepository(username, password, domain);
-				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword));				 
+				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort));				 
 				assignmentManager = new AssignmentManager(assignmentRepository, assignmentDao, emailNotifier);
 				assignmentManager.setDocumentsHome(documentsHome);
 			} catch (Exception e) {
@@ -143,5 +145,13 @@ public class Reviewer {
 
 	public static void setEmailNotifier(EmailNotifier emailNotifier) {
 		Reviewer.emailNotifier = emailNotifier;
+	}
+	
+	public static String getSMTPHost(){
+		return config.getString("reviewer.smtp.host");
+	}
+	
+	public static String getSMTPPort(){
+		return config.getString("reviewer.smtp.port");
 	}
 }
