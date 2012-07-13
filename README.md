@@ -62,6 +62,21 @@ To install the database:
     mysql> CREATE USER 'reviewer'@'localhost' IDENTIFIED BY 'reviewer';
     mysql> GRANT ALL ON reviewer.* TO 'reviewer'@'localhost';
     mysql> exit
+
+Build and run:
+    
+    Firs time
+        $ mvn -DskipTests package
+
+    Post builds:
+        $ mvn -DskipTests package -o
+    
+    Run:
+        $ mvn gwt:run -o
+        
+    Debug:
+        $ mvn gwt:debug
+    
     
 
     
