@@ -17,28 +17,45 @@ To install Maven 2:
     $ cd repository    
       copy all the third parties libs here.
     
-To install:
+To install the code:
 
+    $ cd /home/{user}
     $ git clone git@github.com:sinaptico/reviewer.git
     $ cd /home/{user}
     $ touch reviewer.properties
     $ vi reviewer.properties
+        reviewer.email.username={google doc email account}
+        reviewer.email.password={google doc email account password}
+        reviewer.google.username={google doc email account}
+        reviewer.google.password={google doc email account password}
+        reviewer.google.domain={google doc email account domain}
+        reviewer.privatekey.path=
+        reviewer.publickey.path=
+        reviewer.documents.home=/home/{user}/documents
+        reviewer.empty.document=/home/{user}/documents/empty.pdf
+        reviewer.uploads.home=/home/{user}/documents/uploads
+        reviewer.empty.file=/home/{user}/documents/empty.pdf
+        reviewer.admin.users=admin1
+        system.http.proxySet=false
+        system.http.proxyHost=
+        system.http.proxyPort=
+        system.https.proxySet=false
+        system.https.proxyHost=
+        system.https.proxyPort=
+        aqg.loadExcelPath=Questions.xls
+        aqg.insertToExcelPath=Qscore.xls
 
-Now, let's create an `.rvmrc` file to store our rvm configuration and re-use it:
+    $ cd /home/{user}/reviewer/src/main/resources
+    $ vi hibernate.cfg.xml
+        <!-- Connection -->
+        <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="connection.url">jdbc:mysql://localhost/reviewer</property>
+        <property name="connection.username">reviewer</property>
+        <property name="connection.password">reviewer</property>
+        <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
 
-    $ echo "rvm 1.9.2@waysact" >> .rvmrc ; cd ../ ; cd waysact ; rvm gemset create waysact
+To install the database:
 
-And then install the rest of the gems we need:
 
-    $ gem install bundler
-    $ bundle install
-    $ rake db:create:all
-    $ rake db:migrate
-    $ rails s
-
-And you should be able to browse to [http://localhost:3000/](http://localhost:3000/) and you should see the application.
-
-Or you should be using [pow.cx](http://pow.cx) and link it
-
-Note that we have created some [detailed instructions](https://github.com/waysact/waysact/wiki/Development-environment) on how to setup your development environment.
+        
 
