@@ -2,9 +2,9 @@
 
 == Installation
 
-Dependencies:
+Dependencies: ( check server installation )
 
-* Java 1.6 
+* Java 6 or 7
 * MySql
 * Tomcat
 * Maven 2
