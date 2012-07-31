@@ -568,7 +568,6 @@ public class AssignmentManager {
 		
 		// save course in DB
 		assignmentDao.save(course);		
-		
 		///Local DataBase//////////////////////////////////////////////////////
 		
 		// for each activity create documents and reviewers for new users
