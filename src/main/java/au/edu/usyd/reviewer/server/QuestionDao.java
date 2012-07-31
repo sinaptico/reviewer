@@ -16,7 +16,7 @@ public class QuestionDao {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private SessionFactory sessionFactory;
-
+	
 	public QuestionDao(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}

@@ -537,7 +537,7 @@ public class AssignmentManager {
 	}
 	
 	public Course saveCourse(Course course) throws Exception {
-		//Set up folders and templates	
+		//Set up folders and templates
 		setUpFoldersAndTemplates(course);
 		
 		///Google Users//////////////////////////////////////////////////////
@@ -564,12 +564,11 @@ public class AssignmentManager {
 		
 		// update course document permissions
 		assignmentRepository.updateCourseDocumentPermissions(course);
-			
+		
 		course.setDomainName(Reviewer.getGoogleDomain());
 		
 		// save course in DB
 		assignmentDao.save(course);		
-		
 		///Local DataBase//////////////////////////////////////////////////////
 		
 		// for each activity create documents and reviewers for new users
