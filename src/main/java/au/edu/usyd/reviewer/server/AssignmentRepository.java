@@ -37,7 +37,7 @@ import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
 
 public class AssignmentRepository {
-	private final Logger logger = LoggerFactory.getLogger(AssignmentManager.class);
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private String SPREADSHEET_HEADER = "id,firstname,lastname,email,group,tutorial";
 	private GoogleDocsServiceImpl googleDocsServiceImpl;
 	private GoogleSpreadsheetServiceImpl googleSpreadsheetServiceImpl;
