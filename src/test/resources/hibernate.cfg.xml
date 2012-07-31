@@ -8,9 +8,9 @@
 
 		<!-- Connection -->
 		<property name="connection.driver_class">org.hsqldb.jdbcDriver</property>
-		<property name="connection.url">jdbc:hsqldb:mem:reviewer</property>
-		<property name="connection.username">sa</property>
-		<property name="connection.password"></property>
+		<property name="connection.url">jdbc:hsqldb:mem:reviewerTest</property>
+		<property name="connection.username">iwrite</property>
+		<property name="connection.password">iwrite</property>
 
 		<!-- SQL dialect -->
 		<property name="dialect">org.hibernate.dialect.HSQLDialect</property>
