@@ -9,8 +9,8 @@
 		<!-- Connection -->
 		<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
 		<property name="connection.url">jdbc:mysql://localhost/reviewer</property>
-		<property name="connection.username">iwrite</property>
-		<property name="connection.password">iwrite</property>
+		<property name="connection.username">reviewer</property>
+		<property name="connection.password">reviewer</property>
 		<property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
 
 		<!-- Configuration pool via c3p0--> 
