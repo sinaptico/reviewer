@@ -67,8 +67,4 @@
 		<mapping class="au.edu.usyd.reviewer.client.core.FeedbackTemplate" />
 		
 	</session-factory>
-<<<<<<< HEAD
 </hibernate-configuration>
-=======
-</hibernate-configuration>
->>>>>>> refactor_save_course
