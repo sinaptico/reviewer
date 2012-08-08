@@ -19,7 +19,7 @@ public class EmailNotifierUnitTest {
     @BeforeClass
     public static void setUp() throws NoSuchProviderException {
         //emailNotifier = new EmailNotifier(Reviewer.getGoogleUsername(), Reviewer.getGooglePassword());
-        emailNotifier = new EmailNotifier(Reviewer.getEmailUsername(), Reviewer.getEmailPassword());
+        emailNotifier = new EmailNotifier(Reviewer.getEmailUsername(), Reviewer.getEmailPassword(), Reviewer.getSMTPHost(),Reviewer.getSMTPPort());
     }
 
     @Test
