@@ -10,7 +10,7 @@ public class LoginEntryPoint implements EntryPoint {
 	@Override
 	public void onModuleLoad() {
 		HTML info = new HTML();
-		info.setHTML("This login page is for non-UniKey access to iWrite only. If you have a UniKey, please <a href='/assignments/assignments.htm'>login using the university authentication system</a> instead.");
+		info.setHTML("This login page is for non-UniKey access to iWrite only. If you have a UniKey, please <a href='/reviewer/Assignments.html'>login using the university authentication system</a> instead.");
 
 		LoginForm loginForm = new LoginForm();
 

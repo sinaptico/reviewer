@@ -45,6 +45,14 @@
 	<servlet-mapping>
 		<servlet-name>mystatsServlet</servlet-name>
 		<url-pattern>/au.edu.usyd.reviewer.MyStats/mystatsService</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>reviewerPropertiesServlet</servlet-name>
+		<servlet-class>au.edu.usyd.reviewer.server.rpc.ReviewerPropertiesServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>reviewerPropertiesServlet</servlet-name>
+		<url-pattern>/au.edu.usyd.reviewer.Assignment/reviewPropertiesService</url-pattern>
 	</servlet-mapping>		
 	<servlet>
 		<servlet-name>loginServlet</servlet-name>
@@ -70,7 +78,7 @@
 		<servlet-name>fileServlet</servlet-name>
 		<url-pattern>/file/*</url-pattern>
 	</servlet-mapping>
-
+	
 	<!-- Default page to serve -->
 	<welcome-file-list>
 		<welcome-file>Assignments.html</welcome-file>
