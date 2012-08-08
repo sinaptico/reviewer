@@ -74,6 +74,7 @@ public class UrlLib {
 			    	Window.alert("Failed to get Glosser's Host: " + caught.getMessage());
 			    }
 			    public void onSuccess(Object result) {
+			    	Window.alert("onSuccess Glosser's Host: " + result + " result " + (String) result);
 			    	glosserHost = (String) result;
 			    }
 			  });
@@ -89,7 +90,9 @@ public class UrlLib {
 			    	Window.alert("Failed to get Glosser's Port: " + caught.getMessage());
 			    }
 			    public void onSuccess(Object result) {
+			    	Window.alert("onSuccess Glosser's Port: " + result + " result " + (String) result);
 			    	glosserPort = (String) result;
+			    	
 			    }
 			  });
 		}
