@@ -13,12 +13,27 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.TextBox;
 
+//TODO: get the css styles out to an external file.
+
+/**
+ * <p>Class used to record the grades of a student after their document is reviewed</p>.
+ */
 public class GradesForm extends Composite implements HasChangeHandlers {
 
+	/** The grade or grades if it's more than one student. */
 	private List<Grade> grades;
+	
+	/** The grade boxes. */
 	private List<TextBox> gradeBoxes;
+	
+	/** The grades grid. */
 	private FlexTable gradesGrid = new FlexTable();
 
+	/**
+	 * Instantiates a new grades form.
+	 *
+	 * @param grades the grades
+	 */
 	public GradesForm(List<Grade> grades) {
 		this.grades = new ArrayList<Grade>(grades);
 		this.gradeBoxes = new ArrayList<TextBox>(grades.size());
@@ -30,6 +45,9 @@ public class GradesForm extends Composite implements HasChangeHandlers {
 		initWidget(gradesGrid);
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.google.gwt.event.dom.client.HasChangeHandlers#addChangeHandler(com.google.gwt.event.dom.client.ChangeHandler)
+	 */
 	@Override
 	public HandlerRegistration addChangeHandler(ChangeHandler handler) {
 		final List<HandlerRegistration> handlerRegistrations = new LinkedList<HandlerRegistration>();
@@ -48,6 +66,12 @@ public class GradesForm extends Composite implements HasChangeHandlers {
 		return handlerRegistration;
 	}
 
+	/**
+	 * Gets the grades.
+	 *
+	 * @return the grades
+	 * @throws Exception the exception
+	 */
 	public List<Grade> getGrades() throws Exception{
 		for(int i=0; i<grades.size(); i++) {
 			if (isNumber(gradeBoxes.get(i).getValue()) ){
@@ -68,15 +92,24 @@ public class GradesForm extends Composite implements HasChangeHandlers {
 		return grades;
 	}
 	
-   public boolean isNumber(String in) {        
+   /**
+    * Checks if is number.
+    *
+    * @param number the number to test
+    * @return true, if is number
+    */
+   public boolean isNumber(String number) {        
         try {
-            Double.parseDouble(in);        
+            Double.parseDouble(number);        
         } catch (NumberFormatException ex) {
             return false;
         }        
         return true;
     }	
 
+	/* (non-Javadoc)
+	 * @see com.google.gwt.user.client.ui.Widget#onLoad()
+	 */
 	@Override
 	public void onLoad() {
 		for(int i=0; i<grades.size(); i++) {

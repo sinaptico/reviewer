@@ -5,8 +5,14 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * <p>Starting point of the {@link LoginForm Login Form} (for non-UniKey access).</p> 
+ */
 public class LoginEntryPoint implements EntryPoint {
 
+	/**
+	 * Method that loads the login form.
+	 */
 	@Override
 	public void onModuleLoad() {
 		HTML info = new HTML();

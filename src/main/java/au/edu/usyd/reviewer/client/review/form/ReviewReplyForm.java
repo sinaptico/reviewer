@@ -1,7 +1,6 @@
 package au.edu.usyd.reviewer.client.review.form;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import au.edu.usyd.reviewer.client.core.Choice;
@@ -10,12 +9,9 @@ import au.edu.usyd.reviewer.client.core.Section;
 import au.edu.usyd.reviewer.client.core.TemplateReply;
 
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.HasChangeHandlers;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RichTextArea;
 import com.google.gwt.user.client.ui.TextArea;
@@ -25,7 +21,6 @@ public class ReviewReplyForm extends ReviewForm<ReviewReply> {
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private TextArea contentField = new TextArea();
 	private FlexTable questionFlexTable = new FlexTable();
-	private Label infoLabel = new Label();
 	private String contentWidth = "700px";
 	private String contentHeight = "500px";
 	
@@ -36,7 +31,6 @@ public class ReviewReplyForm extends ReviewForm<ReviewReply> {
 
 	@Override
 	public HandlerRegistration addChangeHandler(ChangeHandler handler) {
-		int i = 1;
 		final List<HandlerRegistration> listHandlerRegistrations = new ArrayList<HandlerRegistration>();
 		HandlerRegistration handlerRegistrationX;
 		handlerRegistrationX = contentField.addChangeHandler(handler);

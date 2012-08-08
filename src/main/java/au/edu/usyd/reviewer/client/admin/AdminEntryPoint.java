@@ -4,6 +4,9 @@ import java.util.Collection;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import au.edu.usyd.reviewer.client.admin.glosser.GlosserService;
 import au.edu.usyd.reviewer.client.admin.glosser.GlosserServiceAsync;
 import au.edu.usyd.reviewer.client.admin.glosser.ShowSitesComposite;
@@ -15,6 +18,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
+import au.edu.usyd.reviewer.server.Reviewer;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -132,11 +136,11 @@ public class AdminEntryPoint implements EntryPoint {
 	
 	/** The refresh filter button. */
 	private SubmitButton refreshCourseTreeButton = new SubmitButton("Load", "Loading courses, please wait...", "Load");
-
+	
+	
 	/** 
 	 * <p>Main method of the entry point that loads the "Glosser sites" and menus for user impersonation, courses, activities and review 
 	 * templates creation. It also loads the panels and trees with the course and review templates lists according to the defined filter (Year - Semester).</p>
-	 * 
 	 * 
 	 */
 	@Override
@@ -278,7 +282,9 @@ public class AdminEntryPoint implements EntryPoint {
 						adminService.saveReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
 							@Override
 							public void onFailure(Throwable caught) {
+								
 								Window.alert("Failed to create Review Template: " + caught.getMessage());
+								
 								createButton.updateStateSubmit();
 							}
 
