@@ -133,7 +133,6 @@ public class ReviewEntryPoint implements EntryPoint {
 		final VerticalPanel templateGridsPanel = new VerticalPanel();
 		final VerticalPanel feedbackBrowser = new VerticalPanel();
 
-
 		if (view != null) {
 			reviewService.getUserReviewForViewing(Long.valueOf(view), new AsyncCallback<Course>() {
 				@Override
@@ -284,7 +283,8 @@ public class ReviewEntryPoint implements EntryPoint {
 					// glosser link
 					if (!writingActivity.getGlosserSite().equals(WritingActivity.GLOSSER_SITE_NONE)) {
 						Anchor glosserLink = new Anchor();
-						glosserLink.setHref(UrlLib.glosserUrl(writingActivity.getGlosserSite(), docEntry.getDocumentId()));
+						UrlLib.glosserUrl(glosserLink,writingActivity.getGlosserSite(), docEntry.getDocumentId());
+						//glosserLink.setHref(UrlLib.glosserUrl(writingActivity.getGlosserSite(), docEntry.getDocumentId()));
 						//glosserLink.setHTML("<img style='margin-left:20px; margin-top:-4px;' height='19px' src='images/glosser.png'> <span>(View this document in Glosser)</span></img>");
 						glosserLink.setHTML("<img style='margin-left:5px; margin-top:16px;' height='0px' src='images/glosser.png'><span>(View this document in Glosser)</span></img>");
 						glosserLink.setTitle("Automatic Feedback");

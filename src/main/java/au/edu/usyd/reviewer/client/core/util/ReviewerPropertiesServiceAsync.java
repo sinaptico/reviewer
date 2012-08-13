@@ -4,8 +4,5 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface ReviewerPropertiesServiceAsync {
 
-	void getGlosserHost(AsyncCallback callback);
-	void getGlosserPort(AsyncCallback callback);
-	
-
+	void getGlosserUrl(Long siteId, String docId, AsyncCallback<String> callback);
 }

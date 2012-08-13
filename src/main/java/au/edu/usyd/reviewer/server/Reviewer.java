@@ -162,4 +162,8 @@ public class Reviewer {
 	public static String getGlosserPort(){
 		return config.getString("reviewer.glosser.port");
 	}
+	
+	public static String getGlosserUrl(Long siteId, String docId){
+		return "http://"+getGlosserHost()+":"+getGlosserPort()+"/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
+	}
 }

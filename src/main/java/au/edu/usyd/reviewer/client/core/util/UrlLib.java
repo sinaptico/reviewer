@@ -1,10 +1,13 @@
 package au.edu.usyd.reviewer.client.core.util;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
+
 public class UrlLib {
 	 
-	// Glosser host and port
-	private static String glosserHost = null;
-	private static String glosserPort = null;
+	// Service to get Glosser url
 	private static ReviewerPropertiesServiceAsync reviewerPropertiesService = (ReviewerPropertiesServiceAsync) GWT.create(ReviewerPropertiesService.class);
 	
 	//protected static String domain = "iwrite.eng.usyd.edu.au";
@@ -52,9 +55,11 @@ public static String folderUrl(String id, String domain) {
 	 * @param docId the doc id
 	 * @return the string
 	 */
-	public static String glosserUrl(Long siteId, String docId) {		
+	//public static String glosserUrl(Long siteId, String docId) {
+    public static void glosserUrl(Anchor glosserLink, Long siteId, String docId){
 //		return "http://129.78.13.24:8080/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
-		return "http://"+getGlosserHost()+":"+getGlosserPort()+"/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
+    	//return "http://"+getGlosserHost()+":"+getGlosserHost()+"/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
+    	getGlosserUrl(glosserLink, siteId, docId);
 	}
 
 	/**
@@ -127,36 +132,14 @@ public static String folderUrl(String id, String domain) {
 		return "file/" + filename + "?docVersion=" + deadlineId + "&tutorial=" + tutorial +"&review="+reviewingActivity;
 	}
     
-    private static String getGlosserHost(){
-		if (glosserHost == null){
-			reviewerPropertiesService.getGlosserHost(new AsyncCallback() {
-			    public void onFailure(Throwable caught) {
-			    	Window.alert("Failed to get Glosser's Host: " + caught.getMessage());
-			    }
-			    public void onSuccess(Object result) {
-			    	Window.alert("onSuccess Glosser's Host: " + result + " result " + (String) result);
-			    	glosserHost = (String) result;
-			    }
-			  });
-		}
-		return glosserHost;
-	}
-		
-	
-	private static String getGlosserPort(){
-		if (glosserPort == null){
-			reviewerPropertiesService.getGlosserPort(new AsyncCallback() {
-			    public void onFailure(Throwable caught) {
-			    	Window.alert("Failed to get Glosser's Port: " + caught.getMessage());
-			    }
-			    public void onSuccess(Object result) {
-			    	Window.alert("onSuccess Glosser's Port: " + result + " result " + (String) result);
-			    	glosserPort = (String) result;
-			    	
-			    }
-			  });
-		}
-		return glosserPort;
-	}
-
+    private static void getGlosserUrl(final Anchor glosserLink, Long siteId, String docId){
+		reviewerPropertiesService.getGlosserUrl(siteId, docId, new AsyncCallback<String>() {
+			public void onFailure(Throwable caught) {
+			    Window.alert("Failed to get Glosser's Host: " + caught.getMessage());
+			}
+			public void onSuccess(String result) {
+				glosserLink.setHref(result);
+			}
+		});
+	}		
 }
