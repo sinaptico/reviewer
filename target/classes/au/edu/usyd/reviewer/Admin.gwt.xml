@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+	<inherits name='au.edu.usyd.reviewer.Core' />
+	<inherits name="com.smartgwt.SmartGwt"/>
+	<inherits name='com.google.gwt.visualization.Visualization' />
+	<entry-point class='au.edu.usyd.reviewer.client.admin.AdminEntryPoint' />
+	<source path="client/admin"/>
+</module>

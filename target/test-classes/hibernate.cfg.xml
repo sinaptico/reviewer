@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+	<session-factory>
+
+		<!-- Connection -->
+		<property name="connection.driver_class">org.hsqldb.jdbcDriver</property>
+		<!--property name="connection.url">jdbc:hsqldb:mem:reviewer</property-->
+		<property name="connection.url">jdbc:mysql://localhost/reviewer</property>
+		<property name="connection.username">reviewer</property>
+		<property name="connection.password">reviewer</property>
+
+		<!-- SQL dialect -->
+		<property name="dialect">org.hibernate.dialect.HSQLDialect</property>
+
+		<!-- Enable Hibernate's automatic session context management -->
+		<property name="current_session_context_class">thread</property>
+
+		<!-- Enable the second-level cache  -->
+		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+
+		<!-- Echo all executed SQL to stdout -->
+		<property name="show_sql">true</property>
+		
+		<!-- Update the database schema on startup -->
+        <property name="hibernate.hbm2ddl.auto">create-drop</property>
+
+		<!-- Hibernate mapping files -->
+		<mapping class="au.edu.usyd.reviewer.client.core.User" />
+		<mapping class="au.edu.usyd.reviewer.client.core.UserGroup" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Entry" />
+		<mapping class="au.edu.usyd.reviewer.client.core.DocEntry" />
+		<mapping class="au.edu.usyd.reviewer.client.core.LogpageDocEntry" />
+		<mapping class="au.edu.usyd.reviewer.client.core.LogbookDocEntry" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Deadline" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Activity" />
+		<mapping class="au.edu.usyd.reviewer.client.core.WritingActivity" />
+		<mapping class="au.edu.usyd.reviewer.client.core.ReviewingActivity" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Course" />
+		<mapping class="au.edu.usyd.reviewer.client.core.ReviewEntry" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Review" />
+		<mapping class="au.edu.usyd.reviewer.client.core.QuestionReview" />		
+		<mapping class="au.edu.usyd.reviewer.client.core.Question" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Grade" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Rating" />
+		<mapping class="au.edu.usyd.reviewer.client.core.GeneralRating" />
+		<mapping class="au.edu.usyd.reviewer.client.core.QuestionScore" />	
+		<mapping class="au.edu.usyd.reviewer.client.core.ReviewTemplate" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Section" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Choice" />
+		<mapping class="au.edu.usyd.reviewer.client.core.ReviewTemplateEntry" />
+		<mapping class="au.edu.usyd.reviewer.client.core.TemplateReply" />
+		<mapping class="au.edu.usyd.reviewer.client.core.ReviewReply" />	
+		<mapping class="au.edu.usyd.reviewer.client.core.DocumentType" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Rubric" />
+		<mapping class="au.edu.usyd.reviewer.client.core.FeedbackTemplate" />
+		
+	</session-factory>
+</hibernate-configuration>
