@@ -1,15 +1,14 @@
 package au.edu.usyd.reviewer.client.core.util;
 
-/**
- * <p>Class with URL format methods; Includes:</p>
- * <ul>
- * 	<li>Document, Presentation, Spreadsheets URLs.</li>  
- *  <li>Folder URL.</li>
- *  <li>Download PDF and ZIP files URL.</li>
- *  <li>Linkt to Glosser.</li>
- * </ul>
- */
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
+
 public class UrlLib {
+	 
+	// Service to get Glosser url
+	private static ReviewerPropertiesServiceAsync reviewerPropertiesService = (ReviewerPropertiesServiceAsync) GWT.create(ReviewerPropertiesService.class);
 	
 	//protected static String domain = "iwrite.eng.usyd.edu.au";
 	
@@ -56,8 +55,11 @@ public static String folderUrl(String id, String domain) {
 	 * @param docId the doc id
 	 * @return the string
 	 */
-	public static String glosserUrl(Long siteId, String docId) {		
-		return "http://129.78.13.24:8080/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
+	//public static String glosserUrl(Long siteId, String docId) {
+    public static void glosserUrl(Anchor glosserLink, Long siteId, String docId){
+//		return "http://129.78.13.24:8080/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
+    	//return "http://"+getGlosserHost()+":"+getGlosserHost()+"/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
+    	getGlosserUrl(glosserLink, siteId, docId);
 	}
 
 	/**
@@ -129,7 +131,15 @@ public static String folderUrl(String id, String domain) {
 	public static String zipDownloadUrl(String filename, Long deadlineId, String tutorial, String reviewingActivity) {
 		return "file/" + filename + "?docVersion=" + deadlineId + "&tutorial=" + tutorial +"&review="+reviewingActivity;
 	}
-
-
-
+    
+    private static void getGlosserUrl(final Anchor glosserLink, Long siteId, String docId){
+		reviewerPropertiesService.getGlosserUrl(siteId, docId, new AsyncCallback<String>() {
+			public void onFailure(Throwable caught) {
+			    Window.alert("Failed to get Glosser's Host: " + caught.getMessage());
+			}
+			public void onSuccess(String result) {
+				glosserLink.setHref(result);
+			}
+		});
+	}		
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+	<inherits name='com.google.gwt.user.User' />  
+	<inherits name='com.google.gwt.user.theme.standard.Standard'/>
+	<inherits name='com.google.gwt.libideas.validation.Validation'/>
+	<inherits name='com.google.gwt.libideas.LibIdeas'/>	
+	<source path="client/core"/>
+</module>

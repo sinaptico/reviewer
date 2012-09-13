@@ -136,7 +136,7 @@ public class EmailNotifier {
 	}	
 
 	private String getIwriteLinkForUser(User user) {	
-		return user.getWasmuser()?"http://"+domain+"/assignments/assignments.htm":"http://"+domain+"/reviewer/iWrite.html";
+		return user.getWasmuser()?"http://"+domain+"/reviewer/Assignments.html":"http://"+domain+"/reviewer/iWrite.html";
 	}
 	
 	public void setProperties(Properties properties) {

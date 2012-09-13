@@ -83,7 +83,6 @@ public class WritingTasks extends Composite {
 		documentFlexTable.setHTML(row, 4, "");
 		documentFlexTable.getRowFormatter().setStyleName(row, "documentsTableRowHeader");
 		row = documentFlexTable.getRowCount();
-		
 		for (final WritingActivity writingActivity : course.getWritingActivities()) {
 			for (final DocEntry docEntry : writingActivity.getEntries()) {
 				// document link
@@ -340,7 +339,8 @@ public class WritingTasks extends Composite {
 				// glosser link
 				if (!writingActivity.getGlosserSite().equals(WritingActivity.GLOSSER_SITE_NONE)) {
 					Anchor glosserLink = new Anchor();
-					glosserLink.setHref(UrlLib.glosserUrl(writingActivity.getGlosserSite(), docEntry.getDocumentId()));
+					//glosserLink.setHref(UrlLib.glosserUrl(writingActivity.getGlosserSite(), docEntry.getDocumentId()));
+					UrlLib.glosserUrl(glosserLink,writingActivity.getGlosserSite(), docEntry.getDocumentId());
 					glosserLink.setHTML("<img height='19px' src='images/glosser.png'></img>");
 					glosserLink.setTitle("Automatic Feedback");
 					glosserLink.setTarget("_blank");

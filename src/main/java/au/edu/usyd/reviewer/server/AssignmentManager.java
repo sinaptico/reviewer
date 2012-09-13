@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.server;
 
-import glosser.app.doc.Doc;
+//import glosser.app.doc.Doc;
+
 
 import java.io.BufferedReader;
 import java.io.File;
