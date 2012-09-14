@@ -19,16 +19,19 @@ import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Review;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 public class AssignmentDaoUnitTest {
 
 	private AssignmentDao assignmentDao;
+	private UserDao userDao;
 	private User lecturer1;
 	private User tutor1;
 	private User user1;
@@ -65,28 +68,35 @@ public class AssignmentDaoUnitTest {
 	@Before
 	public void setUp() {
 		assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
-
+		Organization organization = new Organization();
+		organization.setName("ASSIGNMENTDAO_TEST");
+		userDao = UserDao.getInstance();
 		lecturer1 = new User();
-		lecturer1.setId("lecturer1");
+		lecturer1.setUsername("lecturer1");
+		lecturer1.setOrganization(organization);
 		assignmentDao.save(lecturer1);
 
 		tutor1 = new User();
-		tutor1.setId("tutor1");
+		tutor1.setUsername("tutor1");
+		tutor1.setOrganization(organization);
 		assignmentDao.save(tutor1);
 
 		user1 = new User();
-		user1.setId("user1");
+		user1.setUsername("user1");
 		user1.setEmail("user1@example.com");
+		user1.setOrganization(organization);
 		assignmentDao.save(user1);
 
 		user2 = new User();
-		user2.setId("user2");
+		user2.setUsername("user2");
 		user2.setEmail("user2@example.com");
+		user2.setOrganization(organization);
 		assignmentDao.save(user2);
 
 		user3 = new User();
-		user3.setId("user3");
-		user3.setId("user3@example.com");
+		user3.setUsername("user3");
+		user3.setUsername("user3@example.com");
+		user3.setOrganization(organization);
 		assignmentDao.save(user3);
 
 		UserGroup userGroup1 = new UserGroup();
@@ -244,9 +254,11 @@ public class AssignmentDaoUnitTest {
 		course1.getWritingActivities().add(activity1);
 		course1.getWritingActivities().add(activity2);
 		course1.getWritingActivities().add(groupActivity1);
+		course1.setOrganization(organization);
 		assignmentDao.save(course1);
 
 		course2 = new Course();
+		course2.setOrganization(organization);
 		course2.setName("course2");
 		course2.setYear(2011);
 		course2.setSemester(2);		
@@ -257,6 +269,7 @@ public class AssignmentDaoUnitTest {
 		course3.setYear(2011);
 		course3.setSemester(2);		
 		course3.getTutors().add(tutor1);
+		course3.setOrganization(organization);
 		assignmentDao.save(course3);
 	}
 
@@ -377,10 +390,39 @@ public class AssignmentDaoUnitTest {
 
 	@Test
 	public void testContainsUserQuery() {
-		assertThat(assignmentDao.containsUser(user1), is(true));
-		assertThat(assignmentDao.containsUser(user2), is(true));
-		assertThat(assignmentDao.containsUser(user3), is(true));
-		assertThat(assignmentDao.containsUser(new User()), is(false));
+		Boolean result = false;
+		try {
+			result = userDao.containsUser(user1);
+		} catch (MessageException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		assertThat(result, is(true));
+		
+		try {
+			result = userDao.containsUser(user2);
+		} catch (MessageException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		assertThat(result, is(true));
+		
+		try {
+			result = userDao.containsUser(user3);
+		} catch (MessageException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		assertThat(result, is(true));
+		
+		try {
+			result = userDao.containsUser(new User());
+		} catch (MessageException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		assertThat(result, is(false));
 	}
 
 	@Test

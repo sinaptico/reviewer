@@ -24,8 +24,9 @@ public class EmailNotifierUnitTest {
 
     @Test
     public void testSendNotification() throws MessagingException, UnsupportedEncodingException {
+    	
         User user = new User();
-        user.setId("student01");
+        user.setUsername("student01");
         user.setEmail("test.student01@"+domain);        
         user.setFirstname("Test");
         user.setLastname("Student01");

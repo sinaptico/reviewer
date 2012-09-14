@@ -20,7 +20,7 @@ public class LogoutServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		User user = (User) request.getSession().getAttribute("user");
 		if (user != null) {
-			logger.debug("Logging out user: " + user.getId());
+			logger.debug("Logging out user: " + user.getEmail());
 		}
 		request.getSession().invalidate();
 		response.sendRedirect(request.getRequestURL().toString().replace("/logout", ""));

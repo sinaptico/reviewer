@@ -17,6 +17,7 @@ import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Review;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
@@ -58,22 +59,31 @@ public class FileServletUnitTest {
 	public void setUp() throws IOException {
 		assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 
+		Organization organization = new Organization();
+		organization.setName("FileServletUnitTest");
+		
 		lecturer1 = new User();
-		lecturer1.setId("lecturer1");
+		lecturer1.setUsername("lecturer1");
+		lecturer1.setOrganization(organization);
 		assignmentDao.save(lecturer1);
 
 		tutor1 = new User();
-		tutor1.setId("tutor1");
+		tutor1.setUsername("tutor1");
+		tutor1.setOrganization(organization);
 		assignmentDao.save(tutor1);
 
 		user1 = new User();
-		user1.setId("user1");
+		user1.setUsername("user1");
+		user1.setOrganization(organization);
 		user1.setEmail("user1@example.com");
+		user1.setOrganization(organization);
 		assignmentDao.save(user1);
 
 		user2 = new User();
-		user2.setId("user2");
+		user2.setUsername("user2");
+		user2.setOrganization(organization);
 		user2.setEmail("user2@example.com");
+		user2.setOrganization(organization);
 		assignmentDao.save(user2);
 
 		UserGroup userGroup1 = new UserGroup();
@@ -149,30 +159,31 @@ public class FileServletUnitTest {
 		course1.getStudentGroups().add(userGroup2);
 		course1.getWritingActivities().add(activity1);
 		course1.getWritingActivities().add(groupActivity1);
+		course1.setOrganization(organization);
 		assignmentDao.save(course1);
 		
-		pdfFile1 = new File(Reviewer.getAssignmentManager().getDocumentsFolder(course1.getId(), activity1.getId(), deadline1.getId(), WritingActivity.TUTORIAL_ALL) + "/" + FileUtil.escapeFilename(docEntry1.getDocumentId()) + ".pdf");
+		pdfFile1 = new File(Reviewer.getAssignmentManager(organization).getDocumentsFolder(course1.getId(), activity1.getId(), deadline1.getId(), WritingActivity.TUTORIAL_ALL) + "/" + FileUtil.escapeFilename(docEntry1.getDocumentId()) + ".pdf");
 		pdfFile1.getParentFile().mkdirs();
 		pdfFile1.createNewFile();
 		FileOutputStream  out = new FileOutputStream(pdfFile1);
 		out.write(1);
 		out.close();
 		
-		pdfFile2 = new File(Reviewer.getAssignmentManager().getDocumentsFolder(course1.getId(), activity1.getId(), deadline1.getId(), WritingActivity.TUTORIAL_ALL) + "/" + FileUtil.escapeFilename(docEntry2.getDocumentId()) + ".pdf");
+		pdfFile2 = new File(Reviewer.getAssignmentManager(organization).getDocumentsFolder(course1.getId(), activity1.getId(), deadline1.getId(), WritingActivity.TUTORIAL_ALL) + "/" + FileUtil.escapeFilename(docEntry2.getDocumentId()) + ".pdf");
 		pdfFile2.getParentFile().mkdirs();
 		pdfFile2.createNewFile();
 		out = new FileOutputStream(pdfFile2);
 		out.write(1);
 		out.close();
 		
-		groupPdfFile1 = new File(Reviewer.getAssignmentManager().getDocumentsFolder(course1.getId(), groupActivity1.getId(), groupDeadline1.getId(), WritingActivity.TUTORIAL_ALL) + "/" + FileUtil.escapeFilename(groupDocEntry1.getDocumentId()) + ".pdf");
+		groupPdfFile1 = new File(Reviewer.getAssignmentManager(organization).getDocumentsFolder(course1.getId(), groupActivity1.getId(), groupDeadline1.getId(), WritingActivity.TUTORIAL_ALL) + "/" + FileUtil.escapeFilename(groupDocEntry1.getDocumentId()) + ".pdf");
 		groupPdfFile1.getParentFile().mkdirs();
 		groupPdfFile1.createNewFile();
 		out = new FileOutputStream(groupPdfFile1);
 		out.write(1);
 		out.close();
 		
-		zipFile1 = new File(Reviewer.getAssignmentManager().getDocumentsFolder(course1.getId(), activity1.getId(), deadline1.getId(), "tutorial1") + ".zip");
+		zipFile1 = new File(Reviewer.getAssignmentManager(organization).getDocumentsFolder(course1.getId(), activity1.getId(), deadline1.getId(), "tutorial1") + ".zip");
 		zipFile1.getParentFile().mkdirs();
 		zipFile1.createNewFile();
 		out = new FileOutputStream(zipFile1);

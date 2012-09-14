@@ -11,9 +11,11 @@ import org.junit.Test;
 
 import au.edu.usyd.glosser.gdata.GoogleDocsServiceImpl;
 import au.edu.usyd.reviewer.client.core.Course;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.Reviewer;
@@ -21,25 +23,29 @@ import au.edu.usyd.reviewer.server.Reviewer;
 public class QuestionUtilUnitTest {
     private WritingActivity writingActivity;
     private Course course;
-    private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
+    private AssignmentManager assignmentManager = Reviewer.getAssignmentManager(getUser().getOrganization());
     private String domain = Reviewer.getGoogleDomain();
-
+    User student3 = new User();
+    
     @Before
     public void setUp() {
     	AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
-
-        User student3 = new User();
-        student3.setId("test.student03");
+    	Organization organization = new Organization();
+    	organization.setName("TEST_OUESTION_UTIL");
+        
+        student3.setUsername("test.student03");
         student3.setFirstname("Test");
         student3.setLastname("Student03");
         student3.setEmail("test.student03@"+domain);
+        student3.setOrganization(organization);
         assignmentDao.save(student3);
         
         User student4 = new User();
-        student4.setId("test.student04");
+        student4.setUsername("test.student04");
         student4.setFirstname("Test");
         student4.setLastname("Student04");
         student4.setEmail("test.student04@"+domain);
+        student4.setOrganization(organization);
         assignmentDao.save(student4);
         
         UserGroup userGroup1 = new UserGroup();
@@ -57,6 +63,7 @@ public class QuestionUtilUnitTest {
         
     	course = new Course();
         course.setName("course1");
+        course.setOrganization(organization);
         course.getStudentGroups().add(userGroup1);
         course.setYear(2009);
         course.setSemester(1);
@@ -80,15 +87,15 @@ public class QuestionUtilUnitTest {
         String path = assignmentManager.getDocumentsFolder(course.getId(),writingActivity.getId(),"aqg", "");
             File aqgExperimentFolder = new File(path);
             aqgExperimentFolder.mkdirs();
-            String filepath = path + Reviewer.getProperty("aqg.loadExcelPath");
+            String filepath = path + Reviewer.getProperty(Constants.AGG_LOAD_EXCEL_PATH);
             QuestionUtil questionUtil = new QuestionUtil();
-            questionUtil.readExcelInsertDB(filepath);
+            questionUtil.readExcelInsertDB(filepath, course.getOrganization());
     }
 
     @Test
     public void testRetireveFromDBInsertIntoExcel() {
          String dirpath = assignmentManager.getDocumentsFolder(course.getId(),writingActivity.getId(),"aqg", "");
-            String filepath = dirpath + Reviewer.getProperty("aqg.insertToExcelPath");
+            String filepath = dirpath + Reviewer.getProperty(Constants.AGG_INSERT_TO_EXCEL_PATH);
             File aqgExperimentFolder = new File(dirpath);
             aqgExperimentFolder.mkdirs();
             QuestionUtil questionUtil = new QuestionUtil();
@@ -99,5 +106,9 @@ public class QuestionUtilUnitTest {
     public void cleanUp() {
     	AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
         assignmentDao.delete(course);
+    }
+    
+    private User getUser(){
+    	return student3;
     }
 }

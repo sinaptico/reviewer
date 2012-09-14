@@ -57,9 +57,11 @@ public class LoginServlet extends HttpServlet {
 
 		if (userId != null) {
 			User user = new User();
-			user.setId(userId);
+			user.setUsername(userId);
+			//TODO MARIELA VER COMO OBTENER LA ORGANIZACION Y EL EMAIL DEL USUARIO
+//			user = userDao.getUserByEmail(userId);
 			request.getSession().setAttribute("user", user);
-			logger.debug("Logging in user: " + user.getId());
+			logger.debug("Logging in user: " + user.getEmail());
 			response.sendRedirect(request.getRequestURL().toString().replace("/login", ""));
 		}
 	}

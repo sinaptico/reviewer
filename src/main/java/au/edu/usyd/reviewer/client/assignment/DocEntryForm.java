@@ -91,7 +91,7 @@ public class DocEntryForm extends Composite {
 			users += user.getLastname() + ", " + user.getFirstname() + "<br/>";
 		} else if (docEntry.getOwnerGroup() != null) {
 			for (User user : docEntry.getOwnerGroup().getUsers()) {
-				users += user.getId() + ": " + user.getLastname() + ", " + user.getFirstname() + "<br/>";
+				users += user.getUsername() + ": " + user.getLastname() + ", " + user.getFirstname() + "<br/>";
 			}
 		}
 		authors.setHTML(users);

@@ -11,9 +11,11 @@ import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.Reviewer;
+import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.util.CloneUtil;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -21,11 +23,20 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class AssignmentServiceImpl extends RemoteServiceServlet implements AssignmentService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
+	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager(getUser().getOrganization());
 	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
+	private UserDao userDao = UserDao.getInstance();
 
 	public User getUser() {
-		User user = (User) this.getThreadLocalRequest().getSession().getAttribute("user");
+//		User user = (User) this.getThreadLocalRequest().getSession().getAttribute("user");
+//		return user;
+		UserDao userDao = UserDao.getInstance();
+		User user = null;
+		try {
+			user = userDao.getUserByEmail(this.getThreadLocalRequest().getUserPrincipal().getName());
+		} catch (MessageException e) {
+			e.printStackTrace();
+		}
 		return user;
 	}
 
@@ -81,14 +92,19 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 
 	@Override
 	public User getUserDetails() throws Exception {
-		logger.info("Getting user details, id=" + getUser().getId());
-		return CloneUtil.clone(assignmentDao.loadUser(getUser().getId()));
+		logger.info("Getting user details, email=" + getUser().getEmail() +  " email ");
+		User user = null;
+		if ( getUser().getId() != null){		
+			return CloneUtil.clone(userDao.load(getUser().getId()));
+		} else {
+			return CloneUtil.clone(userDao.getUserByEmail(getUser().getEmail()));
+		}
 	}
 
 	@Override
 	public User updateUserPassword(User user, String newPassword) throws Exception {
-		logger.info("Changing user password, id=" + getUser().getId());
-		User storedUser = assignmentDao.loadUser(getUser().getId());
+		logger.info("Changing user password, email =" + getUser().getEmail());
+		User storedUser = userDao.load(getUser().getId());
 		
 		String typedPasswordDigested = RealmBase.Digest(user.getPassword(), "MD5",null);
 		

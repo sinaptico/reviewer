@@ -125,7 +125,7 @@ public class EmailNotifier {
 	}
 
 	public void sendPasswordNotification(User user, String courseName) throws MessagingException, UnsupportedEncodingException {
-		String content = String.format(PASSWORD_DETAILS, user.getFirstname()+" "+user.getLastname(), courseName, user.getId(), user.getPassword());
+		String content = String.format(PASSWORD_DETAILS, user.getFirstname()+" "+user.getLastname(), courseName, user.getUsername(), user.getPassword());
 		this.sendNotification(user, "iWrite user details", content);
 	}
 	

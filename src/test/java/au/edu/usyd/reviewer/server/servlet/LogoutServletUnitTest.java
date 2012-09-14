@@ -14,7 +14,7 @@ public class LogoutServletUnitTest {
 	@Test 
 	public void shouldLogoutUser() throws Exception {
 		User user = new User();
-		user.setId("gaylord");
+		user.setUsername("gaylord");
 		
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockHttpServletRequest request = new MockHttpServletRequest(null, "/reviewer/logout");

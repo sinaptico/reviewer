@@ -57,6 +57,7 @@ import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Entry;
 import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
 import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Question;
 import au.edu.usyd.reviewer.client.core.QuestionReview;
 import au.edu.usyd.reviewer.client.core.ReviewReply;
@@ -69,6 +70,7 @@ import au.edu.usyd.reviewer.client.core.TemplateReply;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.server.reviewstratergy.RandomReviewStratergy;
 import au.edu.usyd.reviewer.server.reviewstratergy.ReviewStratergy;
 import au.edu.usyd.reviewer.server.reviewstratergy.SpreadsheetReviewStratergy;
@@ -81,14 +83,18 @@ public class AssignmentManager {
 	private AssignmentRepository assignmentRepository;
 	private EmailNotifier emailNotifier;
 	private AssignmentDao assignmentDao;
+	private UserDao userDao;
 	private String documentsHome = "documents";
 	private FeedbackServiceImpl feedBackService = new FeedbackServiceImpl();
 	private FeedbackTrackingDao feedBackTrackingService = new FeedbackTrackingDao() ;		
+	private Organization organization = null;
 	
-	public AssignmentManager(AssignmentRepository assignmentRepository, AssignmentDao assignmentDao, EmailNotifier emailNotifier) {
+	public AssignmentManager(AssignmentRepository assignmentRepository, AssignmentDao assignmentDao, EmailNotifier emailNotifier, Organization organization) {
 		this.assignmentRepository = assignmentRepository;
 		this.assignmentDao = assignmentDao;
-		this.emailNotifier = emailNotifier;		
+		this.emailNotifier = emailNotifier;	
+		this.userDao = UserDao.getInstance();
+		this.organization = organization;
 
 		List<Course> courses = assignmentDao.loadCourses();
 		for (Course course : courses) {
@@ -144,7 +150,7 @@ public class AssignmentManager {
 						}					
 				}
 				// copy document PDF to zip folder
-				String filename = FileUtil.escapeFilename((writingActivity.getGroups() ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getId() + ")") + " - " + deadline.getName() + ".pdf");	
+				String filename = FileUtil.escapeFilename((writingActivity.getGroups() ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getUsername() + ")") + " - " + deadline.getName() + ".pdf");	
 				String filePathZip = getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), studentGroup.getTutorial()) + "/" + filename;
 				FileUtil.copyFile(filePath, filePathZip);
 				
@@ -173,7 +179,7 @@ public class AssignmentManager {
 		}
 	}
 
-	public void finishActivityDeadline(Course course, WritingActivity writingActivity, Deadline deadline) {
+	public void finishActivityDeadline(Course course, WritingActivity writingActivity, Deadline deadline) throws Exception{
 		// check activity status
 		if (deadline.getStatus() >= Deadline.STATUS_DEADLINE_FINISH) {
 			logger.info("Deadline has already finished.");
@@ -291,7 +297,7 @@ public class AssignmentManager {
 			
 
 			
-			String filename = reviewEntry.getOwner().getLastname() + ", " + reviewEntry.getOwner().getFirstname() + " (" + reviewEntry.getOwner().getId() + ") - reviewed - " + (docEntry.getOwnerGroup() != null ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getId() + ")") + ".html";
+			String filename = reviewEntry.getOwner().getLastname() + ", " + reviewEntry.getOwner().getFirstname() + " (" + reviewEntry.getOwner().getUsername() + ") - reviewed - " + (docEntry.getOwnerGroup() != null ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getId() + ")") + ".html";
 			logger.info("Review File: "+getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), studentGroup.getTutorial()) + "/" + FileUtil.escapeFilename(filename));
 			File reviewFile = new File(getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), studentGroup.getTutorial()) + "/" + FileUtil.escapeFilename(filename));
 			reviewFile.getParentFile().mkdirs();
@@ -377,10 +383,10 @@ public class AssignmentManager {
 		// read excel file and insert questions into DB
 		if (reviewingActivity.getFormType() != null && reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_QUESTION)) {
 			String path = getDocumentsFolder(course.getId(), reviewingActivity.getId(), "aqg", "");
-			String filepath = path + Reviewer.getProperty("aqg.loadExcelPath");
+			String filepath = path + Reviewer.getProperty(Constants.AGG_LOAD_EXCEL_PATH);
 			QuestionUtil questionUtil = new QuestionUtil();
 			try {
-				questionUtil.readExcelInsertDB(filepath);
+				questionUtil.readExcelInsertDB(filepath, course.getOrganization());
 			} catch (Exception e) {
 				logger.error("Failed to read the excel.", e);
 			}
@@ -454,7 +460,7 @@ public class AssignmentManager {
 		
 		for (UserGroup studentGroup : course.getStudentGroups()) {
 			for (User student : studentGroup.getUsers()) {
-				if (!assignmentDao.containsUser(student)) {
+				if (!userDao.containsUser(student)) {
 					assignmentRepository.createUser(student);
 				}
 			}
@@ -464,7 +470,7 @@ public class AssignmentManager {
 	private void saveLecturerUsers(Course course) throws Exception{
 		
 		for (User lecturer : course.getLecturers()) {
-			if (!assignmentDao.containsUser(lecturer)) {
+			if (!userDao.containsUser(lecturer)) {
 					assignmentRepository.createUser(lecturer);
 			}
 		}
@@ -473,7 +479,7 @@ public class AssignmentManager {
 	private void saveTutorUsers(Course course) throws Exception {
 		
 		for (User tutor : course.getTutors()) {
-			if (!assignmentDao.containsUser(tutor)) {
+			if (!userDao.containsUser(tutor)) {
 					assignmentRepository.createUser(tutor);
 			}
 		}
@@ -481,12 +487,13 @@ public class AssignmentManager {
 	
 	private void saveLecturerDB(Course course) throws Exception{
 		for(User lecturer : course.getLecturers()) {
-			if(!assignmentDao.containsUser(lecturer)){
+			if(!userDao.containsUser(lecturer)){
 				//send password notification if not a wasm user
 				if (!lecturer.getWasmuser()){
 					emailNotifier.sendPasswordNotification(lecturer, course.getName());
 					lecturer.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
 				}					
+				lecturer.setOrganization(course.getOrganization());
 				assignmentDao.save(lecturer);
 			}
 		}
@@ -494,12 +501,13 @@ public class AssignmentManager {
 	
 	private void saveTutorDB(Course course) throws Exception {
 		for(User tutor : course.getTutors()) {
-			if(!assignmentDao.containsUser(tutor)){
+			if(!userDao.containsUser(tutor)){
 				//send password notification if not a wasm user
 				if (!tutor.getWasmuser()){					
 					emailNotifier.sendPasswordNotification(tutor, course.getName());
 					tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
-				}					
+				}				
+				tutor.setOrganization(course.getOrganization());
 				assignmentDao.save(tutor);	
 			}				
 		}
@@ -508,12 +516,13 @@ public class AssignmentManager {
 	private void saveUserGroupDB(Course course)throws Exception{
 		for(UserGroup studentGroup : course.getStudentGroups()) {
 			for(User student : studentGroup.getUsers()) {
-				if(!assignmentDao.containsUser(student)){
+				if(!userDao.containsUser(student)){
 					//send password notification if not a wasm user
 					if (!student.getWasmuser()){
 						emailNotifier.sendPasswordNotification(student, course.getName());
 						student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
 					}	
+					student.setOrganization(course.getOrganization());
 					assignmentDao.save(student);		
 				}
 			}
@@ -605,7 +614,12 @@ public class AssignmentManager {
 					timer.schedule(new TimerTask() {
 						@Override
 						public void run() {
-							finishActivityDeadline(assignmentDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), assignmentDao.loadDeadline(deadlineId));
+							
+							try {
+								finishActivityDeadline(assignmentDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), assignmentDao.loadDeadline(deadlineId));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 						}
 					}, deadline.getFinishDate());
 					break;
@@ -791,7 +805,7 @@ public class AssignmentManager {
 				// copy document PDF to zip folder
 				UserGroup studentGroup = writingActivity.getGroups() ? docEntry.getOwnerGroup() : assignmentDao.loadUserGroupWhereUser(course, docEntry.getOwner());
 				File tutorialfolder = new File(this.getDocumentsFolder(course.getId(), writingActivity.getId(), writingActivity.getDeadlines().get(writingActivity.getDeadlines().size() - 1).getId(), studentGroup.getTutorial()));
-				String filePathZip = tutorialfolder.getAbsolutePath() + "/" + FileUtil.escapeFilename((writingActivity.getGroups() ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getId() + ")") + " - Final.pdf");
+				String filePathZip = tutorialfolder.getAbsolutePath() + "/" + FileUtil.escapeFilename((writingActivity.getGroups() ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getUsername() + ")") + " - Final.pdf");
 				FileUtil.copyFile(filePath, filePathZip);
 				FileUtil.zipFolder(tutorialfolder, new File(tutorialfolder.getAbsolutePath() + ".zip"));
 				docEntry.setDownloaded(true);
@@ -891,7 +905,7 @@ public class AssignmentManager {
 		}
 	}
 	
-	private void updateActivityReviews(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity) {
+	private void updateActivityReviews(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity) throws Exception{
 		synchronized (writingActivity.getFolderId().intern()) {
 			// get documents to be reviewed
 			List<DocEntry> docEntries = new ArrayList<DocEntry>();
@@ -987,7 +1001,7 @@ public class AssignmentManager {
 			// create user reviews
 			for (DocEntry docEntry : reviewSetup.keySet()) {
 				for (User user : reviewSetup.get(docEntry)) {
-					logger.info("Assigning reviewer: reviewer=" + user.getId() + ", docid=" + docEntry.getId());
+					logger.info("Assigning reviewer: reviewer=" + user.getUsername() + ", docid=" + docEntry.getId());
 					Review review;
 					if (reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_QUESTION)) {
 						QuestionReview questionReview = new QuestionReview();
@@ -1174,10 +1188,11 @@ public class AssignmentManager {
 			assignmentDao.delete(reviewEntry);		
 	}
 	
-	public ReviewEntry saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId) throws Exception{
+	public ReviewEntry saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId, Organization organization) throws Exception{
 		ReviewingActivity reviewingActivity = assignmentDao.loadReviewingActivity(Long.valueOf(reviewingActivityId));
 		DocEntry docEntry = assignmentDao.loadDocEntryWhereId(Long.valueOf(docEntryId));
-		User user = assignmentDao.loadUser(userId);
+		// userId is the username
+		User user = userDao.getUserByUsername(userId, organization);
 		
 		if (assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user) == null){
 			ReviewEntry reviewEntry = new ReviewEntry();

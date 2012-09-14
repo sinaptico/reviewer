@@ -19,8 +19,8 @@ public class UserForm extends Composite {
 	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
 	
-	/** TextBox with user's id. */
-	private final TextBox id = new TextBox();
+	/** TextBox with user's username. */
+	private final Label username = new Label();
 	
 	/** TextBox with user's first name. */
 	private final TextBox firstname = new TextBox();
@@ -61,7 +61,7 @@ public class UserForm extends Composite {
 	 * @return the user
 	 */
 	public User getUser() {
-		user.setId(id.getValue());
+		user.setUsername(username.getText());
 		user.setFirstname(firstname.getValue());
 		user.setLastname(lastname.getValue());
 		user.setEmail(email.getValue());
@@ -76,8 +76,8 @@ public class UserForm extends Composite {
 	public void onLoad() {
 		errorLabel.setStyleName("error");
 		Grid grid = new Grid(9, 2);
-		grid.setWidget(0, 0, new Label("ID:"));
-		grid.setWidget(0, 1, id);
+		grid.setWidget(0, 0, new Label("Username:"));
+		grid.setWidget(0, 1, username);
 		grid.setWidget(1, 0, new Label("Firstname:"));
 		grid.setWidget(1, 1, firstname);
 		grid.setWidget(2, 0, new Label("Lastname:"));
@@ -103,7 +103,7 @@ public class UserForm extends Composite {
 	 */
 	public void setUser(User user) {
 		this.user = user;
-		id.setValue(user.getId());
+		username.setText(user.getUsername());
 		firstname.setValue(user.getFirstname());
 		lastname.setValue(user.getLastname());
 		email.setValue(user.getEmail());
@@ -113,7 +113,7 @@ public class UserForm extends Composite {
 	 * Disable not updatable fileds.
 	 */
 	public void disableNotUpdatableFileds(){
-		id.setEnabled(false);
+		//username.setEnabled(false);
 		firstname.setEnabled(false);
 		lastname.setEnabled(false);
 		email.setEnabled(false);

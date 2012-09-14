@@ -33,13 +33,14 @@ public class AssignmentDao {
 		this.sessionFactory = sessionFactory;
 	}
 
-	public boolean containsUser(User user) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		List<DocEntry> users = session.createCriteria(User.class).add(Property.forName("id").eq(user.getId())).list();
-		session.getTransaction().commit();
-		return users.size() > 0;
-	}
+//	public boolean containsUser(User user) {
+//		Session session = this.getSession();
+//		session.beginTransaction();
+////		List<DocEntry> users = session.createCriteria(User.class).add(Property.forName("id").eq(user.getId())).list();
+//		List<User> users = session.createCriteria(User.class).add(Property.forName("id").eq(user.getId())).list();
+//		session.getTransaction().commit();
+//		return users.size() > 0;
+//	}
 
 	public void delete(Object object) {
 		Session session = this.getSession();
@@ -234,7 +235,7 @@ public class AssignmentDao {
 
 
 	public Course loadReviewForViewing(User user, long reviewId) {
-		logger.debug("Loading user review: user.id=" + user.getId() + ", review.id=" + reviewId);
+		logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
 		String ownerQuery = "select distinct course from Course course " + 
 		"left join fetch course.lecturers lecturer " + 
 		"left join fetch course.tutors tutor " + 
@@ -273,16 +274,16 @@ public class AssignmentDao {
 		return reviewingActivity;
 	}
 
-	public User loadUser(String userId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		User user = (User) session.createCriteria(User.class).add(Property.forName("id").eq(userId)).uniqueResult();
-		session.getTransaction().commit();
-		return user;
-	}
+//	public User loadUser(String userId) {
+//		Session session = this.getSession();
+//		session.beginTransaction();
+//		User user = (User) session.createCriteria(User.class).add(Property.forName("id").eq(userId)).uniqueResult();
+//		session.getTransaction().commit();
+//		return user;
+//	}
 	
 	public List<Course> loadUserActivities(int semester, int year, User user) {
-		logger.debug("Loading user activities: user.id=" + user.getId());
+		logger.debug("Loading user activities: user.username=" + user.getUsername());
 		String query = "select distinct course from Course course " 
 			+ "left join fetch course.lecturers lecturer " 
 			+ "left join fetch course.tutors tutor " 
@@ -310,7 +311,7 @@ public class AssignmentDao {
 	}
 
 	public Rating loadUserRatingForEditing(User owner, Review review) {
-		logger.debug("Loading rating: owner.id=" + owner.getId() + ", review.id=" + review.getId());
+		logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
 		Session session = this.getSession();
 		session.beginTransaction();
 		Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("owner").eq(owner)).add(Property.forName("review").eq(review)).uniqueResult();
@@ -319,7 +320,7 @@ public class AssignmentDao {
 	}
 
 	public Course loadUserReviewForEditing(User user, long reviewId) {
-		logger.debug("Loading user review: user.id=" + user.getId() + ", review.id=" + reviewId);
+		logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
 		String query = "select distinct course from Course course " + 
 		"left join fetch course.lecturers lecturer " + 
 		"left join fetch course.tutors tutor " + 
@@ -340,7 +341,7 @@ public class AssignmentDao {
 	}
 
 	public List<Course> loadUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, User user) {
-		logger.debug("Loading user reviews: user.id=" + user.getId());
+		logger.debug("Loading user reviews: user.username=" + user.getUsername());
 		String query = "select distinct course from Course course " 
 			+ "left join fetch course.lecturers lecturer " 
 			+ "left join fetch course.tutors tutor " 
@@ -368,7 +369,7 @@ public class AssignmentDao {
 	}
 
 	public List<Course> loadUserWritingTasks(int semester, int year, User user) {
-		logger.debug("Loading user reviews: user.id=" + user.getId());
+		logger.debug("Loading user reviews: user.username=" + user.getUsername());
 		String query = "select distinct course from Course course " 
 			+ "left join fetch course.lecturers lecturer " 
 			+ "left join fetch course.tutors tutor " 

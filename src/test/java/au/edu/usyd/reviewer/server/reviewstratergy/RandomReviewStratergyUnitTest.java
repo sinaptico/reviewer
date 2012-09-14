@@ -18,6 +18,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
@@ -32,15 +33,20 @@ public class RandomReviewStratergyUnitTest {
 
 	@Parameters
 	public static List<Object[]> setUp() {
-
+		Organization organization = new Organization();
+		organization.setName("RandomReviewStratergyUnitTest");
 		User user1 = new User();
-		user1.setId("user1");
+		user1.setUsername("user1");
+		user1.setOrganization(organization);
 		User user2 = new User();
-		user2.setId("user2");
+		user2.setUsername("user2");
+		user2.setOrganization(organization);
 		User user3 = new User();
-		user3.setId("user3");
+		user3.setUsername("user3");
+		user3.setOrganization(organization);
 		User user4 = new User();
-		user4.setId("user4");
+		user4.setOrganization(organization);
+		user4.setUsername("user4");
 
 		UserGroup userGroup1 = new UserGroup();
 		userGroup1.setName("1");
@@ -91,8 +97,18 @@ public class RandomReviewStratergyUnitTest {
 	@Test
 	public void testReviewAllocation() {
 		ReviewStratergy reviewallocation = new RandomReviewStratergy(new ReviewingActivity(), docEntries, students);
-		Map<DocEntry, Set<User>> reviewSetup = reviewallocation.allocateReviews();
-		assertThat(reviewSetup.size(), is(docEntries.size()));
+		Map<DocEntry, Set<User>> reviewSetup = null;
+		try {
+			reviewSetup = reviewallocation.allocateReviews();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		int size = 0;
+		if ( reviewSetup != null){
+			size = reviewSetup.size();
+		}
+		assertThat( size, is(docEntries.size()));
 		for (DocEntry docEntry : reviewSetup.keySet()) {
 			// check that document has at least one reviewer
 			assertThat(reviewSetup.get(docEntry).size(), greaterThanOrEqualTo(1));

@@ -72,7 +72,7 @@ public class QuestionDao {
 	}
 
 	public List<Question> searchQuestions(User user, String docId) {
-		logger.debug("Geting Question List from user:" + user.getId() + "Doc:" + docId);
+		logger.debug("Geting Question List from user:" + user.getUsername() + "Doc:" + docId);
 		Session session = this.getSession();
 		session.beginTransaction();
 		String query = "select distinct question from Question question join fetch question.owner owner " + "where docId=:docId AND owner=:user";

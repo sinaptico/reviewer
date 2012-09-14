@@ -1,8 +1,14 @@
 package au.edu.usyd.reviewer.server.rpc;
 
+import java.security.Principal;
 import java.util.Collection;
+
+
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,17 +17,19 @@ import au.edu.usyd.reviewer.client.admin.AdminService;
 import au.edu.usyd.reviewer.client.admin.report.UserStats;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
-import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Grade;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.Reviewer;
+import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.report.UserStatsAnalyser;
 import au.edu.usyd.reviewer.server.util.CloneUtil;
 
@@ -29,8 +37,9 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class AdminServiceImpl extends RemoteServiceServlet implements AdminService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
+	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager( getUser().getOrganization());
 	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
+	private UserDao userDao = UserDao.getInstance();
 
 	@Override
 	public Course deleteCourse(Course course) throws Exception {
@@ -71,9 +80,18 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return CloneUtil.clone(courses);
 	}
 
-	public User getUser() {
-		User user = new User();
-		user.setId(this.getThreadLocalRequest().getUserPrincipal().getName());
+	private User getUser() {
+		UserDao userDao = UserDao.getInstance();
+		User user = null;
+		try {
+//			request.getSession().setAttribute("user", user);
+			HttpServletRequest request = this.getThreadLocalRequest();
+			Principal principal = request.getUserPrincipal(); 
+//			this.getThreadLocalRequest().getUserPrincipal().getName()
+			user = userDao.getUserByEmail(principal.getName());
+		} catch (MessageException e) {
+			e.printStackTrace();
+		}
 		return user;
 	}
 
@@ -91,7 +109,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	public boolean isAdmin() {
 		User user = getUser();
-		return user == null ? false : Reviewer.getAdminUsers().contains(user.getId());
+		return user == null ? false : user.isManager() || user.isTeacher();
 	}
 
 	public boolean isCourseLecturer(Course course) {
@@ -102,7 +120,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public User mockUser(User user) throws Exception {
 		if (isAdmin()) {
-			logger.info("Mocking user: id=" + user.getId());
+			logger.info("Mocking user: email=" + user.getEmail());
 			this.getThreadLocalRequest().getSession().setAttribute("user", user);
 			return user;
 		} else {
@@ -114,6 +132,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public Course saveCourse(Course course) throws Exception {
 		if (isAdmin() || isCourseLecturer(assignmentDao.loadCourse(course.getId()))) {
 			try {
+				// Before save the course set its organization
+				course = setOrganizationInCourse(course);
 				return CloneUtil.clone(assignmentManager.saveCourse(course));
 			} catch (Exception e) {
 				throw e;
@@ -141,7 +161,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public Grade updateGrade(Deadline deadline, String userId, Double gradeValue) throws Exception {
 		Course course = assignmentDao.loadCourseWhereDeadline(deadline);
 		if (isAdmin() || isCourseLecturer(course)) {
-			User user = assignmentDao.loadUser(userId);
+			User user = userDao.getUserByUsername(userId, course.getOrganization());
 			Grade grade = assignmentDao.loadGrade(deadline, user);
 			if(grade == null) {
 				grade = new Grade();
@@ -164,6 +184,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public ReviewTemplate saveReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 		if (isAdmin()) {
 			try {
+				// Before save the review template, set its organization
+				reviewTemplate = setOrganizationInReviewTemplate(reviewTemplate);
 				return CloneUtil.clone(assignmentManager.saveReviewTemplate(reviewTemplate));
 			} catch (Exception e) {
 				throw e;
@@ -233,10 +255,38 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public ReviewEntry saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId) throws Exception {
 		try {
-			ReviewEntry reviewEntry = assignmentManager.saveNewReviewEntry(reviewingActivityId, userId, docEntryId);		
+			ReviewEntry reviewEntry = assignmentManager.saveNewReviewEntry(reviewingActivityId, userId, docEntryId, getUser().getOrganization());		
 			return CloneUtil.clone(reviewEntry);
 		} catch (Exception e) {
 			throw e;
 		}
+	}	
+	
+	/**
+	 * if the user is a teacher or a student then set the organization to the course 
+	 * @param course course to set organization
+	 * @return if user is not a manager, the course has the organization
+	 */
+	private Course setOrganizationInCourse(Course course){
+		User user = getUser();
+		if (!user.isManager()){
+			Organization organization = user.getOrganization();
+			course.setOrganization(organization);
+		}
+		return course;
+	}
+
+	/**
+	 * if the user is a teacher or a student then set the organization to the review template 
+	 * @param reviewTemplate  review template to set organization
+	 * @return if user is not a manager, the review template has the organization
+	 */
+	private ReviewTemplate setOrganizationInReviewTemplate(ReviewTemplate reviewTemplate){
+		User user = getUser();
+		if (!user.isManager()){
+			Organization organization = user.getOrganization();
+			reviewTemplate.setOrganization(organization);
+		}
+		return reviewTemplate;
 	}	
 }

@@ -8,7 +8,9 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.LazyCollection;
@@ -40,6 +42,16 @@ public class ReviewTemplate implements Serializable {
 	@JoinTable(name = "ReviewTemplates_Sections")
     @javax.persistence.OrderBy("number")
 	private List<Section> sections = new ArrayList<Section>();	
+	
+	/** The organization */
+	@ManyToOne
+	@JoinColumn(name="organizationId")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private Organization organization;
+	
+	public ReviewTemplate(){
+		
+	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
@@ -142,6 +154,14 @@ public class ReviewTemplate implements Serializable {
 	 */
 	public void setSections(List<Section> sections) {
 		this.sections = sections;
+	}
+
+	public Organization getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(Organization organization) {
+		this.organization = organization;
 	}
 
 	

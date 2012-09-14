@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.admin;
 
 import au.edu.usyd.reviewer.client.core.Course;
+
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.gwt.DocEntryWidget;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;

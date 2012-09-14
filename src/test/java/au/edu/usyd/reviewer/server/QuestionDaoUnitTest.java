@@ -84,17 +84,17 @@ public class QuestionDaoUnitTest {
         assignmentDao.save(docEntry1);
 
         student1 = new User();
-        student1.setId("student01");
+        student1.setUsername("student01");
         student1.setEmail("test.student01@"+domain);
         assignmentDao.save(student1);
         user1 = new User();
-        user1.setId("user1");
+        user1.setUsername("user1");
         user1.setEmail("user1@"+domain);
         user2 = new User();
-        user2.setId("user2");
+        user2.setUsername("user2");
         user2.setEmail("user2@"+domain);
         user3 = new User();
-        user3.setId("user3");
+        user3.setUsername("user3");
         user3.setEmail("user3@"+domain);
 
         assignmentDao.save(user1);
@@ -102,10 +102,10 @@ public class QuestionDaoUnitTest {
         assignmentDao.save(user3);
 
         aqg = new User();
-        aqg.setId("AQG1");
+        aqg.setUsername("AQG1");
         aqg.setEmail("AQG@"+domain);
         generic = new User();
-        generic.setId("generic");
+        generic.setUsername("generic");
         generic.setEmail("generic@"+domain);
 
         assignmentDao.save(aqg);
@@ -210,7 +210,7 @@ public class QuestionDaoUnitTest {
     public void getQuestionListByUserDoc() {
 
         List<Question> questions = questionDao.searchQuestions(student1, docEntry1.getDocumentId());
-        logger.info("retrieving triggerQuestion:" + questions.size() + "from user:" + student1.getId() + "and doc:" + docEntry1.getId());
+        logger.info("retrieving triggerQuestion:" + questions.size() + "from user:" + student1.getEmail() + "and doc:" + docEntry1.getId());
 
     }
 
@@ -222,7 +222,7 @@ public class QuestionDaoUnitTest {
         Question GenericQuestion1 = null;
         questionlist = questionDao.getQuestion(docEntry1.getDocumentId());
         for (Question question : questionlist) {
-            if (question.getOwner().getId().equals("user1")) {
+            if (question.getOwner().getUsername().equals("user1")) {
                 LecturerQuestion1 = question;
             } else if (question.getOwner().equals(user2)) {
                 TutorQuestion1 = question;

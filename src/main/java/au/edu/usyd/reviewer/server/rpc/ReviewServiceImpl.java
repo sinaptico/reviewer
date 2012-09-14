@@ -33,16 +33,18 @@ import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.EmailNotifier;
 import au.edu.usyd.reviewer.server.QuestionDao;
 import au.edu.usyd.reviewer.server.Reviewer;
+import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.util.CloneUtil;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
+	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager(getUser().getOrganization());
 	private EmailNotifier emailNotifier = Reviewer.getEmailNotifier();
 	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
 	private FeedbackTrackingDao feedbackTrackingService = new FeedbackTrackingDao();
+	private UserDao userDao = UserDao.getInstance();
 
 	@Override
 	public Rating getUserRatingForEditing(Review review) throws Exception {
@@ -96,13 +98,14 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		}
 	}
 
-	public User getUser() throws Exception {
+	public User getUser()  {
 		User user = (User) this.getThreadLocalRequest().getSession().getAttribute("user");
-		if (user == null) {
-			throw new Exception("Your session has expired. Please login again.");
-		} else {
-			return user;
-		}
+//		if (user == null) {
+//			throw new Exception("Your session has expired. Please login again.");
+//		} else {
+//			return user;
+//		}
+		return user;
 	}
 
 	public boolean isCourseInstructor(Course course) throws Exception {
@@ -148,7 +151,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 
 		// save rating
 		if (rating instanceof QuestionRating) {
-			User user = assignmentDao.loadUser(getUser().getId());
+			User user = userDao.load(getUser().getId());
 			if (((QuestionRating) rating).getEvaluatorBackground().equals("Yes")) {
 				user.setNativeSpeaker("Yes");
 			} else {

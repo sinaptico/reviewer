@@ -347,7 +347,7 @@ public class AdminEntryPoint implements EntryPoint {
 
 							@Override
 							public void onSuccess(User user) {
-								Window.alert("You are now logged in as '" + user.getId() + "'");
+								Window.alert("You are now logged in as '" + user.getEmail() + "'");
 								dialogBox.hide();
 							}
 						});

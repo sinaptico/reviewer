@@ -1,6 +1,8 @@
 package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
+
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,9 +11,11 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -100,6 +104,14 @@ public class Course implements Serializable {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<User> automaticReviewers = new HashSet<User>();
 
+	/** The organization */
+	@ManyToOne
+	@JoinColumn(name="organizationId")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private Organization organization;
+	
+	public Course(){}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -417,6 +429,14 @@ public class Course implements Serializable {
 	 */
 	public void setAutomaticReviewers(Set<User> automaticReviewers) {
 		this.automaticReviewers = automaticReviewers;
+	}
+
+	public Organization getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(Organization organization) {
+		this.organization = organization;
 	}
 	
 }

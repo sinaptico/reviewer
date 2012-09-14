@@ -36,14 +36,16 @@ public class FileServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
+	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager(getUser().getOrganization());
 	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
 	private static final String UPLOAD_DIRECTORY = Reviewer.getUploadsHome();	
 	private static final String EMPTY_FILE = Reviewer.getEmptyFile();
+	private User user;
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		User user = (User) request.getSession().getAttribute("user");
+		setUser(user);
 		String docId = request.getParameter("docId");
 		String docVersion = request.getParameter("docVersion");
 		String tutorial = request.getParameter("tutorial");
@@ -149,10 +151,11 @@ public class FileServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 		User user = (User) req.getSession().getAttribute("user");
+		setUser(user);
 		String docId = null;
 		String csv = null;
 		
-		logger.info("User uploading file: " + user.getId());      			
+		logger.info("User uploading file: " + user.getEmail());      			
         // process only multipart requests
         if (ServletFileUpload.isMultipartContent(req)) {
         	logger.info("Multipart Content ");
@@ -242,4 +245,12 @@ public class FileServlet extends HttpServlet {
                             "Request contents type is not supported by the servlet.");
         }
     }
+	
+	private void setUser(User anUser) {
+		user = anUser;
+	}
+	private User getUser() {
+		return user;
+	}
+
 }

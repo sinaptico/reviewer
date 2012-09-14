@@ -23,6 +23,7 @@ import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 
 import com.google.gdata.data.acl.AclEntry;
 import com.google.gdata.data.acl.AclRole;
@@ -123,12 +124,12 @@ public class AssignmentRepository {
 		  List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		  USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-				if (aclEntry.getScope().getValue().equals(owner.getId() + "@" + googleUserServiceImpl.getDomain())) {
-					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getId() + "@" + googleUserServiceImpl.getDomain());
+				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
+					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 					continue USER_LOOP;
 				}
 			}
-			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getId() + "@" + googleUserServiceImpl.getDomain());
+			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 		  }
 		}
 		return docEntry;
@@ -136,7 +137,7 @@ public class AssignmentRepository {
 
 	public User createUser(User user) throws ServiceException, IOException {
 		try {
-			googleUserServiceImpl.createUser(user.getId(), user.getFirstname(), user.getLastname(), "Changeme" + user.getId() + "!");
+			googleUserServiceImpl.createUser(user.getUsername(), user.getFirstname(), user.getLastname(), "Changeme" + user.getUsername() + "!");
 		} catch (AppsForYourDomainException e) {
 			if (e.getErrorCode().equals(AppsForYourDomainErrorCode.EntityExists)) {
 				// continue
@@ -252,8 +253,8 @@ public class AssignmentRepository {
 				lecturer.setWasmuser(false);
 				lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 			}
-			lecturer.getRole_name().add("manager");					
-			lecturer.getRole_name().add("guest");				
+			lecturer.addRole(Constants.ROLE_TEACHER);
+			lecturer.addRole(Constants.ROLE_GUEST);				
 		}
 		
 		//check if tutors are wasm users, (create passwords for non wasm users)
@@ -264,8 +265,8 @@ public class AssignmentRepository {
 				tutor.setWasmuser(false);
 				tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 			}
-			tutor.getRole_name().add("manager");					
-			tutor.getRole_name().add("guest");
+			tutor.addRole(Constants.ROLE_TEACHER);					
+			tutor.addRole(Constants.ROLE_GUEST);
 		}		
 
 		// clear student groups
@@ -352,18 +353,19 @@ public class AssignmentRepository {
 		List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-				if (aclEntry.getScope().getValue().equals(owner.getId() + "@" + googleUserServiceImpl.getDomain())) {
-					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getId() + "@" + googleUserServiceImpl.getDomain());
+				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
+					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 					continue USER_LOOP;
 				}
 			}
-			googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getId() + "@" + googleUserServiceImpl.getDomain());
+			googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 		}
 		
 		// delete permissions
 		for (AclEntry aclEntry : aclEntries) {
 			User user = new User();
-			user.setId(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
+			user.setEmail(aclEntry.getScope().getValue());
+			user.setUsername(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
 			if (!owners.contains(user) && aclEntry.getRole().equals(AclRole.WRITER)) {
 				if (docEntry instanceof LogpageDocEntry) {
 					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());
