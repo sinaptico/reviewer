@@ -192,5 +192,36 @@ public class DocEntry extends Entry {
 	 */
 	public void setEarlySubmitDate(Date earlySubmitDate) {
 		this.earlySubmitDate = earlySubmitDate;
-	}	
+	}
+	
+	
+	public DocEntry clone(){
+		DocEntry doc = new DocEntry();
+		doc.setDocumentId(this.getDocumentId());
+		doc.setDomainName(this.getDomainName());
+		doc.setDownloaded(this.getDownloaded());
+		doc.setEarlySubmitDate(this.getEarlySubmitDate());
+		doc.setFileName(this.getFileName());
+		if ( this.getId() != null && this.getId().longValue() > 0){
+			doc.setId(this.getId());
+		}
+		doc.setLocalFile(this.isLocalFile());
+		doc.setLocked(this.getLocked());
+		if ( this.getOwner() != null){
+			doc.setOwner(this.getOwner().clone());
+		}
+		doc.setOwnerGroup(this.getOwnerGroup().clone());
+		
+		Set<Review> reviews = new HashSet<Review>();
+		for(Review review:this.getReviews()){
+			if (review != null){
+				reviews.add(review.clone());
+			}
+		}
+		
+		doc.setReviews(reviews);
+		doc.setTitle(this.getTitle());
+		doc.setUploaded(this.isUploaded());
+		return doc;
+	}
 }

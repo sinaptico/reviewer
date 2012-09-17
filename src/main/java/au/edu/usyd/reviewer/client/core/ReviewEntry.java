@@ -79,4 +79,31 @@ public class ReviewEntry extends Entry {
 	public void setReview(Review review) {
 		this.review = review;
 	}
+	
+	public ReviewEntry clone(){
+		ReviewEntry entry = new ReviewEntry();
+		if (this.getDocEntry() != null){
+			entry.setDocEntry(this.getDocEntry().clone());
+		}
+		entry.setDownloaded(this.getDownloaded());
+		entry.setFileName(this.getFileName());
+		if ( this.getId() != null && this.getId().longValue() > 0){
+			entry.setId(this.getId());
+		}
+		entry.setLocalFile(this.isLocalFile());
+		entry.setLocked(this.getLocked());
+		
+		if (this.getOwner() != null){
+			entry.setOwner(this.getOwner().clone());
+		}
+		
+		if (this.getReview() != null){
+			entry.setReview(this.getReview().clone());
+		}
+		
+		entry.setTitle(this.getTitle());
+		entry.setUploaded(this.isUploaded());
+		
+		return entry;
+	}
 }

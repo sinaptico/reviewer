@@ -49,7 +49,7 @@ public class AssignmentManagerUnitTest {
     private static WritingActivity groupActivity;
     private static WritingActivity logbookActivity;
     private static AssignmentManager assignmentManager;
-    private String domain = Reviewer.getGoogleDomain();
+//    private String domain = Reviewer.getGoogleDomain();
 
     @Test void test(){
 		assertTrue(true);

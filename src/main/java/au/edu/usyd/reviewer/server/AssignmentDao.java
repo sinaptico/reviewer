@@ -1,5 +1,6 @@
 package au.edu.usyd.reviewer.server;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.DocumentType;
 import au.edu.usyd.reviewer.client.core.Grade;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Rating;
 import au.edu.usyd.reviewer.client.core.Review;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
@@ -33,15 +35,6 @@ public class AssignmentDao {
 		this.sessionFactory = sessionFactory;
 	}
 
-//	public boolean containsUser(User user) {
-//		Session session = this.getSession();
-//		session.beginTransaction();
-////		List<DocEntry> users = session.createCriteria(User.class).add(Property.forName("id").eq(user.getId())).list();
-//		List<User> users = session.createCriteria(User.class).add(Property.forName("id").eq(user.getId())).list();
-//		session.getTransaction().commit();
-//		return users.size() > 0;
-//	}
-
 	public void delete(Object object) {
 		Session session = this.getSession();
 		session.beginTransaction();
@@ -53,36 +46,13 @@ public class AssignmentDao {
 		return sessionFactory.getCurrentSession();
 	}
 
-	public Course loadCourse(Long courseId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		Course course = (Course) session.createCriteria(Course.class).add(Property.forName("id").eq(courseId)).uniqueResult();
-		session.getTransaction().commit();
-		return course;
-	}
 
-	public List<Course> loadCourses() {
-        Session session = this.getSession();
-        session.beginTransaction();
-        List<Course> courses = session.createCriteria(Course.class).list();
-        session.getTransaction().commit();
-        return courses;
-	}	
-
-	public List<Course> loadCourses(Integer semester, Integer year) {
-		String query = "from Course course " + "where course.semester=:semester AND course.year=:year";
-		Session session = this.getSession();
-		session.beginTransaction();
-		List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).list();		
-		session.getTransaction().commit();
-		return courses;		
-	}
 
 	public Course loadCourseWhereDeadline(Deadline deadline) {
 		String query = "select distinct course from Course course " 
 			+ "join fetch course.writingActivities writingActivity " 
 			+ "join fetch writingActivity.deadlines deadline " 
-			+ "where deadline=:deadline ";
+			+ "where deadline=:deadline";
 		Session session = this.getSession();
 		session.beginTransaction();
 		Course course = (Course) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
@@ -145,6 +115,7 @@ public class AssignmentDao {
 		return reviewEntry;
 	}	
 
+	
 	public DocEntry loadDocEntryWhereOwnerGroup(WritingActivity writingActivity, UserGroup ownerGroup) {
 		String query = "from Activity activity " + 
 		"join fetch activity.entries docEntry " + 
@@ -274,14 +245,6 @@ public class AssignmentDao {
 		return reviewingActivity;
 	}
 
-//	public User loadUser(String userId) {
-//		Session session = this.getSession();
-//		session.beginTransaction();
-//		User user = (User) session.createCriteria(User.class).add(Property.forName("id").eq(userId)).uniqueResult();
-//		session.getTransaction().commit();
-//		return user;
-//	}
-	
 	public List<Course> loadUserActivities(int semester, int year, User user) {
 		logger.debug("Loading user activities: user.username=" + user.getUsername());
 		String query = "select distinct course from Course course " 
@@ -427,12 +390,19 @@ public class AssignmentDao {
 		session.getTransaction().commit();
 	}
 
-	public Collection<ReviewTemplate> loadReviewTemplates() {
-		Session session = this.getSession();
-		session.beginTransaction();
-		List<ReviewTemplate> reviewTemplates = session.createCriteria(ReviewTemplate.class).list();
-		session.getTransaction().commit();
-		return reviewTemplates;
+	public Collection<ReviewTemplate> loadReviewTemplates(Organization organization) {
+		String query = "from ReviewTemplate review " + "where review.organization=:organization";
+        Session session = this.getSession();
+        session.beginTransaction();
+        List<ReviewTemplate> reviewTemplates = session.createQuery(query).setParameter("organization", organization).list();
+        session.getTransaction().commit();
+        List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
+        for (ReviewTemplate template:reviewTemplates){
+        	if (template != null){
+        		result.add(template.clone());
+        	}
+        }
+ 		return result;
 	}
 	
 	public ReviewTemplate loadReviewTemplate(Long reviewTemplateId) {

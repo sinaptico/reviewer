@@ -164,6 +164,28 @@ public class ReviewTemplate implements Serializable {
 		this.organization = organization;
 	}
 
-	
+
+	public ReviewTemplate clone(){
+		ReviewTemplate template = new ReviewTemplate();
+		template.setDescription(this.getDescription());
+		
+		if ( this.getId() != null && this.getId().longValue() > 0){
+			template.setId(this.getId());
+		}
+		
+		if (this.getOrganization() != null){
+			template.setOrganization(this.getOrganization().clone());
+		}
+
+		List<Section> sections = new ArrayList<Section>();
+		for(Section section : this.getSections()){
+			if (section != null){
+				sections.add(section.clone());
+			}
+		}
+		template.setSections(sections);
+		
+		return template;
+	}
 
 }

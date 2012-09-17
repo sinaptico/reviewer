@@ -1,6 +1,9 @@
 package au.edu.usyd.reviewer.client.core;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
@@ -309,6 +312,41 @@ public class ReviewingActivity extends Activity<ReviewEntry> {
 		return feedbackTemplateType;
 	}
 
+	public ReviewingActivity clone(){
+		ReviewingActivity activity = new ReviewingActivity();
+		activity.setAllocationStrategy(this.getAllocationStrategy());
+		activity.setEarlySubmit(this.getEarlySubmit());
+		
+		Set<ReviewEntry> entries = new HashSet<ReviewEntry>();
+		for(ReviewEntry entry:this.getEntries()){
+			if (entry != null){
+				entries.add(entry.clone());
+			}
+		}
+		activity.setEntries(entries);
+		
+		activity.setFeedbackTemplateType(this.getFeedbackTemplateType());
+		activity.setFinishDate(this.getFinishDate());
+		activity.setFormType(this.getFormType());
+		
+		if ( this.getId() != null && this.getId().longValue() > 0){
+			activity.setId(this.getId());
+		}
+		
+		activity.setMaxGrade(this.getMaxGrade());
+		activity.setName(this.getName());
+		activity.setNumAutomaticReviewers(this.getNumAutomaticReviewers());
+		activity.setNumLecturerReviewers(this.getNumLecturerReviewers());
+		activity.setNumStudentReviewers(this.getNumStudentReviewers());
+		activity.setNumTutorReviewers(this.getNumTutorReviewers());
+		activity.setRatings(this.getRatings());
+		activity.setReviewTemplateId(this.getReviewTemplateId());
+		activity.setStartDate(this.getStartDate());
+		activity.setStatus(this.getStatus());
+		
+		return activity;
+	}
+	
 //	public Boolean getStudentMarks() {
 //		return studentMarks;
 //	}

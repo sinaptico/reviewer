@@ -6,3 +6,7 @@ pom.xml
 src/main/resources/glosser-hibernate.cfg.xml
 src/main/resources/hibernate.cfg.xml
 src/test/resources/hibernate.cfg.xml
+src/main/webapp/WEB-INF/jetty-realm.properties
+src/target/*
+src/documents/*
+src/logs/*

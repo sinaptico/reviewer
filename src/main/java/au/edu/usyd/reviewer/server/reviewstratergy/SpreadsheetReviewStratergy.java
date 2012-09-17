@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
@@ -133,7 +134,8 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		File file = new File(folder + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
 		
 		try{
-			File empty = new File(Reviewer.getEmptyDocument());
+			Organization organization = course.getOrganization();
+			File empty = new File(organization.getEmptyDocument());
 			if (empty.length() == file.length()){return true;}			
 		} catch (Exception e) {
 			logger.error("Error reading empty document.", e);					

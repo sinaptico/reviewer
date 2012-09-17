@@ -24,6 +24,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 import com.google.gdata.data.acl.AclEntry;
 import com.google.gdata.data.acl.AclRole;
@@ -44,10 +45,23 @@ public class AssignmentRepository {
 	private GoogleSpreadsheetServiceImpl googleSpreadsheetServiceImpl;
 	private GoogleUserServiceImpl googleUserServiceImpl;	
 	
-	public AssignmentRepository(String username, String password, String domain) throws AuthenticationException, MalformedURLException {
-		this.googleDocsServiceImpl = new GoogleDocsServiceImpl(username, password);
-		this.googleSpreadsheetServiceImpl = new GoogleSpreadsheetServiceImpl(username, password);
-		this.googleUserServiceImpl = new GoogleUserServiceImpl(username, password, domain);
+	public AssignmentRepository(String username, String password, String domain) throws  MessageException{
+		try {
+			this.googleDocsServiceImpl = new GoogleDocsServiceImpl(username, password);
+			this.googleSpreadsheetServiceImpl = new GoogleSpreadsheetServiceImpl(username, password);
+		} catch (AuthenticationException e) {
+			e.printStackTrace();
+			throw new MessageException("User could not be authenticated in Google Docs");
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			throw new MessageException("The Google Docs URL is malformed");
+		}
+		try {
+			this.googleUserServiceImpl = new GoogleUserServiceImpl(username, password, domain);
+		} catch (AuthenticationException e) {
+			e.printStackTrace();
+			throw new MessageException("User could not be authenticated in Google");
+		} 
 	}
 
 	public void addStudentsToSpreadsheet(Course course, Collection<UserGroup> studentGroups) throws Exception {

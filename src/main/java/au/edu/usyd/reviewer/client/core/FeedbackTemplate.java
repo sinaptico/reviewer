@@ -217,4 +217,17 @@ public void setNumber(String number) {
 		return descriptionB;
 	}
 
+	public FeedbackTemplate clone(){
+		FeedbackTemplate template = new FeedbackTemplate();
+		template.setDescriptionA(this.getDescriptionA());
+		template.setDescriptionB(this.getDescriptionB());
+		template.setGrade(this.getGrade());
+		template.setGradeNum(this.getGradeNum());
+		if ( this.getId() != null && this.getId().longValue() > 0){
+			template.setId(this.getId());
+		}
+		template.setNumber(this.getNumber());
+		template.setText(this.getText());
+		return template;
+	}
 }

@@ -11,9 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Question;
 import au.edu.usyd.reviewer.client.core.QuestionScore;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 public class QuestionDaoUnitTest {
     private QuestionDao questionDao;
@@ -26,10 +28,20 @@ public class QuestionDaoUnitTest {
     private List<Question> questionlist;
     private User user1, user2, user3, aqg, generic, student1;
     private DocEntry docEntry1;
-    private String domain = Reviewer.getGoogleDomain();
-
+    private String domain = null;
+    private OrganizationDao organizationDao = OrganizationDao.getInstance();
     @Before
     public void setUp() {
+    	Organization organization = new Organization();
+    	organization.setName("QUESTION DAO UNIT TEST");
+    	try {
+			organizationDao.save(organization);
+		} catch (MessageException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	domain = organization.getGoogleDomain();
         assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
         questionDao = new QuestionDao(Reviewer.getHibernateSessionFactory());
         LecturerQuestion1 = new Question();
@@ -86,16 +98,20 @@ public class QuestionDaoUnitTest {
         student1 = new User();
         student1.setUsername("student01");
         student1.setEmail("test.student01@"+domain);
+        student1.setOrganization(organization);
         assignmentDao.save(student1);
         user1 = new User();
         user1.setUsername("user1");
         user1.setEmail("user1@"+domain);
+        user1.setOrganization(organization);
         user2 = new User();
         user2.setUsername("user2");
         user2.setEmail("user2@"+domain);
+        user2.setOrganization(organization);
         user3 = new User();
         user3.setUsername("user3");
         user3.setEmail("user3@"+domain);
+        user3.setOrganization(organization);
 
         assignmentDao.save(user1);
         assignmentDao.save(user2);

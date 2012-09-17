@@ -438,5 +438,88 @@ public class Course implements Serializable {
 	public void setOrganization(Organization organization) {
 		this.organization = organization;
 	}
-	
+
+	public Course clone(){
+		Course course = new Course();
+		
+		Set<User> reviewers = new HashSet<User>();
+		for(User user: this.getAutomaticReviewers()){
+			if (user.clone() != null){
+				reviewers.add(user.clone());
+			}
+		}
+		
+		course.setAutomaticReviewers(reviewers);
+		course.setDomainName(this.getDomainName());
+		course.setFolderId(this.getFolderId());
+		if ( this.getId() != null && this.getId().longValue() > 0){
+			course.setId(this.getId());
+		}
+		
+		Set<User> lecturers = new HashSet<User>();
+		for(User user: this.getLecturers()){
+			if (user.clone() != null){
+				lecturers.add(user.clone());
+			}
+		}
+		course.setLecturers(lecturers);
+		
+		course.setName(this.getName());
+		if (this.getOrganization().clone() != null){
+			course.setOrganization(this.getOrganization().clone());
+		}
+		course.setSemester(this.getSemester());
+		course.setSpreadsheetId(this.getSpreadsheetId());
+		
+		Set<UserGroup> studentGroups = new HashSet<UserGroup>();
+		for(UserGroup group: this.getStudentGroups()){
+			if (group != null){
+				studentGroups.add(group.clone());
+			}
+		}
+		course.setStudentGroups(studentGroups);
+		
+		Set<User> supervisors = new HashSet<User>();
+		for(User user: this.getSupervisors()){
+			if (user.clone() != null){
+				supervisors.add(user.clone());
+			}
+		}
+		course.setSupervisors(supervisors);
+		
+		Set<DocEntry> docEntries = new HashSet<DocEntry>();
+		for(DocEntry doc: this.getTemplates()){
+			if (doc != null){
+				docEntries.add(doc.clone());
+			}
+		}
+		course.setTemplates(docEntries);
+		course.setTemplatesFolderId(this.getTemplatesFolderId());
+		
+		Set<User> tutors = new HashSet<User>();
+		for(User user: this.getTutors()){
+			if (user.clone() != null){
+				tutors.add(user.clone());
+			}
+		}
+		course.setTutors(tutors);
+		
+		Set<String> tutorials = new HashSet<String>();
+		for(String tutorial: this.getTutorials()){
+			tutorials.add(tutorial);
+		}
+		course.setTutorials(tutorials);
+		
+		Set<WritingActivity> activities = new HashSet<WritingActivity>();
+		for(WritingActivity activity: this.getWritingActivities()){
+			if (activity.clone() != null){
+				activities.add(activity.clone());
+			}
+		}
+		course.setWritingActivities(activities);
+		
+		course.setYear(this.getYear());
+
+		return course;
+	}
 }

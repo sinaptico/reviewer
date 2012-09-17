@@ -37,7 +37,7 @@ public class User implements Serializable {
 	//The organization id
 	@Id
 	@GeneratedValue
-	private Long id;
+	private Long id = null;
 	
 	/** The username */
 	protected String username;
@@ -128,7 +128,7 @@ public class User implements Serializable {
 //			username = matcher.group(0);
 			String email = getEmail();
 			int i = email.indexOf("@");
-			username = email.substring(0,i-1);
+			username = email.substring(0,i);
 		}
 		return username;
 	}
@@ -271,20 +271,27 @@ public class User implements Serializable {
 
 	public User clone(){
 		User user = new User();
-		user.setId(this.getId());
+		
+		if ( this.getId() != null && this.getId().longValue() > 0){
+			user.setId(this.getId());
+		}
+		
 		user.setEmail(this.getEmail());
 		user.setFirstname(this.getFirstname());
 		user.setUsername(user.getUsername());
 		user.setLastname(this.getLastname());
 		user.setNativeSpeaker(this.getNativeSpeaker());
-		user.setOrganization(this.getOrganization().clone());
+		
+		if (this.getOrganization() != null){
+			user.setOrganization(this.getOrganization().clone());
+		}
 		user.setPassword(this.getPassword());
 		
 		Set<String> roles = new HashSet<String>();
 		for(String role : this.getRole_name()){
 			roles.add(role);
 		}
-		
+		user.setRole_name(roles);
 		user.setWasmuser(this.getWasmuser());
 		return user;
 	}

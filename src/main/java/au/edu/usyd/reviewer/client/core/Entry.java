@@ -198,4 +198,5 @@ public abstract class Entry implements Serializable {
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
+	
 }

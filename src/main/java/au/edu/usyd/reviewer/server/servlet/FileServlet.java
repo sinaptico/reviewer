@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Iterator;
 
 import javax.servlet.ServletException;
@@ -24,28 +25,31 @@ import org.slf4j.LoggerFactory;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.Reviewer;
+import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.util.FileUtil;
 
 public class FileServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager(getUser().getOrganization());
+	private AssignmentManager assignmentManager = null;
 	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
-	private static final String UPLOAD_DIRECTORY = Reviewer.getUploadsHome();	
-	private static final String EMPTY_FILE = Reviewer.getEmptyFile();
+	private static String UPLOAD_DIRECTORY = null;	
+	private static String EMPTY_FILE = null;
 	private User user;
+	private Organization organization;
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		User user = (User) request.getSession().getAttribute("user");
-		setUser(user);
+		initialize(request);
 		String docId = request.getParameter("docId");
 		String docVersion = request.getParameter("docVersion");
 		String tutorial = request.getParameter("tutorial");
@@ -66,13 +70,13 @@ public class FileServlet extends HttpServlet {
 
 				// check if user owns the document or is a lecturer or tutor
 				if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
-					file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
+					file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization.getName()) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
 					filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
 				} else {
 					// check if user is a reviewer of a document
 					ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user);
 					if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
-						file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
+						file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization.getName()) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
 						filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
 					}
 				}
@@ -87,9 +91,9 @@ public class FileServlet extends HttpServlet {
 					if (writingActivity.getTutorial().equals(tutorial) || course.getTutorials().contains(tutorial) && writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL)) {
 						
 						if (reviewingActivity!=null){
-							file = new File(assignmentManager.getDocumentsFolder(course.getId(), Long.valueOf(reviewingActivity), deadline.getId(), tutorial) + ".zip");
+							file = new File(assignmentManager.getDocumentsFolder(course.getId(), Long.valueOf(reviewingActivity), deadline.getId(), tutorial, organization.getName()) + ".zip");
 						}else{
-							file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), tutorial) + ".zip");
+							file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), tutorial, organization.getName()) + ".zip");
 						}
 						
 						filename = writingActivity.getName() + " (" + tutorial + ") - " + deadline.getName() + ".zip";
@@ -150,8 +154,7 @@ public class FileServlet extends HttpServlet {
 	@Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-		User user = (User) req.getSession().getAttribute("user");
-		setUser(user);
+		initialize(req);
 		String docId = null;
 		String csv = null;
 		
@@ -246,11 +249,29 @@ public class FileServlet extends HttpServlet {
         }
     }
 	
-	private void setUser(User anUser) {
-		user = anUser;
+
+	/**
+	 * Get logger user, its organization an initialize Reviewer with it
+	 */
+	private void initialize(HttpServletRequest request){
+		if (user == null){
+			user = getUser(request);
+			organization = user.getOrganization();	
+			Reviewer.initializeAssignmentManager(organization);
+			assignmentDao = assignmentManager.getAssignmentDao();
+			UPLOAD_DIRECTORY = organization.getUploadsHome();	
+			EMPTY_FILE = organization.getEmptyFile();
+		}
 	}
-	private User getUser() {
+	
+	private User getUser(HttpServletRequest request) {
+		UserDao userDao = UserDao.getInstance();
+		try {
+			Principal principal = request.getUserPrincipal(); 
+			user = userDao.getUserByEmail(principal.getName());
+		} catch (MessageException e) {
+			e.printStackTrace();
+		}
 		return user;
 	}
-
 }

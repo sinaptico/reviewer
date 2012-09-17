@@ -2,7 +2,10 @@ package au.edu.usyd.reviewer.client.admin;
 
 import java.util.Collection;
 
+
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +21,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.Reviewer;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -185,7 +189,11 @@ public class AdminEntryPoint implements EntryPoint {
 						adminService.saveCourse(courseForm.getCourse(), new AsyncCallback<Course>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								Window.alert("Failed to create course: " + caught.getMessage());
+								if (caught instanceof MessageException){
+									Window.alert(caught.getMessage());
+								} else {
+									Window.alert("Failed to create course: " + caught.getMessage());
+								}
 								createButton.updateStateSubmit();
 							}
 

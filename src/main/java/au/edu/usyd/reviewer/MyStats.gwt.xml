@@ -4,5 +4,4 @@
 	<inherits name='com.google.gwt.visualization.Visualization' />
   	<entry-point class='au.edu.usyd.reviewer.client.mystats.MyStatsEntryPoint' />
   	<source path="client/mystats"/>
-  	<source path="client/login"/>
 </module>

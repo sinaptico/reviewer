@@ -456,4 +456,66 @@ public class WritingActivity extends Activity<DocEntry> {
 		return excludeEmptyDocsInReviews;
 	}
 
+	public WritingActivity clone(){
+		WritingActivity activity = new WritingActivity();
+
+		List<Deadline> deadlines = new ArrayList<Deadline>();
+		for(Deadline deadline : deadlines){
+			if (deadline!= null){
+				deadlines.add(deadline.clone());
+			}
+		}
+		activity.setDeadlines(deadlines);
+		
+		activity.setDocumentTemplate(this.getDocumentTemplate());
+		activity.setDocumentType(this.getDocumentType());
+		activity.setEarlySubmit(this.getEarlySubmit());
+		activity.setEmailStudents(this.getEmailStudents());
+		
+		Set<DocEntry> entries = new HashSet<DocEntry>();
+		for(DocEntry entry: entries){
+			if (entry != null){
+				entries.add(entry.clone());
+			}
+		}
+		activity.setEntries(entries);
+		
+		activity.setExcludeEmptyDocsInReviews(this.getExcludeEmptyDocsInReviews());
+		
+		if ( this.getId() != null && this.getId().longValue() > 0){
+			activity.setFolderId(this.getFolderId());
+		}
+		
+		activity.setGenre(this.getGenre());
+		activity.setGlosserSite(this.getGlosserSite());
+		
+		Set<Grade> grades = new HashSet<Grade>();
+		for(Grade grade: grades){
+			if (grade != null){
+				grades.add(grade.clone());
+			}
+		}
+		activity.setGrades(grades);
+		
+		activity.setGroups(this.getGroups());
+		activity.setId(this.getId());
+		activity.setName(this.getName());
+		
+		List<ReviewingActivity> reviewingActivities = new ArrayList<ReviewingActivity>();
+		for(ReviewingActivity reviewingActivity: this.getReviewingActivities()){
+			if (reviewingActivity != null){
+				reviewingActivities.add(reviewingActivity.clone());
+			}
+		}
+		activity.setReviewingActivities(reviewingActivities);
+		
+		activity.setShowStats(this.getShowStats());
+		activity.setStartDate(this.getStartDate());
+		activity.setStatus(this.getStatus());
+		activity.setTrackReviews(this.getTrackReviews());
+		activity.setTutorial(this.getTutorial());
+		
+		return activity;
+		
+	}
 }

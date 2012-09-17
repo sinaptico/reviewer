@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.server.rpc;
 
 import java.security.Principal;
+
 import java.util.Collection;
 
 
@@ -8,7 +9,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,21 +28,29 @@ import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
+import au.edu.usyd.reviewer.server.CourseDao;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.report.UserStatsAnalyser;
-import au.edu.usyd.reviewer.server.util.CloneUtil;
+
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class AdminServiceImpl extends RemoteServiceServlet implements AdminService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager( getUser().getOrganization());
-	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
+	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
+	private AssignmentDao assignmentDao = null;
 	private UserDao userDao = UserDao.getInstance();
+	private CourseDao courseDao = CourseDao.getInstance();
+	// logged user
+	private User user = null;
+	// logged user organization
+	private Organization organization = null;
 
+		
 	@Override
 	public Course deleteCourse(Course course) throws Exception {
+		initialize();
 		if (isAdmin()) {
 			try {
 				assignmentManager.deleteCourse(course);
@@ -57,6 +65,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public WritingActivity deleteWritingActivity(WritingActivity writingActivity) throws Exception {
+		initialize();
 		if (isAdmin() || isCourseLecturer(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) {
 			try {
 				assignmentManager.deleteActivity(writingActivity);
@@ -71,23 +80,21 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public Collection<Course> getCourses(Integer semester, Integer year) throws Exception {
+		initialize();
 		Collection<Course> courses;
 		if (isAdmin()) {
-			courses = assignmentDao.loadCourses(semester, year);
+			courses = courseDao.loadCourses(semester, year, organization);
 		} else {
-			courses = assignmentDao.loadLecturerCourses(semester, year, getUser());
+			courses = assignmentDao.loadLecturerCourses(semester, year, user);
 		}
-		return CloneUtil.clone(courses);
+		return courses;
 	}
 
 	private User getUser() {
 		UserDao userDao = UserDao.getInstance();
-		User user = null;
 		try {
-//			request.getSession().setAttribute("user", user);
 			HttpServletRequest request = this.getThreadLocalRequest();
 			Principal principal = request.getUserPrincipal(); 
-//			this.getThreadLocalRequest().getUserPrincipal().getName()
 			user = userDao.getUserByEmail(principal.getName());
 		} catch (MessageException e) {
 			e.printStackTrace();
@@ -97,6 +104,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public Collection<UserStats> getWritingActivityStats(Long writingActivityId) throws Exception {
+		initialize();
 		WritingActivity writingActivity = assignmentDao.loadWritingActivity(writingActivityId);
 		Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
 		Set<User> users = new HashSet<User>();
@@ -108,17 +116,16 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	public boolean isAdmin() {
-		User user = getUser();
 		return user == null ? false : user.isManager() || user.isTeacher();
 	}
 
 	public boolean isCourseLecturer(Course course) {
-		User user = getUser();
 		return user == null ? false : course.getLecturers().contains(user);
 	}
 
 	@Override
 	public User mockUser(User user) throws Exception {
+		initialize();
 		if (isAdmin()) {
 			logger.info("Mocking user: email=" + user.getEmail());
 			this.getThreadLocalRequest().getSession().setAttribute("user", user);
@@ -129,26 +136,31 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public Course saveCourse(Course course) throws Exception {
-		if (isAdmin() || isCourseLecturer(assignmentDao.loadCourse(course.getId()))) {
+	public Course saveCourse(Course course) throws MessageException {
+		initialize();
+		if (isAdmin() || isCourseLecturer(courseDao.loadCourse(course.getId()))) {
 			try {
 				// Before save the course set its organization
-				course = setOrganizationInCourse(course);
-				return CloneUtil.clone(assignmentManager.saveCourse(course));
+				if (course.getOrganization() == null){
+					course.setOrganization(organization);
+				}
+				return assignmentManager.saveCourse(course);
 			} catch (Exception e) {
-				throw e;
+				e.printStackTrace();
+				throw new MessageException("The course could not be saved.");
 			}
 		} else {
-			throw new Exception("Permission denied");
+			throw new MessageException("Permission denied");
 		}
 	}
 
 	@Override
 	public WritingActivity saveWritingActivity(Long courseId, WritingActivity writingActivity) throws Exception {
-		Course course = assignmentDao.loadCourse(courseId);
+		initialize();
+		Course course = courseDao.loadCourse(courseId);
 		if (isAdmin() || isCourseLecturer(course)) {
 			try {
-				return CloneUtil.clone(assignmentManager.saveActivity(course, writingActivity));
+				return assignmentManager.saveActivity(course, writingActivity);
 			} catch (Exception e) {
 				throw e;
 			}
@@ -159,6 +171,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public Grade updateGrade(Deadline deadline, String userId, Double gradeValue) throws Exception {
+		initialize();
 		Course course = assignmentDao.loadCourseWhereDeadline(deadline);
 		if (isAdmin() || isCourseLecturer(course)) {
 			User user = userDao.getUserByUsername(userId, course.getOrganization());
@@ -174,7 +187,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
 			writingActivity.getGrades().add(grade);
 			assignmentDao.save(writingActivity);
-			return CloneUtil.clone(grade);
+			if (grade != null){
+				grade = grade.clone();
+			}
+			return grade;
 		} else {
 			throw new Exception("Permission denied");
 		}
@@ -182,11 +198,14 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	
 	@Override
 	public ReviewTemplate saveReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
+		initialize();
 		if (isAdmin()) {
 			try {
 				// Before save the review template, set its organization
-				reviewTemplate = setOrganizationInReviewTemplate(reviewTemplate);
-				return CloneUtil.clone(assignmentManager.saveReviewTemplate(reviewTemplate));
+				if (reviewTemplate.getOrganization() == null){
+					reviewTemplate.setOrganization(organization);
+				}
+				return assignmentManager.saveReviewTemplate(reviewTemplate);
 			} catch (Exception e) {
 				throw e;
 			}
@@ -197,17 +216,17 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override	
 	public Collection<ReviewTemplate> getReviewTemplates() throws Exception {
+		initialize();
 		Collection<ReviewTemplate> reviewTemplates = null;
 		if (isAdmin()) {
-			reviewTemplates = assignmentDao.loadReviewTemplates();
-//		} else {
-//			reviewTemplates = assignmentDao.loadLecturerCourses(getUser());
+			reviewTemplates = assignmentDao.loadReviewTemplates(organization);
 		}
-		return CloneUtil.clone(reviewTemplates);
+		return reviewTemplates;
 	}
 	
 	@Override
 	public ReviewTemplate deleteReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
+		initialize();
 		if (isAdmin()) {
 			try {
 				assignmentManager.deleteReviewTemplate(reviewTemplate);
@@ -222,6 +241,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public String updateReviewDocEntry(String reviewEntryId, String newDocEntry) throws Exception {
+		initialize();
 		try {			
 			return assignmentManager.updateReviewDocEntry(reviewEntryId, newDocEntry);
 		} catch (Exception e) {
@@ -231,19 +251,23 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public ReviewingActivity getReviewingActivity(Long reviewingActivityId) throws Exception {
+		initialize();
 		ReviewingActivity reviewingActivity =null;
-		
 		try {			
 			reviewingActivity = assignmentDao.loadReviewingActivity(reviewingActivityId);
+			if (reviewingActivity != null){
+				reviewingActivity = reviewingActivity.clone();
+			}
 		} catch (Exception e) {
 			throw e;
 		}
-		return CloneUtil.clone(reviewingActivity);
+		return reviewingActivity;
 		
 	}
 
 	@Override
 	public String deleteReviewEntry(String reviewEntryId) throws Exception {
+		initialize();
 		try {
 			assignmentManager.deleteReviewEntry(reviewEntryId);		
 			return reviewEntryId;
@@ -254,39 +278,28 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public ReviewEntry saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId) throws Exception {
+		initialize();
 		try {
-			ReviewEntry reviewEntry = assignmentManager.saveNewReviewEntry(reviewingActivityId, userId, docEntryId, getUser().getOrganization());		
-			return CloneUtil.clone(reviewEntry);
+			ReviewEntry reviewEntry = assignmentManager.saveNewReviewEntry(reviewingActivityId, userId, docEntryId, organization);
+			if (reviewEntry != null){
+				reviewEntry = reviewEntry.clone();
+			}
+			return reviewEntry;
 		} catch (Exception e) {
 			throw e;
 		}
 	}	
-	
-	/**
-	 * if the user is a teacher or a student then set the organization to the course 
-	 * @param course course to set organization
-	 * @return if user is not a manager, the course has the organization
-	 */
-	private Course setOrganizationInCourse(Course course){
-		User user = getUser();
-		if (!user.isManager()){
-			Organization organization = user.getOrganization();
-			course.setOrganization(organization);
-		}
-		return course;
-	}
 
 	/**
-	 * if the user is a teacher or a student then set the organization to the review template 
-	 * @param reviewTemplate  review template to set organization
-	 * @return if user is not a manager, the review template has the organization
+	 * Get logger user, its organization an initialize Reviewer with it
 	 */
-	private ReviewTemplate setOrganizationInReviewTemplate(ReviewTemplate reviewTemplate){
-		User user = getUser();
-		if (!user.isManager()){
-			Organization organization = user.getOrganization();
-			reviewTemplate.setOrganization(organization);
+	private void initialize(){
+		if (user == null){
+			user = getUser();
+			organization = user.getOrganization();	
+			Reviewer.initializeAssignmentManager(organization);
+			assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 		}
-		return reviewTemplate;
-	}	
+	}
+
 }

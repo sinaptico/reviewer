@@ -1,9 +1,14 @@
 package au.edu.usyd.reviewer.server.rpc;
 
+import java.security.Principal;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.client.mystats.MyStatsService;
@@ -17,11 +22,17 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class MyStatsServiceImpl extends RemoteServiceServlet implements MyStatsService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager(getUser().getOrganization());
+	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
 	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
+	// logged user
+	private User user = null;
+	// logged user organization
+	private Organization organization = null;
+
 	
 	@Override
 	public DocEntry getDocEntry(String docId) throws Exception {
+		initialize();
 		DocEntry docEntry = assignmentDao.loadDocEntry(docId);
 		if (docEntry == null) {
 			throw new Exception("Document not found");
@@ -34,21 +45,23 @@ public class MyStatsServiceImpl extends RemoteServiceServlet implements MyStatsS
 		}
 	}
 
-//	public User getUser()  {
-//		User user = (User) this.getThreadLocalRequest().getSession().getAttribute("user");
-//		if (user == null) {
-//			throw new Exception("Your session has expired. Please login again.");
-//		} else {
-//			return user;
-//		}
-//		return user;
-//	}
+	/**
+	 * Get logger user, its organization an initialize Reviewer with it
+	 */
+	private void initialize(){
+		if (user == null){
+			user = getUser();
+			organization = user.getOrganization();	
+			Reviewer.initializeAssignmentManager(organization);
+		}
+	}
 	
 	private User getUser() {
 		UserDao userDao = UserDao.getInstance();
-		User user = null;
 		try {
-			user = userDao.getUserByEmail(this.getThreadLocalRequest().getUserPrincipal().getName());
+			HttpServletRequest request = this.getThreadLocalRequest();
+			Principal principal = request.getUserPrincipal(); 
+			user = userDao.getUserByEmail(principal.getName());
 		} catch (MessageException e) {
 			e.printStackTrace();
 		}
