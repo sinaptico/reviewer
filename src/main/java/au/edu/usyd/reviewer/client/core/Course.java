@@ -444,7 +444,7 @@ public class Course implements Serializable {
 		
 		Set<User> reviewers = new HashSet<User>();
 		for(User user: this.getAutomaticReviewers()){
-			if (user.clone() != null){
+			if (user != null){
 				reviewers.add(user.clone());
 			}
 		}
@@ -458,14 +458,14 @@ public class Course implements Serializable {
 		
 		Set<User> lecturers = new HashSet<User>();
 		for(User user: this.getLecturers()){
-			if (user.clone() != null){
+			if (user != null){
 				lecturers.add(user.clone());
 			}
 		}
 		course.setLecturers(lecturers);
 		
 		course.setName(this.getName());
-		if (this.getOrganization().clone() != null){
+		if (this.getOrganization() != null){
 			course.setOrganization(this.getOrganization().clone());
 		}
 		course.setSemester(this.getSemester());
@@ -481,7 +481,7 @@ public class Course implements Serializable {
 		
 		Set<User> supervisors = new HashSet<User>();
 		for(User user: this.getSupervisors()){
-			if (user.clone() != null){
+			if (user != null){
 				supervisors.add(user.clone());
 			}
 		}
@@ -498,7 +498,7 @@ public class Course implements Serializable {
 		
 		Set<User> tutors = new HashSet<User>();
 		for(User user: this.getTutors()){
-			if (user.clone() != null){
+			if (user != null){
 				tutors.add(user.clone());
 			}
 		}
@@ -512,7 +512,7 @@ public class Course implements Serializable {
 		
 		Set<WritingActivity> activities = new HashSet<WritingActivity>();
 		for(WritingActivity activity: this.getWritingActivities()){
-			if (activity.clone() != null){
+			if (activity != null){
 				activities.add(activity.clone());
 			}
 		}

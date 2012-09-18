@@ -200,6 +200,7 @@ public class AdminEntryPoint implements EntryPoint {
 							@Override
 							public void onSuccess(Course course) {
 								dialogBox.hide();
+				
 								refreshCoursesTree();
 							}
 						});
