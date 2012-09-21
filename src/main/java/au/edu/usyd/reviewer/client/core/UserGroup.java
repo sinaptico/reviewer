@@ -151,11 +151,7 @@ public class UserGroup implements Serializable {
 
 	public UserGroup clone(){
 		UserGroup group = new UserGroup();
-		
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			group.setId(this.getId());
-		}
-		
+		group.setId(this.getId());
 		group.setName(this.getName());
 		group.setTutorial(this.getTutorial());
 		

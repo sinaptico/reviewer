@@ -69,7 +69,8 @@ public class QuestionUtil {
 					QMlist.add(String.valueOf(questionScore.getQualityMeasure()));
 					questionlist.add(question.getQuestion());
 					predictedQGlist.add(questionScore.getProduced());
-					RealQGlist.add(question.getOwner().getUsername());
+					//RealQGlist.add(question.getOwner().getUsername());
+					RealQGlist.add(question.getOwner().getEmail());
 					docidlist.add(doc.getDocumentId());
 					sourcesentenclist.add(question.getSourceSentence());
 					nativespeakerlist.add(doc.getOwner().getNativeSpeaker());
@@ -106,7 +107,8 @@ public class QuestionUtil {
 		for (int i = 1; i < questionlist.size(); i++) {
 			User user = new User();
 			user.setOrganization(organization);
-			user.setUsername(generatorlist.get(i));
+//			user.setUsername(generatorlist.get(i));
+			user.setEmail(generatorlist.get(i));
 			assignment.save(user);
 			Question questionObj = new Question();
 			questionObj.setOwner(user);

@@ -55,10 +55,10 @@ interface AdminServiceAsync {
 	/**
 	 * Mock user.
 	 *
-	 * @param user the user
+	 * @param username the username of the user to mock
 	 * @param callback the callback
 	 */
-	public void mockUser(User user, AsyncCallback<User> callback);
+	public void mockUser(String username, AsyncCallback<User> callback);
 
 	/**
 	 * Save course.

@@ -15,7 +15,9 @@ import au.edu.usyd.iwrite.security.WasmResponse;
 import au.edu.usyd.iwrite.security.WasmService;
 import au.edu.usyd.iwrite.security.WasmSocketFactory;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.Reviewer;
+import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.util.DigitalSigner;
 
 public class LoginServlet extends HttpServlet {
@@ -56,10 +58,14 @@ public class LoginServlet extends HttpServlet {
 		}
 
 		if (userId != null) {
-			User user = new User();
-			user.setUsername(userId);
-			//TODO MARIELA VER COMO OBTENER LA ORGANIZACION Y EL EMAIL DEL USUARIO
-//			user = userDao.getUserByEmail(userId);
+//			user.setUsername(userId);
+			UserDao userDao = UserDao.getInstance();
+			User user = null;
+			try {
+				user = userDao.getUserByEmail(userId);
+			} catch (MessageException e) {
+				e.printStackTrace();
+			}
 			request.getSession().setAttribute("user", user);
 			logger.debug("Logging in user: " + user.getEmail());
 			response.sendRedirect(request.getRequestURL().toString().replace("/login", ""));

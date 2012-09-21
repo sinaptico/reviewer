@@ -25,6 +25,7 @@ public class Reviewer {
 	private static DigitalSigner digitalSigner = null;
 	private static EmailNotifier emailNotifier = null;
 	private static Organization organization = null;
+	private static AssignmentRepository assignmentRepository =null;
     
 	static {
 		try {
@@ -47,25 +48,26 @@ public class Reviewer {
 	
 	public static synchronized void initializeAssignmentManager(Organization anOrganization){
 		organization = anOrganization;
-		if (emailNotifier == null) {	
+		try {
 			String domain = organization.getGoogleDomain();
 			String username = organization.getGoogleUsername();
 			String password = organization.getGooglePassword();
-			String documentsHome = organization.getDocumentsHome();
-			String emailUsername = organization.getEmailUsername();
-			String emailPassword = organization.getEmailPassword();
-			String smtpHost = organization.getSMTPHost();
-			String smtpPort = organization.getSMTPPort();
 			
-			try {
-				AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
-				AssignmentRepository assignmentRepository = new AssignmentRepository(username, password, domain);
-				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain));				 
-				assignmentManager.initialize(assignmentDao, assignmentRepository, emailNotifier, organization);
-				assignmentManager.setDocumentsHome(documentsHome);
-			} catch (Exception e) {
-				logger.error("Failed to initialise assignment manager", e);
+			if (emailNotifier == null){	
+				String emailUsername = organization.getEmailUsername();
+				String emailPassword = organization.getEmailPassword();
+				String smtpHost = organization.getSMTPHost();
+				String smtpPort = organization.getSMTPPort();
+				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain));
 			}
+			if ( assignmentRepository == null){
+				assignmentRepository = new AssignmentRepository(username, password, domain);
+			}
+			if (assignmentManager == null || (assignmentManager != null && assignmentManager.getOrganization() == null)){
+				assignmentManager.initialize(assignmentRepository, emailNotifier, organization);
+			}
+		} catch (Exception e) {
+				logger.error("Failed to initialise assignment manager", e);
 		}
 	}
 
@@ -147,5 +149,9 @@ public class Reviewer {
 
 	public static String getUploadsHome() {
 		return config.getString(Constants.REVIEWER_UPLOADS_HOME);
+	}
+	
+	public static AssignmentRepository getAssignmentRepository(){
+		return assignmentRepository;
 	}
 }

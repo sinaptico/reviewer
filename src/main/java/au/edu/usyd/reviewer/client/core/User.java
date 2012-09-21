@@ -34,13 +34,9 @@ public class User implements Serializable {
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 	
-	//The organization id
 	@Id
 	@GeneratedValue
-	private Long id = null;
-	
-	/** The username */
-	protected String username;
+	private Long id;
 	
 	/** The email. */
 	@Column(unique = true, nullable = false)
@@ -116,12 +112,13 @@ public class User implements Serializable {
 	}
 
 	/**
-	 * Gets the username.
+	 * Gets the username from the email
 	 *
 	 * @return the username
 	 */
 	public String getUsername() {
-		if (this.username == null){
+		String username = "";
+		if (this.email != null){
 //			String  expression="^[_a-z0-9-]+(\\.[_a-z0-9-]+)*"; 
 //			Pattern pattern = Pattern.compile(expression,Pattern.CASE_INSENSITIVE); 
 //			Matcher matcher = pattern.matcher(email);
@@ -178,15 +175,6 @@ public class User implements Serializable {
 	 */
 	public void setFirstname(String firstname) {
 		this.firstname = firstname;
-	}
-
-	/**
-	 * Sets the username.
-	 *
-	 * @param username the new username
-	 */
-	public void setUsername(String username) {
-		this.username = username;
 	}
 
 	/**
@@ -271,14 +259,9 @@ public class User implements Serializable {
 
 	public User clone(){
 		User user = new User();
-		
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			user.setId(this.getId());
-		}
-		
+		user.setId(this.getId());
 		user.setEmail(this.getEmail());
 		user.setFirstname(this.getFirstname());
-		user.setUsername(user.getUsername());
 		user.setLastname(this.getLastname());
 		user.setNativeSpeaker(this.getNativeSpeaker());
 		
@@ -314,5 +297,12 @@ public class User implements Serializable {
 	
 	public boolean isTeacher(){
 		return this.getRole_name().contains(Constants.ROLE_TEACHER);
+	}
+	
+	public String getDomain(){
+		String email = getEmail();
+		int i = email.indexOf("@");
+		String domain = email.substring(i+1,email.length());
+		return domain;
 	}
 }

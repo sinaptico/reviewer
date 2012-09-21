@@ -2,6 +2,7 @@ package au.edu.usyd.reviewer.server.rpc;
 
 import java.security.Principal;
 
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -16,7 +17,6 @@ import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
-import au.edu.usyd.reviewer.server.util.CloneUtil;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -39,7 +39,7 @@ public class MyStatsServiceImpl extends RemoteServiceServlet implements MyStatsS
 		}
 		
 		if(docEntry.getOwner() != null && docEntry.getOwner().equals(getUser()) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(getUser())) {
-			return CloneUtil.clone(docEntry);
+			return docEntry;
 		} else {
 			throw new Exception("Permission denied");
 		}

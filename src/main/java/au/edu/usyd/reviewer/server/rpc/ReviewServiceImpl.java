@@ -39,7 +39,6 @@ import au.edu.usyd.reviewer.server.EmailNotifier;
 import au.edu.usyd.reviewer.server.QuestionDao;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
-import au.edu.usyd.reviewer.server.util.CloneUtil;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -63,7 +62,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		if (rating == null) {
 			throw new Exception("Rating not found");
 		}
-		return CloneUtil.clone(rating);
+		return rating;
 	}
 
 	@Override
@@ -73,7 +72,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		if (course == null) {
 			throw new Exception("Review not found");
 		}
-		return CloneUtil.clone(course);
+		return course;
 	}
 
 	@Override
@@ -105,7 +104,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		review.setTriggerQuestions(randomlist);
 
 		try {
-			return CloneUtil.clone(review);
+			return review;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -194,7 +193,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		} else {
 			throw new Exception("The deadline has already passed.");
 		}
-		return CloneUtil.clone(review);
+		return review;
 	}
 	
 	@Override
@@ -240,7 +239,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		} else {
 			throw new Exception("The deadline has already passed.");
 		}
-		return CloneUtil.clone(review);
+		return review;
 	}	
 	
 	@Override
@@ -282,7 +281,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 			/////// TRACKING FEEDBACK /////////////			
 		}
 		
-		return CloneUtil.clone(course);
+		return course;
 	}
 	
 	@Override	
@@ -292,7 +291,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		//if (isAdmin()) {
 			documentTypes = assignmentDao.loadDocumentTypes(genre);
 		//}
-		return CloneUtil.clone(documentTypes);
+		return documentTypes;
 	}
 	
 	private void initialize(){

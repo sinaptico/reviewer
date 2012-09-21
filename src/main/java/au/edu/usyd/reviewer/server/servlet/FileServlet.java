@@ -29,6 +29,7 @@ import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
@@ -41,7 +42,7 @@ public class FileServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private AssignmentManager assignmentManager = null;
-	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
+	private AssignmentDao assignmentDao = null;
 	private static String UPLOAD_DIRECTORY = null;	
 	private static String EMPTY_FILE = null;
 	private User user;
@@ -70,13 +71,13 @@ public class FileServlet extends HttpServlet {
 
 				// check if user owns the document or is a lecturer or tutor
 				if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
-					file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization.getName()) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
+					file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
 					filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
 				} else {
 					// check if user is a reviewer of a document
 					ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user);
 					if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
-						file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization.getName()) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
+						file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
 						filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
 					}
 				}
@@ -91,9 +92,9 @@ public class FileServlet extends HttpServlet {
 					if (writingActivity.getTutorial().equals(tutorial) || course.getTutorials().contains(tutorial) && writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL)) {
 						
 						if (reviewingActivity!=null){
-							file = new File(assignmentManager.getDocumentsFolder(course.getId(), Long.valueOf(reviewingActivity), deadline.getId(), tutorial, organization.getName()) + ".zip");
+							file = new File(assignmentManager.getDocumentsFolder(course.getId(), Long.valueOf(reviewingActivity), deadline.getId(), tutorial, organization) + ".zip");
 						}else{
-							file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), tutorial, organization.getName()) + ".zip");
+							file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), tutorial, organization) + ".zip");
 						}
 						
 						filename = writingActivity.getName() + " (" + tutorial + ") - " + deadline.getName() + ".zip";
@@ -256,20 +257,42 @@ public class FileServlet extends HttpServlet {
 	private void initialize(HttpServletRequest request){
 		if (user == null){
 			user = getUser(request);
-			organization = user.getOrganization();	
+			organization = user.getOrganization();
+			UPLOAD_DIRECTORY = organization.getUploadsHome();	
+			EMPTY_FILE = organization.getEmptyFile();	
+		}
+		if (assignmentManager == null){
+			assignmentManager = Reviewer.getAssignmentManager();
 			Reviewer.initializeAssignmentManager(organization);
 			assignmentDao = assignmentManager.getAssignmentDao();
-			UPLOAD_DIRECTORY = organization.getUploadsHome();	
-			EMPTY_FILE = organization.getEmptyFile();
-		}
+		}		
 	}
 	
+
 	private User getUser(HttpServletRequest request) {
+		
+		Object obj = request.getSession().getAttribute("user");
+			
+		if (obj != null){
+			user = (User) obj;
+		}
 		UserDao userDao = UserDao.getInstance();
-		try {
-			Principal principal = request.getUserPrincipal(); 
-			user = userDao.getUserByEmail(principal.getName());
-		} catch (MessageException e) {
+		try{
+			if  (user == null){
+				Principal principal = request.getUserPrincipal();
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+			}
+			
+			if (user.isManager() || user.isTeacher()){
+				User mockedUser = (User) request.getSession().getAttribute("mockedUser");
+				if (mockedUser != null && mockedUser.getOrganization() == null){
+					mockedUser = userDao.getUserByEmail(mockedUser.getEmail());
+				} 
+				return mockedUser;
+			}
+		}
+		catch(Exception e){
 			e.printStackTrace();
 		}
 		return user;

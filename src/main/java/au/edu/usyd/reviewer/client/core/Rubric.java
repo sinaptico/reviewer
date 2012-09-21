@@ -176,12 +176,8 @@ public class Rubric implements Serializable {
 				templates.add(template.clone());
 			}
 		}
-		rubric.setFeedbackTemplates(templates);
-		
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			rubric.setId(this.getId());
-		}
-		
+		rubric.setFeedbackTemplates(templates);	
+		rubric.setId(this.getId());
 		rubric.setLink(this.getLink());
 		rubric.setName(this.getName());
 		rubric.setNumber(this.getNumber());

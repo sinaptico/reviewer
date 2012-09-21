@@ -41,7 +41,7 @@ public class StringUtil {
 			String[] details = row.split(",");
 			if (details.length == 4) {
 				User user = new User();
-				user.setUsername(details[0].trim());
+//				user.setUsername(details[0].trim());
 				user.setFirstname(details[1].trim());
 				user.setLastname(details[2].trim());
 				user.setEmail(details[3].trim());

@@ -452,9 +452,7 @@ public class Course implements Serializable {
 		course.setAutomaticReviewers(reviewers);
 		course.setDomainName(this.getDomainName());
 		course.setFolderId(this.getFolderId());
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			course.setId(this.getId());
-		}
+		course.setId(this.getId());
 		
 		Set<User> lecturers = new HashSet<User>();
 		for(User user: this.getLecturers()){

@@ -460,7 +460,7 @@ public class WritingActivity extends Activity<DocEntry> {
 		WritingActivity activity = new WritingActivity();
 
 		List<Deadline> deadlines = new ArrayList<Deadline>();
-		for(Deadline deadline : deadlines){
+		for(Deadline deadline : this.getDeadlines()){
 			if (deadline!= null){
 				deadlines.add(deadline.clone());
 			}
@@ -473,24 +473,20 @@ public class WritingActivity extends Activity<DocEntry> {
 		activity.setEmailStudents(this.getEmailStudents());
 		
 		Set<DocEntry> entries = new HashSet<DocEntry>();
-		for(DocEntry entry: entries){
+		for(DocEntry entry: this.getEntries()){
 			if (entry != null){
 				entries.add(entry.clone());
 			}
 		}
 		activity.setEntries(entries);
 		
-		activity.setExcludeEmptyDocsInReviews(this.getExcludeEmptyDocsInReviews());
-		
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			activity.setFolderId(this.getFolderId());
-		}
-		
+		activity.setExcludeEmptyDocsInReviews(this.getExcludeEmptyDocsInReviews());	
+		activity.setFolderId(this.getFolderId());
 		activity.setGenre(this.getGenre());
 		activity.setGlosserSite(this.getGlosserSite());
 		
 		Set<Grade> grades = new HashSet<Grade>();
-		for(Grade grade: grades){
+		for(Grade grade: this.grades){
 			if (grade != null){
 				grades.add(grade.clone());
 			}

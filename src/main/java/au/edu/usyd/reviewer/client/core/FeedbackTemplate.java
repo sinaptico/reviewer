@@ -223,9 +223,7 @@ public void setNumber(String number) {
 		template.setDescriptionB(this.getDescriptionB());
 		template.setGrade(this.getGrade());
 		template.setGradeNum(this.getGradeNum());
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			template.setId(this.getId());
-		}
+		template.setId(this.getId());
 		template.setNumber(this.getNumber());
 		template.setText(this.getText());
 		return template;

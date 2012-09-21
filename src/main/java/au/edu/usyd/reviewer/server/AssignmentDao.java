@@ -57,6 +57,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Course course = (Course) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
 		session.getTransaction().commit();
+		if (course != null){
+			course = course.clone();
+		}
 		return course;
 	}
 	
@@ -69,6 +72,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Course course = (Course) session.createQuery(query).setParameter("reviewingActivity", reviewingActivity).uniqueResult();
 		session.getTransaction().commit();
+		if (course != null){
+			course = course.clone();
+		}
 		return course;
 	}
 
@@ -80,6 +86,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Course course = (Course) session.createQuery(query).setParameter("writingActivity", writingActivity).uniqueResult();
 		session.getTransaction().commit();
+		if (course != null){
+			course = course.clone();
+		}
 		return course;
 	}
 
@@ -88,6 +97,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Deadline deadline = (Deadline) session.createCriteria(Deadline.class).add(Property.forName("id").eq(deadlineId)).uniqueResult();
 		session.getTransaction().commit();
+		if (deadline != null){
+			deadline = deadline.clone();
+		}
 		return deadline;
 	}
 
@@ -96,6 +108,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		DocEntry docEntry = (DocEntry) session.createCriteria(DocEntry.class).add(Property.forName("documentId").eq(documentId)).uniqueResult();
 		session.getTransaction().commit();
+		if (docEntry != null){
+			docEntry = docEntry.clone();
+		}
 		return docEntry;
 	}
 	
@@ -104,6 +119,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		DocEntry docEntry = (DocEntry) session.createCriteria(DocEntry.class).add(Property.forName("id").eq(id)).uniqueResult();
 		session.getTransaction().commit();
+		if (docEntry != null){
+			docEntry = docEntry.clone();
+		}
 		return docEntry;
 	}	
 	
@@ -112,6 +130,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		ReviewEntry reviewEntry = (ReviewEntry) session.createCriteria(ReviewEntry.class).add(Property.forName("id").eq(reviewEntryId)).uniqueResult();
 		session.getTransaction().commit();
+		if (reviewEntry != null){
+			reviewEntry = reviewEntry.clone();
+		}
 		return reviewEntry;
 	}	
 
@@ -127,7 +148,11 @@ public class AssignmentDao {
 		if (writingActivity == null) {
 			return null;
 		} else {
-			return writingActivity.getEntries().iterator().next();
+			DocEntry doc = writingActivity.getEntries().iterator().next();
+			if (doc != null){
+				doc = doc.clone();
+			}
+			return doc;
 		}
 	}
 
@@ -142,7 +167,11 @@ public class AssignmentDao {
 		if (writingActivity == null) {
 			return null;
 		} else {
-			return writingActivity.getEntries().iterator().next();
+			DocEntry doc = writingActivity.getEntries().iterator().next();
+			if (doc != null){
+				doc = doc.clone();
+			}
+			return doc;
 		}
 	}
 
@@ -151,6 +180,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Grade grade = (Grade) session.createCriteria(Grade.class).add(Property.forName("deadline").eq(deadline)).add(Property.forName("user").eq(user)).uniqueResult();
 		session.getTransaction().commit();
+		if (grade != null){
+			grade = grade.clone();
+		}
 		return grade;
 	}
 
@@ -160,7 +192,13 @@ public class AssignmentDao {
 		session.beginTransaction();
 		List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).setParameter("lecturer", lecturer).list();
 		session.getTransaction().commit();
-		return courses;
+		List<Course> resultList = new ArrayList<Course>();
+		for(Course course : courses){
+			if (course != null){
+				resultList.add(course.clone());
+			}
+		}
+		return resultList;
 	}
 
 	public Rating loadRating(Long ratingId) {
@@ -168,6 +206,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("id").eq(ratingId)).uniqueResult();
 		session.getTransaction().commit();
+		if (rating != null){
+			rating = rating.clone();
+		}
 		return rating;
 	}
 
@@ -176,6 +217,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Review review = (Review) session.createCriteria(Review.class).add(Property.forName("id").eq(reviewId)).uniqueResult();
 		session.getTransaction().commit();
+		if (review != null){
+			review = review.clone();
+		}
 		return review;
 	}
 
@@ -189,6 +233,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		ReviewEntry reviewEntry = (ReviewEntry) session.createQuery(ownerQuery).setParameter("owner", owner).setParameter("docEntry", docEntry).uniqueResult();
 		session.getTransaction().commit();
+		if (reviewEntry != null){
+			reviewEntry = reviewEntry.clone();
+		}
 		return reviewEntry;
 	}
 
@@ -201,6 +248,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		ReviewEntry reviewEntry = (ReviewEntry) session.createQuery(ownerQuery).setParameter("review", review).uniqueResult();
 		session.getTransaction().commit();
+		if (reviewEntry != null){
+			reviewEntry = reviewEntry.clone();
+		}
 		return reviewEntry;
 	}
 
@@ -223,6 +273,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Course course = (Course) session.createQuery(ownerQuery).setParameter("user", user).setParameter("reviewId", reviewId).uniqueResult();
 		session.getTransaction().commit();
+		if (course != null){
+			course = course.clone();
+		}
 		return course;
 	}
 
@@ -231,6 +284,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		ReviewingActivity reviewingActivity = (ReviewingActivity) session.createCriteria(ReviewingActivity.class).add(Property.forName("id").eq(reviewingActivityId)).uniqueResult();
 		session.getTransaction().commit();
+		if (reviewingActivity != null){
+			reviewingActivity = reviewingActivity.clone();
+		}
 		return reviewingActivity;
 	}
 
@@ -242,6 +298,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		ReviewingActivity reviewingActivity = (ReviewingActivity) session.createQuery(query).setParameter("review", review).uniqueResult();
 		session.getTransaction().commit();
+		if (reviewingActivity != null){
+			reviewingActivity = reviewingActivity.clone();
+		}
 		return reviewingActivity;
 	}
 
@@ -257,11 +316,19 @@ public class AssignmentDao {
 		session.beginTransaction();
 		List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
 		session.getTransaction().commit();
-		return courses;
+		List<Course> resultList = new ArrayList<Course>();
+		for(Course course : courses){
+			if (course != null){
+				resultList.add(course.clone());
+			}
+		}
+		return resultList;
 	}
 
 	public UserGroup loadUserGroupWhereUser(Course course, User user) {
-		String query = "from Course course " + "join fetch course.studentGroups studentGroup " + "join fetch studentGroup.users student " + "where course=:course AND student=:user";
+		String query = "from Course course " + "join fetch course.studentGroups studentGroup " + 
+					   "join fetch studentGroup.users student " + 
+					   "where course=:course AND student=:user";
 		Session session = this.getSession();
 		session.beginTransaction();
 		course = (Course) session.createQuery(query).setParameter("course", course).setParameter("user", user).uniqueResult();
@@ -269,7 +336,11 @@ public class AssignmentDao {
 		if (course == null) {
 			return null;
 		} else {
-			return course.getStudentGroups().iterator().next();
+			 UserGroup group = course.getStudentGroups().iterator().next();
+			 if (group != null){
+				 group = group.clone();
+			 }
+			 return group;
 		}
 	}
 
@@ -279,6 +350,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("owner").eq(owner)).add(Property.forName("review").eq(review)).uniqueResult();
 		session.getTransaction().commit();
+		if (rating != null){
+			rating = rating.clone();
+		}
 		return rating;
 	}
 
@@ -300,6 +374,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		Course course = (Course) session.createQuery(query).setParameter("user", user).setParameter("reviewId", reviewId).uniqueResult();
 		session.getTransaction().commit();
+		if (course != null){
+			course = course.clone();
+		}
 		return course;
 	}
 
@@ -328,7 +405,13 @@ public class AssignmentDao {
 		session.beginTransaction();
 		List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
 		session.getTransaction().commit();
-		return courses;
+		List<Course> resultList = new ArrayList<Course>();
+		for(Course course : courses){
+			if (course != null){
+				resultList.add(course.clone());
+			}
+		}
+		return resultList;
 	}
 
 	public List<Course> loadUserWritingTasks(int semester, int year, User user) {
@@ -350,7 +433,13 @@ public class AssignmentDao {
 		session.beginTransaction();
 		List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
 		session.getTransaction().commit();
-		return courses;
+		List<Course> resultList = new ArrayList<Course>();
+		for(Course course : courses){
+			if (course != null){
+				resultList.add(course.clone());
+			}
+		}
+		return resultList;
 	}
 
 	public WritingActivity loadWritingActivity(long writingActivityId) {
@@ -358,6 +447,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		WritingActivity writingActivity = (WritingActivity) session.createCriteria(WritingActivity.class).add(Property.forName("id").eq(writingActivityId)).uniqueResult();
 		session.getTransaction().commit();
+		if (writingActivity != null){
+			writingActivity = writingActivity.clone();
+		}
 		return writingActivity;
 	}
 	
@@ -369,6 +461,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
 		session.getTransaction().commit();
+		if (writingActivity != null){
+			writingActivity = writingActivity.clone();
+		}
 		return writingActivity;
 	}
 	
@@ -380,6 +475,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("docEntry", docEntry).uniqueResult();
 		session.getTransaction().commit();
+		if (writingActivity != null){
+			writingActivity = writingActivity.clone();
+		}
 		return writingActivity;
 	}
 
@@ -410,6 +508,9 @@ public class AssignmentDao {
 		session.beginTransaction();
 		ReviewTemplate reviewTemplate = (ReviewTemplate) session.createCriteria(ReviewTemplate.class).add(Property.forName("id").eq(reviewTemplateId)).uniqueResult();
 		session.getTransaction().commit();
+		if (reviewTemplate != null){
+			reviewTemplate = reviewTemplate.clone();
+		}
 		return reviewTemplate;
 	}
 
@@ -430,6 +531,13 @@ public class AssignmentDao {
 		session.beginTransaction();
 		List<DocumentType> documentTypes = session.createQuery(query).setParameter("genre",genre).list();
 		session.getTransaction().commit();
-		return documentTypes;
+		
+		List<DocumentType> types = new ArrayList<DocumentType>();
+		for(DocumentType docType : documentTypes){
+			if (docType != null){
+				types.add(docType.clone());
+			}
+		}
+		return types;
 	}	
 }

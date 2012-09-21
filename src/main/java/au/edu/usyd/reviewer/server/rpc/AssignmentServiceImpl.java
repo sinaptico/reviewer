@@ -2,6 +2,7 @@ package au.edu.usyd.reviewer.server.rpc;
 
 import java.security.Principal;
 
+
 import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,19 +17,19 @@ import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
-import au.edu.usyd.reviewer.server.util.CloneUtil;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class AssignmentServiceImpl extends RemoteServiceServlet implements AssignmentService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
-	private AssignmentDao assignmentDao = null;
+	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());;
 	private UserDao userDao = UserDao.getInstance();
 
 	// logged user
@@ -37,19 +38,25 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	@Override
 	public Collection<Course> getUserActivities(int semester, int year) throws Exception {
 		initialize();
-		return CloneUtil.clone(assignmentDao.loadUserActivities(semester, year,this.user));
+		return assignmentDao.loadUserActivities(semester, year,this.user);
 	}
 
 	@Override
 	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews) throws Exception {
 		initialize();
-		return CloneUtil.clone(assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, this.user));
+		return assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, this.user);
 	}
 
 	@Override
 	public Collection<Course> getUserWritingTasks(int semester, int year) throws Exception {
 		initialize();
-		return CloneUtil.clone(assignmentDao.loadUserWritingTasks(semester, year, this.user));
+		User mockedUser = getMockedUser();
+		if (mockedUser != null){
+			return assignmentDao.loadUserWritingTasks(semester, year, mockedUser);
+		} else{
+			throw new MessageException("The users could not be mocked");
+		}
+			
 	}
 
 	private boolean isCourseInstructor(Course course) {
@@ -57,11 +64,11 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	}
 
 	@Override
-	public <D extends DocEntry> D submitDocEntry(D docEntry) throws Exception {
+	public DocEntry submitDocEntry(DocEntry docEntry) throws Exception {
 		initialize();
-		D currentDocEntry = (D) assignmentDao.loadDocEntry(docEntry.getDocumentId());
+		DocEntry currentDocEntry =assignmentDao.loadDocEntry(docEntry.getDocumentId());
 		if (!currentDocEntry.getLocked()) {
-			if(currentDocEntry.getOwner() != null && currentDocEntry.getOwner().equals(this.user) || currentDocEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(this.user)) {
+			if(currentDocEntry.getOwner() != null && currentDocEntry.getOwner().equals(this.getMockedUser()) || currentDocEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(this.user)) {
 				docEntry = assignmentManager.submitDocument(currentDocEntry);
 			} else {
 				throw new Exception("Your session has expired. Please login again to submit your document.");
@@ -69,20 +76,23 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 		} else {
 			throw new Exception("The deadline has already passed.");
 		}
-		return CloneUtil.clone(docEntry);
+		if (docEntry != null){
+			docEntry = docEntry.clone();
+		}
+		return docEntry;
 	}
 
 	@Override
-	public <D extends DocEntry> D updateDocEntry(D updatedEntry) throws Exception {
+	public DocEntry updateDocEntry(DocEntry updatedEntry) throws Exception {
 		initialize();
 		WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(updatedEntry);
 		Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
 		if (isCourseInstructor(course)) {
 			// update document permissions
-			D docEntry = (D) assignmentDao.loadDocEntry(updatedEntry.getDocumentId());
+			DocEntry docEntry = assignmentDao.loadDocEntry(updatedEntry.getDocumentId());
 			docEntry.setLocked(updatedEntry.getLocked());
 			assignmentManager.updateDocument(docEntry);
-			return CloneUtil.clone(docEntry);
+			return docEntry;
 		} else {
 			throw new Exception("Permission denied");
 		}
@@ -91,7 +101,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	@Override
 	public User getUserDetails() throws Exception {
 		initialize();
-		logger.info("Getting user details, email=" + user.getEmail() +  " email ");
+		logger.info("Getting user details, email=" + user.getEmail());
 		return user;
 	}
 
@@ -110,7 +120,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 			throw new Exception("Wrong password, please try again");
 		}
 		
-		return CloneUtil.clone(storedUser);
+		return storedUser;
 	}
 	
 	/**
@@ -119,22 +129,58 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	private void initialize(){
 		if (user == null){
 			user = getUser();
+		}
+		
+		if (assignmentManager.getOrganization() == null){
 			Organization organization = user.getOrganization();	
 			Reviewer.initializeAssignmentManager(organization);
-			assignmentDao = assignmentManager.getAssignmentDao();
 		}
 	}
 	
 	private User getUser() {
-		UserDao userDao = UserDao.getInstance();
+		
 		try {
 			HttpServletRequest request = this.getThreadLocalRequest();
-			Principal principal = request.getUserPrincipal(); 
-			user = userDao.getUserByEmail(principal.getName());
+			Object obj = request.getSession().getAttribute("user");
+			
+			if (obj != null)
+			{
+				user = (User) obj;
+			}
+			
+			if  (user == null){
+				UserDao userDao = UserDao.getInstance();
+				Principal principal = request.getUserPrincipal();
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+			} 
 		} catch (MessageException e) {
 			e.printStackTrace();
 		}
 		return user;
+	}
+	
+	private User getMockedUser() throws MessageException{
+		User mockedUser = null;
+		try {
+			HttpServletRequest request = this.getThreadLocalRequest();
+			mockedUser = (User) request.getSession().getAttribute("mockedUser");
+			 
+			if ( mockedUser != null && mockedUser.getOrganization() == null){
+				mockedUser = userDao.getUserByEmail(mockedUser.getEmail());
+				request.getSession().setAttribute("mockedUser", mockedUser);
+			}
+			else if ( mockedUser == null && !user.isManager()){
+					mockedUser = getUser();
+					request.getSession().setAttribute("mockedUser", mockedUser);
+			} else if (mockedUser == null && user.isManager()){
+				throw new MessageException(Constants.EXCEPTION_USER_NOT_MOCKED);
+			}
+		} catch (MessageException e) {
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_USER_NOT_MOCKED);
+		}
+		return mockedUser;
 	}
 }
 	

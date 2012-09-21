@@ -62,10 +62,10 @@ public interface AdminService extends RemoteService {
 	 * Mock user.
 	 *
 	 * @param user the user
-	 * @return the user
+	 * @return the user name of user to mock
 	 * @throws Exception the exception
 	 */
-	public User mockUser(User user) throws Exception;
+	public User mockUser(String userusername) throws Exception;
 
 	/**
 	 * Save course.

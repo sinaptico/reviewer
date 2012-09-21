@@ -40,7 +40,7 @@ import com.google.gdata.util.ServiceException;
 
 public class AssignmentRepository {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private String SPREADSHEET_HEADER = "id,firstname,lastname,email,group,tutorial";
+	private String SPREADSHEET_HEADER = "firstname,lastname,email,group,tutorial";
 	private GoogleDocsServiceImpl googleDocsServiceImpl;
 	private GoogleSpreadsheetServiceImpl googleSpreadsheetServiceImpl;
 	private GoogleUserServiceImpl googleUserServiceImpl;	
@@ -51,16 +51,16 @@ public class AssignmentRepository {
 			this.googleSpreadsheetServiceImpl = new GoogleSpreadsheetServiceImpl(username, password);
 		} catch (AuthenticationException e) {
 			e.printStackTrace();
-			throw new MessageException("User could not be authenticated in Google Docs");
+			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-			throw new MessageException("The Google Docs URL is malformed");
+			throw new MessageException(Constants.EXCEPTION_GOOGLE_URL_MALFORMED);
 		}
 		try {
 			this.googleUserServiceImpl = new GoogleUserServiceImpl(username, password, domain);
 		} catch (AuthenticationException e) {
 			e.printStackTrace();
-			throw new MessageException("User could not be authenticated in Google");
+			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
 		} 
 	}
 
@@ -70,7 +70,7 @@ public class AssignmentRepository {
 		for (UserGroup studentGroup : studentGroups) {
 			for (User student : studentGroup.getUsers()) {
 				ListEntry listEntry = new ListEntry();
-				for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 4)) {
+				for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 3)) {
 					listEntry.getCustomElements().setValueLocal(property, BeanUtils.getProperty(student, property));
 				}
 				listEntry.getCustomElements().setValueLocal("group", studentGroup.getName());
@@ -295,8 +295,14 @@ public class AssignmentRepository {
 		// add students to groups
 		for (ListEntry listEntry : googleSpreadsheetServiceImpl.getWorksheetRows(worksheetEntry)) {
 			User student = new User();
-			for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 4)) {
+			for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 3)) {
 				BeanUtils.setProperty(student, property, StringUtils.trim(listEntry.getCustomElements().getValue(property)));
+			}
+			UserDao userDao = UserDao.getInstance();
+			// Update user information with database information.
+			// I Added it because the id is null
+			if (userDao.containsUser(student)){
+				student = userDao.getUserByEmail(student.getEmail());
 			}
 			UserGroup studentGroup = new UserGroup();
 			studentGroup.setName(StringUtils.trim(listEntry.getCustomElements().getValue("group")));
@@ -304,7 +310,7 @@ public class AssignmentRepository {
 
 			// check if tutorial is valid
 			if (!course.getTutorials().contains(studentGroup.getTutorial())) {
-				throw new Exception("Failed to save Course: Invalid tutorial");
+				throw new Exception(Constants.EXCEPTION_INVALID_TUTORIAL);
 			}
 			
 			//check if student is a wasm user, (create passwords for non wasm users)
@@ -379,7 +385,7 @@ public class AssignmentRepository {
 		for (AclEntry aclEntry : aclEntries) {
 			User user = new User();
 			user.setEmail(aclEntry.getScope().getValue());
-			user.setUsername(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
+			//user.setUsername(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
 			if (!owners.contains(user) && aclEntry.getRole().equals(AclRole.WRITER)) {
 				if (docEntry instanceof LogpageDocEntry) {
 					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());

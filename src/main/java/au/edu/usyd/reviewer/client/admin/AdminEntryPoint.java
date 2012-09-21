@@ -1,8 +1,6 @@
 package au.edu.usyd.reviewer.client.admin;
 
 import java.util.Collection;
-
-
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +19,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
+import au.edu.usyd.reviewer.client.core.util.exception.CustomUncaughtExceptionHandler;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.Reviewer;
 
@@ -51,7 +50,8 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
-
+import com.google.gwt.event.dom.client.DomEvent;
+import com.google.gwt.dom.client.Document;
 //TODO Documentation - include description of GlosserSite
 //TODO Move CSS style to external files
 //TODO Move out Glosser admin tab to GLOSSER project
@@ -149,6 +149,10 @@ public class AdminEntryPoint implements EntryPoint {
 	 */
 	@Override
 	public void onModuleLoad() {
+		
+		// Exception handler
+		GWT.setUncaughtExceptionHandler( new CustomUncaughtExceptionHandler() );
+		
 		// Glosser sites panel
 		final ShowSitesComposite glosserPanel = new ShowSitesComposite();
 		glosserService.getAllSites(new AsyncCallback<List<SiteForm>>() {
@@ -175,7 +179,7 @@ public class AdminEntryPoint implements EntryPoint {
 		});
 		
 		
-
+		// Save Course
 		Command newCourseCmd = new Command() {
 			@Override
 			public void execute() {
@@ -200,7 +204,10 @@ public class AdminEntryPoint implements EntryPoint {
 							@Override
 							public void onSuccess(Course course) {
 								dialogBox.hide();
-				
+//								courseSemester.setSelectedIndex(course.getSemester());
+//								courseYear.setSelectedIndex(course.getYear());
+//								DomEvent.fireNativeEvent(Document.get().createChangeEvent(), courseSemester);
+//								DomEvent.fireNativeEvent(Document.get().createChangeEvent(), courseYear);
 								refreshCoursesTree();
 							}
 						});
@@ -226,7 +233,8 @@ public class AdminEntryPoint implements EntryPoint {
 				dialogBox.show();
 			}
 		};
-
+		
+		// Save Writing activity
 		Command newActivityCmd = new Command() {
 			@Override
 			public void execute() {
@@ -277,7 +285,7 @@ public class AdminEntryPoint implements EntryPoint {
 				dialogBox.show();
 			}
 		};
-		
+		// Save Review template
 		Command newReviewTemplateCmd = new Command() {
 			@Override
 			public void execute() {
@@ -337,26 +345,34 @@ public class AdminEntryPoint implements EntryPoint {
 		newMenu.addItem(newReviewTemplateMenuItem);
 		MenuItem createNewMenuItem = WidgetFactory.createNewMenuItem("Create new >", newMenu, "createNewMenuItem");
 
+		// Impersonate user
 		Command mockUserCmd = new Command() {
 			@Override
 			public void execute() {
 				final DialogBox dialogBox = new DialogBox();
 				final UserForm userForm = new UserForm();
+				userForm.setMockUser(true);
 				final Button mockUserButton = new Button("Impersonate");
 				mockUserButton.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
 						mockUserButton.setEnabled(false);
-						adminService.mockUser(userForm.getUser(), new AsyncCallback<User>() {
+						adminService.mockUser(userForm.getUsername(), new AsyncCallback<User>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								Window.alert("Failed to mock user: " + caught.getMessage());
+								String message =  "Failed to mock user: ";
+								if (caught instanceof MessageException){
+									message = caught.getMessage();
+								} else {
+									message = message + caught.getMessage();
+								}
+								Window.alert(message);
 								mockUserButton.setEnabled(true);
 							}
 
 							@Override
 							public void onSuccess(User user) {
-								Window.alert("You are now logged in as '" + user.getEmail() + "'");
+								Window.alert("You are now logged in as '" + user.getUsername() + "'");
 								dialogBox.hide();
 							}
 						});
@@ -659,6 +675,7 @@ public class AdminEntryPoint implements EntryPoint {
 		adminPanel.setSize("75%", "75%");
 		adminPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		adminPanel.add(mainPanel);
+	
 		
 		RootPanel.get("adminPanel").add(new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">IWRITE ADMIN PAGE</h1><a href='Assignments.html'><< Go to the Assignments List</a></br></br><img src='images/icon-info.gif'/> If you have selected the option 'Impersonate User' then by clicking the link above you will see the assignments list of that user. </br>In order to go back to your normal 'Assignments list' you have to click the 'Assginments' link at the top of the page again.</div></br>"));
 		
@@ -723,6 +740,7 @@ public class AdminEntryPoint implements EntryPoint {
 	 * Gets the courses recorded in the system according to the defined filter year - semester and populates the Courses Tree.
 	 */
 	private void refreshCoursesTree() {
+		
 		refreshCourseTreeButton.updateStateSubmitting();
 		
 		courseStackPanel.clear();
@@ -730,11 +748,10 @@ public class AdminEntryPoint implements EntryPoint {
 		courseStackPanel.add(coursesTree);
 		coursesTree.clear();
 		activityLabel.setHTML("<b>&nbsp;</b>");
-		activityLabel.setStyleName("activityLabel");		
+		activityLabel.setStyleName("activityLabel");
 		
 		Integer semester = Integer.valueOf(courseSemester.getItemText(courseSemester.getSelectedIndex()));
 		Integer year = Integer.valueOf(courseYear.getItemText(courseYear.getSelectedIndex()));
-
 		
 		adminService.getCourses(semester, year, new AsyncCallback<Collection<Course>>() {
 			@Override
@@ -762,4 +779,5 @@ public class AdminEntryPoint implements EntryPoint {
 			}
 		});
 	}
+	
 }

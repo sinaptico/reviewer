@@ -25,6 +25,7 @@ import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
@@ -39,7 +40,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class AdminServiceImpl extends RemoteServiceServlet implements AdminService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
-	private AssignmentDao assignmentDao = null;
+	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 	private UserDao userDao = UserDao.getInstance();
 	private CourseDao courseDao = CourseDao.getInstance();
 	// logged user
@@ -91,11 +92,22 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	private User getUser() {
-		UserDao userDao = UserDao.getInstance();
+		
 		try {
 			HttpServletRequest request = this.getThreadLocalRequest();
-			Principal principal = request.getUserPrincipal(); 
-			user = userDao.getUserByEmail(principal.getName());
+			Object obj = request.getSession().getAttribute("user");
+			
+			if (obj != null)
+			{
+				user = (User) obj;
+			}
+			
+			if  (user == null){
+				UserDao userDao = UserDao.getInstance();
+				Principal principal = request.getUserPrincipal();
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+			}
 		} catch (MessageException e) {
 			e.printStackTrace();
 		}
@@ -124,19 +136,25 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public User mockUser(User user) throws Exception {
+	public User mockUser(String username) throws Exception {
 		initialize();
 		if (isAdmin()) {
-			logger.info("Mocking user: email=" + user.getEmail());
-			this.getThreadLocalRequest().getSession().setAttribute("user", user);
-			return user;
+			String email = username + "@" + organization.getGoogleDomain();
+			User mockedUser = userDao.getUserByEmail(email);
+			if (mockedUser != null){
+				logger.info("Mocking user: " + username);
+				this.getThreadLocalRequest().getSession().setAttribute("mockedUser", mockedUser);
+				return mockedUser;
+			} else{
+				throw new MessageException(Constants.EXCEPTION_USERNAME_NO_EXIST);
+			}	
 		} else {
-			throw new Exception("Permission denied");
+			throw new MessageException( Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 
 	@Override
-	public Course saveCourse(Course course) throws MessageException {
+	public Course saveCourse(Course course) throws Exception {
 		initialize();
 		if (isAdmin() || isCourseLecturer(courseDao.loadCourse(course.getId()))) {
 			try {
@@ -147,7 +165,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				return assignmentManager.saveCourse(course);
 			} catch (Exception e) {
 				e.printStackTrace();
-				throw new MessageException("The course could not be saved.");
+				throw e;
 			}
 		} else {
 			throw new MessageException("Permission denied");
@@ -297,8 +315,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		if (user == null){
 			user = getUser();
 			organization = user.getOrganization();	
-			Reviewer.initializeAssignmentManager(organization);
-			assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
+		}
+		if (assignmentManager.getOrganization() == null){
+			Reviewer.initializeAssignmentManager(organization);	
 		}
 	}
 

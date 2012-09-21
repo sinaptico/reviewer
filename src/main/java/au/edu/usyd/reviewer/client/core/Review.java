@@ -220,10 +220,7 @@ public class Review implements Serializable {
 		
 		review.setFeedbackTemplateType(this.getFeedbackTemplateType());
 		
-		if ( this.getId() != null && this.getId() > 0){
-			review.setId(this.getId());
-		}
-		
+		review.setId(this.getId());	
 		review.setSaved(this.getSaved());
 		return review;
 	}

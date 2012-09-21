@@ -87,9 +87,7 @@ public class ReviewEntry extends Entry {
 		}
 		entry.setDownloaded(this.getDownloaded());
 		entry.setFileName(this.getFileName());
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			entry.setId(this.getId());
-		}
+		entry.setId(this.getId());
 		entry.setLocalFile(this.isLocalFile());
 		entry.setLocked(this.getLocked());
 		

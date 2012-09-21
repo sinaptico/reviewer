@@ -328,11 +328,7 @@ public class ReviewingActivity extends Activity<ReviewEntry> {
 		activity.setFeedbackTemplateType(this.getFeedbackTemplateType());
 		activity.setFinishDate(this.getFinishDate());
 		activity.setFormType(this.getFormType());
-		
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			activity.setId(this.getId());
-		}
-		
+		activity.setId(this.getId());
 		activity.setMaxGrade(this.getMaxGrade());
 		activity.setName(this.getName());
 		activity.setNumAutomaticReviewers(this.getNumAutomaticReviewers());

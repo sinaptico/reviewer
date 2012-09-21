@@ -20,7 +20,7 @@ public class UserForm extends Composite {
 	private VerticalPanel mainPanel = new VerticalPanel();
 	
 	/** TextBox with user's username. */
-	private final Label username = new Label();
+	private final TextBox username = new TextBox();
 	
 	/** TextBox with user's first name. */
 	private final TextBox firstname = new TextBox();
@@ -47,6 +47,9 @@ public class UserForm extends Composite {
 	
 	/** The user that is managed by the form. */
 	private User user = new User();
+	
+	
+	private boolean mockUser = false;
 
 	/**
 	 * Instantiates a new user form.
@@ -61,12 +64,15 @@ public class UserForm extends Composite {
 	 * @return the user
 	 */
 	public User getUser() {
-		user.setUsername(username.getText());
 		user.setFirstname(firstname.getValue());
 		user.setLastname(lastname.getValue());
 		user.setEmail(email.getValue());
 		user.setPassword(currentPassword.getValue());
 		return user;
+	}
+	
+	public String getUsername(){
+		return username.getValue();
 	}
 
 	/* (non-Javadoc)
@@ -75,23 +81,33 @@ public class UserForm extends Composite {
 	@Override
 	public void onLoad() {
 		errorLabel.setStyleName("error");
-		Grid grid = new Grid(9, 2);
-		grid.setWidget(0, 0, new Label("Username:"));
-		grid.setWidget(0, 1, username);
-		grid.setWidget(1, 0, new Label("Firstname:"));
-		grid.setWidget(1, 1, firstname);
-		grid.setWidget(2, 0, new Label("Lastname:"));
-		grid.setWidget(2, 1, lastname);
-		grid.setWidget(3, 0, new Label("Email:"));
-		grid.setWidget(3, 1, email);
-		grid.setWidget(4, 0, new Label("Current password:"));
-		grid.setWidget(4, 1, currentPassword);
-		grid.setWidget(5, 0, new Label("New password:"));
-		grid.setWidget(5, 1, newPassword);
-		grid.setWidget(6, 1, new Label("* At least 5 characters."));
-		grid.setWidget(7, 0, new Label("Retype new password:"));
-		grid.setWidget(7, 1, newPassword2);		
-		grid.setWidget(8, 1, errorLabel);		
+		Grid grid = null;
+		if (!isMockUser()){
+			grid = new Grid(9, 2);
+			grid.setWidget(0, 0, new Label("Username:"));
+			grid.setWidget(0, 1, username);
+			grid.setWidget(1, 0, new Label("Firstname:"));
+			grid.setWidget(1, 1, firstname);
+			grid.setWidget(2, 0, new Label("Lastname:"));
+			grid.setWidget(2, 1, lastname);
+			grid.setWidget(3, 0, new Label("Email:"));
+			email.setWidth("300px");
+			grid.setWidget(3, 1, email);
+			grid.setWidget(4, 0, new Label("Current password:"));
+			grid.setWidget(4, 1, currentPassword);
+			grid.setWidget(5, 0, new Label("New password:"));
+			grid.setWidget(5, 1, newPassword);
+			grid.setWidget(6, 1, new Label("* At least 5 characters."));
+			grid.setWidget(7, 0, new Label("Retype new password:"));
+			grid.setWidget(7, 1, newPassword2);		
+			grid.setWidget(8, 1, errorLabel);
+		} else {
+			grid = new Grid(2, 2);
+			grid.setWidget(0, 0, new Label("Username:"));
+			username.setWidth("200px");
+			grid.setWidget(0, 1, username);
+			grid.setWidget(1, 1, errorLabel);
+		}
 		mainPanel.add(grid);
 		mainPanel.add(new HTML("<br/>"));
 	}
@@ -113,7 +129,7 @@ public class UserForm extends Composite {
 	 * Disable not updatable fileds.
 	 */
 	public void disableNotUpdatableFileds(){
-		//username.setEnabled(false);
+//		username.setEnabled(false);
 		firstname.setEnabled(false);
 		lastname.setEnabled(false);
 		email.setEnabled(false);
@@ -166,5 +182,13 @@ public class UserForm extends Composite {
 	 */
 	public String getNewPassword() {
 		return newPassword.getText();
-	}	
+	}
+	
+	public void setMockUser(boolean mock){
+		this.mockUser = mock;
+	}
+	
+	private boolean isMockUser(){
+		return this.mockUser;
+	}
 }

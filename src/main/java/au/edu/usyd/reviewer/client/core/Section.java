@@ -207,11 +207,7 @@ public class Section implements Serializable {
 			}
 		}
 		section.setChoices(choices);
-		
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			section.setId(this.getId());
-		}
-		
+		section.setId(this.getId());
 		section.setNumber(this.getNumber());
 		section.setText(this.getText());
 		section.setTool(this.getTool());

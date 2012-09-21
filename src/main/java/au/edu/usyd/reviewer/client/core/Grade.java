@@ -140,10 +140,12 @@ public class Grade implements Serializable {
 	
 	public Grade clone(){
 		Grade grade = new Grade();
-		grade.setDeadline(this.getDeadline().clone());
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			grade.setId(this.getId());
+		
+		if (this.getDeadline() != null){
+			grade.setDeadline(this.getDeadline().clone());
 		}
+		
+		grade.setId(this.getId());
 		grade.setUser(this.getUser().clone());
 		grade.setValue(this.getValue());
 		return grade;

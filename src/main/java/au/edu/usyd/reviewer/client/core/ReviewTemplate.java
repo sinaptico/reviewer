@@ -167,11 +167,9 @@ public class ReviewTemplate implements Serializable {
 
 	public ReviewTemplate clone(){
 		ReviewTemplate template = new ReviewTemplate();
-		template.setDescription(this.getDescription());
-		
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			template.setId(this.getId());
-		}
+		template.setName(this.getName());
+		template.setDescription(this.getDescription());	
+		template.setId(this.getId());
 		
 		if (this.getOrganization() != null){
 			template.setOrganization(this.getOrganization().clone());

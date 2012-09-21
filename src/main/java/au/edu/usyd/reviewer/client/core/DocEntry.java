@@ -202,15 +202,17 @@ public class DocEntry extends Entry {
 		doc.setDownloaded(this.getDownloaded());
 		doc.setEarlySubmitDate(this.getEarlySubmitDate());
 		doc.setFileName(this.getFileName());
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			doc.setId(this.getId());
-		}
+		doc.setId(this.getId());
 		doc.setLocalFile(this.isLocalFile());
 		doc.setLocked(this.getLocked());
+		
 		if ( this.getOwner() != null){
 			doc.setOwner(this.getOwner().clone());
 		}
-		doc.setOwnerGroup(this.getOwnerGroup().clone());
+		
+		if (this.getOwnerGroup() != null){
+			doc.setOwnerGroup(this.getOwnerGroup().clone());
+		}
 		
 		Set<Review> reviews = new HashSet<Review>();
 		for(Review review:this.getReviews()){

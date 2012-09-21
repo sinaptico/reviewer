@@ -115,9 +115,7 @@ public class Choice implements Serializable {
 	
 	public Choice clone(){
 		Choice choice = new Choice();
-		if ( this.getId() != null && this.getId().longValue() > 0){
-			choice.setId(this.getId());
-		}
+		choice.setId(this.getId());
 		choice.setNumber(this.getNumber());
 		choice.setText(this.getText());
 		return choice;
