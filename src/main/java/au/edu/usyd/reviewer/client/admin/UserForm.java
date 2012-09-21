@@ -91,7 +91,7 @@ public class UserForm extends Composite {
 			grid.setWidget(2, 0, new Label("Lastname:"));
 			grid.setWidget(2, 1, lastname);
 			grid.setWidget(3, 0, new Label("Email:"));
-			email.setWidth("300px");
+			email.setWidth("250px");
 			grid.setWidget(3, 1, email);
 			grid.setWidget(4, 0, new Label("Current password:"));
 			grid.setWidget(4, 1, currentPassword);
@@ -102,11 +102,14 @@ public class UserForm extends Composite {
 			grid.setWidget(7, 1, newPassword2);		
 			grid.setWidget(8, 1, errorLabel);
 		} else {
-			grid = new Grid(2, 2);
+			grid = new Grid(3, 2);
 			grid.setWidget(0, 0, new Label("Username:"));
-			username.setWidth("200px");
+			username.setWidth("150px");
 			grid.setWidget(0, 1, username);
-			grid.setWidget(1, 1, errorLabel);
+			grid.setWidget(1, 0, new Label("Email:"));
+			email.setWidth("250px");
+			grid.setWidget(1, 1, email);
+			grid.setWidget(2, 1, errorLabel);
 		}
 		mainPanel.add(grid);
 		mainPanel.add(new HTML("<br/>"));

@@ -6,6 +6,7 @@ import au.edu.usyd.reviewer.client.admin.report.UserStats;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.Grade;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
@@ -42,7 +43,7 @@ interface AdminServiceAsync {
 	 * @param year the year
 	 * @param callback the callback 
 	 */
-	public void getCourses(Integer semester, Integer year, AsyncCallback<Collection<Course>> callback);
+	public void getCourses(Integer semester, Integer year, Long organizationId, AsyncCallback<Collection<Course>> callback);
 
 	/**
 	 * Gets the writing activity stats.
@@ -58,7 +59,7 @@ interface AdminServiceAsync {
 	 * @param username the username of the user to mock
 	 * @param callback the callback
 	 */
-	public void mockUser(String username, AsyncCallback<User> callback);
+	public void mockUser(User user, AsyncCallback<User> callback);
 
 	/**
 	 * Save course.
@@ -143,5 +144,14 @@ interface AdminServiceAsync {
 	 * @param docEntryId the doc entry id
 	 * @param asyncCallback the async callback
 	 */
-	public void saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId, AsyncCallback<ReviewEntry> asyncCallback);	
+	public void saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId, AsyncCallback<ReviewEntry> asyncCallback);
+	
+	
+	/**
+	 * Returns logged user
+	 * @param asyncCallback logged user
+	 */
+	public void getUser(AsyncCallback<User> asyncCallback);
+	
+	public void getAllOrganizations(AsyncCallback<Collection<Organization>> callback);
 }

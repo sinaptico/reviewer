@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.admin;
 
 import java.util.Collection;
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,13 +15,17 @@ import au.edu.usyd.reviewer.client.admin.glosser.ShowSitesComposite;
 import au.edu.usyd.reviewer.client.admin.glosser.SiteForm;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.CustomUncaughtExceptionHandler;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+import au.edu.usyd.reviewer.client.reviewerAdmin.ReviewerAdminService;
+import au.edu.usyd.reviewer.client.reviewerAdmin.ReviewerAdminServiceAsync;
 import au.edu.usyd.reviewer.server.Reviewer;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -36,6 +41,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -50,8 +56,6 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.event.dom.client.DomEvent;
-import com.google.gwt.dom.client.Document;
 //TODO Documentation - include description of GlosserSite
 //TODO Move CSS style to external files
 //TODO Move out Glosser admin tab to GLOSSER project
@@ -142,6 +146,15 @@ public class AdminEntryPoint implements EntryPoint {
 	private SubmitButton refreshCourseTreeButton = new SubmitButton("Load", "Loading courses, please wait...", "Load");
 	
 	
+	/** The course's year included in the filter. */
+	private ListBox organizationsList = WidgetFactory.createNewListBoxWithId("organizationsList");
+	
+	private SimplePanel organizationsPanel = new SimplePanel();
+	
+	private User loggedUser = null;
+	
+	
+	
 	/** 
 	 * <p>Main method of the entry point that loads the "Glosser sites" and menus for user impersonation, courses, activities and review 
 	 * templates creation. It also loads the panels and trees with the course and review templates lists according to the defined filter (Year - Semester).</p>
@@ -204,10 +217,6 @@ public class AdminEntryPoint implements EntryPoint {
 							@Override
 							public void onSuccess(Course course) {
 								dialogBox.hide();
-//								courseSemester.setSelectedIndex(course.getSemester());
-//								courseYear.setSelectedIndex(course.getYear());
-//								DomEvent.fireNativeEvent(Document.get().createChangeEvent(), courseSemester);
-//								DomEvent.fireNativeEvent(Document.get().createChangeEvent(), courseYear);
 								refreshCoursesTree();
 							}
 						});
@@ -357,25 +366,30 @@ public class AdminEntryPoint implements EntryPoint {
 					@Override
 					public void onClick(ClickEvent event) {
 						mockUserButton.setEnabled(false);
-						adminService.mockUser(userForm.getUsername(), new AsyncCallback<User>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								String message =  "Failed to mock user: ";
-								if (caught instanceof MessageException){
-									message = caught.getMessage();
-								} else {
-									message = message + caught.getMessage();
+						User user = userForm.getUser();
+						if (validateUser(user)){
+							adminService.mockUser(user, new AsyncCallback<User>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									String message =  "Failed to mock user: ";
+									if (caught instanceof MessageException){
+										message = caught.getMessage();
+									} else {
+										message = message + caught.getMessage();
+									}
+									Window.alert(message);
+									mockUserButton.setEnabled(true);
 								}
-								Window.alert(message);
-								mockUserButton.setEnabled(true);
-							}
-
-							@Override
-							public void onSuccess(User user) {
-								Window.alert("You are now logged in as '" + user.getUsername() + "'");
-								dialogBox.hide();
-							}
-						});
+	
+								@Override
+								public void onSuccess(User user) {
+									Window.alert("You are now logged in as '" + user.getUsername() + "'");
+									dialogBox.hide();
+								}
+							});
+						} else {
+							Window.alert("Please enter a username or an email");
+						}
 					}
 				});
 
@@ -670,7 +684,7 @@ public class AdminEntryPoint implements EntryPoint {
 		HorizontalPanel mainPanel = new HorizontalPanel();
 		mainPanel.add(menuPanel);
 		mainPanel.add(contentDeco);
-
+		
 		VerticalPanel adminPanel = new VerticalPanel();
 		adminPanel.setSize("75%", "75%");
 		adminPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -700,12 +714,14 @@ public class AdminEntryPoint implements EntryPoint {
 	    yearSemesterPanel.add(new HTML("<span style='margin-left:20px;'></span>"));
 	    yearSemesterPanel.add(courseSemester);
 	    yearSemesterPanel.add(courseYear);
+	    yearSemesterPanel.add(organizationsPanel);
 	    yearSemesterPanel.add(refreshCourseTreeButton);
 	    
 	    RootPanel.get("adminPanel").add(yearSemesterPanel);
 	    RootPanel.get("adminPanel").add(new HTML("</br>"));
 				
 		RootPanel.get("adminPanel").add(adminPanel);
+		
 		this.refreshCoursesTree();
 	}
 
@@ -750,10 +766,80 @@ public class AdminEntryPoint implements EntryPoint {
 		activityLabel.setHTML("<b>&nbsp;</b>");
 		activityLabel.setStyleName("activityLabel");
 		
+		
+		if (loggedUser == null){
+			adminService.getUser(new AsyncCallback<User>(){
+				@Override
+				public void onFailure(Throwable caught) {
+					Window.alert("Failed get the logged user");
+				}
+	
+				@Override
+				public void onSuccess(User user) {
+					if (user != null && user.isManager()){
+						// get all the organizations and add them to dropdown list in mainPanel
+						getOrganizations();
+						
+					}
+					Long organizationId = user.getOrganization().getId();	
+					setLoggedUser(user);
+					getCourses(organizationId);
+					
+				}
+			});
+		} else {
+			Long organizationId = null;
+			if (loggedUser != null && loggedUser.isManager()){
+				if (organizationsList.getItemCount() > 0){
+					organizationId = Long.valueOf(organizationsList.getItemText(organizationsList.getSelectedIndex()));
+				} else {
+					organizationId = loggedUser.getOrganization().getId();
+				}
+			} else {
+				organizationId = loggedUser.getOrganization().getId();	
+			} 
+			getCourses(organizationId);
+		}
+		
+		
+		
+//		Integer semester = Integer.valueOf(courseSemester.getItemText(courseSemester.getSelectedIndex()));
+//		Integer year = Integer.valueOf(courseYear.getItemText(courseYear.getSelectedIndex()));
+//		
+//		adminService.getCourses(semester, year,organizationId, new AsyncCallback<Collection<Course>>() {
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				Window.alert("Failed get courses: " + caught.getMessage());
+//				refreshCourseTreeButton.updateStateSubmit();
+//			}
+//
+//			@Override
+//			public void onSuccess(Collection<Course> courseList) {
+//				refreshCourseTreeButton.updateStateSubmit();
+//				courses = courseList;
+//				// courses tree
+//				for (Course course : courses) {
+//					TreeItem courseItem = new TreeItem(new HTML("<img src='images/google/icon_6_folder.gif'></img> <span><b>" + course.getName()+"-"+course.getYear()+"S"+course.getSemester() + "</b></span>"));
+//					courseItem.setUserObject(course);
+//					for (WritingActivity writingActivity : course.getWritingActivities()) {
+//						final TreeItem activityItem = new TreeItem(writingActivity.getName() + " (" + writingActivity.getTutorial() + ")");
+//						activityItem.setUserObject(writingActivity);
+//						courseItem.addItem(activityItem);
+//					}
+//					coursesTree.addItem(courseItem);
+//					courseItem.setState(false);
+//				}
+//			}
+//		});
+
+
+	}
+	
+	private void getCourses(Long organizationId ){
 		Integer semester = Integer.valueOf(courseSemester.getItemText(courseSemester.getSelectedIndex()));
 		Integer year = Integer.valueOf(courseYear.getItemText(courseYear.getSelectedIndex()));
 		
-		adminService.getCourses(semester, year, new AsyncCallback<Collection<Course>>() {
+		adminService.getCourses(semester, year,organizationId, new AsyncCallback<Collection<Course>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Failed get courses: " + caught.getMessage());
@@ -778,6 +864,45 @@ public class AdminEntryPoint implements EntryPoint {
 				}
 			}
 		});
+
+	}
+
+	private boolean validateUser(User user){
+		boolean result = false;
+		result = user != null;
+		result &= (!StringUtil.isBlank(user.getDomain()) || !StringUtil.isBlank(user.getUsername()));
+		return result;
 	}
 	
+	private void getOrganizations(){
+		adminService.getAllOrganizations(new AsyncCallback<Collection<Organization>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Failed get organizations: " + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(Collection<Organization> organizations) {
+				organizationsList.clear();
+	
+				for(Organization organization : organizations){
+					if (organization != null){
+						organizationsList.addItem(organization.getName(), organization.getId().toString());
+					}
+				}
+				
+				if (organizationsList.getItemCount() > 0){
+					Grid grid = new Grid(1, 2);
+					grid.setWidget(0,0, new Label("Organization:"));
+					grid.setWidget(0,1,organizationsList);
+					organizationsPanel.add(grid);
+				}
+			}
+		});
+		
+	}
+	
+	private void setLoggedUser(User user){
+		this.loggedUser = user;
+	}
 }

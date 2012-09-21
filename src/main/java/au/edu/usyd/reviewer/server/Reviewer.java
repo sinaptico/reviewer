@@ -51,11 +51,11 @@ public class Reviewer {
 		try {
 			String domain = organization.getGoogleDomain();
 			String username = organization.getGoogleUsername();
-			String password = organization.getGooglePassword();
+			String password = organization.getDecryptedGooglePassword();
 			
 			if (emailNotifier == null){	
 				String emailUsername = organization.getEmailUsername();
-				String emailPassword = organization.getEmailPassword();
+				String emailPassword = organization.getDecryptedEmailPassword();
 				String smtpHost = organization.getSMTPHost();
 				String smtpPort = organization.getSMTPPort();
 				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain));
@@ -153,5 +153,9 @@ public class Reviewer {
 	
 	public static AssignmentRepository getAssignmentRepository(){
 		return assignmentRepository;
+	}
+	
+	public static String getReviewerLogosHome(){
+		return config.getString(Constants.REVIEWER_LOGOS_HOME);
 	}
 }

@@ -30,6 +30,8 @@ import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.CourseDao;
+import au.edu.usyd.reviewer.server.OrganizationDao;
+import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.report.UserStatsAnalyser;
@@ -80,18 +82,25 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public Collection<Course> getCourses(Integer semester, Integer year) throws Exception {
+	public Collection<Course> getCourses(Integer semester, Integer year, Long organizationId) throws Exception {
 		initialize();
 		Collection<Course> courses;
 		if (isAdmin()) {
-			courses = courseDao.loadCourses(semester, year, organization);
+			Organization organizationSelected = null;
+			if (isManager()){
+				organizationSelected = organization;
+			} else {
+				OrganizationDao organizationDao = OrganizationDao.getInstance();
+				organizationSelected = organizationDao.load(organizationId);
+			}
+			courses = courseDao.loadCourses(semester, year, organizationSelected);
 		} else {
 			courses = assignmentDao.loadLecturerCourses(semester, year, user);
 		}
 		return courses;
 	}
 
-	private User getUser() {
+	public User getUser() {
 		
 		try {
 			HttpServletRequest request = this.getThreadLocalRequest();
@@ -127,8 +136,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return userStatsAnalyser.calculateStats(writingActivity, users);
 	}
 
-	public boolean isAdmin() {
+	private boolean isAdmin() {
 		return user == null ? false : user.isManager() || user.isTeacher();
+	}
+	
+	private boolean isManager(){
+		return user == null? false : user.isManager();
 	}
 
 	public boolean isCourseLecturer(Course course) {
@@ -136,13 +149,18 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public User mockUser(String username) throws Exception {
+	public User mockUser(User User) throws Exception {
 		initialize();
 		if (isAdmin()) {
-			String email = username + "@" + organization.getGoogleDomain();
+			String email = null;
+			if ( user.getEmail() != null){
+				email = user.getEmail();
+			} else {
+				email = user.getUsername() + "@" + organization.getGoogleDomain();
+			}
 			User mockedUser = userDao.getUserByEmail(email);
 			if (mockedUser != null){
-				logger.info("Mocking user: " + username);
+				logger.info("Mocking user: " + user.getUsername());
 				this.getThreadLocalRequest().getSession().setAttribute("mockedUser", mockedUser);
 				return mockedUser;
 			} else{
@@ -321,4 +339,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		}
 	}
 
+	
+	public Collection<Organization> getAllOrganizations() throws Exception{
+		if (isManager()){
+			OrganizationManager organizationManager = OrganizationManager.getInstance();
+			return organizationManager.getAllOrganizations();
+		} else {
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+		}
+	}
 }
