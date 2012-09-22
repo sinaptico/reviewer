@@ -113,7 +113,7 @@ public interface AdminService extends RemoteService {
 	 * @return the review templates
 	 * @throws Exception the exception
 	 */
-	public Collection<ReviewTemplate> getReviewTemplates() throws Exception;	
+	public Collection<ReviewTemplate> getReviewTemplates(Long organizationId) throws Exception;	
 	
 	/**
 	 * Delete review template.

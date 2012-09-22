@@ -69,6 +69,8 @@ public class User implements Serializable {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Organization organization;
 
+	private String username;
+	
 	public User(){
 		
 	}
@@ -117,15 +119,18 @@ public class User implements Serializable {
 	 * @return the username
 	 */
 	public String getUsername() {
-		String username = "";
-		if (this.email != null){
+		String usernameResult = null;
+		if ( username == null && this.email != null){
 //			String  expression="^[_a-z0-9-]+(\\.[_a-z0-9-]+)*"; 
 //			Pattern pattern = Pattern.compile(expression,Pattern.CASE_INSENSITIVE); 
 //			Matcher matcher = pattern.matcher(email);
 //			username = matcher.group(0);
 			String email = getEmail();
 			int i = email.indexOf("@");
-			username = email.substring(0,i);
+			if ( i > 0){
+				usernameResult = email.substring(0,i);
+			}
+			username = usernameResult;
 		}
 		return username;
 	}
@@ -305,4 +310,9 @@ public class User implements Serializable {
 		String domain = email.substring(i+1,email.length());
 		return domain;
 	}
+	
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 }

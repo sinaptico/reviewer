@@ -50,7 +50,12 @@ public class FileServlet extends HttpServlet {
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		initialize(request);
+		try {
+			initialize(request);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ServletException(e.getMessage());
+		}
 		String docId = request.getParameter("docId");
 		String docVersion = request.getParameter("docVersion");
 		String tutorial = request.getParameter("tutorial");
@@ -155,7 +160,12 @@ public class FileServlet extends HttpServlet {
 	@Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-		initialize(req);
+		try {
+			initialize(req);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			throw new ServletException(e1.getMessage());
+		}
 		String docId = null;
 		String csv = null;
 		
@@ -254,7 +264,7 @@ public class FileServlet extends HttpServlet {
 	/**
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
-	private void initialize(HttpServletRequest request){
+	private void initialize(HttpServletRequest request) throws Exception{
 		if (user == null){
 			user = getUser(request);
 			organization = user.getOrganization();

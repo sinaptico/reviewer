@@ -101,7 +101,7 @@ interface AdminServiceAsync {
 	 *
 	 * @param callback the callback
 	 */
-	public void getReviewTemplates(AsyncCallback<Collection<ReviewTemplate>> callback);
+	public void getReviewTemplates(Long organizationId, AsyncCallback<Collection<ReviewTemplate>> callback);
 
 	/**
 	 * Delete review template.

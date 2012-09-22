@@ -126,7 +126,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	/**
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
-	private void initialize(){
+	private void initialize() throws Exception{
 		if (user == null){
 			user = getUser();
 		}

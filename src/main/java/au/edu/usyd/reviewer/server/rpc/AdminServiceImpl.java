@@ -26,6 +26,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
@@ -87,7 +88,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		Collection<Course> courses;
 		if (isAdmin()) {
 			Organization organizationSelected = null;
-			if (isManager()){
+			if (isManager() && user.getOrganization().equals(organizationId) ){
 				organizationSelected = organization;
 			} else {
 				OrganizationDao organizationDao = OrganizationDao.getInstance();
@@ -149,22 +150,24 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	public User mockUser(User User) throws Exception {
+	public User mockUser(User aUser) throws Exception {
 		initialize();
 		if (isAdmin()) {
 			String email = null;
-			if ( user.getEmail() != null){
-				email = user.getEmail();
+			if ( aUser.getEmail() != null && !StringUtil.isBlank(aUser.getEmail())){
+				email = aUser.getEmail();
+			} else if (aUser.getUsername() != null && !StringUtil.isBlank(aUser.getUsername())){
+				email = aUser.getUsername() + "@" + organization.getGoogleDomain();
 			} else {
-				email = user.getUsername() + "@" + organization.getGoogleDomain();
+				throw new MessageException(Constants.EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST);
 			}
 			User mockedUser = userDao.getUserByEmail(email);
 			if (mockedUser != null){
-				logger.info("Mocking user: " + user.getUsername());
+				logger.info("Mocking user: " + mockedUser.getUsername());
 				this.getThreadLocalRequest().getSession().setAttribute("mockedUser", mockedUser);
 				return mockedUser;
 			} else{
-				throw new MessageException(Constants.EXCEPTION_USERNAME_NO_EXIST);
+				throw new MessageException(Constants.EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST);
 			}	
 		} else {
 			throw new MessageException( Constants.EXCEPTION_PERMISSION_DENIED);
@@ -251,12 +254,19 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override	
-	public Collection<ReviewTemplate> getReviewTemplates() throws Exception {
+	public Collection<ReviewTemplate> getReviewTemplates(Long organizationId) throws Exception {
 		initialize();
 		Collection<ReviewTemplate> reviewTemplates = null;
 		if (isAdmin()) {
-			reviewTemplates = assignmentDao.loadReviewTemplates(organization);
-		}
+			Organization organizationSelected = null;
+			if (isManager() && user.getOrganization().equals(organizationId) ){
+				organizationSelected = organization;
+			} else {
+				OrganizationDao organizationDao = OrganizationDao.getInstance();
+				organizationSelected = organizationDao.load(organizationId);
+			}
+			reviewTemplates = assignmentDao.loadReviewTemplates(organizationSelected);
+		} 
 		return reviewTemplates;
 	}
 	
@@ -329,11 +339,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	/**
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
-	private void initialize(){
+	private void initialize() throws Exception{
 		if (user == null){
 			user = getUser();
-			organization = user.getOrganization();	
 		}
+		organization = user.getOrganization();	
 		if (assignmentManager.getOrganization() == null){
 			Reviewer.initializeAssignmentManager(organization);	
 		}
@@ -341,6 +351,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	
 	public Collection<Organization> getAllOrganizations() throws Exception{
+		initialize();
 		if (isManager()){
 			OrganizationManager organizationManager = OrganizationManager.getInstance();
 			return organizationManager.getAllOrganizations();

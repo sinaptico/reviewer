@@ -2,6 +2,7 @@ package au.edu.usyd.reviewer.client.admin;
 
 import java.util.Collection;
 
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +36,9 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -56,6 +59,9 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+
 //TODO Documentation - include description of GlosserSite
 //TODO Move CSS style to external files
 //TODO Move out Glosser admin tab to GLOSSER project
@@ -152,7 +158,7 @@ public class AdminEntryPoint implements EntryPoint {
 	private SimplePanel organizationsPanel = new SimplePanel();
 	
 	private User loggedUser = null;
-	
+	final ActivityForm activityForm = new ActivityForm();
 	
 	
 	/** 
@@ -249,7 +255,7 @@ public class AdminEntryPoint implements EntryPoint {
 			public void execute() {
 				WritingActivity writingActivity = new WritingActivity();
 				writingActivity.getDeadlines().add(new Deadline("Final"));
-				final ActivityForm activityForm = new ActivityForm();
+			
 				activityForm.setCourses(courses);
 				activityForm.setGlosserSites(glosserSites);
 				activityForm.setWritingActivity(writingActivity);
@@ -649,7 +655,27 @@ public class AdminEntryPoint implements EntryPoint {
 			}
 		});
  	
-
+    	// Add change event handler to the organizations listo to refresh the review templates
+    	organizationsList.addChangeHandler(new ChangeHandler(){
+			@Override
+			public void onChange(ChangeEvent event) {
+				Long organizationId = null;
+				if (loggedUser != null && loggedUser.isManager()){
+					if (organizationsList.getItemCount() > 0){
+						organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
+					} else {	
+						organizationId = loggedUser.getOrganization().getId();
+						activityForm.setOrganizationId(organizationId);
+					}
+				} else {
+					organizationId = loggedUser.getOrganization().getId();
+					activityForm.setOrganizationId(organizationId);
+				}
+				//getReviewTemplates(organizationId);
+			}
+    		
+    	});
+    	
 		TabLayoutPanel tabs = new TabLayoutPanel(25, Unit.PX);
 		tabs.add(new ScrollPanel(assignmentsPanel), "Assignments");
 		tabs.add(new ScrollPanel(gradeBookPanel), "GradeBook");
@@ -710,10 +736,11 @@ public class AdminEntryPoint implements EntryPoint {
 		courseYear.addItem("2010", "2010");
 		courseYear.addItem("2009", "2009");
 		
-	    yearSemesterPanel.add(new HTML("<span>Semester-Year:</span>"));
+	    yearSemesterPanel.add(new HTML("<span>Semester-Year-Organization:</span>"));
 	    yearSemesterPanel.add(new HTML("<span style='margin-left:20px;'></span>"));
 	    yearSemesterPanel.add(courseSemester);
 	    yearSemesterPanel.add(courseYear);
+	    SimplePanel organizationsPanel = new SimplePanel();
 	    yearSemesterPanel.add(organizationsPanel);
 	    yearSemesterPanel.add(refreshCourseTreeButton);
 	    
@@ -730,7 +757,50 @@ public class AdminEntryPoint implements EntryPoint {
 	 * Gets the review templates recorded in the system and populates the Review Template Tree.
 	 */
 	private void refreshTemplateTree() {
-    	adminService.getReviewTemplates(new AsyncCallback<Collection<ReviewTemplate>>() {
+		
+		if (loggedUser == null){
+			adminService.getUser(new AsyncCallback<User>(){
+				@Override
+				public void onFailure(Throwable caught) {
+					Window.alert("Failed get the logged user");
+				}
+	
+				@Override
+				public void onSuccess(User user) {
+					if (user != null && user.isManager()){
+						// get all the organizations and add them to dropdown list in mainPanel
+						getOrganizations();
+						
+					}
+					Long organizationId = user.getOrganization().getId();
+					setLoggedUser(user);
+					getReviewTemplates(organizationId);
+					
+				}
+			});
+		} else {
+			Long organizationId = null;
+			if (loggedUser != null && loggedUser.isManager()){
+				if (organizationsList.getItemCount() > 0){
+					organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
+				} else {	
+					organizationId = loggedUser.getOrganization().getId();
+					activityForm.setOrganizationId(organizationId);
+				}
+			} else {
+				organizationId = loggedUser.getOrganization().getId();
+				activityForm.setOrganizationId(organizationId);
+			}
+			getReviewTemplates(organizationId);
+		}
+		
+		
+    			
+	}
+	
+	private void getReviewTemplates(Long organizationId){
+		activityForm.setOrganizationId(organizationId);
+		adminService.getReviewTemplates (organizationId, new AsyncCallback<Collection<ReviewTemplate>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Failed get courses: " + caught.getMessage());
@@ -748,7 +818,7 @@ public class AdminEntryPoint implements EntryPoint {
 					reviewTemplateTree.addItem(reviewTemplateItem);
 				}
 			}
-		});		
+		});
 	}
 
 
@@ -791,7 +861,7 @@ public class AdminEntryPoint implements EntryPoint {
 			Long organizationId = null;
 			if (loggedUser != null && loggedUser.isManager()){
 				if (organizationsList.getItemCount() > 0){
-					organizationId = Long.valueOf(organizationsList.getItemText(organizationsList.getSelectedIndex()));
+					organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
 				} else {
 					organizationId = loggedUser.getOrganization().getId();
 				}
@@ -862,6 +932,7 @@ public class AdminEntryPoint implements EntryPoint {
 					coursesTree.addItem(courseItem);
 					courseItem.setState(false);
 				}
+				refreshTemplateTree();
 			}
 		});
 
@@ -870,11 +941,12 @@ public class AdminEntryPoint implements EntryPoint {
 	private boolean validateUser(User user){
 		boolean result = false;
 		result = user != null;
-		result &= (!StringUtil.isBlank(user.getDomain()) || !StringUtil.isBlank(user.getUsername()));
+		result &= (!StringUtil.isBlank(user.getEmail()) || !StringUtil.isBlank(user.getUsername()));
 		return result;
 	}
 	
 	private void getOrganizations(){
+				
 		adminService.getAllOrganizations(new AsyncCallback<Collection<Organization>>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -884,20 +956,19 @@ public class AdminEntryPoint implements EntryPoint {
 			@Override
 			public void onSuccess(Collection<Organization> organizations) {
 				organizationsList.clear();
-	
 				for(Organization organization : organizations){
 					if (organization != null){
 						organizationsList.addItem(organization.getName(), organization.getId().toString());
 					}
 				}
-				
-				if (organizationsList.getItemCount() > 0){
-					Grid grid = new Grid(1, 2);
-					grid.setWidget(0,0, new Label("Organization:"));
-					grid.setWidget(0,1,organizationsList);
-					organizationsPanel.add(grid);
-				}
+				organizationsPanel.add(organizationsList);
+				// set organization corresponding to the loggedUser
+				Organization organization = loggedUser.getOrganization();
+				int index = getListBoxValuesIndex(organizationsList, organization.getId().toString());
+				organizationsList.setSelectedIndex(index);
+				organizationsList.fireEvent(new ListChangeEvent());
 			}
+			
 		});
 		
 	}
@@ -905,4 +976,21 @@ public class AdminEntryPoint implements EntryPoint {
 	private void setLoggedUser(User user){
 		this.loggedUser = user;
 	}
+	
+	private int getListBoxValuesIndex(ListBox lb, String value) {
+		  if (value == null) {
+		    return 0;
+		  }
+		  for (int i = 0; i < lb.getItemCount(); i++) {
+		    String CompareValue = lb.getValue(i);
+		    if (value.equals(CompareValue)) {
+		      return i;
+		    }
+		  }
+		  return 0;
+	}
+	
+	class ListChangeEvent extends ChangeEvent {}
 }
+ 
+ 

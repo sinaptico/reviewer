@@ -76,7 +76,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	}
 
 	@Override
-	public QuestionRating getQuestionRating(String docId) {
+	public QuestionRating getQuestionRating(String docId) throws Exception {
 		initialize();
 		if (docId == null || docId.trim() == "") {
 			return null;
@@ -294,7 +294,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		return documentTypes;
 	}
 	
-	private void initialize(){
+	private void initialize() throws Exception{
 		if (user == null){
 			user = getUser();
 			organization = user.getOrganization();	

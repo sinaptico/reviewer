@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.OrganizationProperty;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.util.DigitalSigner;
 
 public class Reviewer {
@@ -46,10 +47,10 @@ public class Reviewer {
 		return assignmentManager;
 	}
 	
-	public static synchronized void initializeAssignmentManager(Organization anOrganization){
+	public static synchronized void initializeAssignmentManager(Organization anOrganization) throws Exception{
 		organization = anOrganization;
 		try {
-			String domain = organization.getGoogleDomain();
+ 			String domain = organization.getGoogleDomain();
 			String username = organization.getGoogleUsername();
 			String password = organization.getDecryptedGooglePassword();
 			
@@ -67,7 +68,11 @@ public class Reviewer {
 				assignmentManager.initialize(assignmentRepository, emailNotifier, organization);
 			}
 		} catch (Exception e) {
-				logger.error("Failed to initialise assignment manager", e);
+				e.printStackTrace();
+				if ( e instanceof MessageException){
+					throw e;
+				}
+				throw new Exception(Constants.EXCEPTION_FAILED_INITIALIZE_ASSIGNMENT_MANAGER);
 		}
 	}
 

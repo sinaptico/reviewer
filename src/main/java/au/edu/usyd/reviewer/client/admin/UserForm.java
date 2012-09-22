@@ -64,6 +64,7 @@ public class UserForm extends Composite {
 	 * @return the user
 	 */
 	public User getUser() {
+		user.setUsername(username.getValue());
 		user.setFirstname(firstname.getValue());
 		user.setLastname(lastname.getValue());
 		user.setEmail(email.getValue());

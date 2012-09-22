@@ -48,7 +48,7 @@ public class MyStatsServiceImpl extends RemoteServiceServlet implements MyStatsS
 	/**
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
-	private void initialize(){
+	private void initialize() throws Exception{
 		if (user == null){
 			user = getUser();
 			organization = user.getOrganization();	
