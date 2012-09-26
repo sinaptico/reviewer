@@ -127,17 +127,14 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
 	private void initialize() throws Exception{
-		if (user == null){
-			user = getUser();
-		}
-		
+		user = getUser();
 		if (assignmentManager.getOrganization() == null){
 			Organization organization = user.getOrganization();	
 			Reviewer.initializeAssignmentManager(organization);
 		}
 	}
 	
-	private User getUser() {
+	public User getUser() {
 		
 		try {
 			HttpServletRequest request = this.getThreadLocalRequest();
@@ -147,13 +144,17 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 			{
 				user = (User) obj;
 			}
-			
+			Principal principal = request.getUserPrincipal();
+			UserDao userDao = UserDao.getInstance();
 			if  (user == null){
-				UserDao userDao = UserDao.getInstance();
-				Principal principal = request.getUserPrincipal();
 				user = userDao.getUserByEmail(principal.getName());
 				request.getSession().setAttribute("user", user);
-			} 
+				logger.info("Logged User: " + user.getEmail());
+			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+				logger.info("Logged User: " + user.getEmail());
+			}
 		} catch (MessageException e) {
 			e.printStackTrace();
 		}

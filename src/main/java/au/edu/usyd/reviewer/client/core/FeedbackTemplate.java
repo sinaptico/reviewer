@@ -42,7 +42,7 @@ public class FeedbackTemplate implements Serializable {
 	private String grade;	
 	
 	/** The grade num. */
-	private int gradeNum;
+	private int gradeNum = 0;
 
 	/** The description a. */
 	@Column(length = 65535)

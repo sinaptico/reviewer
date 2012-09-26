@@ -60,6 +60,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				assignmentManager.deleteCourse(course);
 				return course;
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw e;
 			}
 		} else {
@@ -75,6 +76,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				assignmentManager.deleteActivity(writingActivity);
 				return writingActivity;
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw e;
 			}
 		} else {
@@ -85,17 +87,24 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public Collection<Course> getCourses(Integer semester, Integer year, Long organizationId) throws Exception {
 		initialize();
+		logger.info("MARIELA - getCourses ");
 		Collection<Course> courses;
 		if (isAdmin()) {
+			logger.info("MARIELA - getCourses - user is Admin");
 			Organization organizationSelected = null;
 			if (isManager() && user.getOrganization().equals(organizationId) ){
+				logger.info("MARIELA - getCourses - user is Manager and is his/her organization");
 				organizationSelected = organization;
 			} else {
+				logger.info("MARIELA - getCourses - obtain organization");
 				OrganizationDao organizationDao = OrganizationDao.getInstance();
 				organizationSelected = organizationDao.load(organizationId);
 			}
+			logger.info("MARIELA - getCourses - before call loadCourses");
 			courses = courseDao.loadCourses(semester, year, organizationSelected);
+			logger.info("MARIELA - getCourses - Course " + courses.size());
 		} else {
+			logger.info("MARIELA - getCourses - user is Lecturer");
 			courses = assignmentDao.loadLecturerCourses(semester, year, user);
 		}
 		return courses;
@@ -111,13 +120,15 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			{
 				user = (User) obj;
 			}
-			
+			Principal principal = request.getUserPrincipal();
+			UserDao userDao = UserDao.getInstance();
 			if  (user == null){
-				UserDao userDao = UserDao.getInstance();
-				Principal principal = request.getUserPrincipal();
 				user = userDao.getUserByEmail(principal.getName());
 				request.getSession().setAttribute("user", user);
-			}
+			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+		}
 		} catch (MessageException e) {
 			e.printStackTrace();
 		}
@@ -201,6 +212,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			try {
 				return assignmentManager.saveActivity(course, writingActivity);
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw e;
 			}
 		} else {
@@ -246,6 +258,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				}
 				return assignmentManager.saveReviewTemplate(reviewTemplate);
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw e;
 			}
 		} else {
@@ -278,6 +291,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				assignmentManager.deleteReviewTemplate(reviewTemplate);
 				return reviewTemplate;
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw e;
 			}
 		} else {
@@ -291,6 +305,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		try {			
 			return assignmentManager.updateReviewDocEntry(reviewEntryId, newDocEntry);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw e;
 		}		
 	}
@@ -305,6 +320,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				reviewingActivity = reviewingActivity.clone();
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw e;
 		}
 		return reviewingActivity;
@@ -318,6 +334,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			assignmentManager.deleteReviewEntry(reviewEntryId);		
 			return reviewEntryId;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw e;
 		}
 	}
@@ -332,6 +349,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 			return reviewEntry;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw e;
 		}
 	}	
@@ -340,9 +358,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
 	private void initialize() throws Exception{
-		if (user == null){
-			user = getUser();
-		}
+		user = getUser();
 		organization = user.getOrganization();	
 		if (assignmentManager.getOrganization() == null){
 			Reviewer.initializeAssignmentManager(organization);	

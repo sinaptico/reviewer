@@ -294,20 +294,35 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		return documentTypes;
 	}
 	
-	private void initialize() throws Exception{
-		if (user == null){
-			user = getUser();
-			organization = user.getOrganization();	
+	private void initialize() throws Exception{		
+		user = getUser();
+		if (assignmentManager.getOrganization() == null){
+			Organization organization = user.getOrganization();	
 			Reviewer.initializeAssignmentManager(organization);
 		}
 	}
 	
-	private User getUser() {
-		UserDao userDao = UserDao.getInstance();
+	public User getUser() {
+		
 		try {
 			HttpServletRequest request = this.getThreadLocalRequest();
-			Principal principal = request.getUserPrincipal(); 
-			user = userDao.getUserByEmail(principal.getName());
+			Object obj = request.getSession().getAttribute("user");
+			
+			if (obj != null)
+			{
+				user = (User) obj;
+			}
+			Principal principal = request.getUserPrincipal();
+			UserDao userDao = UserDao.getInstance();
+			if  (user == null){
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+				
+			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+				
+			}
 		} catch (MessageException e) {
 			e.printStackTrace();
 		}

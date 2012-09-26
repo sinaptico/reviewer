@@ -286,12 +286,16 @@ public class FileServlet extends HttpServlet {
 		if (obj != null){
 			user = (User) obj;
 		}
+		Principal principal = request.getUserPrincipal();
 		UserDao userDao = UserDao.getInstance();
 		try{
 			if  (user == null){
-				Principal principal = request.getUserPrincipal();
 				user = userDao.getUserByEmail(principal.getName());
 				request.getSession().setAttribute("user", user);
+			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+				
 			}
 			
 			if (user.isManager() || user.isTeacher()){
