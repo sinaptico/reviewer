@@ -489,17 +489,19 @@ public class AssignmentDao {
 	}
 
 	public Collection<ReviewTemplate> loadReviewTemplates(Organization organization) {
-		String query = "from ReviewTemplate review " + "where review.organization=:organization";
-        Session session = this.getSession();
-        session.beginTransaction();
-        List<ReviewTemplate> reviewTemplates = session.createQuery(query).setParameter("organization", organization).list();
-        session.getTransaction().commit();
-        List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
-        for (ReviewTemplate template:reviewTemplates){
-        	if (template != null){
-        		result.add(template.clone());
-        	}
-        }
+		List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
+		if ( organization != null){
+			String query = "from ReviewTemplate review " + "where review.organization=:organization";
+	        Session session = this.getSession();
+	        session.beginTransaction();
+	        List<ReviewTemplate> reviewTemplates = session.createQuery(query).setParameter("organization", organization).list();
+	        session.getTransaction().commit();
+	        for (ReviewTemplate template:reviewTemplates){
+	        	if (template != null){
+	        		result.add(template.clone());
+	        	}
+	        }
+		}
  		return result;
 	}
 	
@@ -539,5 +541,6 @@ public class AssignmentDao {
 			}
 		}
 		return types;
-	}	
+	}
+	
 }

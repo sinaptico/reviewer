@@ -47,13 +47,13 @@
 		<url-pattern>/au.edu.usyd.reviewer.MyStats/mystatsService</url-pattern>
 	</servlet-mapping>
 	<servlet>
-		<servlet-name>reviewerPropertiesServlet</servlet-name>
-		<servlet-class>au.edu.usyd.reviewer.server.rpc.ReviewerPropertiesServiceImpl</servlet-class>
+		<servlet-name>reviewerUtilServlet</servlet-name>
+		<servlet-class>au.edu.usyd.reviewer.server.rpc.ReviewerUtilServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
-		<servlet-name>reviewerPropertiesServlet</servlet-name>
-		<url-pattern>/au.edu.usyd.reviewer.Assignment/reviewPropertiesService</url-pattern>
-	</servlet-mapping>		
+		<servlet-name>reviewerUtilServlet</servlet-name>
+		<url-pattern>/au.edu.usyd.reviewer.Assignment/reviewUtilService</url-pattern>
+	</servlet-mapping>			
 	<servlet>
 		<servlet-name>loginServlet</servlet-name>
 		<servlet-class>au.edu.usyd.reviewer.server.servlet.LoginServlet</servlet-class>

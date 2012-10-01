@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -21,7 +22,7 @@ interface AssignmentServiceAsync {
 	 * @param year the year
 	 * @param asyncCallback the callback
 	 */
-	public void getUserActivities(int semester, int year,AsyncCallback<Collection<Course>> asyncCallback);
+	public void getUserActivities(int semester, int year,  Long organizationId,AsyncCallback<Collection<Course>> asyncCallback);
 
 	/**
 	 * Gets the user reviewing tasks for the semester and year given.
@@ -31,7 +32,7 @@ interface AssignmentServiceAsync {
 	 * @param includeFinishedReviews the include finished reviews
 	 * @param asyncCallback the callback
 	 */
-	public void getUserReviewingTasks(int semester, int year,Boolean includeFinishedReviews, AsyncCallback<Collection<Course>> asyncCallback);
+	public void getUserReviewingTasks(int semester, int year,Boolean orgaincludeFinishedReviews,Long OrganizationId, AsyncCallback<Collection<Course>> asyncCallback);
 
 	/**
 	 * Gets the user writing tasks for the semester and year given.
@@ -40,7 +41,7 @@ interface AssignmentServiceAsync {
 	 * @param year the year
 	 * @param asyncCallback the callback
 	 */
-	public void getUserWritingTasks(int semester, int year, AsyncCallback<Collection<Course>> asyncCallback);
+	public void getUserWritingTasks(int semester, int year,  Long organizationId, AsyncCallback<Collection<Course>> asyncCallback);
 
 	/**
 	 * Submit doc entry.
@@ -75,4 +76,11 @@ interface AssignmentServiceAsync {
 	 * @param asyncCallback the callback
 	 */
 	public void updateUserPassword(User user, String newPassword, AsyncCallback<User> asyncCallback);
+	
+	/**
+	 * Return all the organizations 
+	 * @param callback collection of organizations
+	 */
+	public void getAllOrganizations(AsyncCallback<Collection<Organization>> callback);
+
 }

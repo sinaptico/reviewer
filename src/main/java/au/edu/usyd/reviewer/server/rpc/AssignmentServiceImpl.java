@@ -3,6 +3,7 @@ package au.edu.usyd.reviewer.server.rpc;
 import java.security.Principal;
 
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +22,9 @@ import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
+import au.edu.usyd.reviewer.server.CourseDao;
+import au.edu.usyd.reviewer.server.OrganizationDao;
+import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
 
@@ -29,38 +33,74 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class AssignmentServiceImpl extends RemoteServiceServlet implements AssignmentService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
-	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());;
+	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 	private UserDao userDao = UserDao.getInstance();
+	private CourseDao courseDao = CourseDao.getInstance();
+	private OrganizationDao organizationDao = OrganizationDao.getInstance();
 
 	// logged user
 	private User user = null;
 		
 	@Override
-	public Collection<Course> getUserActivities(int semester, int year) throws Exception {
-		initialize();
-		return assignmentDao.loadUserActivities(semester, year,this.user);
-	}
-
-	@Override
-	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews) throws Exception {
-		initialize();
-		return assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, this.user);
-	}
-
-	@Override
-	public Collection<Course> getUserWritingTasks(int semester, int year) throws Exception {
+	public Collection<Course> getUserActivities(int semester, int year,  Long organizationId) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (mockedUser != null){
-			return assignmentDao.loadUserWritingTasks(semester, year, mockedUser);
-		} else{
-			throw new MessageException("The users could not be mocked");
+		if (!isManager() || mockedUser != null){
+			return assignmentDao.loadUserActivities(semester, year,mockedUser);
+		} else {
+			Organization  organization = null;
+			if (organizationId == null){
+				organization = user.getOrganization();
+			} else {
+				organization = organizationDao.load(organizationId);
+			}
+			return courseDao.loadCourses(semester, year, organization);
+		}	
+	}
+
+	@Override
+	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews,  Long organizationId) throws Exception {
+		initialize();
+		User mockedUser = getMockedUser();
+		if (!isManager() || mockedUser != null){
+			return assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, mockedUser);
+		} else {
+			Organization  organization = null;
+			if (organizationId == null){
+				organization = user.getOrganization();
+			} else {
+				organization = organizationDao.load(organizationId);
+			}
+			return courseDao.loadCourses(semester, year, organization);
+		}
+	}
+
+	@Override
+	public Collection<Course> getUserWritingTasks(int semester, int year, Long organizationId ) throws Exception {
+		initialize();
+		User mockedUser = getMockedUser();
+		if (!isManager() || mockedUser != null){
+				return assignmentDao.loadUserWritingTasks(semester, year, mockedUser);
+		} else {
+			Organization  organization = null;
+			if (organizationId == null){
+				organization = user.getOrganization();
+			} else {
+				organization = organizationDao.load(organizationId);
+			}
+			return courseDao.loadCourses(semester, year, organization);
 		}
 			
 	}
 
 	private boolean isCourseInstructor(Course course) {
-		return user == null ? false : course.getLecturers().contains(user) || course.getTutors().contains(user);
+		User mockedUser = null;
+		try {
+			mockedUser = getMockedUser();
+		} catch (MessageException e) {
+			e.printStackTrace();
+		}
+		return mockedUser == null ? false : course.getLecturers().contains(mockedUser) || course.getTutors().contains(mockedUser);
 	}
 
 	@Override
@@ -68,7 +108,9 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 		initialize();
 		DocEntry currentDocEntry =assignmentDao.loadDocEntry(docEntry.getDocumentId());
 		if (!currentDocEntry.getLocked()) {
-			if(currentDocEntry.getOwner() != null && currentDocEntry.getOwner().equals(this.getMockedUser()) || currentDocEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(this.user)) {
+			User mockedUser = getMockedUser();
+			if(currentDocEntry.getOwner() != null && currentDocEntry.getOwner().equals(this.getMockedUser()) || 
+				currentDocEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(mockedUser)) {
 				docEntry = assignmentManager.submitDocument(currentDocEntry);
 			} else {
 				throw new Exception("Your session has expired. Please login again to submit your document.");
@@ -101,8 +143,13 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	@Override
 	public User getUserDetails() throws Exception {
 		initialize();
-		logger.info("Getting user details, email=" + user.getEmail());
-		return user;
+		User mockedUser = getMockedUser();
+		if ( mockedUser != null){
+			logger.info("Getting user details, email=" + mockedUser.getEmail());
+		} else {
+			mockedUser = user;
+		}
+		return mockedUser;
 	}
 
 	@Override
@@ -128,10 +175,8 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	 */
 	private void initialize() throws Exception{
 		user = getUser();
-		if (assignmentManager.getOrganization() == null){
-			Organization organization = user.getOrganization();	
-			Reviewer.initializeAssignmentManager(organization);
-		}
+		Organization organization = user.getOrganization();	
+		Reviewer.initializeAssignmentManager(organization);
 	}
 	
 	public User getUser() {
@@ -153,7 +198,6 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
 				user = userDao.getUserByEmail(principal.getName());
 				request.getSession().setAttribute("user", user);
-				logger.info("Logged User: " + user.getEmail());
 			}
 		} catch (MessageException e) {
 			e.printStackTrace();
@@ -172,16 +216,28 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 				request.getSession().setAttribute("mockedUser", mockedUser);
 			}
 			else if ( mockedUser == null && !user.isManager()){
-					mockedUser = getUser();
+					mockedUser = user;
 					request.getSession().setAttribute("mockedUser", mockedUser);
-			} else if (mockedUser == null && user.isManager()){
-				throw new MessageException(Constants.EXCEPTION_USER_NOT_MOCKED);
-			}
+			} 
 		} catch (MessageException e) {
 			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_USER_NOT_MOCKED);
 		}
 		return mockedUser;
+	}
+	
+	private boolean isManager(){
+		return user == null? false : user.isManager();
+	}
+	
+	public Collection<Organization> getAllOrganizations() throws Exception{
+		initialize();
+		Collection organizations = new ArrayList<Organization>();
+		if (isManager()){
+			OrganizationManager organizationManager = OrganizationManager.getInstance();
+			organizations = organizationManager.getAllOrganizations();
+		} 
+		return organizations;
 	}
 }
 	

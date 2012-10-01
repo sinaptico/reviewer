@@ -5,6 +5,8 @@ import java.security.Principal;
 import java.util.Collection;
 
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +38,7 @@ import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.report.UserStatsAnalyser;
+import au.edu.usyd.reviewer.server.util.CalendarUtil;
 
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -87,24 +90,24 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public Collection<Course> getCourses(Integer semester, Integer year, Long organizationId) throws Exception {
 		initialize();
-		logger.info("MARIELA - getCourses ");
-		Collection<Course> courses;
+		
+		Collection<Course> courses = new ArrayList<Course>();
 		if (isAdmin()) {
-			logger.info("MARIELA - getCourses - user is Admin");
 			Organization organizationSelected = null;
-			if (isManager() && user.getOrganization().equals(organizationId) ){
-				logger.info("MARIELA - getCourses - user is Manager and is his/her organization");
+			if ( organizationId == null || (isManager() && user.getOrganization().equals(organizationId))){
 				organizationSelected = organization;
-			} else {
-				logger.info("MARIELA - getCourses - obtain organization");
+			} else if (organizationId != null){
 				OrganizationDao organizationDao = OrganizationDao.getInstance();
 				organizationSelected = organizationDao.load(organizationId);
 			}
-			logger.info("MARIELA - getCourses - before call loadCourses");
-			courses = courseDao.loadCourses(semester, year, organizationSelected);
-			logger.info("MARIELA - getCourses - Course " + courses.size());
+			if ( year == null){
+				Calendar today = Calendar.getInstance();
+				year = today.get(Calendar.YEAR);
+			}
+			if (organizationSelected != null){
+				courses = courseDao.loadCourses(semester, year, organizationSelected);
+			}
 		} else {
-			logger.info("MARIELA - getCourses - user is Lecturer");
 			courses = assignmentDao.loadLecturerCourses(semester, year, user);
 		}
 		return courses;
@@ -174,7 +177,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 			User mockedUser = userDao.getUserByEmail(email);
 			if (mockedUser != null){
-				logger.info("Mocking user: " + mockedUser.getUsername());
+				logger.info("Mocking user: " + mockedUser.getEmail());
 				this.getThreadLocalRequest().getSession().setAttribute("mockedUser", mockedUser);
 				return mockedUser;
 			} else{
@@ -269,16 +272,25 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override	
 	public Collection<ReviewTemplate> getReviewTemplates(Long organizationId) throws Exception {
 		initialize();
-		Collection<ReviewTemplate> reviewTemplates = null;
+		Collection<ReviewTemplate> reviewTemplates = new ArrayList<ReviewTemplate>();
+		/*
+		 * If logged user is not teacher o manager then permission denied
+		 * If logged user is manager and his/her organization is equal to the organization received as 
+		 * parameter then use it to obtain the templates otherwise 
+		 * if the organization received as parameter is not null, obtain the organization details and use it
+		 * to get the templates.
+		 */
 		if (isAdmin()) {
 			Organization organizationSelected = null;
-			if (isManager() && user.getOrganization().equals(organizationId) ){
+			if (organizationId == null || (isManager() && user.getOrganization().equals(organizationId) )){
 				organizationSelected = organization;
-			} else {
+			} else if (organizationId != null ){
 				OrganizationDao organizationDao = OrganizationDao.getInstance();
 				organizationSelected = organizationDao.load(organizationId);
+			} 
+			if (organizationSelected != null){
+				reviewTemplates = assignmentDao.loadReviewTemplates(organizationSelected);
 			}
-			reviewTemplates = assignmentDao.loadReviewTemplates(organizationSelected);
 		} 
 		return reviewTemplates;
 	}
@@ -360,19 +372,22 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	private void initialize() throws Exception{
 		user = getUser();
 		organization = user.getOrganization();	
-		if (assignmentManager.getOrganization() == null){
-			Reviewer.initializeAssignmentManager(organization);	
-		}
+		Reviewer.initializeAssignmentManager(organization);	
 	}
 
 	
 	public Collection<Organization> getAllOrganizations() throws Exception{
 		initialize();
+		Collection organizations = new ArrayList<Organization>();
 		if (isManager()){
 			OrganizationManager organizationManager = OrganizationManager.getInstance();
-			return organizationManager.getAllOrganizations();
-		} else {
-			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-		}
+			organizations = organizationManager.getAllOrganizations();
+		} 
+		return organizations;
+	}
+	
+
+	public Collection<Integer> getYears(){
+		return CalendarUtil.getYears();
 	}
 }

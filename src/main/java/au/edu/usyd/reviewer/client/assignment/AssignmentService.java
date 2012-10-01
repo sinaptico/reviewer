@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -25,7 +26,7 @@ public interface AssignmentService extends RemoteService {
 	 * @return the user activities
 	 * @throws Exception the exception
 	 */
-	public Collection<Course> getUserActivities(int semester, int year) throws Exception;
+	public Collection<Course> getUserActivities(int semester, int year, Long organizationId) throws Exception;
 
 	/**
 	 * Gets the user reviewing tasks for the semester and year given.
@@ -36,7 +37,7 @@ public interface AssignmentService extends RemoteService {
 	 * @return the user reviewing tasks
 	 * @throws Exception the exception
 	 */
-	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews) throws Exception;
+	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, Long organizationId) throws Exception;
 
 	/**
 	 * Gets the user writing tasks for the semester and year given.
@@ -46,7 +47,7 @@ public interface AssignmentService extends RemoteService {
 	 * @return the user writing tasks
 	 * @throws Exception the exception
 	 */
-	public Collection<Course> getUserWritingTasks(int semester, int year) throws Exception;
+	public Collection<Course> getUserWritingTasks(int semester, int year,  Long organizationId) throws Exception;
 
 	/**
 	 * Submit doc entry.
@@ -85,4 +86,11 @@ public interface AssignmentService extends RemoteService {
 	 * @throws Exception the exception
 	 */
 	public User updateUserPassword(User user, String newPassword) throws Exception;
+	
+	/** 
+	 * Return all the organization
+	 * @return collection of organizations
+	 * @throws Exception the exception
+	 */
+	public Collection<Organization> getAllOrganizations() throws Exception;
 }

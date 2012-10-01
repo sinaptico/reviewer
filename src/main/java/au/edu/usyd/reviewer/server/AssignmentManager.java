@@ -36,12 +36,7 @@ import org.apache.pdfbox.util.PDFMergerUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gdata.data.MediaContent;
-import com.google.gdata.data.OutOfLineContent;
-import com.google.gdata.data.docs.DocumentEntry;
 import com.google.gdata.data.docs.DocumentListEntry;
-import com.google.gdata.data.docs.RevisionEntry;
-import com.google.gdata.data.media.MediaSource;
 
 import au.edu.usyd.feedback.feedbacktracking.FeedbackTracking;
 import au.edu.usyd.feedback.feedbacktracking.FeedbackTrackingDao;
@@ -51,7 +46,6 @@ import au.edu.usyd.reviewer.client.core.Choice;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
-import au.edu.usyd.reviewer.client.core.Entry;
 import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
 import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
@@ -82,10 +76,8 @@ public class AssignmentManager {
 	private EmailNotifier emailNotifier;
 	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 	private UserDao userDao = UserDao.getInstance();
-	//private String documentsHome = "documents";
 	private FeedbackServiceImpl feedBackService = new FeedbackServiceImpl();
 	private FeedbackTrackingDao feedBackTrackingService = new FeedbackTrackingDao() ;		
-	private Organization organization = null;
 	private CourseDao courseDao = CourseDao.getInstance();
 	
 	public AssignmentManager() {
@@ -94,7 +86,6 @@ public class AssignmentManager {
 	public void initialize(AssignmentRepository assignmentRepository, EmailNotifier emailNotifier, Organization organization) throws MessageException{
 		this.assignmentRepository = assignmentRepository;
 		this.emailNotifier = emailNotifier;		
-		this.organization = organization;
 		List<Course> courses = courseDao.loadCourses(organization);
 		for (Course course : courses) {
 			for (WritingActivity writingActivity : course.getWritingActivities()) {
@@ -127,6 +118,7 @@ public class AssignmentManager {
 	}
 
 	private void downloadDocuments(Course course, WritingActivity writingActivity, Deadline deadline) {
+		Organization organization = course.getOrganization();
 		File activityFolder = new File(getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), "all", organization));
 		activityFolder.mkdirs();
 		for (DocEntry docEntry : writingActivity.getEntries()) {
@@ -258,6 +250,8 @@ public class AssignmentManager {
 			return;
 		}
 
+		Organization organization = course.getOrganization();
+		
 		// download HTML reviews
 		UserGroup studentGroup = null;
 		for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
@@ -428,6 +422,7 @@ public class AssignmentManager {
 		}
 
 		assignmentDao.save(writingActivity);
+		
 		course.getWritingActivities().add(writingActivity);
 		courseDao.save(course);
 
@@ -445,6 +440,7 @@ public class AssignmentManager {
 		List<DocumentListEntry> templates = assignmentRepository.setUpFolders(course);
 
 		course.getTemplates().clear();
+		Organization organization = course.getOrganization();
 		for (DocumentListEntry template : templates) {
 			DocEntry tempDocEntry = assignmentDao.loadDocEntry(template.getResourceId());
 			DocEntry templateEntry = new DocEntry();
@@ -627,7 +623,7 @@ public class AssignmentManager {
 		// update course document permissions
 		assignmentRepository.updateCourseDocumentPermissions(course);
 		
-		course.setDomainName(organization.getGoogleDomain());
+		course.setDomainName(course.getOrganization().getGoogleDomain());
 		
 		// save course in DB
 		course = courseDao.save(course);		
@@ -717,6 +713,7 @@ public class AssignmentManager {
 		// update activity status
 		writingActivity.setStatus(Activity.STATUS_START);		
 		// update document entry domains
+		Organization organization = course.getOrganization();
 		String domainName = organization.getGoogleDomain();
 		Set<DocEntry> docEntries = writingActivity.getEntries();
 		for (DocEntry docEntry : docEntries) {
@@ -748,7 +745,7 @@ public class AssignmentManager {
 		synchronized (docEntry.getDocumentId().intern()) {
 			WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
 			Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
-			organization = course.getOrganization();
+			Organization organization = course.getOrganization();
 			File activityFolder = new File(this.getDocumentsFolder(course.getId(), writingActivity.getId(), writingActivity.getDeadlines().get(writingActivity.getDeadlines().size() - 1).getId(), WritingActivity.TUTORIAL_ALL, organization));
 			activityFolder.mkdirs();
 			String filePath = activityFolder.getAbsolutePath() + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf";
@@ -878,6 +875,7 @@ public class AssignmentManager {
 
 	private void updateActivityDocuments(Course course, WritingActivity writingActivity) {
 		synchronized (writingActivity.getFolderId().intern()) {
+			Organization organization = course.getOrganization();
 			String domainName = organization.getGoogleDomain();
 			// remove documents for deleted users
 			// NOTE documents will not be removed after a review has started
@@ -1149,6 +1147,7 @@ public class AssignmentManager {
 		
 		for (DocEntry entry : writingActivity.getEntries()) {
 			Course course = courseDao.loadCourse(assignmentDao.loadCourseWhereWritingActivity(writingActivity).getId());
+			Organization organization = course.getOrganization();
 			File file = new File(getDocumentsFolder(course.getId(), writingActivity.getId(), writingActivity.getCurrentDeadline().getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(entry.getDocumentId()) + ".pdf");
 			
 			try{
@@ -1283,7 +1282,4 @@ public class AssignmentManager {
 		}
 	}
 
-	public Organization getOrganization(){
-		return organization;
-	}
 }

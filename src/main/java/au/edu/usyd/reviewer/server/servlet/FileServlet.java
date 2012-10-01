@@ -273,9 +273,9 @@ public class FileServlet extends HttpServlet {
 		}
 		if (assignmentManager == null){
 			assignmentManager = Reviewer.getAssignmentManager();
-			Reviewer.initializeAssignmentManager(organization);
 			assignmentDao = assignmentManager.getAssignmentDao();
 		}		
+		Reviewer.initializeAssignmentManager(organization);
 	}
 	
 

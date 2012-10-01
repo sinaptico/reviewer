@@ -170,6 +170,16 @@ public interface AdminService extends RemoteService {
 	 */
 	public User getUser();
 	
-	
+	/** 
+	 * Return all the organization
+	 * @return collection of organizations
+	 * @throws Exception the exception
+	 */
 	public Collection<Organization> getAllOrganizations() throws Exception;
+
+	/**
+	 * Return a collection of years. Current year and 5 years ago
+	 * @return Collection of integers (years)
+	 */
+	public Collection<Integer> getYears();
 }

@@ -296,10 +296,8 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	
 	private void initialize() throws Exception{		
 		user = getUser();
-		if (assignmentManager.getOrganization() == null){
-			Organization organization = user.getOrganization();	
-			Reviewer.initializeAssignmentManager(organization);
-		}
+		Organization organization = user.getOrganization();	
+		Reviewer.initializeAssignmentManager(organization);
 	}
 	
 	public User getUser() {

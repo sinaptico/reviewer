@@ -34,7 +34,6 @@ public class Reviewer {
 			for (Iterator<String> keys = config.getKeys(); keys.hasNext();) {
 				String property = keys.next();
 				logger.debug("Setting property: " + property + "=" + config.getString(property));
-
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -48,31 +47,36 @@ public class Reviewer {
 	}
 	
 	public static synchronized void initializeAssignmentManager(Organization anOrganization) throws Exception{
-		organization = anOrganization;
-		try {
- 			String domain = organization.getGoogleDomain();
-			String username = organization.getGoogleUsername();
-			String password = organization.getDecryptedGooglePassword();
+		
+		if ((organization == null) || (assignmentManager == null) || (assignmentRepository == null) ||
+			(assignmentManager != null && assignmentManager.getAssignmentRepository() == null) ||
+			(organization != null && anOrganization != null && 
+			(!organization.getId().equals(anOrganization.getId())) || !organization.getGoogleDomain().equals(anOrganization.getGoogleDomain()))){
 			
-			if (emailNotifier == null){	
+			organization = anOrganization;
+		
+			try {
+	 			String domain = organization.getGoogleDomain();
+				String username = organization.getGoogleUsername();
+				String password = organization.getDecryptedGooglePassword();			
 				String emailUsername = organization.getEmailUsername();
 				String emailPassword = organization.getDecryptedEmailPassword();
 				String smtpHost = organization.getSMTPHost();
 				String smtpPort = organization.getSMTPPort();
+				
 				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain));
-			}
-			if ( assignmentRepository == null){
+				
 				assignmentRepository = new AssignmentRepository(username, password, domain);
-			}
-			if (assignmentManager == null || (assignmentManager != null && assignmentManager.getOrganization() == null)){
+				
 				assignmentManager.initialize(assignmentRepository, emailNotifier, organization);
+				
+			} catch (Exception e) {
+					e.printStackTrace();
+					if ( e instanceof MessageException){
+						throw e;
+					}
+					throw new Exception(Constants.EXCEPTION_FAILED_INITIALIZE_ASSIGNMENT_MANAGER);
 			}
-		} catch (Exception e) {
-				e.printStackTrace();
-				if ( e instanceof MessageException){
-					throw e;
-				}
-				throw new Exception(Constants.EXCEPTION_FAILED_INITIALIZE_ASSIGNMENT_MANAGER);
 		}
 	}
 
@@ -119,15 +123,13 @@ public class Reviewer {
 	 * @param anOrganization
 	 */
 	public static void setOrganization(Organization anOrganization){
-		if (organization == null){
-			organization = anOrganization;
-			for (OrganizationProperty property : organization.getOrganizationProperties()){
-				String propertyName = property.getProperty().getName();
-				String value = property.getValue();
-				logger.debug("Setting property: " + property + "=" + value);
-				if (String.valueOf(propertyName).startsWith("system.")) {
-					System.setProperty(StringUtils.substringAfter(propertyName, "system."), value);
-				}
+		organization = anOrganization;
+		for (OrganizationProperty property : organization.getOrganizationProperties()){
+			String propertyName = property.getProperty().getName();
+			String value = property.getValue();
+			logger.debug("Setting property: " + property + "=" + value);
+			if (String.valueOf(propertyName).startsWith("system.")) {
+				System.setProperty(StringUtils.substringAfter(propertyName, "system."), value);
 			}
 		}
 	}
@@ -163,4 +165,6 @@ public class Reviewer {
 	public static String getReviewerLogosHome(){
 		return config.getString(Constants.REVIEWER_LOGOS_HOME);
 	}
+	
+	
 }

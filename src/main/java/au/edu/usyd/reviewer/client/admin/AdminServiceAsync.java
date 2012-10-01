@@ -153,5 +153,15 @@ interface AdminServiceAsync {
 	 */
 	public void getUser(AsyncCallback<User> asyncCallback);
 	
+	/**
+	 * Return all the organizations 
+	 * @param callback collection of organizations
+	 */
 	public void getAllOrganizations(AsyncCallback<Collection<Organization>> callback);
+
+	/**
+	 * Returns a collection of integers with the current year and 5 years ago.
+	 * @param callback is the collection of integer
+	 */
+	public void getYears(AsyncCallback<Collection<Integer>> callback);
 }

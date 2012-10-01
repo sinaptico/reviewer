@@ -1,11 +1,8 @@
 package au.edu.usyd.reviewer.client.admin;
 
+
 import java.util.Collection;
-
-
-
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
 
 import au.edu.usyd.reviewer.client.admin.glosser.GlosserService;
 import au.edu.usyd.reviewer.client.admin.glosser.GlosserServiceAsync;
@@ -22,9 +19,6 @@ import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.CustomUncaughtExceptionHandler;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
-import au.edu.usyd.reviewer.client.reviewerAdmin.ReviewerAdminService;
-import au.edu.usyd.reviewer.client.reviewerAdmin.ReviewerAdminServiceAsync;
-import au.edu.usyd.reviewer.server.Reviewer;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -33,15 +27,12 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -149,16 +140,21 @@ public class AdminEntryPoint implements EntryPoint {
 	/** The refresh filter button. */
 	private SubmitButton refreshCourseTreeButton = new SubmitButton("Load", "Loading courses, please wait...", "Load");
 	
+	final ActivityForm activityForm = new ActivityForm();
+	
 	
 	/** The course's year included in the filter. */
 	private ListBox organizationsList = WidgetFactory.createNewListBoxWithId("organizationsList");
+
+	/** panel for the organizations drop dwon list **/
+	private VerticalPanel organizationsPanel = new VerticalPanel();
 	
+	/** logged user **/ 
 	private User loggedUser = null;
-	final ActivityForm activityForm = new ActivityForm();
 	
-	private SimplePanel organizationsPanel = new SimplePanel();
-	
-    
+	/** panel for the logged user information **/
+	private VerticalPanel headerPanel = new VerticalPanel();
+		
 	/** 
 	 * <p>Main method of the entry point that loads the "Glosser sites" and menus for user impersonation, courses, activities and review 
 	 * templates creation. It also loads the panels and trees with the course and review templates lists according to the defined filter (Year - Semester).</p>
@@ -168,34 +164,42 @@ public class AdminEntryPoint implements EntryPoint {
 	public void onModuleLoad() {
 		// uncaught exception handler
 		GWT.setUncaughtExceptionHandler( new CustomUncaughtExceptionHandler() );
-		// get logged user
+		
+		// semesters 
+		courseSemester.addItem("1", "1");
+		courseSemester.addItem("2", "2");
+			
+		// get logged user to show his/her name and organization in the page
 		if (loggedUser == null){
 			// get teh logged user to obtain his/her organization
 			adminService.getUser(new AsyncCallback<User>(){
 				@Override
 				public void onFailure(Throwable caught) {
 					Window.alert("Failed get the logged user" + caught.getMessage());
-//					refreshCourseTreeButton.updateStateSubmit();
 				}
 	
 				@Override
 				public void onSuccess(User user) {
 					if (user != null) {
-						if (user.isManager()){
-							// get all the organizations and add them to dropdown list in mainPanel
-							getOrganizations();
-						} 
-						// get user organization id
-						Long organizationId = user.getOrganization().getId();	
 						setLoggedUser(user);
-						// load courses from the organization
-						getCourses(organizationId);
-					} else {
-//						refreshCourseTreeButton.updateStateSubmit();
-					}
+						if (user.isManager()){
+							// Get Organizations to populate  a drop down list
+							getOrganizations();
+						} else {
+							// set organization corresponding to the loggedUser				
+							yearSemesterPanel.add(new HTML("<span>Semester-Year:</span>"));
+						    yearSemesterPanel.add(new HTML("<span style='margin-left:20px;'></span>"));
+						    yearSemesterPanel.add(courseSemester);
+						    yearSemesterPanel.add(courseYear);
+						    yearSemesterPanel.add(organizationsPanel);
+						    yearSemesterPanel.add(refreshCourseTreeButton);
+						}
+						refreshCoursesTree();
+					} 
 				}
 			});
 		} 	
+		
 		
 		// Glosser sites panel
 		final ShowSitesComposite glosserPanel = new ShowSitesComposite();
@@ -610,7 +614,7 @@ public class AdminEntryPoint implements EntryPoint {
 		nodePanel.setWidget(info);
 		assignmentsPanel.add(nodePanel);
 		
-		refreshTemplateTree();
+//		refreshTemplateTree();
 
 		// Add handler for templates tree
     	reviewTemplateTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
@@ -683,11 +687,11 @@ public class AdminEntryPoint implements EntryPoint {
 		});
  	
     	// Add change event handler to the organizations list
-
     	organizationsList.addChangeHandler(new ChangeHandler(){
 			@Override
 			public void onChange(ChangeEvent event) {
 				Long organizationId = null;
+				
 				if (loggedUser != null && loggedUser.isManager()){
 					if (organizationsList.getItemCount() > 0){
 						organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
@@ -748,7 +752,7 @@ public class AdminEntryPoint implements EntryPoint {
 		adminPanel.add(mainPanel);
 	
 		
-		RootPanel.get("adminPanel").add(new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">IWRITE ADMIN PAGE</h1><a href='Assignments.html'><< Go to the Assignments List</a></br></br><img src='images/icon-info.gif'/> If you have selected the option 'Impersonate User' then by clicking the link above you will see the assignments list of that user. </br>In order to go back to your normal 'Assignments list' you have to click the 'Assginments' link at the top of the page again.</div></br>"));
+		RootPanel.get("adminPanel").add(headerPanel);
 		
 		refreshCourseTreeButton.addClickHandler(new ClickHandler() {
 			@Override
@@ -758,27 +762,27 @@ public class AdminEntryPoint implements EntryPoint {
 	    	
 	    });
 
-		courseSemester.addItem("1", "1");
-		courseSemester.addItem("2", "2");
-		
-		courseYear.addItem("2012", "2012");
-		courseYear.addItem("2011", "2011");
-		courseYear.addItem("2010", "2010");
-		courseYear.addItem("2009", "2009");
-		
-	    yearSemesterPanel.add(new HTML("<span>Semester-Year-Organization:</span>"));
-	    yearSemesterPanel.add(new HTML("<span style='margin-left:20px;'></span>"));
-	    yearSemesterPanel.add(courseSemester);
-	    yearSemesterPanel.add(courseYear);
-	    yearSemesterPanel.add(organizationsPanel);
-	    yearSemesterPanel.add(refreshCourseTreeButton);
+				
+		// get Current year and 5 years ago
+		adminService.getYears(new AsyncCallback<Collection<Integer>>(){
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Failed get the years" + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(Collection<Integer> years) {
+				setYearsPanel(years); 
+			}
+		});
+			
 	    
 	    RootPanel.get("adminPanel").add(yearSemesterPanel);
 	    RootPanel.get("adminPanel").add(new HTML("</br>"));
 				
 		RootPanel.get("adminPanel").add(adminPanel);
 		
-		this.refreshCoursesTree();
+//		this.refreshCoursesTree();
 	}
 
 	
@@ -786,25 +790,16 @@ public class AdminEntryPoint implements EntryPoint {
 	 * Gets the review templates recorded in the system and populates the Review Template Tree.
 	 */
 	private void refreshTemplateTree() {
-		if (loggedUser != null){
-			Long organizationId = null;
-			if (loggedUser.isManager()){
-				if (organizationsList.getItemCount() > 0){
-					organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
-				} else {	
-					organizationId = loggedUser.getOrganization().getId();
-					activityForm.setOrganizationId(organizationId);
-				}
-			} else {
-				organizationId = loggedUser.getOrganization().getId();
-				activityForm.setOrganizationId(organizationId);
-			}
-			getReviewTemplates(organizationId);
+		Long organizationId = null;
+		// If an organization was selected from the drop down list then get the review template belong to this organization
+		if (organizationsList.getItemCount() > 0){
+			organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
 		} 
-	}
-	
-	private void getReviewTemplates(Long organizationId){
+		
+		// set the current organization in activity form
 		activityForm.setOrganizationId(organizationId);
+		
+		// call to review templates remote method
 		adminService.getReviewTemplates (organizationId, new AsyncCallback<Collection<ReviewTemplate>>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -826,120 +821,67 @@ public class AdminEntryPoint implements EntryPoint {
 			}
 		});
 	}
-
-
+	
 	/**
 	 * Gets the courses recorded in the system according to the defined filter year - semester and populates the Courses Tree.
 	 */
 	private void refreshCoursesTree() {
 		refreshCourseTreeButton.updateStateSubmitting();
-//		if (loggedUser == null){
-//			// get teh logged user to obtain his/her organization
-//			adminService.getUser(new AsyncCallback<User>(){
-//				@Override
-//				public void onFailure(Throwable caught) {
-//					Window.alert("Failed get the logged user" + caught.getMessage());
-//					refreshCourseTreeButton.updateStateSubmit();
-//				}
-//	
-//				@Override
-//				public void onSuccess(User user) {
-//					if (user != null) {
-//						if (user.isManager()){
-//							// get all the organizations and add them to dropdown list in mainPanel
-//							getOrganizations();
-//						} 
-//						// get user organization id
-//						Long organizationId = user.getOrganization().getId();	
-//						setLoggedUser(user);
-//						// load courses from the organization
-//						getCourses(organizationId);
-//					} else {
-//						refreshCourseTreeButton.updateStateSubmit();
-//					}
-//				}
-//			});
-//		} else {
-		if (loggedUser != null){
-			Long organizationId = null;
-			if (loggedUser.isManager()){
-				if (organizationsList.getItemCount() > 0){
-					organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
-				} else {
-					organizationId = loggedUser.getOrganization().getId();
-				}
-			} else {
-				
-				if (loggedUser.getOrganization() != null){
-					organizationId = loggedUser.getOrganization().getId();
-				} else {
-					Window.alert("Failed get the logged user information");
-					refreshCourseTreeButton.updateStateSubmit();
-				}
-			} 
-			if (organizationId != null){
-				getCourses(organizationId);
-			}	else {
-				Window.alert("Failed get the logged user information");
-				refreshCourseTreeButton.updateStateSubmit();
-			}
+		
+		Long organizationId = null;
+		// if there are organizations in the drop down list get the organization selected by the user
+		
+		if (organizationsList != null  && organizationsList.getItemCount() > 0){
+			organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
 		}
-	}
-	
-	private void getCourses(Long organizationId ){
+		
+
 		courseStackPanel.clear();
 		courseStackPanel.setWidth("200px");
 		courseStackPanel.add(coursesTree);
 		coursesTree.clear();
 		activityLabel.setHTML("<b>&nbsp;</b>");
 		activityLabel.setStyleName("activityLabel");
+		
 		Integer semester = Integer.valueOf(courseSemester.getItemText(courseSemester.getSelectedIndex()));
-		Integer year = Integer.valueOf(courseYear.getItemText(courseYear.getSelectedIndex()));
-		if (organizationId != null){
-			adminService.getCourses(semester, year,organizationId, new AsyncCallback<Collection<Course>>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					Window.alert("Failed get courses. " + caught.getMessage());
-					refreshCourseTreeButton.updateStateSubmit();
-				}
-	
-				@Override
-				public void onSuccess(Collection<Course> courseList) {
-					refreshCourseTreeButton.updateStateSubmit();
-					courses = courseList;
-					// courses tree
-					Long organizationId = null;
-					for (Course course : courses) {
-						TreeItem courseItem = new TreeItem(new HTML("<img src='images/google/icon_6_folder.gif'></img> <span><b>" + course.getName()+"-"+course.getYear()+"S"+course.getSemester() + "</b></span>"));
-						courseItem.setUserObject(course);
-						if (organizationId == null && course.getOrganization() != null){
-							organizationId = course.getOrganization().getId();
-						}
-						for (WritingActivity writingActivity : course.getWritingActivities()) {
-							final TreeItem activityItem = new TreeItem(writingActivity.getName() + " (" + writingActivity.getTutorial() + ")");
-							activityItem.setUserObject(writingActivity);
-							courseItem.addItem(activityItem);
-						}
-						coursesTree.addItem(courseItem);
-						courseItem.setState(false);
-						
-					}
-					
-					// if the organization corresponding to the logged used is not equals to the courses organization then 
-					// refresh review templates tree
-//					if (loggedUser != null && loggedUser.getOrganization()!= null && organizationId != null &&   
-//							!loggedUser.getOrganization().getId().equals(organizationId)){
-						refreshTemplateTree();
-//					}
-				}
-			});
-		} else {
-			Window.alert("Faile to get courses. Organization information is null");
-			refreshCourseTreeButton.updateStateSubmit();
+		
+		Integer year = null;
+		if ( courseYear.getItemCount() > 0){
+			year = Integer.valueOf(courseYear.getItemText(courseYear.getSelectedIndex()));
 		}
-
+		
+			
+		adminService.getCourses(semester, year,organizationId, new AsyncCallback<Collection<Course>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Failed get courses. " + caught.getMessage());
+				refreshCourseTreeButton.updateStateSubmit();
+			}
+	
+			@Override
+			public void onSuccess(Collection<Course> courseList) {
+				refreshCourseTreeButton.updateStateSubmit();
+				courses = courseList;
+				// courses tree
+				for (Course course : courses) {
+					TreeItem courseItem = new TreeItem(new HTML("<img src='images/google/icon_6_folder.gif'></img> <span><b>" + course.getName()+"-"+course.getYear()+"S"+course.getSemester() + "</b></span>"));
+					courseItem.setUserObject(course);
+					for (WritingActivity writingActivity : course.getWritingActivities()) {
+						final TreeItem activityItem = new TreeItem(writingActivity.getName() + " (" + writingActivity.getTutorial() + ")");
+						activityItem.setUserObject(writingActivity);
+						courseItem.addItem(activityItem);
+					}
+					coursesTree.addItem(courseItem);
+					courseItem.setState(false);
+				}
+				// refresh templates	
+				refreshTemplateTree();
+				refreshCourseTreeButton.updateStateSubmit();
+			}
+		});
 	}
-
+	
+	// verify if the logged user enters an email or a username
 	private boolean validateUser(User user){
 		boolean result = false;
 		result = user != null;
@@ -947,6 +889,7 @@ public class AdminEntryPoint implements EntryPoint {
 		return result;
 	}
 	
+	// Populate drop down list with organizations
 	private void getOrganizations(){
 		adminService.getAllOrganizations(new AsyncCallback<Collection<Organization>>() {
 			@Override
@@ -962,20 +905,38 @@ public class AdminEntryPoint implements EntryPoint {
 						organizationsList.addItem(organization.getName(), organization.getId().toString());
 					}
 				}
-				// set organization corresponding to the loggedUser
+				// set organization corresponding to the loggedUser				
 				Organization organization = loggedUser.getOrganization();
 				int index = getListBoxValuesIndex(organizationsList, organization.getId().toString());
 				organizationsList.setSelectedIndex(index);
 				organizationsList.fireEvent(new ListChangeEvent());
+				yearSemesterPanel.add(new HTML("<span>Semester-Year-Organization:</span>"));
 				organizationsPanel.add(organizationsList);
+				
+			    yearSemesterPanel.add(new HTML("<span style='margin-left:20px;'></span>"));
+			    yearSemesterPanel.add(courseSemester);
+			    yearSemesterPanel.add(courseYear);
+			    yearSemesterPanel.add(organizationsPanel);
+			    yearSemesterPanel.add(refreshCourseTreeButton);
 			}
 			
 		});
-		
 	}
 	
 	private void setLoggedUser(User user){
-		this.loggedUser = user;
+		loggedUser = user;
+		headerPanel.add(new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">IWRITE ADMIN PAGE </h1>" ));
+		Organization organization = user.getOrganization();
+		VerticalPanel userPanel = new VerticalPanel();
+//		if (organization != null){
+//			String image = organization.getImageLogo();
+//			userPanel.add(new HTML ("<img src='"+ image +  "'/>" ));
+//		}
+		userPanel.add(new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName()));
+		userPanel.setStyleName("contentDeco");
+		headerPanel.add(userPanel);
+		HTML htmlAssigments = new HTML ("<a href='Assignments.html'><< Go to the Assignments List</a></br></br><img src='images/icon-info.gif'/> If you have selected the option 'Impersonate User' then by clicking the link above you will see the assignments list of that user. </br>In order to go back to your normal 'Assignments list' you have to click the 'Assginments' link at the top of the page again.</div></br>");
+		headerPanel.add(htmlAssigments);
 	}
 	
 	private int getListBoxValuesIndex(ListBox lb, String value) {
@@ -992,6 +953,15 @@ public class AdminEntryPoint implements EntryPoint {
 	}
 	
 	class ListChangeEvent extends ChangeEvent {}
+	
+	
+	private void setYearsPanel(Collection<Integer> years){
+		for (Integer year: years){
+			if (year != null){
+				courseYear.addItem(year.toString(),year.toString());
+			}
+		}
+	}
 }
  
  

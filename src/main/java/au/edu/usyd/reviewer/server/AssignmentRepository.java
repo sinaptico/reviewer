@@ -36,6 +36,7 @@ import com.google.gdata.data.docs.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.AuthenticationException;
+import com.google.gdata.util.ResourceNotFoundException;
 import com.google.gdata.util.ServiceException;
 
 public class AssignmentRepository {
@@ -80,10 +81,14 @@ public class AssignmentRepository {
 		}
 	}
 	
-	public void createActivity(Course course, WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException {
-		String folderName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
-		FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
-		writingActivity.setFolderId(folderEntry.getResourceId());
+	public void createActivity(Course course, WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException,MessageException {
+		try{
+			String folderName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
+			FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
+			writingActivity.setFolderId(folderEntry.getResourceId());
+		} catch(ResourceNotFoundException e){
+			throw new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_SAVED_GOOGLE_COURSE_NOT_EXIST);
+		}
 	}
 	
 	public <D extends DocEntry> D createDocument(WritingActivity writingActivity, D docEntry, Course course) throws Exception {
@@ -173,9 +178,13 @@ public class AssignmentRepository {
 		folderEntry.delete();
 	}
 
-	public void downloadDocumentFile(DocEntry docEntry, String filePath) throws IOException, ServiceException {
-		DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
-		googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+	public void downloadDocumentFile(DocEntry docEntry, String filePath) throws IOException, ServiceException, MessageException {
+		try{
+			DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
+			googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+		} catch(AuthenticationException ae){
+			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION_);
+		}
 	}
 
 	public GoogleDocsServiceImpl getGoogleDocsServiceImpl() {
