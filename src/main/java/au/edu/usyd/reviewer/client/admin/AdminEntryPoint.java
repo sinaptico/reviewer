@@ -171,7 +171,7 @@ public class AdminEntryPoint implements EntryPoint {
 			
 		// get logged user to show his/her name and organization in the page
 		if (loggedUser == null){
-			// get teh logged user to obtain his/her organization
+			// get the logged user to obtain his/her organization
 			adminService.getUser(new AsyncCallback<User>(){
 				@Override
 				public void onFailure(Throwable caught) {
@@ -695,20 +695,17 @@ public class AdminEntryPoint implements EntryPoint {
 				if (loggedUser != null && loggedUser.isManager()){
 					if (organizationsList.getItemCount() > 0){
 						organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
-					} else {
-						if (loggedUser != null){
-							organizationId = loggedUser.getOrganization().getId();
-							activityForm.setOrganizationId(organizationId);
-						}
+					} else { // organization list size = 0 then get organization from logged user 
+						organizationId = loggedUser.getOrganization().getId();
 					}
-				} else {
+					activityForm.setOrganizationId(organizationId);
+				} else { // logged user is not manager and 
 					if (loggedUser != null && loggedUser.getOrganization()!= null){
 						organizationId = loggedUser.getOrganization().getId();
 						activityForm.setOrganizationId(organizationId);
 					}
 				}
-			}
-    		
+			} 
     	});
     	
 		TabLayoutPanel tabs = new TabLayoutPanel(25, Unit.PX);

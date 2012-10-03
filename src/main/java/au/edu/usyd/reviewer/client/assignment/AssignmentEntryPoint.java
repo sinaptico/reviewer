@@ -298,7 +298,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 				if (organizationsList.getItemCount() > 0){
 					organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
 				}
-				assignmentService.getUserReviewingTasks(semester, year, includeFinishedReviews.getValue(), organizationId,new AsyncCallback<Collection<Course>>() {
+				assignmentService.getUserReviewingTasks(semester, year, includeFinishedReviews.getValue(), organizationId, new AsyncCallback<Collection<Course>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						 //Window.alert("Failed to get reviews. ");

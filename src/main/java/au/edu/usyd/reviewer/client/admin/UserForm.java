@@ -1,5 +1,6 @@
 package au.edu.usyd.reviewer.client.admin;
 
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 
@@ -47,10 +48,15 @@ public class UserForm extends Composite {
 	
 	/** The user that is managed by the form. */
 	private User user = new User();
-	
-	
+
+	private Label organizationLabel;
+	private Organization organization;
+
 	private boolean mockUser = false;
 
+	
+	private User loggedUser = null;
+	
 	/**
 	 * Instantiates a new user form.
 	 */
@@ -68,6 +74,7 @@ public class UserForm extends Composite {
 		user.setFirstname(firstname.getValue());
 		user.setLastname(lastname.getValue());
 		user.setEmail(email.getValue());
+		user.setOrganization(organization);
 		user.setPassword(currentPassword.getValue());
 		return user;
 	}
@@ -84,7 +91,7 @@ public class UserForm extends Composite {
 		errorLabel.setStyleName("error");
 		Grid grid = null;
 		if (!isMockUser()){
-			grid = new Grid(9, 2);
+			grid = new Grid(10, 2);
 			grid.setWidget(0, 0, new Label("Username:"));
 			grid.setWidget(0, 1, username);
 			grid.setWidget(1, 0, new Label("Firstname:"));
@@ -94,15 +101,17 @@ public class UserForm extends Composite {
 			grid.setWidget(3, 0, new Label("Email:"));
 			email.setWidth("250px");
 			grid.setWidget(3, 1, email);
-			grid.setWidget(4, 0, new Label("Current password:"));
-			grid.setWidget(4, 1, currentPassword);
-			grid.setWidget(5, 0, new Label("New password:"));
-			grid.setWidget(5, 1, newPassword);
-			grid.setWidget(6, 1, new Label("* At least 5 characters."));
-			grid.setWidget(7, 0, new Label("Retype new password:"));
-			grid.setWidget(7, 1, newPassword2);		
-			grid.setWidget(8, 1, errorLabel);
-		} else {
+			grid.setWidget(4, 0, new Label("Organization:"));
+			grid.setWidget(4, 1, organizationLabel);
+			grid.setWidget(5, 0, new Label("Current password:"));
+			grid.setWidget(5, 1, currentPassword);
+			grid.setWidget(6, 0, new Label("New password:"));
+			grid.setWidget(6, 1, newPassword);
+			grid.setWidget(7, 1, new Label("* At least 5 characters."));
+			grid.setWidget(8, 0, new Label("Retype new password:"));
+			grid.setWidget(8, 1, newPassword2);		
+			grid.setWidget(9, 1, errorLabel);
+		} else { // if there is not mocked user then show a few fields to impersonate
 			grid = new Grid(3, 2);
 			grid.setWidget(0, 0, new Label("Username:"));
 			username.setWidth("150px");
@@ -127,6 +136,7 @@ public class UserForm extends Composite {
 		firstname.setValue(user.getFirstname());
 		lastname.setValue(user.getLastname());
 		email.setValue(user.getEmail());
+		organizationLabel = new Label(user.getOrganization().getName());
 	}
 	
 	/**
@@ -194,5 +204,9 @@ public class UserForm extends Composite {
 	
 	private boolean isMockUser(){
 		return this.mockUser;
+	}
+	
+	public void setLoggedUser(User aUser){
+		this.loggedUser = aUser;
 	}
 }
