@@ -10,3 +10,11 @@ src/main/webapp/WEB-INF/jetty-realm.properties
 src/target/*
 src/documents/*
 src/logs/*
+.DS_Store
+.classpath
+.project
+.settings/com.google.gdt.eclipse.core.prefs
+.settings/org.eclipse.jdt.core.prefs
+log/.DS_Store
+logs/.DS_Store
+lucene/TryMeGlosser/segments.gen
