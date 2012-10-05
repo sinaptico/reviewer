@@ -182,7 +182,7 @@ public class AdminEntryPoint implements EntryPoint {
 				public void onSuccess(User user) {
 					if (user != null) {
 						setLoggedUser(user);
-						if (user.isManager()){
+						if (user.isSuperAdmin()){
 							// Get Organizations to populate  a drop down list
 							getOrganizations();
 						} else {
@@ -692,7 +692,7 @@ public class AdminEntryPoint implements EntryPoint {
 			public void onChange(ChangeEvent event) {
 				Long organizationId = null;
 				
-				if (loggedUser != null && loggedUser.isManager()){
+				if (loggedUser != null && loggedUser.isSuperAdmin()){
 					if (organizationsList.getItemCount() > 0){
 						organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
 					} else { // organization list size = 0 then get organization from logged user 

@@ -45,7 +45,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	public Collection<Course> getUserActivities(int semester, int year,  Long organizationId) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (!isManager() || mockedUser != null){
+		if (!isAdminOrSuperAdmin() || mockedUser != null){
 			return assignmentDao.loadUserActivities(semester, year,mockedUser);
 		} else {
 			Organization  organization = null;
@@ -62,7 +62,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews,  Long organizationId) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (!isManager() || mockedUser != null){
+		if (!isAdminOrSuperAdmin() || mockedUser != null){
 			return assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, mockedUser);
 		} else {
 			Organization  organization = null;
@@ -79,7 +79,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	public Collection<Course> getUserWritingTasks(int semester, int year, Long organizationId ) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (!isManager() || mockedUser != null){
+		if (!isAdminOrSuperAdmin() || mockedUser != null){
 				return assignmentDao.loadUserWritingTasks(semester, year, mockedUser);
 		} else {
 			Organization  organization = null;
@@ -215,7 +215,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 				mockedUser = userDao.getUserByEmail(mockedUser.getEmail());
 				request.getSession().setAttribute("mockedUser", mockedUser);
 			}
-			else if ( mockedUser == null && !user.isManager()){
+			else if ( mockedUser == null && !user.isSuperAdmin()){
 					mockedUser = user;
 					request.getSession().setAttribute("mockedUser", mockedUser);
 			} 
@@ -226,14 +226,23 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 		return mockedUser;
 	}
 	
-	private boolean isManager(){
-		return user == null? false : user.isManager();
+	private boolean isAdmin(){
+		return user == null? false : user.isAdmin();
 	}
+	
+	private boolean isSuperAdmin(){
+		return user == null? false : user.isSuperAdmin();
+	}
+	
+	private boolean isAdminOrSuperAdmin(){
+		return this.isAdmin() || this.isSuperAdmin();
+	}
+	
 	
 	public Collection<Organization> getAllOrganizations() throws Exception{
 		initialize();
 		Collection organizations = new ArrayList<Organization>();
-		if (isManager()){
+		if (isAdminOrSuperAdmin()){
 			OrganizationManager organizationManager = OrganizationManager.getInstance();
 			organizations = organizationManager.getAllOrganizations();
 		} 

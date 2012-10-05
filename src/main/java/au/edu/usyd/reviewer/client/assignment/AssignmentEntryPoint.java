@@ -192,7 +192,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 					});
 					
 					// if there are organization then the logged user is a master			
-					if (user.isManager()){
+					if (user.isSuperAdmin()){
 						// Get Organizations to populate  a drop down list
 						getOrganizations();
 					} else {

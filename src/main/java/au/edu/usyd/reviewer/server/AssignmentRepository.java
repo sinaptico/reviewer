@@ -276,7 +276,7 @@ public class AssignmentRepository {
 				lecturer.setWasmuser(false);
 				lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 			}
-			lecturer.addRole(Constants.ROLE_TEACHER);
+			lecturer.addRole(Constants.ROLE_ADMIN);
 			lecturer.addRole(Constants.ROLE_GUEST);				
 		}
 		
@@ -288,7 +288,7 @@ public class AssignmentRepository {
 				tutor.setWasmuser(false);
 				tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 			}
-			tutor.addRole(Constants.ROLE_TEACHER);					
+			tutor.addRole(Constants.ROLE_ADMIN);					
 			tutor.addRole(Constants.ROLE_GUEST);
 		}		
 

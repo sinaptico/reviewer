@@ -298,7 +298,7 @@ public class FileServlet extends HttpServlet {
 				
 			}
 			
-			if (user.isManager() || user.isTeacher()){
+			if (user.isSuperAdmin() || user.isAdmin()){
 				User mockedUser = (User) request.getSession().getAttribute("mockedUser");
 				if (mockedUser != null && mockedUser.getOrganization() == null){
 					mockedUser = userDao.getUserByEmail(mockedUser.getEmail());

@@ -58,7 +58,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public Course deleteCourse(Course course) throws Exception {
 		initialize();
-		if (isAdmin()) {
+		if (isAdminOrSuperAdmin()) {
 			try {
 				assignmentManager.deleteCourse(course);
 				return course;
@@ -74,7 +74,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public WritingActivity deleteWritingActivity(WritingActivity writingActivity) throws Exception {
 		initialize();
-		if (isAdmin() || isCourseLecturer(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) {
+		if (isAdminOrSuperAdmin() || isCourseLecturer(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) {
 			try {
 				assignmentManager.deleteActivity(writingActivity);
 				return writingActivity;
@@ -89,12 +89,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	@Override
 	public Collection<Course> getCourses(Integer semester, Integer year, Long organizationId) throws Exception {
-		initialize();
-		
+		initialize();	
 		Collection<Course> courses = new ArrayList<Course>();
-		if (isAdmin()) {
+		if (isAdminOrSuperAdmin()) {
 			Organization organizationSelected = null;
-			if ( organizationId == null || (isManager() && user.getOrganization().equals(organizationId))){
+			if ( organizationId == null || (isSuperAdmin() && user.getOrganization().equals(organizationId))){
 				organizationSelected = organization;
 			} else if (organizationId != null){
 				OrganizationDao organizationDao = OrganizationDao.getInstance();
@@ -114,7 +113,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	public User getUser() {
-		
 		try {
 			HttpServletRequest request = this.getThreadLocalRequest();
 			Object obj = request.getSession().getAttribute("user");
@@ -152,13 +150,17 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	private boolean isAdmin() {
-		return user == null ? false : user.isManager() || user.isTeacher();
+		return user == null ? false : user.isAdmin();
 	}
 	
-	private boolean isManager(){
-		return user == null? false : user.isManager();
+	private boolean isSuperAdmin(){
+		return user == null? false : user.isSuperAdmin();
 	}
-
+	
+	private boolean isAdminOrSuperAdmin(){
+		return this.isAdmin() || this.isSuperAdmin();
+	}
+	
 	public boolean isCourseLecturer(Course course) {
 		return user == null ? false : course.getLecturers().contains(user);
 	}
@@ -166,7 +168,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public User mockUser(User aUser) throws Exception {
 		initialize();
-		if (isAdmin()) {
+		if (isAdminOrSuperAdmin()) {
 			String email = null;
 			if ( aUser.getEmail() != null && !StringUtil.isBlank(aUser.getEmail())){
 				email = aUser.getEmail();
@@ -191,7 +193,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public Course saveCourse(Course course) throws Exception {
 		initialize();
-		if (isAdmin() || isCourseLecturer(courseDao.loadCourse(course.getId()))) {
+		if (isAdminOrSuperAdmin()|| isCourseLecturer(courseDao.loadCourse(course.getId()))) {
 			try {
 				// Before save the course set its organization
 				if (course.getOrganization() == null){
@@ -211,7 +213,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public WritingActivity saveWritingActivity(Long courseId, WritingActivity writingActivity) throws Exception {
 		initialize();
 		Course course = courseDao.loadCourse(courseId);
-		if (isAdmin() || isCourseLecturer(course)) {
+		if (isAdminOrSuperAdmin() || isCourseLecturer(course)) {
 			try {
 				return assignmentManager.saveActivity(course, writingActivity);
 			} catch (Exception e) {
@@ -227,7 +229,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public Grade updateGrade(Deadline deadline, String userId, Double gradeValue) throws Exception {
 		initialize();
 		Course course = assignmentDao.loadCourseWhereDeadline(deadline);
-		if (isAdmin() || isCourseLecturer(course)) {
+		if (isAdminOrSuperAdmin() || isCourseLecturer(course)) {
 			User user = userDao.getUserByUsername(userId, course.getOrganization());
 			Grade grade = assignmentDao.loadGrade(deadline, user);
 			if(grade == null) {
@@ -253,7 +255,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public ReviewTemplate saveReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 		initialize();
-		if (isAdmin()) {
+		if (isAdminOrSuperAdmin()) {
 			try {
 				// Before save the review template, set its organization
 				if (reviewTemplate.getOrganization() == null){
@@ -272,6 +274,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override	
 	public Collection<ReviewTemplate> getReviewTemplates(Long organizationId) throws Exception {
 		initialize();
+		
 		Collection<ReviewTemplate> reviewTemplates = new ArrayList<ReviewTemplate>();
 		/*
 		 * If logged user is not teacher o manager then permission denied
@@ -280,9 +283,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		 * if the organization received as parameter is not null, obtain the organization details and use it
 		 * to get the templates.
 		 */
-		if (isAdmin()) {
+		if (isAdminOrSuperAdmin()) {
 			Organization organizationSelected = null;
-			if (organizationId == null || (isManager() && user.getOrganization().equals(organizationId) )){
+			if (organizationId == null || (isSuperAdmin() && user.getOrganization().equals(organizationId) )){
 				organizationSelected = organization;
 			} else if (organizationId != null ){
 				OrganizationDao organizationDao = OrganizationDao.getInstance();
@@ -298,7 +301,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	@Override
 	public ReviewTemplate deleteReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 		initialize();
-		if (isAdmin()) {
+		if (isAdminOrSuperAdmin()) {
 			try {
 				assignmentManager.deleteReviewTemplate(reviewTemplate);
 				return reviewTemplate;
@@ -377,9 +380,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	
 	public Collection<Organization> getAllOrganizations() throws Exception{
+
 		initialize();
 		Collection organizations = new ArrayList<Organization>();
-		if (isManager()){
+		if (isSuperAdmin()){
 			OrganizationManager organizationManager = OrganizationManager.getInstance();
 			organizations = organizationManager.getAllOrganizations();
 		} 

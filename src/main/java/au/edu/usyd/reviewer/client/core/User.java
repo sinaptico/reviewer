@@ -296,12 +296,12 @@ public class User implements Serializable {
 		this.getRole_name().add(role);
 	}
 	
-	public boolean isManager(){
-		return this.getRole_name().contains(Constants.ROLE_MANAGER);
+	public boolean isSuperAdmin(){
+		return this.getRole_name().contains(Constants.ROLE_SUPER_ADMIN);
 	}
 	
-	public boolean isTeacher(){
-		return this.getRole_name().contains(Constants.ROLE_TEACHER);
+	public boolean isAdmin(){
+		return this.getRole_name().contains(Constants.ROLE_ADMIN);
 	}
 	
 	public String getDomain(){

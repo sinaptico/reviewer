@@ -113,8 +113,8 @@
 			<url-pattern>/au.edu.usyd.reviewer.Admin/*</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
-			<role-name>teacher</role-name>
-			<role-name>manager</role-name>
+			<role-name>SuperAdmin</role-name>
+			<role-name>Admin</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<security-constraint>
@@ -127,7 +127,7 @@
 			<url-pattern>/au.edu.usyd.reviewer.ReviewerAdmin/*</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
-			<role-name>manager</role-name>
+			<role-name>SuperAdmin</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<login-config>
@@ -140,8 +140,8 @@
 		</form-login-config>
 	</login-config>
 	<security-role><role-name>guest</role-name></security-role>
-	<security-role><role-name>teacher</role-name></security-role>
-	<security-role><role-name>manager</role-name></security-role>
+	<security-role><role-name>Admin</role-name></security-role>
+	<security-role><role-name>SuperAdmin</role-name></security-role>
 
 	<!-- session config -->
 	<session-config>
