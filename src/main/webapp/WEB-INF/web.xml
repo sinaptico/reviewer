@@ -87,6 +87,25 @@
 		<url-pattern>/au.edu.usyd.reviewer.ReviewerAdmin/reviewerAdminService</url-pattern>
 	</servlet-mapping>
 	
+	<!-- MARIELA -->
+	<!-- Dispatcher Servlet for Controllers -->
+	<servlet>
+ 		<servlet-name>mvc-dispatcher</servlet-name>
+ 		<servlet-class> org.springframework.web.servlet.DispatcherServlet </servlet-class>
+ 		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+ 		<servlet-name>mvc-dispatcher</servlet-name>
+ 		<url-pattern>/v1/*</url-pattern>
+	</servlet-mapping>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/mvc-dispatcher-servlet.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<!-- MARIELA -->
 	<!-- Default page to serve -->
 	<welcome-file-list>
 		<welcome-file>Assignments.html</welcome-file>
@@ -100,7 +119,7 @@
 			<url-pattern>/iWrite.html</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
-			<role-name>guest</role-name>
+			<role-name>Guest</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<security-constraint>
@@ -139,7 +158,7 @@
 			<form-error-page>/Login.html</form-error-page>
 		</form-login-config>
 	</login-config>
-	<security-role><role-name>guest</role-name></security-role>
+	<security-role><role-name>Guest</role-name></security-role>
 	<security-role><role-name>Admin</role-name></security-role>
 	<security-role><role-name>SuperAdmin</role-name></security-role>
 

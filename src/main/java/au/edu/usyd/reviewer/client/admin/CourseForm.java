@@ -117,7 +117,7 @@ public class CourseForm extends Composite {
 //		usersGrid.setWidget(2, 1, courseSupervisors);
 //		usersGrid.setWidget(2, 0, new HTML("Automatic Reviewers:<br/>(id, fname, lname, email)"));
 //		usersGrid.setWidget(2, 1, courseAutomaticReviewers);		
-		usersGrid.setWidget(2, 0, new Label("Students:"));
+//		usersGrid.setWidget(2, 0, new Label("Students:"));
 		usersGrid.setWidget(2, 1, courseSpreadsheet);
 
 		mainPanel.add(grid);
@@ -126,6 +126,7 @@ public class CourseForm extends Composite {
 		mainPanel.add(new HTML("<br/>"));
 	}
 
+	
 	/**
 	 * Sets the course values in the form according to the received course object.
 	 *

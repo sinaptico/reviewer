@@ -467,7 +467,9 @@ public class AssignmentManager {
 					if (student.getOrganization() == null){
 						student.setOrganization(course.getOrganization());
 					}
-					if ( student.getDomain() != null && student.getDomain().equals(student.getOrganization().getGoogleDomain())){	
+					if ( student.getDomain() != null && student.getOrganization() != null && 
+							student.getOrganization().getGoogleDomain()!= null &&
+							student.getDomain().toLowerCase().equals(student.getOrganization().getGoogleDomain().toLowerCase())){	
 						assignmentRepository.createUser(student);
 					} else {
 						throw new Exception(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN);
@@ -488,7 +490,9 @@ public class AssignmentManager {
 				if ( lecturer.getOrganization() == null){
 					lecturer.setOrganization(course.getOrganization());
 				}
-				if (lecturer.getDomain() != null && lecturer.getDomain().equals(lecturer.getOrganization().getGoogleDomain())){	
+				if (lecturer.getDomain() != null &&  lecturer.getOrganization() != null && 
+						lecturer.getOrganization().getGoogleDomain() != null &&
+						lecturer.getDomain().toLowerCase().equals(lecturer.getOrganization().getGoogleDomain().toLowerCase())){	
 					assignmentRepository.createUser(lecturer);
 				} else {
 					throw new Exception(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
@@ -507,7 +511,9 @@ public class AssignmentManager {
 				if ( tutor.getOrganization() == null){
 					tutor.setOrganization(course.getOrganization());
 				}
-				if (tutor.getDomain() != null && tutor.getDomain().equals(tutor.getOrganization().getGoogleDomain())){
+				if (tutor.getDomain() != null && tutor.getOrganization() != null && 
+						tutor.getOrganization().getGoogleDomain()!= null &&
+						tutor.getDomain().toLowerCase().equals(tutor.getOrganization().getGoogleDomain().toLowerCase())){
 					assignmentRepository.createUser(tutor);
 				} else {
 					throw new Exception(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);

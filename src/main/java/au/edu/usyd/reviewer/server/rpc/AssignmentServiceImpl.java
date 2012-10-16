@@ -239,12 +239,12 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	}
 	
 	
-	public Collection<Organization> getAllOrganizations() throws Exception{
+	public Collection<Organization> getOrganizations() throws Exception{
 		initialize();
 		Collection organizations = new ArrayList<Organization>();
 		if (isAdminOrSuperAdmin()){
 			OrganizationManager organizationManager = OrganizationManager.getInstance();
-			organizations = organizationManager.getAllOrganizations();
+			organizations = organizationManager.getOrganizations();
 		} 
 		return organizations;
 	}

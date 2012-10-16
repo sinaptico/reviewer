@@ -56,6 +56,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		
 	@Override
+	// In CourseController 
 	public Course deleteCourse(Course course) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()) {
@@ -72,6 +73,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	// In Activity Controller
 	public WritingActivity deleteWritingActivity(WritingActivity writingActivity) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin() || isCourseLecturer(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) {
@@ -88,6 +90,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	// In CourseController
 	public Collection<Course> getCourses(Integer semester, Integer year, Long organizationId) throws Exception {
 		initialize();	
 		Collection<Course> courses = new ArrayList<Course>();
@@ -112,7 +115,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return courses;
 	}
 
-	public User getUser() {
+	// In AuthenticationController
+	public User getLoggedUser() {
 		try {
 			HttpServletRequest request = this.getThreadLocalRequest();
 			Object obj = request.getSession().getAttribute("user");
@@ -137,6 +141,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	// In ActivityController
 	public Collection<UserStats> getWritingActivityStats(Long writingActivityId) throws Exception {
 		initialize();
 		WritingActivity writingActivity = assignmentDao.loadWritingActivity(writingActivityId);
@@ -149,23 +154,28 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return userStatsAnalyser.calculateStats(writingActivity, users);
 	}
 
+	// In Controller
 	private boolean isAdmin() {
 		return user == null ? false : user.isAdmin();
 	}
 	
+	// In Controller
 	private boolean isSuperAdmin(){
 		return user == null? false : user.isSuperAdmin();
 	}
 	
+	// In Controller
 	private boolean isAdminOrSuperAdmin(){
 		return this.isAdmin() || this.isSuperAdmin();
 	}
 	
+	// In Controller
 	public boolean isCourseLecturer(Course course) {
 		return user == null ? false : course.getLecturers().contains(user);
 	}
 
 	@Override
+	//In AuthenticationController
 	public User mockUser(User aUser) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()) {
@@ -191,6 +201,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	// In CourseController
 	public Course saveCourse(Course course) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()|| isCourseLecturer(courseDao.loadCourse(course.getId()))) {
@@ -210,6 +221,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	// In ActivityController
 	public WritingActivity saveWritingActivity(Long courseId, WritingActivity writingActivity) throws Exception {
 		initialize();
 		Course course = courseDao.loadCourse(courseId);
@@ -226,6 +238,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	//@TODO
 	public Grade updateGrade(Deadline deadline, String userId, Double gradeValue) throws Exception {
 		initialize();
 		Course course = assignmentDao.loadCourseWhereDeadline(deadline);
@@ -253,6 +266,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 	
 	@Override
+	// In ReviewTemplateController
 	public ReviewTemplate saveReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()) {
@@ -272,6 +286,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override	
+	//In ReviewTemplateController
 	public Collection<ReviewTemplate> getReviewTemplates(Long organizationId) throws Exception {
 		initialize();
 		
@@ -299,6 +314,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 	
 	@Override
+	//In ReviewTemplateController
 	public ReviewTemplate deleteReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()) {
@@ -315,6 +331,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	// @TODO
 	public String updateReviewDocEntry(String reviewEntryId, String newDocEntry) throws Exception {
 		initialize();
 		try {			
@@ -326,6 +343,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	//@TODO
 	public ReviewingActivity getReviewingActivity(Long reviewingActivityId) throws Exception {
 		initialize();
 		ReviewingActivity reviewingActivity =null;
@@ -343,6 +361,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	//@TODO
 	public String deleteReviewEntry(String reviewEntryId) throws Exception {
 		initialize();
 		try {
@@ -355,6 +374,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
+	//@TODO
 	public ReviewEntry saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId) throws Exception {
 		initialize();
 		try {
@@ -373,24 +393,25 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
 	private void initialize() throws Exception{
-		user = getUser();
+		user = getLoggedUser();
 		organization = user.getOrganization();	
 		Reviewer.initializeAssignmentManager(organization);	
 	}
 
-	
-	public Collection<Organization> getAllOrganizations() throws Exception{
+	// In AdminController
+	public Collection<Organization> getOrganizations() throws Exception{
 
 		initialize();
 		Collection organizations = new ArrayList<Organization>();
 		if (isSuperAdmin()){
 			OrganizationManager organizationManager = OrganizationManager.getInstance();
-			organizations = organizationManager.getAllOrganizations();
+			organizations = organizationManager.getOrganizations();
 		} 
 		return organizations;
 	}
 	
 
+	// In UtilController
 	public Collection<Integer> getYears(){
 		return CalendarUtil.getYears();
 	}

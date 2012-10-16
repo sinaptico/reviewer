@@ -81,6 +81,6 @@ interface AssignmentServiceAsync {
 	 * Return all the organizations 
 	 * @param callback collection of organizations
 	 */
-	public void getAllOrganizations(AsyncCallback<Collection<Organization>> callback);
+	public void getOrganizations(AsyncCallback<Collection<Organization>> callback);
 
 }

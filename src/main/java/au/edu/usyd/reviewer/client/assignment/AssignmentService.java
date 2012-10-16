@@ -92,5 +92,5 @@ public interface AssignmentService extends RemoteService {
 	 * @return collection of organizations
 	 * @throws Exception the exception
 	 */
-	public Collection<Organization> getAllOrganizations() throws Exception;
+	public Collection<Organization> getOrganizations() throws Exception;
 }

@@ -20,6 +20,7 @@ import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.DocumentType;
+import au.edu.usyd.reviewer.client.core.FeedbackTemplate;
 import au.edu.usyd.reviewer.client.core.Grade;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Question;
@@ -46,7 +47,8 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
 	private EmailNotifier emailNotifier = null;
-	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
+	//private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
+	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 	private FeedbackTrackingDao feedbackTrackingService = new FeedbackTrackingDao();
 	private UserDao userDao = UserDao.getInstance();
 
@@ -193,7 +195,11 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		} else {
 			throw new Exception("The deadline has already passed.");
 		}
-		return review;
+		R newReview = (R) new Review();
+		if (review != null){
+			newReview = (R) review.clone();
+		}
+		return newReview;
 	}
 	
 	@Override
@@ -208,18 +214,28 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 			if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
 				review.setSaved(new Date());
 				review.setEarlySubmitted(true);
-				
 				// release review
 					DocEntry docEntry = reviewEntry.getDocEntry();
 				//Check if the review hasn't been released early
 				if (!docEntry.getReviews().contains(reviewEntry.getReview())){
 					docEntry.getReviews().add(reviewEntry.getReview());
 					assignmentDao.save(docEntry);
+					
 				}
-
-				assignmentDao.save(review);
-				emailNotifier = Reviewer.getEmailNotifier();
 				try{
+					logger.info("MARIELA - BEFORE SAVE FeedbackTemplate");
+					for(FeedbackTemplate feedbackTemplate : review.getFeedback_templates()){
+						assignmentDao.save(feedbackTemplate);
+					}
+					logger.info("MARIELA - BEFORE SAVE Review");
+					assignmentDao.save(review);
+				} catch(Exception e){
+					e.printStackTrace();
+					throw new MessageException("The review could not be saved.");
+				}
+				
+				try{
+					emailNotifier = Reviewer.getEmailNotifier();
 					if (docEntry.getOwner()!=null){
 						emailNotifier.sendReviewEarlyFinishNotification(docEntry.getOwner(), course, reviewingActivity);					
 					}else{
@@ -239,7 +255,11 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		} else {
 			throw new Exception("The deadline has already passed.");
 		}
-		return review;
+		R newReview = (R) new Review();
+		if (review != null){
+			newReview = (R)(review.clone());
+		}
+		return newReview;
 	}	
 	
 	@Override

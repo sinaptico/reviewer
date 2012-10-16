@@ -295,9 +295,6 @@ public class AssignmentEntryPoint implements EntryPoint {
 				//mainPanel.remove(reviewsPanel);
 				refreshPanelButton.updateStateSubmitting();
 				reviewingTasks.setLoadingMessage();
-				if (organizationsList.getItemCount() > 0){
-					organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
-				}
 				assignmentService.getUserReviewingTasks(semester, year, includeFinishedReviews.getValue(), organizationId, new AsyncCallback<Collection<Course>>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -317,9 +314,6 @@ public class AssignmentEntryPoint implements EntryPoint {
 				/****************************************************************************/
 				mainPanel.remove(htmlAdminLink);
 				mainPanel.remove(activitiesPanel);
-				if (organizationsList.getItemCount() > 0){
-					organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
-				}
 				assignmentService.getUserActivities(semester, year, organizationId,new AsyncCallback<Collection<Course>>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -367,7 +361,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 
 	// Populate drop down list with organizations
 	private void getOrganizations(){
-		assignmentService.getAllOrganizations(new AsyncCallback<Collection<Organization>>() {
+		assignmentService.getOrganizations(new AsyncCallback<Collection<Organization>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Failed get organizations: " + caught.getMessage());

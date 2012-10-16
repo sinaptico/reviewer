@@ -172,7 +172,7 @@ public class AdminEntryPoint implements EntryPoint {
 		// get logged user to show his/her name and organization in the page
 		if (loggedUser == null){
 			// get the logged user to obtain his/her organization
-			adminService.getUser(new AsyncCallback<User>(){
+			adminService.getLoggedUser(new AsyncCallback<User>(){
 				@Override
 				public void onFailure(Throwable caught) {
 					Window.alert("Failed get the logged user" + caught.getMessage());
@@ -888,7 +888,7 @@ public class AdminEntryPoint implements EntryPoint {
 	
 	// Populate drop down list with organizations
 	private void getOrganizations(){
-		adminService.getAllOrganizations(new AsyncCallback<Collection<Organization>>() {
+		adminService.getOrganizations(new AsyncCallback<Collection<Organization>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Failed get organizations: " + caught.getMessage());
@@ -925,10 +925,6 @@ public class AdminEntryPoint implements EntryPoint {
 		headerPanel.add(new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">IWRITE ADMIN PAGE </h1>" ));
 		Organization organization = user.getOrganization();
 		VerticalPanel userPanel = new VerticalPanel();
-//		if (organization != null){
-//			String image = organization.getImageLogo();
-//			userPanel.add(new HTML ("<img src='"+ image +  "'/>" ));
-//		}
 		userPanel.add(new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName()));
 		userPanel.setStyleName("contentDeco");
 		headerPanel.add(userPanel);

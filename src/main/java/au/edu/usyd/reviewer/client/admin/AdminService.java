@@ -168,14 +168,14 @@ public interface AdminService extends RemoteService {
 	 * Return logged user
 	 * @return User logged user
 	 */
-	public User getUser();
+	public User getLoggedUser();
 	
 	/** 
 	 * Return all the organization
 	 * @return collection of organizations
 	 * @throws Exception the exception
 	 */
-	public Collection<Organization> getAllOrganizations() throws Exception;
+	public Collection<Organization> getOrganizations() throws Exception;
 
 	/**
 	 * Return a collection of years. Current year and 5 years ago
