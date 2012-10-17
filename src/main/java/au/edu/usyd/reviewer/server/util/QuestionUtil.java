@@ -14,6 +14,7 @@ import au.edu.usyd.reviewer.client.core.Question;
 import au.edu.usyd.reviewer.client.core.QuestionScore;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.QuestionDao;
 import au.edu.usyd.reviewer.server.Reviewer;
@@ -90,7 +91,7 @@ public class QuestionUtil {
 		excelEditor.commit();
 	}
 
-	public void readExcelInsertDB(String filepath, Organization organization) {
+	public void readExcelInsertDB(String filepath, Organization organization) throws MessageException {
 		logger.info("Read Excel and then insert into DB!");
 		ExcelEditor excelEditor = new ExcelEditor();
 		try {

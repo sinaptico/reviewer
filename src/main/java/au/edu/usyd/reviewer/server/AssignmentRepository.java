@@ -342,11 +342,14 @@ public class AssignmentRepository {
 		}
 	}
 	
-	public void updateCourseDocumentPermissions(Course course) throws Exception{
+	public void updateCourseDocumentPermissions(Course course, User user) throws Exception{
 		// update lecturer and tutor permissions	
 		UserGroup instructors = new UserGroup();
 		instructors.getUsers().addAll(course.getLecturers());
 		instructors.getUsers().addAll(course.getTutors());
+		// Add the logged user to assign permissions to him/her
+		// Logged user is who is creating activity
+		instructors.getUsers().add(user);
 
 		DocEntry courseFolder = new DocEntry();
 		courseFolder.setDocumentId(course.getFolderId());

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinTable;
@@ -39,7 +40,8 @@ public class DocEntry extends Entry {
 	protected String documentId;
 	
 	/** The reviews. */
-	@OneToMany
+	/*MARIELA I added cascade remove */
+	@OneToMany(cascade = CascadeType.REMOVE)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name = "DocEntry_Reviews_Review")
 	protected Set<Review> reviews = new HashSet<Review>();

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Property;
@@ -25,6 +26,8 @@ import au.edu.usyd.reviewer.client.core.TemplateReply;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 public class AssignmentDao {
 
@@ -35,11 +38,19 @@ public class AssignmentDao {
 		this.sessionFactory = sessionFactory;
 	}
 
-	public void delete(Object object) {
+	public void delete(Object object) throws MessageException{
 		Session session = this.getSession();
-		session.beginTransaction();
-		session.delete(object);
-		session.getTransaction().commit();
+		try{
+			session.beginTransaction();
+			session.delete(object);
+			session.getTransaction().commit();
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_DELETE_MESSAGE);
+		}
 	}
 
 	private Session getSession() {
@@ -481,11 +492,19 @@ public class AssignmentDao {
 		return writingActivity;
 	}
 
-	public void save(Object object) {
+	public void save(Object object) throws MessageException{
 		Session session = this.getSession();
-		session.beginTransaction();
-		session.saveOrUpdate(object);
-		session.getTransaction().commit();
+		try{
+			session.beginTransaction();
+			session.saveOrUpdate(object);
+			session.getTransaction().commit();
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_SAVE_MESSAGE);
+		}
 	}
 
 	public Collection<ReviewTemplate> loadReviewTemplates(Organization organization) {

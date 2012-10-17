@@ -142,7 +142,9 @@ public class WritingActivity extends Activity<DocEntry> {
 	private List<ReviewingActivity> reviewingActivities = new ArrayList<ReviewingActivity>();
 	
 	/** The grades. */
+	/** MARIELA I add cascade all **/
 	@OneToMany
+	@Cascade(CascadeType.ALL)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name = "WritingActivity_Grades_Grade")
 	private Set<Grade> grades = new HashSet<Grade>();

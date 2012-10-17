@@ -243,7 +243,7 @@ public class AssignmentManager {
 		}	
 	}
 
-	public void finishReviewingActivity(Course course, ReviewingActivity reviewingActivity, Deadline deadline) {
+	public void finishReviewingActivity(Course course, ReviewingActivity reviewingActivity, Deadline deadline) throws MessageException{
 		// check activity status
 		if (reviewingActivity.getStatus() >= Activity.STATUS_FINISH) {
 			logger.info("Review has already finished.");
@@ -317,10 +317,17 @@ public class AssignmentManager {
 
 		// zip HTML reviews 
 		logger.info("Zip review files in: "+getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), "", organization));
-		for (File folder : new File(getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), "", organization)).listFiles()) {		                            
-			if (folder.isDirectory()) {
-				FileUtil.zipFolder(folder, new File(folder.getAbsolutePath() + ".zip"));
+		String filePath = getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), "", organization);
+		File file = new File(filePath);
+		
+		if ( file.exists()) {
+			for (File folder : file.listFiles()) {		                            
+				if (folder != null && folder.isDirectory()) {
+					FileUtil.zipFolder(folder, new File(folder.getAbsolutePath() + ".zip"));
+				}
 			}
+		} else {
+			throw new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_FINISHED + " File " + filePath);
 		}
 
 		// update activity status
@@ -408,7 +415,7 @@ public class AssignmentManager {
 	public WritingActivity saveActivity(Course course, WritingActivity writingActivity) throws Exception {
 		// check if status is valid
 		if (writingActivity.getId() != null && writingActivity.getStatus() != assignmentDao.loadWritingActivity(writingActivity.getId()).getStatus()) {
-			throw new Exception("Failed to save Activity: Invalid status");
+			throw new Exception("Invalid status");
 		}
 
 		// check if tutorial is valid
@@ -600,7 +607,7 @@ public class AssignmentManager {
 		}
 	}
 	
-	public Course saveCourse(Course course) throws Exception {
+	public Course saveCourse(Course course, User user) throws Exception {
 		//Set up folders and templates
 		setUpFoldersAndTemplates(course);
 		
@@ -627,7 +634,7 @@ public class AssignmentManager {
 		saveUserGroupDB(course);
 		
 		// update course document permissions
-		assignmentRepository.updateCourseDocumentPermissions(course);
+		assignmentRepository.updateCourseDocumentPermissions(course, user);
 		
 		course.setDomainName(course.getOrganization().getGoogleDomain());
 		
@@ -879,7 +886,7 @@ public class AssignmentManager {
 		}
 	}
 
-	private void updateActivityDocuments(Course course, WritingActivity writingActivity) {
+	private void updateActivityDocuments(Course course, WritingActivity writingActivity) throws MessageException {
 		synchronized (writingActivity.getFolderId().intern()) {
 			Organization organization = course.getOrganization();
 			String domainName = organization.getGoogleDomain();
@@ -1227,16 +1234,16 @@ public class AssignmentManager {
 		
 		if (!assignmentDao.isReviewTemplateInUse(reviewTemplate)){		
 			reviewTemplate = assignmentDao.loadReviewTemplate(reviewTemplate.getId());
-			for (Section section : reviewTemplate.getSections()) {
-				if (section.getType() != Section.OPEN_QUESTION){
-					for (Choice choice: section.getChoices()) {
-						assignmentDao.delete(choice);
-					}
-				}		
-				section.setChoices(null);
-				assignmentDao.delete(section);
-			}
-			reviewTemplate.setSections(null);
+//			for (Section section : reviewTemplate.getSections()) {
+//				if (section.getType() != Section.OPEN_QUESTION){
+//					for (Choice choice: section.getChoices()) {
+//						assignmentDao.delete(choice);
+//					}
+//				}		
+//				section.setChoices(null);
+//				assignmentDao.delete(section);
+//			}
+//			reviewTemplate.setSections(null);
 			assignmentDao.delete(reviewTemplate);
 		}else{
 			throw new Exception("Review template already in use.");

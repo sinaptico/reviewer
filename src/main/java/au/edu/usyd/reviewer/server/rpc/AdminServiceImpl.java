@@ -210,7 +210,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				if (course.getOrganization() == null){
 					course.setOrganization(organization);
 				}
-				return assignmentManager.saveCourse(course);
+				return assignmentManager.saveCourse(course, user);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw e;

@@ -222,18 +222,10 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 					assignmentDao.save(docEntry);
 					
 				}
-				try{
-					logger.info("MARIELA - BEFORE SAVE FeedbackTemplate");
-					for(FeedbackTemplate feedbackTemplate : review.getFeedback_templates()){
-						assignmentDao.save(feedbackTemplate);
-					}
-					logger.info("MARIELA - BEFORE SAVE Review");
-					assignmentDao.save(review);
-				} catch(Exception e){
-					e.printStackTrace();
-					throw new MessageException("The review could not be saved.");
+				for(FeedbackTemplate feedbackTemplate : review.getFeedback_templates()){
+					assignmentDao.save(feedbackTemplate);
 				}
-				
+				assignmentDao.save(review);
 				try{
 					emailNotifier = Reviewer.getEmailNotifier();
 					if (docEntry.getOwner()!=null){
