@@ -194,6 +194,26 @@ public class Section implements Serializable {
 	 */
 	public void setTool(String tool) {
 		this.tool = tool;
-	}	
+	}
+	
+	
+	public Section clone(){
+		Section section = new Section();
+		
+		List<Choice> choices = new ArrayList<Choice>();
+		for(Choice choice: this.getChoices()){
+			if (choice != null){
+				choices.add(choice.clone());
+			}
+		}
+		section.setChoices(choices);
+		section.setId(this.getId());
+		section.setNumber(this.getNumber());
+		section.setText(this.getText());
+		section.setTool(this.getTool());
+		section.setType(this.getType());
+		
+		return section;
+	}
 	
 }

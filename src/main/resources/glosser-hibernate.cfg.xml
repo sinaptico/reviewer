@@ -13,6 +13,7 @@
 		<property name="connection.username">glosser</property>
 		<property name="connection.password">glosser</property>
 
+
 		<!-- SQL dialect -->
 		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 

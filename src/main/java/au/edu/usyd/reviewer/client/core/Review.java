@@ -204,4 +204,24 @@ public class Review implements Serializable {
 	public String getFeedbackTemplateType() {
 		return feedbackTemplateType;
 	}
+	
+	public Review clone(){
+		Review review = new Review();
+		review.setContent(this.getContent());
+		review.setEarlySubmitted(this.getEarlySubmitted());
+		
+		Set<FeedbackTemplate> templates = new HashSet<FeedbackTemplate>();
+		for( FeedbackTemplate template:this.getFeedback_templates()){
+			if ( template != null){
+				templates.add(template.clone());
+			}
+		}
+		review.setFeedback_templates(templates);
+		
+		review.setFeedbackTemplateType(this.getFeedbackTemplateType());
+		
+		review.setId(this.getId());	
+		review.setSaved(this.getSaved());
+		return review;
+	}
 }

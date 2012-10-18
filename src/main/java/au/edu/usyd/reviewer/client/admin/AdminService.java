@@ -6,6 +6,7 @@ import au.edu.usyd.reviewer.client.admin.report.UserStats;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.Grade;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
@@ -47,7 +48,7 @@ public interface AdminService extends RemoteService {
 	 * @return the courses
 	 * @throws Exception the exception
 	 */
-	public Collection<Course> getCourses(Integer semester, Integer year) throws Exception;
+	public Collection<Course> getCourses(Integer semester, Integer year, Long organizationId) throws Exception;
 
 	/**
 	 * Gets the writing activity stats.
@@ -62,7 +63,7 @@ public interface AdminService extends RemoteService {
 	 * Mock user.
 	 *
 	 * @param user the user
-	 * @return the user
+	 * @return the user name of user to mock
 	 * @throws Exception the exception
 	 */
 	public User mockUser(User user) throws Exception;
@@ -112,7 +113,7 @@ public interface AdminService extends RemoteService {
 	 * @return the review templates
 	 * @throws Exception the exception
 	 */
-	public Collection<ReviewTemplate> getReviewTemplates() throws Exception;	
+	public Collection<ReviewTemplate> getReviewTemplates(Long organizationId) throws Exception;	
 	
 	/**
 	 * Delete review template.
@@ -160,5 +161,25 @@ public interface AdminService extends RemoteService {
 	 * @return the review entry
 	 * @throws Exception the exception
 	 */
-	public ReviewEntry saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId) throws Exception;	
+	public ReviewEntry saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId) throws Exception;
+	
+	
+	/**
+	 * Return logged user
+	 * @return User logged user
+	 */
+	public User getLoggedUser();
+	
+	/** 
+	 * Return all the organization
+	 * @return collection of organizations
+	 * @throws Exception the exception
+	 */
+	public Collection<Organization> getOrganizations() throws Exception;
+
+	/**
+	 * Return a collection of years. Current year and 5 years ago
+	 * @return Collection of integers (years)
+	 */
+	public Collection<Integer> getYears();
 }

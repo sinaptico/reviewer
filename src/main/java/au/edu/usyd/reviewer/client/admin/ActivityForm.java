@@ -8,6 +8,7 @@ import au.edu.usyd.reviewer.client.admin.glosser.SiteForm;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 
@@ -143,6 +144,7 @@ public class ActivityForm extends Composite {
 	/** TextBox List with the deadlines defined for the writing activity. */
 	private List<TextBox> deadLineTextBoxList = new ArrayList<TextBox>();
 
+	private Long organizationId = null;
 	
 	/**
 	 * Instantiates a new activity form and populates the "Static" Drop-menus with the "Document Types", "Document genres" and "Activity statuses".  
@@ -223,7 +225,8 @@ public class ActivityForm extends Composite {
 	 * @param reviewingActivity the reviewing activity
 	 */
 	protected void addReviewingActivity(ReviewingActivity reviewingActivity) {
-		ActivityReviewForm reviewForm = new ActivityReviewForm();	
+		ActivityReviewForm reviewForm = new ActivityReviewForm();
+		reviewForm.setOrganizationId(organizationId);
 		List<String> deadLineNameList = new ArrayList<String>();
 		
 		for (int i = 0; i < deadLineTextBoxList.size(); i++) {
@@ -556,5 +559,10 @@ public class ActivityForm extends Composite {
 		courseList.setEnabled(false);
 		tutorialList.setEnabled(false);
 		this.setWritingActivity(writingActivity);
+	}
+	
+	
+	public void setOrganizationId(Long organization){
+		this.organizationId = organizationId;
 	}
 }

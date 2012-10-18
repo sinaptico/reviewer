@@ -179,4 +179,14 @@ public class Deadline implements Serializable {
 	public void setStatus(int status) {
 		this.status = status;
 	}
+	
+	public Deadline clone(){
+		Deadline deadline = new Deadline();
+		deadline.setFinishDate(this.getFinishDate());
+		deadline.setId(this.getId());
+		deadline.setMaxGrade(this.getMaxGrade());
+		deadline.setName(this.getName());
+		deadline.setStatus(this.getStatus());
+		return deadline;
+	}
 }

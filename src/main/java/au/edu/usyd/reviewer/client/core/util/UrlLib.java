@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.Anchor;
 public class UrlLib {
 	 
 	// Service to get Glosser url
-	private static ReviewerPropertiesServiceAsync reviewerPropertiesService = (ReviewerPropertiesServiceAsync) GWT.create(ReviewerPropertiesService.class);
+	private static ReviewerUtilServiceAsync reviewerUtilService = (ReviewerUtilServiceAsync) GWT.create(ReviewerUtilService.class);
 	
 	//protected static String domain = "iwrite.eng.usyd.edu.au";
 	
@@ -133,7 +133,7 @@ public static String folderUrl(String id, String domain) {
 	}
     
     private static void getGlosserUrl(final Anchor glosserLink, Long siteId, String docId){
-		reviewerPropertiesService.getGlosserUrl(siteId, docId, new AsyncCallback<String>() {
+    	reviewerUtilService.getGlosserUrl(siteId, docId, new AsyncCallback<String>() {
 			public void onFailure(Throwable caught) {
 			    Window.alert("Failed to get Glosser's Host: " + caught.getMessage());
 			}

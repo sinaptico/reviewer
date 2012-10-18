@@ -23,6 +23,8 @@ import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 import com.google.gdata.data.acl.AclEntry;
 import com.google.gdata.data.acl.AclRole;
@@ -34,19 +36,33 @@ import com.google.gdata.data.docs.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.AuthenticationException;
+import com.google.gdata.util.ResourceNotFoundException;
 import com.google.gdata.util.ServiceException;
 
 public class AssignmentRepository {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private String SPREADSHEET_HEADER = "id,firstname,lastname,email,group,tutorial";
+	private String SPREADSHEET_HEADER = "firstname,lastname,email,group,tutorial";
 	private GoogleDocsServiceImpl googleDocsServiceImpl;
 	private GoogleSpreadsheetServiceImpl googleSpreadsheetServiceImpl;
 	private GoogleUserServiceImpl googleUserServiceImpl;	
 	
-	public AssignmentRepository(String username, String password, String domain) throws AuthenticationException, MalformedURLException {
-		this.googleDocsServiceImpl = new GoogleDocsServiceImpl(username, password);
-		this.googleSpreadsheetServiceImpl = new GoogleSpreadsheetServiceImpl(username, password);
-		this.googleUserServiceImpl = new GoogleUserServiceImpl(username, password, domain);
+	public AssignmentRepository(String username, String password, String domain) throws  MessageException{
+		try {
+			this.googleDocsServiceImpl = new GoogleDocsServiceImpl(username, password);
+			this.googleSpreadsheetServiceImpl = new GoogleSpreadsheetServiceImpl(username, password);
+		} catch (AuthenticationException e) {
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GOOGLE_URL_MALFORMED);
+		}
+		try {
+			this.googleUserServiceImpl = new GoogleUserServiceImpl(username, password, domain);
+		} catch (AuthenticationException e) {
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
+		} 
 	}
 
 	public void addStudentsToSpreadsheet(Course course, Collection<UserGroup> studentGroups) throws Exception {
@@ -55,7 +71,7 @@ public class AssignmentRepository {
 		for (UserGroup studentGroup : studentGroups) {
 			for (User student : studentGroup.getUsers()) {
 				ListEntry listEntry = new ListEntry();
-				for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 4)) {
+				for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 3)) {
 					listEntry.getCustomElements().setValueLocal(property, BeanUtils.getProperty(student, property));
 				}
 				listEntry.getCustomElements().setValueLocal("group", studentGroup.getName());
@@ -65,10 +81,14 @@ public class AssignmentRepository {
 		}
 	}
 	
-	public void createActivity(Course course, WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException {
-		String folderName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
-		FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
-		writingActivity.setFolderId(folderEntry.getResourceId());
+	public void createActivity(Course course, WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException,MessageException {
+		try{
+			String folderName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
+			FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
+			writingActivity.setFolderId(folderEntry.getResourceId());
+		} catch(ResourceNotFoundException e){
+			throw new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_SAVED_GOOGLE_COURSE_NOT_EXIST);
+		}
 	}
 	
 	public <D extends DocEntry> D createDocument(WritingActivity writingActivity, D docEntry, Course course) throws Exception {
@@ -123,12 +143,12 @@ public class AssignmentRepository {
 		  List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		  USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-				if (aclEntry.getScope().getValue().equals(owner.getId() + "@" + googleUserServiceImpl.getDomain())) {
-					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getId() + "@" + googleUserServiceImpl.getDomain());
+				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
+					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 					continue USER_LOOP;
 				}
 			}
-			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getId() + "@" + googleUserServiceImpl.getDomain());
+			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 		  }
 		}
 		return docEntry;
@@ -136,7 +156,7 @@ public class AssignmentRepository {
 
 	public User createUser(User user) throws ServiceException, IOException {
 		try {
-			googleUserServiceImpl.createUser(user.getId(), user.getFirstname(), user.getLastname(), "Changeme" + user.getId() + "!");
+			googleUserServiceImpl.createUser(user.getUsername(), user.getFirstname(), user.getLastname(), "Changeme" + user.getUsername() + "!");
 		} catch (AppsForYourDomainException e) {
 			if (e.getErrorCode().equals(AppsForYourDomainErrorCode.EntityExists)) {
 				// continue
@@ -158,9 +178,13 @@ public class AssignmentRepository {
 		folderEntry.delete();
 	}
 
-	public void downloadDocumentFile(DocEntry docEntry, String filePath) throws IOException, ServiceException {
-		DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
-		googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+	public void downloadDocumentFile(DocEntry docEntry, String filePath) throws IOException, ServiceException, MessageException {
+		try{
+			DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
+			googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+		} catch(AuthenticationException ae){
+			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION_);
+		}
 	}
 
 	public GoogleDocsServiceImpl getGoogleDocsServiceImpl() {
@@ -252,8 +276,8 @@ public class AssignmentRepository {
 				lecturer.setWasmuser(false);
 				lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 			}
-			lecturer.getRole_name().add("manager");					
-			lecturer.getRole_name().add("guest");				
+			lecturer.addRole(Constants.ROLE_ADMIN);
+			lecturer.addRole(Constants.ROLE_GUEST);				
 		}
 		
 		//check if tutors are wasm users, (create passwords for non wasm users)
@@ -264,8 +288,8 @@ public class AssignmentRepository {
 				tutor.setWasmuser(false);
 				tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 			}
-			tutor.getRole_name().add("manager");					
-			tutor.getRole_name().add("guest");
+			tutor.addRole(Constants.ROLE_ADMIN);					
+			tutor.addRole(Constants.ROLE_GUEST);
 		}		
 
 		// clear student groups
@@ -280,8 +304,14 @@ public class AssignmentRepository {
 		// add students to groups
 		for (ListEntry listEntry : googleSpreadsheetServiceImpl.getWorksheetRows(worksheetEntry)) {
 			User student = new User();
-			for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 4)) {
+			for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 3)) {
 				BeanUtils.setProperty(student, property, StringUtils.trim(listEntry.getCustomElements().getValue(property)));
+			}
+			UserDao userDao = UserDao.getInstance();
+			// Update user information with database information.
+			// I Added it because the id is null
+			if (userDao.containsUser(student)){
+				student = userDao.getUserByEmail(student.getEmail());
 			}
 			UserGroup studentGroup = new UserGroup();
 			studentGroup.setName(StringUtils.trim(listEntry.getCustomElements().getValue("group")));
@@ -289,7 +319,7 @@ public class AssignmentRepository {
 
 			// check if tutorial is valid
 			if (!course.getTutorials().contains(studentGroup.getTutorial())) {
-				throw new Exception("Failed to save Course: Invalid tutorial");
+				throw new Exception(Constants.EXCEPTION_INVALID_TUTORIAL);
 			}
 			
 			//check if student is a wasm user, (create passwords for non wasm users)
@@ -312,11 +342,14 @@ public class AssignmentRepository {
 		}
 	}
 	
-	public void updateCourseDocumentPermissions(Course course) throws Exception{
+	public void updateCourseDocumentPermissions(Course course, User user) throws Exception{
 		// update lecturer and tutor permissions	
 		UserGroup instructors = new UserGroup();
 		instructors.getUsers().addAll(course.getLecturers());
 		instructors.getUsers().addAll(course.getTutors());
+		// Add the logged user to assign permissions to him/her
+		// Logged user is who is creating activity
+		instructors.getUsers().add(user);
 
 		DocEntry courseFolder = new DocEntry();
 		courseFolder.setDocumentId(course.getFolderId());
@@ -352,18 +385,19 @@ public class AssignmentRepository {
 		List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-				if (aclEntry.getScope().getValue().equals(owner.getId() + "@" + googleUserServiceImpl.getDomain())) {
-					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getId() + "@" + googleUserServiceImpl.getDomain());
+				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
+					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 					continue USER_LOOP;
 				}
 			}
-			googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getId() + "@" + googleUserServiceImpl.getDomain());
+			googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 		}
 		
 		// delete permissions
 		for (AclEntry aclEntry : aclEntries) {
 			User user = new User();
-			user.setId(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
+			user.setEmail(aclEntry.getScope().getValue());
+			//user.setUsername(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
 			if (!owners.contains(user) && aclEntry.getRole().equals(AclRole.WRITER)) {
 				if (docEntry instanceof LogpageDocEntry) {
 					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());

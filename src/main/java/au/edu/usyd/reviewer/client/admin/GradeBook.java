@@ -64,7 +64,7 @@ public class GradeBook extends Composite {
 	 */
 	private Record createUserRecord(User user, Collection<Grade> grades) {
 		Record record = new ListGridRecord();
-		record.setAttribute("Unikey", user.getId());
+		record.setAttribute("Unikey", user.getUsername());
 		record.setAttribute("Firstname", user.getFirstname());
 		record.setAttribute("Lastname", user.getLastname());
 		for(Grade grade : grades) {			

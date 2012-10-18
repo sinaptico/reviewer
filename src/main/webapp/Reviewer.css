@@ -205,3 +205,27 @@ a span {
 .centerFilterTable {
 	text-align: center !important;	
 }
+
+.gridHeader {
+  background-color: #2062B8;
+  color: white;
+  font-style: italic;
+}
+
+.gridRow {
+  border: 1px solid silver;
+  padding: 2px;
+  margin-bottom:6px;
+}
+
+.gridOrganizationNameColumn{
+	width: 30px;
+} 
+
+.gridOrganizationPropertyValueColumn{
+	width: 80px;
+}
+gridOrganizationPropertyLargButtonColumn{
+	width: 80px;
+} 
+

@@ -328,14 +328,14 @@ public class WritingTasks extends Composite {
 				// feedback
 				HorizontalPanel feedbackPanel = new HorizontalPanel();
 				// stats link
-				if (writingActivity.getShowStats()) {
-					Anchor statsLink = new Anchor();
-					statsLink.setHref("MyStats.html?docId="+docEntry.getDocumentId());
-					statsLink.setHTML("<img height='19px' src='images/mystats.png'></img>");
-					statsLink.setTitle("My Stats");
-					statsLink.setTarget("_blank");
-					feedbackPanel.add(statsLink);
-				}
+//				if (writingActivity.getShowStats()) {
+//					Anchor statsLink = new Anchor();
+//					statsLink.setHref("MyStats.html?docId="+docEntry.getDocumentId());
+//					statsLink.setHTML("<img height='19px' src='images/mystats.png'></img>");
+//					statsLink.setTitle("My Stats");
+//					statsLink.setTarget("_blank");
+//					feedbackPanel.add(statsLink);
+//				}
 				// glosser link
 				if (!writingActivity.getGlosserSite().equals(WritingActivity.GLOSSER_SITE_NONE)) {
 					Anchor glosserLink = new Anchor();

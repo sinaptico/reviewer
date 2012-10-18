@@ -137,4 +137,17 @@ public class Grade implements Serializable {
 	public void setValue(Double value) {
 		this.value = value;
 	}
+	
+	public Grade clone(){
+		Grade grade = new Grade();
+		
+		if (this.getDeadline() != null){
+			grade.setDeadline(this.getDeadline().clone());
+		}
+		
+		grade.setId(this.getId());
+		grade.setUser(this.getUser().clone());
+		grade.setValue(this.getValue());
+		return grade;
+	}
 }

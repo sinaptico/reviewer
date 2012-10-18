@@ -149,4 +149,19 @@ public class UserGroup implements Serializable {
 		this.users = users;
 	}
 
+	public UserGroup clone(){
+		UserGroup group = new UserGroup();
+		group.setId(this.getId());
+		group.setName(this.getName());
+		group.setTutorial(this.getTutorial());
+		
+		Set<User> users = new HashSet<User>();
+		for(User user: this.getUsers()){
+			if (user != null){
+				users.add(user.clone());
+			}
+		}
+		group.setUsers(users);
+		return group;
+	}
 }
