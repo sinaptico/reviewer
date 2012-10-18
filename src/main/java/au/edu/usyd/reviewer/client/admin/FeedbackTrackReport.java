@@ -53,7 +53,7 @@ public class FeedbackTrackReport extends Composite {
   		
   		int i=1;	    		
   		for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
-  			trackReportGrid.setWidget(i, 0, new Label(reviewEntry.getDocEntry().getOwner().getId()));
+  			trackReportGrid.setWidget(i, 0, new Label(reviewEntry.getDocEntry().getOwner().getUsername()));
   			Review review = reviewEntry.getReview();
   			if (review.getContent()!=null){
   				trackReportGrid.setWidget(i, 1, new HTML(review.getContent()+";"));

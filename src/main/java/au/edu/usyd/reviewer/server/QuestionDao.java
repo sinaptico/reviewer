@@ -1,5 +1,6 @@
 package au.edu.usyd.reviewer.server;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.Query;
@@ -28,7 +29,14 @@ public class QuestionDao {
 		session.beginTransaction();
 		List<Question> triggerQuestionList = session.createQuery(query).setParameter("docId", docId).list();
 		session.getTransaction().commit();
-		return triggerQuestionList;
+		List<Question> questions = new ArrayList<Question>();
+		for(Question question: triggerQuestionList){
+			if (question != null){
+				questions.add(question.clone());
+			}
+		}
+		
+		return questions;
 	}
 
 	public List<QuestionScore> getScore(Question question) {
@@ -72,7 +80,7 @@ public class QuestionDao {
 	}
 
 	public List<Question> searchQuestions(User user, String docId) {
-		logger.debug("Geting Question List from user:" + user.getId() + "Doc:" + docId);
+		logger.debug("Geting Question List from user:" + user.getUsername() + "Doc:" + docId);
 		Session session = this.getSession();
 		session.beginTransaction();
 		String query = "select distinct question from Question question join fetch question.owner owner " + "where docId=:docId AND owner=:user";

@@ -6,6 +6,7 @@ import au.edu.usyd.reviewer.client.admin.report.UserStats;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.Grade;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
@@ -42,7 +43,7 @@ interface AdminServiceAsync {
 	 * @param year the year
 	 * @param callback the callback 
 	 */
-	public void getCourses(Integer semester, Integer year, AsyncCallback<Collection<Course>> callback);
+	public void getCourses(Integer semester, Integer year, Long organizationId, AsyncCallback<Collection<Course>> callback);
 
 	/**
 	 * Gets the writing activity stats.
@@ -55,7 +56,7 @@ interface AdminServiceAsync {
 	/**
 	 * Mock user.
 	 *
-	 * @param user the user
+	 * @param username the username of the user to mock
 	 * @param callback the callback
 	 */
 	public void mockUser(User user, AsyncCallback<User> callback);
@@ -100,7 +101,7 @@ interface AdminServiceAsync {
 	 *
 	 * @param callback the callback
 	 */
-	public void getReviewTemplates(AsyncCallback<Collection<ReviewTemplate>> callback);
+	public void getReviewTemplates(Long organizationId, AsyncCallback<Collection<ReviewTemplate>> callback);
 
 	/**
 	 * Delete review template.
@@ -143,5 +144,24 @@ interface AdminServiceAsync {
 	 * @param docEntryId the doc entry id
 	 * @param asyncCallback the async callback
 	 */
-	public void saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId, AsyncCallback<ReviewEntry> asyncCallback);	
+	public void saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId, AsyncCallback<ReviewEntry> asyncCallback);
+	
+	
+	/**
+	 * Returns logged user
+	 * @param asyncCallback logged user
+	 */
+	public void getLoggedUser(AsyncCallback<User> asyncCallback);
+	
+	/**
+	 * Return all the organizations 
+	 * @param callback collection of organizations
+	 */
+	public void getOrganizations(AsyncCallback<Collection<Organization>> callback);
+
+	/**
+	 * Returns a collection of integers with the current year and 5 years ago.
+	 * @param callback is the collection of integer
+	 */
+	public void getYears(AsyncCallback<Collection<Integer>> callback);
 }

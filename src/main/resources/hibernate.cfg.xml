@@ -65,6 +65,9 @@
 		<mapping class="au.edu.usyd.reviewer.client.core.DocumentType" />
 		<mapping class="au.edu.usyd.reviewer.client.core.Rubric" />
 		<mapping class="au.edu.usyd.reviewer.client.core.FeedbackTemplate" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Organization" />
+		<mapping class="au.edu.usyd.reviewer.client.core.ReviewerProperty" />
+		<mapping class="au.edu.usyd.reviewer.client.core.OrganizationProperty" />
 		
 	</session-factory>
 </hibernate-configuration>

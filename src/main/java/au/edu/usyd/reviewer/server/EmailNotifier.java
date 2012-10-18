@@ -33,7 +33,7 @@ public class EmailNotifier {
 	private Properties properties;
 	private Session mailSession;
 	private Transport transport;
-	private String domain = Reviewer.getGoogleDomain();
+	private String domain = null;
 	private String fromName = "iWrite Assignment Tracker";
 	private String fromAddress = "no-reply@"+domain;
 	private DateFormat dateFormat = new SimpleDateFormat("E d MMM h:mma");
@@ -45,11 +45,12 @@ public class EmailNotifier {
 	private final String STUDENT_REVIEW_FINISH_MESSAGE = "Dear %s," + "\n\nThe '%s' %s assessment has finished " + "\nReviews are now available." + "\n\n" + fromName;
 	private final String STUDENT_RECEIVED_REVIEW_MESSAGE = "Dear %s," + "\n\nYou have received feedback from the activity '%s'. " + "\nYou can go to %s to read it." + "\n\n" + fromName;
  
-	public EmailNotifier(String username, String password, String smtpHost, String smtpPort) throws NoSuchProviderException {
+	public EmailNotifier(String username, String password, String smtpHost, String smtpPort, String domain) throws NoSuchProviderException {
 		this.username = username;
 		this.password = password;
 		this.smtpHost = smtpHost;
 		this.smtpPort = smtpPort;
+		this.domain = domain;
 		
 		properties = new Properties();
 		properties.put("mail.transport.protocol", "smtp");
@@ -125,7 +126,7 @@ public class EmailNotifier {
 	}
 
 	public void sendPasswordNotification(User user, String courseName) throws MessagingException, UnsupportedEncodingException {
-		String content = String.format(PASSWORD_DETAILS, user.getFirstname()+" "+user.getLastname(), courseName, user.getId(), user.getPassword());
+		String content = String.format(PASSWORD_DETAILS, user.getFirstname()+" "+user.getLastname(), courseName, user.getUsername(), user.getPassword());
 		this.sendNotification(user, "iWrite user details", content);
 	}
 	

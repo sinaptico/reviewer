@@ -33,8 +33,8 @@ public class UserStatsAnalyser {
 		for(User user : users) {
 			UserStats stats = new UserStats();
 			stats = new UserStats();
-			stats.setUserId(user.getId());
-			userStats.put(user.getId(), stats);
+			stats.setUserId(user.getUsername());
+			userStats.put(user.getUsername(), stats);
 		}
 
 		for (DocumentListEntry entry : googleDocsServiceImpl.getFolderDocuments(writingActivity.getFolderId())) {

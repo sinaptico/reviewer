@@ -166,6 +166,22 @@ public class DocumentType implements Serializable {
 		return genre;
 	}
 
-	
+	public DocumentType clone(){
+		DocumentType doc = new DocumentType();
+		doc.setGenre(this.getGenre());
+		doc.setId(this.getId());
+		doc.setName(this.getName());
+		doc.setNumber(this.getNumber());
+		
+		List<Rubric> rubrics = new ArrayList<Rubric>();
+		for(Rubric rubric : this.getRubrics()){
+			if (rubric != null){
+				rubrics.add(rubric.clone());
+			}
+		}
+		doc.setRubrics(rubrics);
+		
+		return doc;
+	}
 
 }

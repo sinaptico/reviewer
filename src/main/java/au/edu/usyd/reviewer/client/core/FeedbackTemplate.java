@@ -42,7 +42,7 @@ public class FeedbackTemplate implements Serializable {
 	private String grade;	
 	
 	/** The grade num. */
-	private int gradeNum;
+	private int gradeNum = 0;
 
 	/** The description a. */
 	@Column(length = 65535)
@@ -217,4 +217,15 @@ public void setNumber(String number) {
 		return descriptionB;
 	}
 
+	public FeedbackTemplate clone(){
+		FeedbackTemplate template = new FeedbackTemplate();
+		template.setDescriptionA(this.getDescriptionA());
+		template.setDescriptionB(this.getDescriptionB());
+		template.setGrade(this.getGrade());
+		template.setGradeNum(this.getGradeNum());
+		template.setId(this.getId());
+		template.setNumber(this.getNumber());
+		template.setText(this.getText());
+		return template;
+	}
 }

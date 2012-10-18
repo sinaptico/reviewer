@@ -1,6 +1,8 @@
 package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
+
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,9 +11,11 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -100,6 +104,14 @@ public class Course implements Serializable {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<User> automaticReviewers = new HashSet<User>();
 
+	/** The organization */
+	@ManyToOne
+	@JoinColumn(name="organizationId")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private Organization organization;
+	
+	public Course(){}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -418,5 +430,94 @@ public class Course implements Serializable {
 	public void setAutomaticReviewers(Set<User> automaticReviewers) {
 		this.automaticReviewers = automaticReviewers;
 	}
-	
+
+	public Organization getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(Organization organization) {
+		this.organization = organization;
+	}
+
+	public Course clone(){
+		Course course = new Course();
+		
+		Set<User> reviewers = new HashSet<User>();
+		for(User user: this.getAutomaticReviewers()){
+			if (user != null){
+				reviewers.add(user.clone());
+			}
+		}
+		
+		course.setAutomaticReviewers(reviewers);
+		course.setDomainName(this.getDomainName());
+		course.setFolderId(this.getFolderId());
+		course.setId(this.getId());
+		
+		Set<User> lecturers = new HashSet<User>();
+		for(User user: this.getLecturers()){
+			if (user != null){
+				lecturers.add(user.clone());
+			}
+		}
+		course.setLecturers(lecturers);
+		
+		course.setName(this.getName());
+		if (this.getOrganization() != null){
+			course.setOrganization(this.getOrganization().clone());
+		}
+		course.setSemester(this.getSemester());
+		course.setSpreadsheetId(this.getSpreadsheetId());
+		
+		Set<UserGroup> studentGroups = new HashSet<UserGroup>();
+		for(UserGroup group: this.getStudentGroups()){
+			if (group != null){
+				studentGroups.add(group.clone());
+			}
+		}
+		course.setStudentGroups(studentGroups);
+		
+		Set<User> supervisors = new HashSet<User>();
+		for(User user: this.getSupervisors()){
+			if (user != null){
+				supervisors.add(user.clone());
+			}
+		}
+		course.setSupervisors(supervisors);
+		
+		Set<DocEntry> docEntries = new HashSet<DocEntry>();
+		for(DocEntry doc: this.getTemplates()){
+			if (doc != null){
+				docEntries.add(doc.clone());
+			}
+		}
+		course.setTemplates(docEntries);
+		course.setTemplatesFolderId(this.getTemplatesFolderId());
+		
+		Set<User> tutors = new HashSet<User>();
+		for(User user: this.getTutors()){
+			if (user != null){
+				tutors.add(user.clone());
+			}
+		}
+		course.setTutors(tutors);
+		
+		Set<String> tutorials = new HashSet<String>();
+		for(String tutorial: this.getTutorials()){
+			tutorials.add(tutorial);
+		}
+		course.setTutorials(tutorials);
+		
+		Set<WritingActivity> activities = new HashSet<WritingActivity>();
+		for(WritingActivity activity: this.getWritingActivities()){
+			if (activity != null){
+				activities.add(activity.clone());
+			}
+		}
+		course.setWritingActivities(activities);
+		
+		course.setYear(this.getYear());
+
+		return course;
+	}
 }

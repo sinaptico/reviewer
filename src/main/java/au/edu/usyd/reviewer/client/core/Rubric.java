@@ -167,4 +167,21 @@ public class Rubric implements Serializable {
 		return link;
 	}
 
+	public Rubric clone(){
+		Rubric rubric = new Rubric();
+		
+		List<FeedbackTemplate> templates = new ArrayList<FeedbackTemplate>(); 
+		for(FeedbackTemplate template :this.getFeedbackTemplates()){
+			if(template!=null){
+				templates.add(template.clone());
+			}
+		}
+		rubric.setFeedbackTemplates(templates);	
+		rubric.setId(this.getId());
+		rubric.setLink(this.getLink());
+		rubric.setName(this.getName());
+		rubric.setNumber(this.getNumber());
+		
+		return rubric;
+	}	
 }

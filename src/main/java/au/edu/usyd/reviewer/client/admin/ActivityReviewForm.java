@@ -5,6 +5,7 @@ import java.util.List;
 
 import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.FeedbackTemplate;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
@@ -115,6 +116,7 @@ public class ActivityReviewForm extends Composite {
 	/** Asynchronous admin service for model management. */
 	private final static AdminServiceAsync adminService = (AdminServiceAsync) GWT.create(AdminService.class);
 	
+	private Long organizationId = null;
 	
 	/**
 	 * Instantiates a new activity review form and populates the "Static" Drop-menus with the "Statuses", 
@@ -123,7 +125,11 @@ public class ActivityReviewForm extends Composite {
 	public ActivityReviewForm() {
 		//populate list box with review templates
 		reviewTemplateLst.addItem("None", String.valueOf(0));
-    	adminService.getReviewTemplates(new AsyncCallback<Collection<ReviewTemplate>>() {
+		Long organizationId = null;
+		if (organizationId != null){
+			organizationId = organizationId;
+		}
+    	adminService.getReviewTemplates(organizationId ,new AsyncCallback<Collection<ReviewTemplate>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Failed get courses: " + caught.getMessage());
@@ -344,6 +350,9 @@ public class ActivityReviewForm extends Composite {
 		}		
 	}
 
+	public void setOrganizationId(Long organizationId){
+		this.organizationId = organizationId;
+	}
 	
 //	  public class FeedbackTrackReport extends Composite {
 //		  private VerticalPanel mainPanel = new VerticalPanel();

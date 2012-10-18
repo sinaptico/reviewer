@@ -1,10 +1,13 @@
 package au.edu.usyd.reviewer.server.rpc;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -17,7 +20,9 @@ import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.DocumentType;
+import au.edu.usyd.reviewer.client.core.FeedbackTemplate;
 import au.edu.usyd.reviewer.client.core.Grade;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Question;
 import au.edu.usyd.reviewer.client.core.QuestionRating;
 import au.edu.usyd.reviewer.client.core.QuestionScore;
@@ -27,43 +32,54 @@ import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.client.review.ReviewService;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.EmailNotifier;
 import au.edu.usyd.reviewer.server.QuestionDao;
 import au.edu.usyd.reviewer.server.Reviewer;
-import au.edu.usyd.reviewer.server.util.CloneUtil;
+import au.edu.usyd.reviewer.server.UserDao;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
-	private EmailNotifier emailNotifier = Reviewer.getEmailNotifier();
-	private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
+	private EmailNotifier emailNotifier = null;
+	//private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
+	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 	private FeedbackTrackingDao feedbackTrackingService = new FeedbackTrackingDao();
+	private UserDao userDao = UserDao.getInstance();
 
+	// logged user
+	private User user = null;
+	// logged user organization
+	private Organization organization = null;
+	
 	@Override
 	public Rating getUserRatingForEditing(Review review) throws Exception {
-		Rating rating = assignmentDao.loadUserRatingForEditing(getUser(), review);
+		initialize();
+		Rating rating = assignmentDao.loadUserRatingForEditing(user, review);
 		if (rating == null) {
 			throw new Exception("Rating not found");
 		}
-		return CloneUtil.clone(rating);
+		return rating;
 	}
 
 	@Override
 	public Course getUserReviewForEditing(long reviewId) throws Exception {
-		Course course = assignmentDao.loadUserReviewForEditing(getUser(), reviewId);
+		initialize();
+		Course course = assignmentDao.loadUserReviewForEditing(user, reviewId);
 		if (course == null) {
 			throw new Exception("Review not found");
 		}
-		return CloneUtil.clone(course);
+		return course;
 	}
 
 	@Override
-	public QuestionRating getQuestionRating(String docId) {
+	public QuestionRating getQuestionRating(String docId) throws Exception {
+		initialize();
 		if (docId == null || docId.trim() == "") {
 			return null;
 		}
@@ -90,28 +106,20 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		review.setTriggerQuestions(randomlist);
 
 		try {
-			return CloneUtil.clone(review);
+			return review;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public User getUser() throws Exception {
-		User user = (User) this.getThreadLocalRequest().getSession().getAttribute("user");
-		if (user == null) {
-			throw new Exception("Your session has expired. Please login again.");
-		} else {
-			return user;
-		}
-	}
 
-	public boolean isCourseInstructor(Course course) throws Exception {
-		User user = getUser();
-		return user == null ? false : course.getLecturers().contains(user) || course.getTutors().contains(user) || course.getSupervisors().contains(getUser());
+	private boolean isCourseInstructor(Course course) throws Exception {
+		return user == null ? false : course.getLecturers().contains(user) || course.getTutors().contains(user) || course.getSupervisors().contains(user);
 	}
 
 	@Override
 	public Collection<Grade> submitGrades(Collection<Grade> grades) throws Exception {
+		initialize();
 		for(Grade grade : grades) {
 			Deadline deadline = grade.getDeadline();
 			Course course = assignmentDao.loadCourseWhereDeadline(deadline);
@@ -136,10 +144,11 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 
 	@Override
 	public <R extends Rating> R submitRating(R rating, Review review) throws Exception {
+		initialize();
 		// check permission
 		Rating userRating = assignmentDao.loadRating(rating.getId());
 		if (userRating != null) {
-			if (userRating.getOwner().equals(getUser())) {
+			if (userRating.getOwner().equals(user)) {
 				rating.setId(userRating.getId());
 			} else {
 				throw new Exception("Your session has expired. Please login again to submit your rating.");
@@ -148,7 +157,6 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 
 		// save rating
 		if (rating instanceof QuestionRating) {
-			User user = assignmentDao.loadUser(getUser().getId());
 			if (((QuestionRating) rating).getEvaluatorBackground().equals("Yes")) {
 				user.setNativeSpeaker("Yes");
 			} else {
@@ -162,7 +170,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		} else {
 			ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereReview(review);
 			rating.setEntry(reviewEntry);
-			rating.setOwner(getUser());
+			rating.setOwner(user);
 			assignmentDao.save(rating);
 		}
 
@@ -171,13 +179,14 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 
 	@Override
 	public <R extends Review> R saveReview(R review) throws Exception {
+		initialize();
 		// check review deadline
 		ReviewingActivity reviewingActivity = assignmentDao.loadReviewingActivityWhereReview(review);
 		Course course = assignmentDao.loadCourseWhereReviewingActivity(reviewingActivity);
 		if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course)) {
 			// check review owner
 			ReviewEntry reviewEntry =  assignmentDao.loadReviewEntryWhereReview(review);
-			if (reviewEntry != null && reviewEntry.getOwner().equals(getUser())) {
+			if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
 				review.setSaved(new Date());
 				assignmentDao.save(review);
 			} else {
@@ -186,32 +195,39 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		} else {
 			throw new Exception("The deadline has already passed.");
 		}
-		return CloneUtil.clone(review);
+		R newReview = (R) new Review();
+		if (review != null){
+			newReview = (R) review.clone();
+		}
+		return newReview;
 	}
 	
 	@Override
 	public <R extends Review> R submitReview(R review) throws Exception {
+		initialize();
 		// check review deadline
 		ReviewingActivity reviewingActivity = assignmentDao.loadReviewingActivityWhereReview(review);
 		Course course = assignmentDao.loadCourseWhereReviewingActivity(reviewingActivity);
 		if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course)) {
 			// check review owner
 			ReviewEntry reviewEntry =  assignmentDao.loadReviewEntryWhereReview(review);
-			if (reviewEntry != null && reviewEntry.getOwner().equals(getUser())) {
+			if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
 				review.setSaved(new Date());
 				review.setEarlySubmitted(true);
-				
 				// release review
 					DocEntry docEntry = reviewEntry.getDocEntry();
 				//Check if the review hasn't been released early
 				if (!docEntry.getReviews().contains(reviewEntry.getReview())){
 					docEntry.getReviews().add(reviewEntry.getReview());
 					assignmentDao.save(docEntry);
+					
 				}
-
+				for(FeedbackTemplate feedbackTemplate : review.getFeedback_templates()){
+					assignmentDao.save(feedbackTemplate);
+				}
 				assignmentDao.save(review);
-
 				try{
+					emailNotifier = Reviewer.getEmailNotifier();
 					if (docEntry.getOwner()!=null){
 						emailNotifier.sendReviewEarlyFinishNotification(docEntry.getOwner(), course, reviewingActivity);					
 					}else{
@@ -231,12 +247,17 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		} else {
 			throw new Exception("The deadline has already passed.");
 		}
-		return CloneUtil.clone(review);
+		R newReview = (R) new Review();
+		if (review != null){
+			newReview = (R)(review.clone());
+		}
+		return newReview;
 	}	
 	
 	@Override
 	public Course getUserReviewForViewing(long reviewId) throws Exception {
-		Course course = assignmentDao.loadReviewForViewing(getUser(), reviewId);
+		initialize();
+		Course course = assignmentDao.loadReviewForViewing(user, reviewId);
 		if (course == null) {
 			throw new Exception("Review not found");
 		}
@@ -256,13 +277,13 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 			if(fedbackTrackingRecord !=null && fedbackTrackingRecord.getReadDate() == null){
 				
 				if (docEntry.getOwner()!=null){
-					if (docEntry.getOwner().equals(getUser())){
+					if (docEntry.getOwner().equals(user)){
 						fedbackTrackingRecord.setReadDate(new Date());
 						feedbackTrackingService.save(fedbackTrackingRecord);
 					}
 				}else{
 					if (docEntry.getOwnerGroup() != null){
-						if (docEntry.getOwnerGroup().getUsers().contains(getUser())){
+						if (docEntry.getOwnerGroup().getUsers().contains(user)){
 							fedbackTrackingRecord.setReadDate(new Date());
 							feedbackTrackingService.save(fedbackTrackingRecord);
 						}
@@ -272,15 +293,50 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 			/////// TRACKING FEEDBACK /////////////			
 		}
 		
-		return CloneUtil.clone(course);
+		return course;
 	}
 	
 	@Override	
 	public Collection<DocumentType> getDocumentTypes(String genre) throws Exception {
+		initialize();
 		Collection<DocumentType> documentTypes = null;
 		//if (isAdmin()) {
 			documentTypes = assignmentDao.loadDocumentTypes(genre);
 		//}
-		return CloneUtil.clone(documentTypes);
-	}	
+		return documentTypes;
+	}
+	
+	private void initialize() throws Exception{		
+		user = getUser();
+		Organization organization = user.getOrganization();	
+		Reviewer.initializeAssignmentManager(organization);
+	}
+	
+	public User getUser() {
+		
+		try {
+			HttpServletRequest request = this.getThreadLocalRequest();
+			Object obj = request.getSession().getAttribute("user");
+			
+			if (obj != null)
+			{
+				user = (User) obj;
+			}
+			Principal principal = request.getUserPrincipal();
+			UserDao userDao = UserDao.getInstance();
+			if  (user == null){
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+				
+			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
+				user = userDao.getUserByEmail(principal.getName());
+				request.getSession().setAttribute("user", user);
+				
+			}
+		} catch (MessageException e) {
+			e.printStackTrace();
+		}
+		return user;
+	}
+
 }

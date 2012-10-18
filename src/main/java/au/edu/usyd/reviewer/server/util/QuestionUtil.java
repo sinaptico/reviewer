@@ -9,10 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.glosser.gdata.GoogleDocsServiceImpl;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Question;
 import au.edu.usyd.reviewer.client.core.QuestionScore;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.QuestionDao;
 import au.edu.usyd.reviewer.server.Reviewer;
@@ -68,7 +70,8 @@ public class QuestionUtil {
 					QMlist.add(String.valueOf(questionScore.getQualityMeasure()));
 					questionlist.add(question.getQuestion());
 					predictedQGlist.add(questionScore.getProduced());
-					RealQGlist.add(question.getOwner().getId());
+					//RealQGlist.add(question.getOwner().getUsername());
+					RealQGlist.add(question.getOwner().getEmail());
 					docidlist.add(doc.getDocumentId());
 					sourcesentenclist.add(question.getSourceSentence());
 					nativespeakerlist.add(doc.getOwner().getNativeSpeaker());
@@ -88,7 +91,7 @@ public class QuestionUtil {
 		excelEditor.commit();
 	}
 
-	public void readExcelInsertDB(String filepath) {
+	public void readExcelInsertDB(String filepath, Organization organization) throws MessageException {
 		logger.info("Read Excel and then insert into DB!");
 		ExcelEditor excelEditor = new ExcelEditor();
 		try {
@@ -101,16 +104,18 @@ public class QuestionUtil {
 		ArrayList<String> documentidlist = excelEditor.getColumn3data();
 		ArrayList<String> sourceSentencelist = excelEditor.getColumn4data();
 		AssignmentDao assignment = new AssignmentDao(Reviewer.getHibernateSessionFactory());
-		QuestionDao questionDao = new QuestionDao(Reviewer.getHibernateSessionFactory());
+		QuestionDao questionDao = new QuestionDao(Reviewer.getHibernateSessionFactory()); 
 		for (int i = 1; i < questionlist.size(); i++) {
 			User user = new User();
-			user.setId(generatorlist.get(i));
+			user.setOrganization(organization);
+//			user.setUsername(generatorlist.get(i));
+			user.setEmail(generatorlist.get(i));
 			assignment.save(user);
 			Question questionObj = new Question();
 			questionObj.setOwner(user);
 			questionObj.setQuestion(questionlist.get(i));
 			questionObj.setDocId(documentidlist.get(i));
-			if (user.getId().equals("aqg")) {
+			if (user.getUsername().equals("aqg")) {
 				questionObj.setSourceSentence(sourceSentencelist.get(i));
 			}
 			questionDao.saveQuestion(questionObj);
