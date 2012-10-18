@@ -124,7 +124,7 @@ public class ReviewersTable extends Composite {
 	private ListGridRecord createUserRecord(User user, ReviewEntry reviewEntry) {
 		ListGridRecord record = new ListGridRecord();
 		record.setAttribute("ID", reviewEntry.getId());
-		record.setAttribute("Unikey", user.getId());
+		record.setAttribute("Unikey", user.getUsername());
 		record.setAttribute("Firstname", user.getFirstname());
 		record.setAttribute("Lastname", user.getLastname());
 		record.setAttribute("Document ID", reviewEntry.getDocEntry().getId());
@@ -324,12 +324,12 @@ public class ReviewersTable extends Composite {
 
 		for (DocEntry docEntry : writingActivity.getEntries()) {
 			if (docEntry.getOwner() != null){
-				if(docEntry.getOwner().getId().equalsIgnoreCase(unikeyValue)){
+				if(docEntry.getOwner().getUsername().equalsIgnoreCase(unikeyValue)){
 					return true;
 				}
 			}else{
 				for(User user: docEntry.getOwnerGroup().getUsers()){
-					if(user.getId().equalsIgnoreCase(unikeyValue)){
+					if(user.getUsername().equalsIgnoreCase(unikeyValue)){
 						return true;
 					}
 				}

@@ -1,5 +1,6 @@
 package au.edu.usyd.reviewer.client.admin;
 
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 
@@ -19,8 +20,8 @@ public class UserForm extends Composite {
 	/** The main panel. */
 	private VerticalPanel mainPanel = new VerticalPanel();
 	
-	/** TextBox with user's id. */
-	private final TextBox id = new TextBox();
+	/** TextBox with user's username. */
+	private final TextBox username = new TextBox();
 	
 	/** TextBox with user's first name. */
 	private final TextBox firstname = new TextBox();
@@ -48,6 +49,14 @@ public class UserForm extends Composite {
 	/** The user that is managed by the form. */
 	private User user = new User();
 
+	private Label organizationLabel;
+	private Organization organization;
+
+	private boolean mockUser = false;
+
+	
+	private User loggedUser = null;
+	
 	/**
 	 * Instantiates a new user form.
 	 */
@@ -61,12 +70,17 @@ public class UserForm extends Composite {
 	 * @return the user
 	 */
 	public User getUser() {
-		user.setId(id.getValue());
+		user.setUsername(username.getValue());
 		user.setFirstname(firstname.getValue());
 		user.setLastname(lastname.getValue());
 		user.setEmail(email.getValue());
+		user.setOrganization(organization);
 		user.setPassword(currentPassword.getValue());
 		return user;
+	}
+	
+	public String getUsername(){
+		return username.getValue();
 	}
 
 	/* (non-Javadoc)
@@ -75,23 +89,38 @@ public class UserForm extends Composite {
 	@Override
 	public void onLoad() {
 		errorLabel.setStyleName("error");
-		Grid grid = new Grid(9, 2);
-		grid.setWidget(0, 0, new Label("ID:"));
-		grid.setWidget(0, 1, id);
-		grid.setWidget(1, 0, new Label("Firstname:"));
-		grid.setWidget(1, 1, firstname);
-		grid.setWidget(2, 0, new Label("Lastname:"));
-		grid.setWidget(2, 1, lastname);
-		grid.setWidget(3, 0, new Label("Email:"));
-		grid.setWidget(3, 1, email);
-		grid.setWidget(4, 0, new Label("Current password:"));
-		grid.setWidget(4, 1, currentPassword);
-		grid.setWidget(5, 0, new Label("New password:"));
-		grid.setWidget(5, 1, newPassword);
-		grid.setWidget(6, 1, new Label("* At least 5 characters."));
-		grid.setWidget(7, 0, new Label("Retype new password:"));
-		grid.setWidget(7, 1, newPassword2);		
-		grid.setWidget(8, 1, errorLabel);		
+		Grid grid = null;
+		if (!isMockUser()){
+			grid = new Grid(10, 2);
+			grid.setWidget(0, 0, new Label("Username:"));
+			grid.setWidget(0, 1, username);
+			grid.setWidget(1, 0, new Label("Firstname:"));
+			grid.setWidget(1, 1, firstname);
+			grid.setWidget(2, 0, new Label("Lastname:"));
+			grid.setWidget(2, 1, lastname);
+			grid.setWidget(3, 0, new Label("Email:"));
+			email.setWidth("250px");
+			grid.setWidget(3, 1, email);
+			grid.setWidget(4, 0, new Label("Organization:"));
+			grid.setWidget(4, 1, organizationLabel);
+			grid.setWidget(5, 0, new Label("Current password:"));
+			grid.setWidget(5, 1, currentPassword);
+			grid.setWidget(6, 0, new Label("New password:"));
+			grid.setWidget(6, 1, newPassword);
+			grid.setWidget(7, 1, new Label("* At least 5 characters."));
+			grid.setWidget(8, 0, new Label("Retype new password:"));
+			grid.setWidget(8, 1, newPassword2);		
+			grid.setWidget(9, 1, errorLabel);
+		} else { // if there is not mocked user then show a few fields to impersonate
+			grid = new Grid(3, 2);
+			grid.setWidget(0, 0, new Label("Username:"));
+			username.setWidth("150px");
+			grid.setWidget(0, 1, username);
+			grid.setWidget(1, 0, new Label("Email:"));
+			email.setWidth("250px");
+			grid.setWidget(1, 1, email);
+			grid.setWidget(2, 1, errorLabel);
+		}
 		mainPanel.add(grid);
 		mainPanel.add(new HTML("<br/>"));
 	}
@@ -103,17 +132,18 @@ public class UserForm extends Composite {
 	 */
 	public void setUser(User user) {
 		this.user = user;
-		id.setValue(user.getId());
+		username.setText(user.getUsername());
 		firstname.setValue(user.getFirstname());
 		lastname.setValue(user.getLastname());
 		email.setValue(user.getEmail());
+		organizationLabel = new Label(user.getOrganization().getName());
 	}
 	
 	/**
 	 * Disable not updatable fileds.
 	 */
 	public void disableNotUpdatableFileds(){
-		id.setEnabled(false);
+//		username.setEnabled(false);
 		firstname.setEnabled(false);
 		lastname.setEnabled(false);
 		email.setEnabled(false);
@@ -166,5 +196,17 @@ public class UserForm extends Composite {
 	 */
 	public String getNewPassword() {
 		return newPassword.getText();
-	}	
+	}
+	
+	public void setMockUser(boolean mock){
+		this.mockUser = mock;
+	}
+	
+	private boolean isMockUser(){
+		return this.mockUser;
+	}
+	
+	public void setLoggedUser(User aUser){
+		this.loggedUser = aUser;
+	}
 }

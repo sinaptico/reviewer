@@ -7,5 +7,5 @@ import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.User;
 
 public interface ReviewStratergy {
-	public Map<DocEntry, Set<User>> allocateReviews();
+	public Map<DocEntry, Set<User>> allocateReviews() throws Exception;
 }

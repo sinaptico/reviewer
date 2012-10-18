@@ -1,17 +1,28 @@
 package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
+
+	
+
 import java.util.HashSet;
 import java.util.Set;
+//import java.util.regex.Matcher;
+//import java.util.regex.Pattern;
 
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+
+import au.edu.usyd.reviewer.client.core.util.Constants;
 
 /**
  * <p>Class used to manage all users in the application, includes email, name, surname, if it's a native speaker, 
@@ -23,11 +34,12 @@ public class User implements Serializable {
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 	
-	/** The id. */
 	@Id
-	protected String id;
+	@GeneratedValue
+	private Long id;
 	
 	/** The email. */
+	@Column(unique = true, nullable = false)
 	protected String email = null;
 	
 	/** The first name. */
@@ -47,10 +59,22 @@ public class User implements Serializable {
 	
 	/** The role_name. */
 	@ElementCollection	
-	@JoinTable(name="User_roles", joinColumns = @JoinColumn(name="id", referencedColumnName="id") )
+	@JoinTable(name="User_roles", joinColumns = @JoinColumn(name="email", referencedColumnName="email") )
 	@LazyCollection(LazyCollectionOption.FALSE)	
 	private Set<String> role_name = new HashSet<String>();	
 
+	/** The organization */
+	@ManyToOne
+	@JoinColumn(name="organizationId")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private Organization organization;
+
+	private String username;
+	
+	public User(){
+		
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -90,12 +114,25 @@ public class User implements Serializable {
 	}
 
 	/**
-	 * Gets the id.
+	 * Gets the username from the email
 	 *
-	 * @return the id
+	 * @return the username
 	 */
-	public String getId() {
-		return id;
+	public String getUsername() {
+		String usernameResult = null;
+		if ( username == null && this.email != null){
+//			String  expression="^[_a-z0-9-]+(\\.[_a-z0-9-]+)*"; 
+//			Pattern pattern = Pattern.compile(expression,Pattern.CASE_INSENSITIVE); 
+//			Matcher matcher = pattern.matcher(email);
+//			username = matcher.group(0);
+			String email = getEmail();
+			int i = email.indexOf("@");
+			if ( i > 0){
+				usernameResult = email.substring(0,i);
+			}
+			username = usernameResult;
+		}
+		return username;
 	}
 
 	/**
@@ -123,7 +160,7 @@ public class User implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		return result;
 	}
 
@@ -143,15 +180,6 @@ public class User implements Serializable {
 	 */
 	public void setFirstname(String firstname) {
 		this.firstname = firstname;
-	}
-
-	/**
-	 * Sets the id.
-	 *
-	 * @param id the new id
-	 */
-	public void setId(String id) {
-		this.id = id;
 	}
 
 	/**
@@ -224,5 +252,67 @@ public class User implements Serializable {
 	 */
 	public void setRole_name(Set<String> role_name) {
 		this.role_name = role_name;
-	}	
+	}
+
+	public Organization getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(Organization organization) {
+		this.organization = organization;
+	}
+
+	public User clone(){
+		User user = new User();
+		user.setId(this.getId());
+		user.setEmail(this.getEmail());
+		user.setFirstname(this.getFirstname());
+		user.setLastname(this.getLastname());
+		user.setNativeSpeaker(this.getNativeSpeaker());
+		
+		if (this.getOrganization() != null){
+			user.setOrganization(this.getOrganization().clone());
+		}
+		user.setPassword(this.getPassword());
+		
+		Set<String> roles = new HashSet<String>();
+		for(String role : this.getRole_name()){
+			roles.add(role);
+		}
+		user.setRole_name(roles);
+		user.setWasmuser(this.getWasmuser());
+		return user;
+	}
+		
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void addRole(String role){
+		this.getRole_name().add(role);
+	}
+	
+	public boolean isSuperAdmin(){
+		return this.getRole_name().contains(Constants.ROLE_SUPER_ADMIN);
+	}
+	
+	public boolean isAdmin(){
+		return this.getRole_name().contains(Constants.ROLE_ADMIN);
+	}
+	
+	public String getDomain(){
+		String email = getEmail();
+		int i = email.indexOf("@");
+		String domain = email.substring(i+1,email.length());
+		return domain;
+	}
+	
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 }

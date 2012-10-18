@@ -117,4 +117,17 @@ public class Rating implements Serializable {
 	public void setOwner(User owner) {
 		this.owner = owner;
 	}
+	
+	public Rating clone(){
+		Rating rating = new Rating();
+		if (this.getEntry() != null){
+			rating.setEntry(this.getEntry());
+		}
+		
+		rating.setId(this.getId());
+		if (this.getOwner() != null){
+			rating.setOwner(owner.clone());
+		}
+		return rating;
+	}
 }

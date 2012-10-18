@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinTable;
@@ -39,7 +40,8 @@ public class DocEntry extends Entry {
 	protected String documentId;
 	
 	/** The reviews. */
-	@OneToMany
+	/*MARIELA I added cascade remove */
+	@OneToMany(cascade = CascadeType.REMOVE)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name = "DocEntry_Reviews_Review")
 	protected Set<Review> reviews = new HashSet<Review>();
@@ -192,5 +194,38 @@ public class DocEntry extends Entry {
 	 */
 	public void setEarlySubmitDate(Date earlySubmitDate) {
 		this.earlySubmitDate = earlySubmitDate;
-	}	
+	}
+	
+	
+	public DocEntry clone(){
+		DocEntry doc = new DocEntry();
+		doc.setDocumentId(this.getDocumentId());
+		doc.setDomainName(this.getDomainName());
+		doc.setDownloaded(this.getDownloaded());
+		doc.setEarlySubmitDate(this.getEarlySubmitDate());
+		doc.setFileName(this.getFileName());
+		doc.setId(this.getId());
+		doc.setLocalFile(this.isLocalFile());
+		doc.setLocked(this.getLocked());
+		
+		if ( this.getOwner() != null){
+			doc.setOwner(this.getOwner().clone());
+		}
+		
+		if (this.getOwnerGroup() != null){
+			doc.setOwnerGroup(this.getOwnerGroup().clone());
+		}
+		
+		Set<Review> reviews = new HashSet<Review>();
+		for(Review review:this.getReviews()){
+			if (review != null){
+				reviews.add(review.clone());
+			}
+		}
+		
+		doc.setReviews(reviews);
+		doc.setTitle(this.getTitle());
+		doc.setUploaded(this.isUploaded());
+		return doc;
+	}
 }

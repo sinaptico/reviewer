@@ -16,13 +16,17 @@ import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentRepository;
+import au.edu.usyd.reviewer.server.CourseDao;
 import au.edu.usyd.reviewer.server.Reviewer;
+import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.util.FileUtil;
 
 import com.google.gdata.data.docs.SpreadsheetEntry;
@@ -37,24 +41,30 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 	private AssignmentDao assignmentDao;
 	private AssignmentRepository assignmentRepository;
 	private String folder;
+	private UserDao userDao;
+	private CourseDao courseDao;
 
 	public SpreadsheetReviewStratergy(Course course, WritingActivity writingActivity, AssignmentDao assignmentDao, AssignmentRepository assignmentRepository) {
 		this.course = course;
 		this.writingActivity = writingActivity;
 		this.assignmentDao = assignmentDao;
 		this.assignmentRepository = assignmentRepository;
+		this.userDao = UserDao.getInstance();
+		this.courseDao = CourseDao.getInstance();
 		if (assignmentRepository != null){
-			this.folder = getDocumentsFolder(course.getId(),writingActivity.getId(),writingActivity.getCurrentDeadline().getId(),WritingActivity.TUTORIAL_ALL);
+			this.folder = getDocumentsFolder(course,writingActivity.getId(),writingActivity.getCurrentDeadline().getId(),WritingActivity.TUTORIAL_ALL);
 		}
 	}
 	
-	public String getDocumentsFolder(long courseId, long activityId, long activityDeadlineId, String tutorial) {
-		String documentsHome = Reviewer.getDocumentsHome();
-		return String.format(documentsHome + "/%s/%s/%s/%s", courseId, activityId, activityDeadlineId, tutorial);
+	private String getDocumentsFolder( Course course, long activityId, long activityDeadlineId, String tutorial)  {
+		//String documentsHome = Reviewer.getDocumentsHome();
+		Organization organization = course.getOrganization();
+		String documentsHome = organization.getDocumentsHome();
+		return String.format(documentsHome + "/%s/%s/%s/%s", course.getId(), activityId, activityDeadlineId, tutorial);
 	}
 
 	@Override
-	public Map<DocEntry, Set<User>> allocateReviews() {
+	public Map<DocEntry, Set<User>> allocateReviews() throws Exception{
 		Map<DocEntry, Set<User>> reviewSetup = new HashMap<DocEntry, Set<User>>();
 		
 		List<Integer> entriesNumberList = new ArrayList<Integer>();
@@ -62,8 +72,9 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		for (int i=0; i<listEntries.size(); i++){entriesNumberList.add(i);}
 		
 		LOOP_ENTRIES: for (ListEntry listEntry : listEntries) {
-			// get document to review			
-			User reviewee = assignmentDao.loadUser(listEntry.getCustomElements().getValue("revieweeId").trim());
+			// get document to review	
+			String username = listEntry.getCustomElements().getValue("revieweeId").trim();
+			User reviewee = userDao.getUserByUsername(username, course.getOrganization());
 			DocEntry docEntry;
 			
 			docEntry = returnDocEntry(reviewee);
@@ -73,10 +84,11 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 				Collections.shuffle(entriesNumberList,new Random());
 			    
 			    for (Integer entryNumber : entriesNumberList) {
-			    	reviewee = assignmentDao.loadUser(listEntries.get(entryNumber).getCustomElements().getValue("revieweeId").trim());
-			    	
-			    	User reviewer = assignmentDao.loadUser(listEntries.get(entryNumber).getCustomElements().getValue("reviewerId").trim());
-			    	if (reviewer.getId().equalsIgnoreCase(reviewee.getId())){continue;}
+			    	username = listEntries.get(entryNumber).getCustomElements().getValue("revieweeId").trim();
+			    	reviewee = userDao.getUserByUsername(username,course.getOrganization());
+			    	username = listEntries.get(entryNumber).getCustomElements().getValue("reviewerId").trim();
+			    	User reviewer = userDao.getUserByUsername(username,course.getOrganization());
+			    	if (reviewer.getUsername().equalsIgnoreCase(reviewee.getUsername())){continue;}
 			    	
 			    	DocEntry tempDocEntry = returnDocEntry(reviewee);
 			    	if (!docEntryIsEmpty(tempDocEntry)){
@@ -88,7 +100,8 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 			
 	        if (docEntry !=null){	        	
 				// check that reviewer has not already been assigned to review this document
-				User reviewer = assignmentDao.loadUser(listEntry.getCustomElements().getValue("reviewerId").trim());
+	        	username = listEntry.getCustomElements().getValue("reviewerId").trim();
+				User reviewer = userDao.getUserByUsername(username,course.getOrganization());
 				ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, reviewer);
 				if (reviewEntry != null) {
 					continue LOOP_ENTRIES;
@@ -127,7 +140,8 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		File file = new File(folder + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
 		
 		try{
-			File empty = new File(Reviewer.getEmptyDocument());
+			Organization organization = course.getOrganization();
+			File empty = new File(organization.getEmptyDocument());
 			if (empty.length() == file.length()){return true;}			
 		} catch (Exception e) {
 			logger.error("Error reading empty document.", e);					

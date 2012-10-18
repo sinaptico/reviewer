@@ -90,4 +90,17 @@ public class Question implements Serializable {
 		this.sourceSentence = sourceSentence;
 	}
 
+	public Question clone(){
+		Question question = new Question();
+		question.setDocId(this.getDocId());
+		question.setId(this.getId());
+		
+		if ( this.getOwner() != null){
+			question.setOwner(this.getOwner().clone());
+		}
+		
+		question.setQuestion(this.getQuestion());
+		question.setSourceSentence(this.getSourceSentence());
+		return question;
+	}
 }
