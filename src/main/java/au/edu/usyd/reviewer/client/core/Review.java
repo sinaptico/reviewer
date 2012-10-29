@@ -53,7 +53,7 @@ public class Review implements Serializable {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@javax.persistence.OrderBy("number")
 	private Set<FeedbackTemplate> feedback_templates = new HashSet<FeedbackTemplate>();
-	
+		
 	/** The feedback template type. */
 	private String feedbackTemplateType = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_DEFAULT;
 

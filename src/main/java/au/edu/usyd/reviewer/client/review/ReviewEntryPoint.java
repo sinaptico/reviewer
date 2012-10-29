@@ -282,8 +282,16 @@ public class ReviewEntryPoint implements EntryPoint {
 					
 					// glosser link
 					if (!writingActivity.getGlosserSite().equals(WritingActivity.GLOSSER_SITE_NONE)) {
-						Anchor glosserLink = new Anchor();
-						UrlLib.glosserUrl(glosserLink,writingActivity.getGlosserSite(), docEntry.getDocumentId());
+						final Anchor glosserLink = new Anchor();
+//						UrlLib.glosserUrl(glosserLink,writingActivity.getGlosserSite(), docEntry.getDocumentId());
+						reviewService.getGlosserUrl(writingActivity.getGlosserSite(), docEntry.getDocumentId(), new AsyncCallback<String>() {
+							public void onFailure(Throwable caught) {
+							    Window.alert("Failed to get Glosser's Host: " + caught.getMessage());
+							}
+							public void onSuccess(String result) {
+								glosserLink.setHref(result);
+							}
+						});
 						//glosserLink.setHref(UrlLib.glosserUrl(writingActivity.getGlosserSite(), docEntry.getDocumentId()));
 						//glosserLink.setHTML("<img style='margin-left:20px; margin-top:-4px;' height='19px' src='images/glosser.png'> <span>(View this document in Glosser)</span></img>");
 						glosserLink.setHTML("<img style='margin-left:5px; margin-top:16px;' height='0px' src='images/glosser.png'><span>(View this document in Glosser)</span></img>");

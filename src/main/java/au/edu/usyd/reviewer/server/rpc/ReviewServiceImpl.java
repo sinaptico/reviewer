@@ -32,6 +32,7 @@ import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.client.review.ReviewService;
 import au.edu.usyd.reviewer.server.AssignmentDao;
@@ -315,28 +316,39 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	public User getUser() {
 		
 		try {
-			HttpServletRequest request = this.getThreadLocalRequest();
-			Object obj = request.getSession().getAttribute("user");
 			
-			if (obj != null)
-			{
-				user = (User) obj;
+			HttpServletRequest request = this.getThreadLocalRequest();
+			User mockedUser = (User) request.getSession().getAttribute("mockedUser");
+			
+			if ( mockedUser != null){
+				if ( mockedUser.getOrganization() == null){
+					user = userDao.getUserByEmail(mockedUser.getEmail());
+					request.getSession().setAttribute("mockedUser", mockedUser);
+				} else {
+					user = mockedUser;
+				}
+				
 			}
-			Principal principal = request.getUserPrincipal();
-			UserDao userDao = UserDao.getInstance();
-			if  (user == null){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-				
-			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-				
+			else { // get logged user 
+				user = (User) request.getSession().getAttribute("user");
+				Principal principal = request.getUserPrincipal();
+				UserDao userDao = UserDao.getInstance();
+				if  (user == null){
+					user = userDao.getUserByEmail(principal.getName());
+					request.getSession().setAttribute("user", user);
+					
+				} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
+					user = userDao.getUserByEmail(principal.getName());
+					request.getSession().setAttribute("user", user);
+				}
 			}
 		} catch (MessageException e) {
 			e.printStackTrace();
 		}
 		return user;
 	}
-
+	
+	public String getGlosserUrl(Long siteId, String docId) {
+		return Reviewer.getGlosserUrl(siteId, docId);
+	}
 }

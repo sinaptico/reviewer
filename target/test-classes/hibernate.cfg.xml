@@ -7,15 +7,17 @@
 	<session-factory>
 
 		<!-- Connection -->
-		<property name="connection.driver_class">org.hsqldb.jdbcDriver</property>
+		<!--property name="connection.driver_class">org.hsqldb.jdbcDriver</property-->
+		<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
 		<!--property name="connection.url">jdbc:hsqldb:mem:reviewer</property-->
 		<property name="connection.url">jdbc:mysql://localhost/reviewer</property>
 		<property name="connection.username">reviewer</property>
 		<property name="connection.password">reviewer</property>
 
 		<!-- SQL dialect -->
-		<property name="dialect">org.hibernate.dialect.HSQLDialect</property>
-
+		<!-- property name="dialect">org.hibernate.dialect.HSQLDialect</property-->
+		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+		
 		<!-- Enable Hibernate's automatic session context management -->
 		<property name="current_session_context_class">thread</property>
 
@@ -57,6 +59,8 @@
 		<mapping class="au.edu.usyd.reviewer.client.core.DocumentType" />
 		<mapping class="au.edu.usyd.reviewer.client.core.Rubric" />
 		<mapping class="au.edu.usyd.reviewer.client.core.FeedbackTemplate" />
-		
+		<mapping class="au.edu.usyd.reviewer.client.core.Organization" />
+		<mapping class="au.edu.usyd.reviewer.client.core.ReviewerProperty" />
+		<mapping class="au.edu.usyd.reviewer.client.core.OrganizationProperty" />
 	</session-factory>
 </hibernate-configuration>

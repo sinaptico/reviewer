@@ -107,11 +107,14 @@ public class AssignmentManager {
 	}
 
 	public void deleteCourse(Course course) throws Exception {
+//		for (WritingActivity writingActivity : course.getWritingActivities()) {
+//			Timer timer = activityTimers.get(writingActivity.getId());
+//			if (timer != null) {
+//				timer.cancel();
+//			}
+//		}	
 		for (WritingActivity writingActivity : course.getWritingActivities()) {
-			Timer timer = activityTimers.get(writingActivity.getId());
-			if (timer != null) {
-				timer.cancel();
-			}
+			deleteActivity(writingActivity);
 		}
 		assignmentDao.delete(course);
 		assignmentRepository.deleteCourse(course);
