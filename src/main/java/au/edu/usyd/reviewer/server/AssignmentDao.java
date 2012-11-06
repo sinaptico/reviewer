@@ -49,7 +49,7 @@ public class AssignmentDao {
 				session.getTransaction().rollback();
 			}
 			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_DELETE_MESSAGE);
+			throw new MessageException(Constants.EXCEPTION_DELETE);
 		}
 	}
 
@@ -503,11 +503,11 @@ public class AssignmentDao {
 				session.getTransaction().rollback();
 			}
 			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_SAVE_MESSAGE);
+			throw new MessageException(Constants.EXCEPTION_SAVE);
 		}
 	}
 
-	public Collection<ReviewTemplate> loadReviewTemplates(Organization organization) {
+	public List<ReviewTemplate> loadReviewTemplates(Organization organization) {
 		List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
 		if ( organization != null){
 			String query = "from ReviewTemplate review " + "where review.organization=:organization";
@@ -524,13 +524,23 @@ public class AssignmentDao {
  		return result;
 	}
 	
-	public ReviewTemplate loadReviewTemplate(Long reviewTemplateId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		ReviewTemplate reviewTemplate = (ReviewTemplate) session.createCriteria(ReviewTemplate.class).add(Property.forName("id").eq(reviewTemplateId)).uniqueResult();
-		session.getTransaction().commit();
-		if (reviewTemplate != null){
-			reviewTemplate = reviewTemplate.clone();
+	public ReviewTemplate loadReviewTemplate(Long reviewTemplateId) throws MessageException{
+		Session session = null;
+		ReviewTemplate reviewTemplate = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			reviewTemplate = (ReviewTemplate) session.createCriteria(ReviewTemplate.class).add(Property.forName("id").eq(reviewTemplateId)).uniqueResult();
+			session.getTransaction().commit();
+			if (reviewTemplate != null){
+				reviewTemplate = reviewTemplate.clone();
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
 		}
 		return reviewTemplate;
 	}
@@ -561,5 +571,4 @@ public class AssignmentDao {
 		}
 		return types;
 	}
-	
 }

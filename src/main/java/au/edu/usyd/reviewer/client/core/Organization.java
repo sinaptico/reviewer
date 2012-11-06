@@ -3,6 +3,7 @@ package au.edu.usyd.reviewer.client.core;
 import java.io.Serializable;
 
 
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -172,6 +174,7 @@ public class Organization implements Serializable {
 	 * @param propertyName property name to look for
 	 * @return String value of the organization property
 	 */
+	@JsonIgnore
 	public String getPropertyValue(String propertyName){
 		String value = null;
 		for(OrganizationProperty organizationProperty :getOrganizationProperties()){
@@ -184,97 +187,115 @@ public class Organization implements Serializable {
 		return value;
 	}
 	
-	
+	@JsonIgnore
 	public  String getDocumentsHome() {
 		String value = getPropertyValue(Constants.REVIEWER_DOCUMENTS_HOME);
 		return value;
 	}
 	
+	@JsonIgnore
 	public  String getUploadsHome() {
 		String value = getPropertyValue(Constants.REVIEWER_UPLOADS_HOME);
 		return value;
-	}	
-
+	}
+	
+	@JsonIgnore
 	public  String getGoogleDomain() {
 		String value = getPropertyValue(Constants.REVIEWER_GOOGLE_DOMAIN);
 		return value;
 	}
-
+	
+	@JsonIgnore
 	public  String getGooglePassword() {
 		String value = getPropertyValue(Constants.REVIEWER_GOOGLE_PASSWORD);
 		return value;
 	}
 	
+	@JsonIgnore
 	public  String getGoogleUsername() {
 		String value = getPropertyValue(Constants.REVIEWER_GOOGLE_USERNAME);
 		return value;
 	}
 	
+	@JsonIgnore
 	public  String getEmailPassword() {
 		String value = getPropertyValue(Constants.REVIEWER_EMAIL_PASSWORD);
 		return value;
 	}
 	
+	@JsonIgnore
 	public  String getEmailUsername() {
 		String value = getPropertyValue(Constants.REVIEWER_EMAIL_USERNAME);
 		return value;
 	}
-
+	
+	@JsonIgnore
 	public String getPrivateKeyPath() {
 		String value = getPropertyValue(Constants.REVIEWER_PRIVATE_KEY);
 		return value;
 	}
 
+	@JsonIgnore
 	public String getProperty(String property) {
 		String value = getPropertyValue(property);
 		return value;
 	}
 
+	@JsonIgnore
 	public String getPublicKeyPath() {
 		String value = getPropertyValue(Constants.REVIEWER_PUBLIC_KEY);
 		return value;
 	}
 
+	@JsonIgnore
 	public String getEmptyFile() {
 		String value = getPropertyValue(Constants.REVIEWER_EMPTY_FILE);
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getEmptyDocument() {
 		String value = getPropertyValue(Constants.REVIEWER_EMPTY_DOCUMENT);
 		return value;
 	}
 
+	@JsonIgnore
 	public String getSMTPHost(){
 		String value = getPropertyValue(Constants.REVIEWER_SMTP_HOST);
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getSMTPPort(){
 		String value = getPropertyValue(Constants.REVIEWER_SMTP_PORT);
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getGlosserHost(){
 		String value = getPropertyValue(Constants.REVIEWER_GLOSSER_HOST);
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getGlosserPort(){
 		String value = getPropertyValue(Constants.REVIEWER_GLOSSER_PORT);
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getOrganizationLogoFile(){
 		String value = getPropertyValue(Constants.ORGANIZATION_LOGO_FILE);
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getOrganizationLogoHome(){
 		String value = getPropertyValue(Constants.ORGANIZATION_LOGO_HOME);
 		return value;
 	}
 
+	@JsonIgnore
 	public String getImageLogo(){
 		String image = "";
 		String imagePath = getPropertyValue(Constants.ORGANIZATION_LOGO_HOME);
@@ -285,11 +306,13 @@ public class Organization implements Serializable {
 		return image;
 	}
 	
+	@JsonIgnore
 	public String getDecryptedGooglePassword() throws Exception {
 		String encryptedValue = this.getGooglePassword();
 		return encryptedValue;
 	}
 	
+	@JsonIgnore
 	public String getDecryptedEmailPassword() throws Exception {
 		String encryptedValue = this.getEmailPassword();
 		return encryptedValue;

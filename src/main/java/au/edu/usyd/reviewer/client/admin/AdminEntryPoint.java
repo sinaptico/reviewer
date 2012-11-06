@@ -213,17 +213,17 @@ public class AdminEntryPoint implements EntryPoint {
 			@Override
 			public void onSuccess(final List<SiteForm> sites) {
 				glosserSites = sites;
-//				glosserService.getToolList(new AsyncCallback<List<String>>() {
-//					@Override
-//					public void onFailure(Throwable caught) {
-//						Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
-//					}
-//
-//					@Override
-//					public void onSuccess(final List<String> tools) {
-//						glosserPanel.setSitesAndTools(sites, tools);
-//					}
-//				});
+				glosserService.getToolList(new AsyncCallback<List<String>>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(final List<String> tools) {
+						glosserPanel.setSitesAndTools(sites, tools);
+					}
+				});
 			}
 		});
 		
@@ -718,26 +718,26 @@ public class AdminEntryPoint implements EntryPoint {
 		tabs.add(new ScrollPanel(reviewTemplatesContentPanel), "Review Templates");
 		tabs.setPixelSize(690, 650);
 		tabs.selectTab(0);
-		tabs.addSelectionHandler(new SelectionHandler<Integer>() {
-			  @Override
-			  public void onSelection(SelectionEvent<Integer> event) {
-			    if (event.getSelectedItem() == 3 && !toolsLoaded) {
-			    	// Gloooser Tab
-			    	glosserService.getToolList(new AsyncCallback<List<String>>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
-						}
-	
-						@Override
-						public void onSuccess(final List<String> tools) {
-							glosserPanel.setSitesAndTools(glosserSites, tools);
-							toolsLoaded = true;
-						}
-					});
-			    }
-			  }
-			});
+//		tabs.addSelectionHandler(new SelectionHandler<Integer>() {
+//			  @Override
+//			  public void onSelection(SelectionEvent<Integer> event) {
+//			    if (event.getSelectedItem() == 3 && !toolsLoaded) {
+//			    	// Gloooser Tab
+//			    	glosserService.getToolList(new AsyncCallback<List<String>>() {
+//						@Override
+//						public void onFailure(Throwable caught) {
+//							Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
+//						}
+//	
+//						@Override
+//						public void onSuccess(final List<String> tools) {
+//							glosserPanel.setSitesAndTools(glosserSites, tools);
+//							toolsLoaded = true;
+//						}
+//					});
+//			    }
+//			  }
+//			});
 
 		VerticalPanel contentPanel = new VerticalPanel();
 		contentPanel.add(activityLabel);

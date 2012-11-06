@@ -56,7 +56,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 		
 	@Override
-	// In CourseController 
 	public Course deleteCourse(Course course) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()) {
@@ -68,12 +67,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				throw e;
 			}
 		} else {
-			throw new Exception("Permission denied");
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 
 	@Override
-	// In Activity Controller
 	public WritingActivity deleteWritingActivity(WritingActivity writingActivity) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin() || isCourseLecturer(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) {
@@ -85,12 +83,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				throw e;
 			}
 		} else {
-			throw new Exception("Permission denied");
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 
 	@Override
-	// In CourseController
 	public Collection<Course> getCourses(Integer semester, Integer year, Long organizationId) throws Exception {
 		initialize();	
 		Collection<Course> courses = new ArrayList<Course>();
@@ -115,7 +112,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return courses;
 	}
 
-	// In AuthenticationController
 	public User getLoggedUser() {
 		try {
 			HttpServletRequest request = this.getThreadLocalRequest();
@@ -141,7 +137,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	// In ActivityController
 	public Collection<UserStats> getWritingActivityStats(Long writingActivityId) throws Exception {
 		initialize();
 		WritingActivity writingActivity = assignmentDao.loadWritingActivity(writingActivityId);
@@ -154,28 +149,23 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return userStatsAnalyser.calculateStats(writingActivity, users);
 	}
 
-	// In Controller
 	private boolean isAdmin() {
 		return user == null ? false : user.isAdmin();
 	}
 	
-	// In Controller
 	private boolean isSuperAdmin(){
 		return user == null? false : user.isSuperAdmin();
 	}
 	
-	// In Controller
 	private boolean isAdminOrSuperAdmin(){
 		return this.isAdmin() || this.isSuperAdmin();
 	}
 	
-	// In Controller
-	public boolean isCourseLecturer(Course course) {
+	private boolean isCourseLecturer(Course course) {
 		return user == null ? false : course.getLecturers().contains(user);
 	}
 
 	@Override
-	//In AuthenticationController
 	public User mockUser(User aUser) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()) {
@@ -201,7 +191,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 
 	@Override
-	// In CourseController
 	public Course saveCourse(Course course) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()|| isCourseLecturer(courseDao.loadCourse(course.getId()))) {
@@ -216,12 +205,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				throw e;
 			}
 		} else {
-			throw new MessageException("Permission denied");
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 
 	@Override
-	// In ActivityController
 	public WritingActivity saveWritingActivity(Long courseId, WritingActivity writingActivity) throws Exception {
 		initialize();
 		Course course = courseDao.loadCourse(courseId);
@@ -233,7 +221,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				throw e;
 			}
 		} else {
-			throw new Exception("Permission denied");
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 
@@ -261,12 +249,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 			return grade;
 		} else {
-			throw new Exception("Permission denied");
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 	
 	@Override
-	// In ReviewTemplateController
 	public ReviewTemplate saveReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()) {
@@ -281,12 +268,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				throw e;
 			}
 		} else {
-			throw new Exception("Permission denied");
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 
 	@Override	
-	//In ReviewTemplateController
 	public Collection<ReviewTemplate> getReviewTemplates(Long organizationId) throws Exception {
 		initialize();
 		
@@ -314,7 +300,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 	
 	@Override
-	//In ReviewTemplateController
 	public ReviewTemplate deleteReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()) {
@@ -326,7 +311,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				throw e;
 			}
 		} else {
-			throw new Exception("Permission denied");
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 
@@ -398,7 +383,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		Reviewer.initializeAssignmentManager(organization);	
 	}
 
-	// In AdminController
 	public Collection<Organization> getOrganizations() throws Exception{
 
 		initialize();
@@ -411,7 +395,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 	
 
-	// In UtilController
 	public Collection<Integer> getYears(){
 		return CalendarUtil.getYears();
 	}

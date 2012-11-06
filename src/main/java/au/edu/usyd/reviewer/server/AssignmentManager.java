@@ -107,15 +107,56 @@ public class AssignmentManager {
 	}
 
 	public void deleteCourse(Course course) throws Exception {
-//		for (WritingActivity writingActivity : course.getWritingActivities()) {
-//			Timer timer = activityTimers.get(writingActivity.getId());
-//			if (timer != null) {
-//				timer.cancel();
-//			}
-//		}	
-		for (WritingActivity writingActivity : course.getWritingActivities()) {
-			deleteActivity(writingActivity);
+
+		// lecturers
+		Set<User> lecturerToDelete = new HashSet<User>();
+		Set<User> lecturerToAdd = new HashSet<User>();
+		for(User lecturer : course.getLecturers()){
+			if (lecturer != null){
+				if  (lecturer.getId() == null){
+					User newLecturer = userDao.getUserByEmail(lecturer.getEmail());
+					if (newLecturer == null){
+						lecturerToDelete.add(lecturer);
+					} else{
+						lecturerToAdd.add(newLecturer);
+						lecturerToDelete.add(lecturer);
+					}
+				} 
+			}  
 		}
+		course.getLecturers().removeAll(lecturerToDelete);
+		course.getLecturers().addAll(lecturerToAdd);
+		
+		// tutors
+		Set<User> tutorToDelete = new HashSet<User>();
+		Set<User> tutorToAdd = new HashSet<User>();
+		for(User tutor : course.getTutors()){
+			if (tutor != null){
+				if  (tutor.getId() == null){
+					User newTutor= userDao.getUserByEmail(tutor.getEmail());
+					if (newTutor == null){
+						tutorToDelete.add(tutor);
+					} else{
+						tutorToAdd.add(newTutor);
+						tutorToDelete.add(tutor);
+					}
+				} 
+			}  
+		}
+		course.getLecturers().removeAll(lecturerToDelete);
+		course.getLecturers().addAll(lecturerToAdd);
+		
+		// writing activities
+		for (WritingActivity writingActivity : course.getWritingActivities()) {
+			Timer timer = activityTimers.get(writingActivity.getId());
+			if (timer != null) {
+				timer.cancel();
+			}
+			course.getWritingActivities().remove(writingActivity);
+			courseDao.save(course);
+			assignmentDao.delete(writingActivity);
+			assignmentRepository.deleteActivity(writingActivity);
+		}	
 		assignmentDao.delete(course);
 		assignmentRepository.deleteCourse(course);
 	}

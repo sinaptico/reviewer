@@ -2,6 +2,8 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
 
+
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +19,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+
 
 /**
  * <p>Class for writing and reviewing activities management includes 
@@ -53,7 +56,7 @@ public abstract class Activity<E extends Entry> implements Serializable {
 	
 	/** The entries. */
 	@OneToMany(targetEntity = Entry.class)
-	@Cascade(CascadeType.REMOVE)
+	@Cascade(CascadeType.ALL)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name = "Activity_Entries_Entry")
 	protected Set<E> entries = new HashSet<E>();

@@ -50,7 +50,11 @@ public class AssignmentRepository {
 		try {
 			googleUserEmail = username;
 			this.googleDocsServiceImpl = new GoogleDocsServiceImpl(username, password);
+			this.googleDocsServiceImpl.setAuthSubToken(null);
+			this.googleDocsServiceImpl.setUserCredentials(username, password);
 			this.googleSpreadsheetServiceImpl = new GoogleSpreadsheetServiceImpl(username, password);
+			this.googleSpreadsheetServiceImpl.setAuthSubToken(null);
+			this.googleSpreadsheetServiceImpl.setUserCredentials(username, password);
 		} catch (AuthenticationException e) {
 			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
@@ -348,18 +352,19 @@ public class AssignmentRepository {
 		UserGroup instructors = new UserGroup();
 		instructors.getUsers().addAll(course.getLecturers());
 		instructors.getUsers().addAll(course.getTutors());
+	
+		// if the logged user (who is creating the document) is not equals to the user used to enter to Google Docs then
+		// add permissions to the logged used to access to the course spreadsheet in Google Docs
+		if ( googleUserEmail != null &&  !googleUserEmail.equals(user.getEmail())){
+			instructors.getUsers().add(user);
+		}
 		
 		DocEntry courseFolder = new DocEntry();
 		courseFolder.setDocumentId(course.getFolderId());
 		courseFolder.setLocked(true);
 		courseFolder.setOwnerGroup(instructors);
 		this.updateDocument(courseFolder);
-		
-		// if the logged user (who is creating the document) is not equals to the user used to enter to Google Docs then
-		// add permissions to the logged used to access to the course spreadsheet in Google Docs
-		if ( googleUserEmail != null &&  !googleUserEmail.equals(user.getEmail())){
-			instructors.getUsers().add(user);
-		}
+	
 		DocEntry courseSpreadsheet = new DocEntry();
 		courseSpreadsheet.setDocumentId(course.getSpreadsheetId());
 		courseSpreadsheet.setLocked(false);

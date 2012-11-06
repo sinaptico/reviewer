@@ -109,21 +109,21 @@ public class ReviewerAdminServiceImpl extends RemoteServiceServlet implements Re
 		}
 	}
 	
-	public Collection<User> getUsers(String firstName, String lastName,int startRow, int maxRows) throws Exception{
-		if (isAdminOrSuperAdmin()){
-			return organizationManager.getUsers(firstName, lastName, startRow, maxRows);
-		} else {
-			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-		}
-	}
+//	public Collection<User> getUsers(String firstName, String lastName,int startRow, int maxRows) throws Exception{
+//		if (isAdminOrSuperAdmin()){
+//			return organizationManager.getUsers(firstName, lastName, startRow, maxRows);
+//		} else {
+//			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+//		}
+//	}
 	
-	public Collection<User> getUsers(Organization organization, String firstName, String lastName, int startRow, int maxRows) throws Exception{
-		if (isAdminOrSuperAdmin()){
-			return organizationManager.getUsers(organization, firstName,lastName, startRow, maxRows);
-		} else {
-			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-		}
-	}
+//	public Collection<User> getUsers(Organization organization, String firstName, String lastName, int startRow, int maxRows) throws Exception{
+//		if (isAdminOrSuperAdmin()){
+//			return organizationManager.getUsers(organization, firstName,lastName, startRow, maxRows);
+//		} else {
+//			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+//		}
+//	}
 	
 	private boolean isAdmin() {
 		User user = getUser();
@@ -139,7 +139,7 @@ public class ReviewerAdminServiceImpl extends RemoteServiceServlet implements Re
 		return this.isAdmin() || this.isSuperAdmin();
 	}
 	
-	public User getUser() {
+	private User getUser() {
 		
 		try {
 			HttpServletRequest request = this.getThreadLocalRequest();

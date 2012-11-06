@@ -1,4 +1,4 @@
-	package au.edu.usyd.reviewer.server.rpc;
+package au.edu.usyd.reviewer.server.rpc;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;

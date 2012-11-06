@@ -1,5 +1,8 @@
 package au.edu.usyd.reviewer.server.controller;
+
 import java.util.ArrayList;
+
+
 
 import java.util.Calendar;
 import java.util.List;
@@ -19,12 +22,25 @@ import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.OrganizationDao;
 
+/**
+ * Controller for courses. It has to get, save and delete courses  
+ * @author mdagraca
+ */
 
 @Controller
 @RequestMapping("/Course")
-public class CourseController extends au.edu.usyd.reviewer.server.controller.Controller{
+public class CourseController extends ReviewerController {
 	
-	@RequestMapping(value="/getCourses/{semester}/{year}/{organizationId}", method = RequestMethod.GET)
+	/**
+	 * Return a list of courses belongs to the Organization with id equals to "organizationId", year equals "year" and semester equals to "semeter"
+	 * @param request  HttpServletRequest to initialize the controller
+	 * @param semester semester of the courses
+	 * @param year  year of the courses
+	 * @param organizationId organization id of the organization owner of the courses
+	 * @return List of courses
+	 * @throws MessageException message to the user
+	 */
+	@RequestMapping(value="/{semester}/{year}/{organizationId}", method = RequestMethod.GET)
 	public @ResponseBody  List<Course> getCourses(HttpServletRequest request,@PathVariable Integer semester, 
 			@PathVariable Integer year, @PathVariable Long organizationId) throws MessageException { 
 		List<Course> courses = new ArrayList<Course>();
@@ -49,17 +65,24 @@ public class CourseController extends au.edu.usyd.reviewer.server.controller.Con
 				courses = assignmentDao.loadLecturerCourses(semester, year, user);
 			}
 		} catch( Exception e){
-			e.printStackTrace();
 			if (e instanceof MessageException){
 				throw (MessageException) e;
 			} else {
-				throw new MessageException(Constants.EXCEPTION_GET_COURSES_MESSAGE);
+				e.printStackTrace();
+				throw new MessageException(Constants.EXCEPTION_GET_COURSES);
 			}
 		}
 		return courses;
 	}
-	
-	@RequestMapping(value="/saveCourse", method = RequestMethod.PUT)
+
+	/**
+	 * Save the course received as parameter into the database
+	 * @param request HttpServletRequest used to initialize the controller
+	 * @param course Course to insert or update into the database
+	 * @return Course saved
+	 * @throws MessageException message to the user
+	 */
+	@RequestMapping(method = RequestMethod.PUT)
 	public @ResponseBody Course saveCourse(HttpServletRequest request, @RequestBody Course course) throws MessageException {
 		try{
 			initialize(request);
@@ -69,6 +92,38 @@ public class CourseController extends au.edu.usyd.reviewer.server.controller.Con
 					course.setOrganization(organization);
 				}
 				return assignmentManager.saveCourse(course, user);
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				throw (MessageException) e;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_SAVE_COURSE);
+			}
+		}
+	}
+	
+	/**
+	 * Delete the course received as parameter from the database and Google Docs
+	 * @param request HttpServletRequest to initialize the controller
+	 * @param course course to delete
+	 * @return Course deleted
+	 * @throws MessageException message to the user
+	 */
+	@RequestMapping(value="{courseId}",method = RequestMethod.DELETE)
+	public @ResponseBody Course deleteCourse(HttpServletRequest request,@PathVariable Long courseId) throws MessageException {
+		try{
+			initialize(request);
+			if (isAdminOrSuperAdmin()) {
+				Course course = courseDao.load(courseId);
+				if (course != null){
+					assignmentManager.deleteCourse(course);
+					return course;
+				} else {
+					throw new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
+				}
 				
 			} else {
 				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
@@ -78,25 +133,29 @@ public class CourseController extends au.edu.usyd.reviewer.server.controller.Con
 			if (e instanceof MessageException){
 				throw (MessageException) e;
 			} else {
-				throw new MessageException(Constants.EXCEPTION_SAVE_COURSE_MESSAGE);
+				throw new MessageException(Constants.EXCEPTION_DELETE_COURSE);
 			}
-		}
-	}
-	
-	@RequestMapping(value="/deleteCourse", method = RequestMethod.DELETE)
-	public @ResponseBody Course deleteCourse(HttpServletRequest request,@RequestBody Course course) throws Exception {
-		initialize(request);
-		if (isAdminOrSuperAdmin()) {
-			try {
-				assignmentManager.deleteCourse(course);
-				return course;
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw e;
-			}
-		} else {
-			throw new Exception("Permission denied");
 		}
 	}
 
+	@RequestMapping(value="/{courseId}", method = RequestMethod.GET)
+	public @ResponseBody  Course getCourse(HttpServletRequest request,@PathVariable Long courseId) throws MessageException { 
+		Course course = null;
+		try{
+			initialize(request);
+			course = courseDao.load(courseId);
+			if (course !=  null){
+				return course;	
+			} else {
+				throw new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
+			}
+		} catch( Exception e){
+			if (e instanceof MessageException){
+				throw (MessageException) e;
+			} else {
+				e.printStackTrace();
+				throw new MessageException(Constants.EXCEPTION_GET_COURSES);
+			}
+		}
+	}
 }

@@ -53,7 +53,7 @@ public abstract class ObjectDao {
 				session.getTransaction().rollback();
 			}
 			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_DELETE_MESSAGE);
+			throw new MessageException(Constants.EXCEPTION_DELETE);
 		}
 	}
 	
@@ -73,7 +73,7 @@ public abstract class ObjectDao {
 				session.getTransaction().rollback();
 			}
 			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_SAVE_MESSAGE);
+			throw new MessageException(Constants.EXCEPTION_SAVE);
 		}
 		return object;
 	}
@@ -86,18 +86,7 @@ public abstract class ObjectDao {
 	 */
 	protected Object load(Long objectId) throws MessageException{
 		Object object = null;
-		Session session = getSession();
-		try{
-			session.beginTransaction();
-			object = getObject (objectId);
-			session.getTransaction().commit();
-		} catch(HibernateException he){
-			if ( session != null && session.getTransaction() != null){
-				session.getTransaction().rollback();
-			}
-			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_LOAD_MESSAGE);
-		} 
+		object = getObject (objectId);
 		return object;
 	}
 	
@@ -109,18 +98,7 @@ public abstract class ObjectDao {
 	 */
 	protected Object load(String name) throws MessageException {
 		Object object = null;
-		Session session = getSession();
-		try{
-			session.beginTransaction();
-			object = getObject (name);
-			session.getTransaction().commit();
-		} catch(HibernateException he){
-			if ( session != null && session.getTransaction() != null){
-				session.getTransaction().rollback();
-			}
-			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_LOAD_MESSAGE);
-		} 
+		object = getObject (name);
 		return object;
 	}
 	
@@ -132,18 +110,7 @@ public abstract class ObjectDao {
 	 */
 	public List<Object> loadObjects(String name) throws MessageException{
 		List<Object> objects = new ArrayList<Object>();
-		Session session = this.getSession();
-		try{
-			session.beginTransaction();
-			objects = getObjects(name);
-			session.getTransaction().commit();
-		} catch(HibernateException he){
-			if ( session != null && session.getTransaction() != null){
-				session.getTransaction().rollback();
-			}
-			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_LOAD_MESSAGE);
-		} 
+		objects = getObjects(name);
         return objects;
 	}	
 	

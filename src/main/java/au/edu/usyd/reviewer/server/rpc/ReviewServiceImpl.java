@@ -223,9 +223,6 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 					assignmentDao.save(docEntry);
 					
 				}
-				for(FeedbackTemplate feedbackTemplate : review.getFeedback_templates()){
-					assignmentDao.save(feedbackTemplate);
-				}
 				assignmentDao.save(review);
 				try{
 					emailNotifier = Reviewer.getEmailNotifier();
@@ -313,7 +310,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		Reviewer.initializeAssignmentManager(organization);
 	}
 	
-	public User getUser() {
+	private User getUser() {
 		
 		try {
 			

@@ -19,6 +19,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -29,6 +30,7 @@ import au.edu.usyd.reviewer.client.core.util.Constants;
  * if it's a wasm user and if not, the MD5 digest of their password. It also includes the user role for Tomcat authentication purposes.</p>.
  */
 @Entity
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User implements Serializable {
 
 	/** The Constant serialVersionUID. */
@@ -302,6 +304,10 @@ public class User implements Serializable {
 	
 	public boolean isAdmin(){
 		return this.getRole_name().contains(Constants.ROLE_ADMIN);
+	}
+	
+	public boolean isGuest(){
+		return this.getRole_name().contains(Constants.ROLE_GUEST);
 	}
 	
 	public String getDomain(){

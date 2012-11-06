@@ -5,46 +5,32 @@
 
 <hibernate-configuration>
 
-	<session-factory>
+<session-factory>
 
 		<!-- Connection -->
 		<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
 		<property name="connection.url">jdbc:mysql://localhost/glosser?autoReconnect=true</property>
 		<property name="connection.username">glosser</property>
 		<property name="connection.password">glosser</property>
-		<property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
 
-		<!-- Configuration pool via c3p0-->
-		<property name="hibernate.c3p0.acquire_increment">1</property>
-		<property name="hibernate.c3p0.max_size">15</property>
-		<property name="hibernate.c3p0.max_statements">0</property>
-		<property name="hibernate.c3p0.min_size">1</property>
-		<property name="hibernate.c3p0.timeout">28800</property>
-        <!-- this property forces the revalidation of a connection after the given amount of time (in secs) -->
-        <!-- it must be set to LESS than the wait_timout setting for the mysql server (this setting defaults to 28800 secs (8 hours)) -->
-        <property name="hibernate.c3p0.idle_test_period">28600</property>
-        
-   
-        <!-- SQL dialect -->
-        <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+		<!-- SQL dialect -->
+		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 
-        <!-- Enable Hibernate's automatic session context management -->
-        <property name="current_session_context_class">thread</property>
+		<!-- Enable Hibernate's automatic session context management -->
+		<property name="current_session_context_class">thread</property>
 
-        <!-- Disable the second-level cache  -->
-        <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
-        <property name="cache.use_second_level_cache">false</property>
+		<!-- Enable the second-level cache  -->
+		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
 
-        <!-- Echo all executed SQL to stdout -->
-        <property name="show_sql">false</property>
-        
-        <!-- Update the database schema on startup -->
-        <property name="hbm2ddl.auto">update</property>
-
-		<!-- Hibernate mapping files -->
-        <mapping class="glosser.app.site.Site"/>
-        <mapping class="glosser.app.site.SiteMessage"/>
+		<!-- Echo all executed SQL to stdout -->
+		<property name="show_sql">false</property>
 		
-    </session-factory>
-	
+		<!-- Update the database schema on startup -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+        
+		<!-- Hibernate mapping files -->
+		<mapping class="au.edu.usyd.glosser.app.site.Site"/>
+        <mapping class="au.edu.usyd.glosser.app.site.SiteMessage"/>
+  
+	</session-factory>
 </hibernate-configuration>
