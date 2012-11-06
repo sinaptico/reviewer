@@ -26,7 +26,8 @@ src/uploads/*
 .project
 .settings/com.google.gdt.eclipse.core.prefs
 .settings/org.eclipse.jdt.core.prefs
-log/.DS_Store
-logs/.DS_Store
+log/*
+logs/*
 bin/
 lucene/*
+logos/*
