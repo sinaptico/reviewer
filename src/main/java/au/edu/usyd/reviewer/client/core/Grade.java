@@ -148,7 +148,9 @@ public class Grade implements Serializable {
 		}
 		
 		grade.setId(this.getId());
-		grade.setUser(this.getUser().clone());
+		if ( this.getUser() != null){
+			grade.setUser(this.getUser().clone());
+		}
 		grade.setValue(this.getValue());
 		return grade;
 	}

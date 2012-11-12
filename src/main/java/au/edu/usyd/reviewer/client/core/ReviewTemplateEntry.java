@@ -82,6 +82,26 @@ public class ReviewTemplateEntry extends Entry {
 	}
 
 	
-	
+	public ReviewTemplateEntry clone(){
+		ReviewTemplateEntry entry = new ReviewTemplateEntry();
+		entry.setDownloaded(this.getDownloaded());
+		entry.setFileName(this.getFileName());
+		entry.setId(this.getId());
+		entry.setLocalFile(this.isLocalFile());
+		entry.setLocked(this.getLocked());
+		if (this.getOwner() != null){
+			entry.setOwner(this.getOwner().clone());
+		}
+		if (this.getReviewReply() != null){
+			entry.setReviewReply(this.getReviewReply().clone());
+		}
+		if (this.getReviewTemplate() != null){
+			entry.setReviewTemplate(this.getReviewTemplate().clone());
+		}
+		entry.setTitle(this.getTitle());
+		entry.setUploaded(this.isUploaded());
+		return entry;
+		
+	}
 	
 }

@@ -229,6 +229,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 			@Override
 			public void onSuccess(Collection<Integer> years) {
 				setYearsPanel(years); 
+				refreshPanelButton.click();
 			}
 		});
 
@@ -347,7 +348,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 
 		// activities panel	
 		RootPanel.get("mainPanel").add(mainPanel);
-		refreshPanelButton.click();
+//		refreshPanelButton.click();
 	}
 	
 	

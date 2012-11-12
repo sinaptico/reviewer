@@ -2,10 +2,12 @@ package au.edu.usyd.reviewer.server;
 
 import java.util.ArrayList;
 
+
 import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Property;
@@ -13,6 +15,7 @@ import org.hibernate.criterion.Restrictions;
 
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
@@ -24,7 +27,7 @@ import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 public class UserDao extends ObjectDao {
 
 	// Database Fields
-	private String USER_ID ="userId";
+	private String USER_ID ="id";
 	private String USER_LASTNAME ="lastname";
 	private String USER_FIRSTNAME = "firstname";
 	private String USER_EMAIL="email";
@@ -54,57 +57,77 @@ public class UserDao extends ObjectDao {
 	
 	@Override
 	protected Object getObject(Long objectId) throws MessageException{
-		Session session = getSession();
-		User user = (User) session.createCriteria(User.class).add(Property.forName("id").eq(objectId)).uniqueResult();
-		if (user != null){
-			user = user.clone();
-		}
+		Session session = null;
+		User user = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			user = (User) session.createCriteria(User.class).add(Property.forName(USER_ID).eq(objectId)).uniqueResult();
+			if (user != null){
+				user = user.clone();
+			}
+			session.getTransaction().commit();
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USER);
+		} 
 		return user;
 	}
 
 	
 	@Override
 	protected List<Object> getObjects(String lastName) throws MessageException{
-		Session session = getSession();
-		Criteria criteria = session.createCriteria(User.class);
-		criteria.add(Restrictions.like(USER_LASTNAME, lastName +"%"));
-		criteria.addOrder( Order.asc(USER_LASTNAME) );
-		List<User> users = criteria.list();
+		Session session = null;
 		List<Object> objects = new ArrayList<Object>();
-		for(User user: users){
-			if (user!= null){
-				objects.add(user.clone());
+		try{
+			session = getSession();
+			session.beginTransaction();
+			Criteria criteria = session.createCriteria(User.class);
+			criteria.add(Restrictions.like(USER_LASTNAME, lastName +"%"));
+			criteria.addOrder( Order.asc(USER_LASTNAME) );
+			List<User>users = criteria.list();
+			session.getTransaction().commit();
+			for(User user: users){
+				if (user!= null){
+					objects.add(user.clone());
+				}
 			}
-		}
+		}catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USERS);
+		}	
 		return objects;	
 	}
 
 	@Override
 	protected Object getObject(String name) throws MessageException{
-		Session session = getSession();
-		User user = (User) session.createCriteria(User.class).add(Property.forName(USER_LASTNAME).eq(name)).uniqueResult();
-		if (user != null){
-			user = user.clone();
+		Session session = null;
+		User user = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			user = (User) session.createCriteria(User.class).add(Property.forName(USER_LASTNAME).eq(name)).uniqueResult();
+			if (user != null){
+				user = user.clone();
+			}
+			session.getTransaction().commit();
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USER);
 		}
 		return user;
 	}
 	
-	/**
-	 * Return a list of users with name equals to the name received as parameter
-	 * @param String name of the users to look for
-	 * @return list of users
-	 */
-	public List<User> geUsers(String name) throws MessageException{
-		List<User> users = new ArrayList<User>();
-		List<Object> objects = super.loadObjects(name);
-		for(Object obj: objects){
-			User user = (User) obj;
-			users.add(user.clone());
-		}
-		return users;
-	}
 
-	
 	/**
 	 * Return a list of users with name equals to the name received as parameter and belong to the organization with the id received as parameter
 	 * @param name of the users

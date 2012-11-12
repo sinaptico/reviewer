@@ -3,7 +3,9 @@ package au.edu.usyd.reviewer.client.core;
 import java.io.Serializable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -73,5 +75,32 @@ public class ReviewReply extends Review implements Serializable {
 			}			
 		}
 		return StringUtil.isBlank(content);
+	}
+	
+	public ReviewReply clone(){
+		ReviewReply reviewReply = new ReviewReply();
+		reviewReply.setContent(this.getContent());
+		reviewReply.setEarlySubmitted(this.getEarlySubmitted());
+		
+		Set<FeedbackTemplate> templates = new HashSet<FeedbackTemplate>();
+		for(FeedbackTemplate template : this.getFeedback_templates()){
+			if (template != null){
+				templates.add(template.clone());
+			}
+		}
+		
+		reviewReply.setFeedback_templates(templates);
+		reviewReply.setFeedbackTemplateType(this.getFeedbackTemplateType());
+		reviewReply.setId(this.getId());
+		reviewReply.setSaved(this.getSaved());
+		
+		List<TemplateReply> replies = new ArrayList<TemplateReply>();
+		for(TemplateReply reply :this.getTemplateReplies()){
+			if (reply != null){
+				replies.add(reply.clone());
+			}
+		}
+		reviewReply.setTemplateReplies(replies);
+		return reviewReply;
 	}
 }

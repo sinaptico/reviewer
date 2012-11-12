@@ -93,7 +93,7 @@ public class GradeBook extends Composite {
 	private Collection<Grade> getGrades(WritingActivity writingActivity, User user)  {
 		List<Grade> grades = new LinkedList<Grade>();
 		for(Grade grade : writingActivity.getGrades()) {
-			if(grade.getUser().equals(user)) {
+			if(grade != null && grade.getUser() != null && grade.getUser().equals(user)) {
 				grades.add(grade);
 			}
 		}

@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -72,6 +73,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	public Course getUserReviewForEditing(long reviewId) throws Exception {
 		initialize();
 		Course course = assignmentDao.loadUserReviewForEditing(user, reviewId);
+		
 		if (course == null) {
 			throw new Exception("Review not found");
 		}
@@ -348,4 +350,5 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	public String getGlosserUrl(Long siteId, String docId) {
 		return Reviewer.getGlosserUrl(siteId, docId);
 	}
+
 }

@@ -151,5 +151,19 @@ public class TemplateReply implements Serializable {
 	public void setMark(Integer mark) {
 		this.mark = mark;
 	}
-	
+
+	public TemplateReply clone(){
+		TemplateReply reply = new TemplateReply();
+		reply.setChoice(this.getChoice());
+		reply.setId(this.getId());
+		reply.setMark(this.getMark());
+		if (this.getReviewTemplate() != null){
+			reply.setReviewTemplate(this.getReviewTemplate().clone());
+		}
+		if (this.getSection() != null){
+			reply.setSection(this.getSection().clone());
+		}
+		reply.setText(this.getText());
+		return reply;
+	}
 }

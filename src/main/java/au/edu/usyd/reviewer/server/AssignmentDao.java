@@ -17,9 +17,11 @@ import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.DocumentType;
 import au.edu.usyd.reviewer.client.core.Grade;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.QuestionReview;
 import au.edu.usyd.reviewer.client.core.Rating;
 import au.edu.usyd.reviewer.client.core.Review;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
+import au.edu.usyd.reviewer.client.core.ReviewReply;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.TemplateReply;
@@ -570,5 +572,54 @@ public class AssignmentDao {
 			}
 		}
 		return types;
+	}
+	
+	public QuestionReview loadQuestionReview(Review review) throws MessageException{
+		QuestionReview questionReview = new QuestionReview();
+		Session session = null;
+		try{
+			String query = "select distinct questionReview from QuestionReview questionReview " +  
+			"where id=:id";
+
+			session = this.getSession();
+			session.beginTransaction();
+			questionReview =  (QuestionReview) session.createQuery(query).setParameter("id", review.getId()).uniqueResult();
+			session.getTransaction().commit();
+			if (questionReview != null){
+				questionReview = questionReview.clone();
+			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW);
+		}
+		return questionReview;
+	}
+
+	
+	public ReviewReply loadReviewReply(Review review) throws MessageException{
+		ReviewReply reviewReply = new ReviewReply();
+		Session session = null;
+		try{
+			String query = "select distinct reviewReply from ReviewReply reviewReply " +  
+			"where id=:id";
+
+			session = this.getSession();
+			session.beginTransaction();
+			reviewReply =  (ReviewReply) session.createQuery(query).setParameter("id", review.getId()).uniqueResult();
+			session.getTransaction().commit();
+			if (reviewReply != null){
+				reviewReply = reviewReply.clone();
+			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW);
+		}
+		return reviewReply;
 	}
 }

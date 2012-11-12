@@ -51,7 +51,6 @@ public class Constants {
 	public static String EXCEPTION_INVALID_TUTORIAL="Invalid tutorial";
 	public static String EXCEPTION_GOOGLE_AUTHENTICATION="User could not be authenticated in Google Docs";
 	public static String EXCEPTION_GOOGLE_URL_MALFORMED="The Google Docs URL is malformed";
-	public static String EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST="The user doesn't exist. Please enter other username or email";
 	public static String EXCEPTION_USER_NOT_MOCKED = "The user could not be mocked";
 	public static String EXCEPTION_LECTURER_INVALID_DOMAIN = "The email of the lecturers must belong to the organization domain";
 	public static String EXCEPTION_STUDENTS_INVALID_DOMAIN = "The email of the students must belong to the organization domain";
@@ -90,10 +89,15 @@ public class Constants {
 	public static String EXCEPTION_DELETE_REVIEW_TEMPLATE ="Failed to delete the review template";
 	public static String EXCEPTION_GET_REVIEW_TEMPLATES="Failed to load the review templates";
 	public static String EXCEPTION_REVIEW_TEMPLATE_NOT_FOUND = "Review template not found";
-	public static String EXCEPTION_LOGIN_WRONG ="The username or password you entered is incorrect";
-	public static String EXCEPTION_LOGOUT = "Faield to logout";
 	public static String EXCEPTION_GET_YEARS ="Falied to load the years";
-	
+	public static String EXCEPTION_GET_REVIEW="Failed to get the review";
+	public static String EXCEPTION_GET_USER="Failed to get the user";
+	public static String EXCEPTION_GET_USERS="Failed to get the users";
+	public static String EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST="The user doesn't exist. Please enter other username or email";
+	public static String EXCEPTION_USER_NOT_FOUND="User not found";
+	public static String EXCEPTION_MOCKED_USER="Failed to get mocked user";
+	public static String EXCEPTION_MOCKED_USER_NOT_FOUND="Mocked user not found";
+	public static String EXCEPTION_ORGANIZATION_NOT_FOUND="Organization not found";
 	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";

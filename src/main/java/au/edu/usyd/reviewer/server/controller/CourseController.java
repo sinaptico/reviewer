@@ -28,7 +28,7 @@ import au.edu.usyd.reviewer.server.OrganizationDao;
  */
 
 @Controller
-@RequestMapping("/Course")
+@RequestMapping("/")
 public class CourseController extends ReviewerController {
 	
 	/**
@@ -40,7 +40,7 @@ public class CourseController extends ReviewerController {
 	 * @return List of courses
 	 * @throws MessageException message to the user
 	 */
-	@RequestMapping(value="/{semester}/{year}/{organizationId}", method = RequestMethod.GET)
+	@RequestMapping(value="courses/{semester}/{year}/{organizationId}", method = RequestMethod.GET)
 	public @ResponseBody  List<Course> getCourses(HttpServletRequest request,@PathVariable Integer semester, 
 			@PathVariable Integer year, @PathVariable Long organizationId) throws MessageException { 
 		List<Course> courses = new ArrayList<Course>();
@@ -82,7 +82,7 @@ public class CourseController extends ReviewerController {
 	 * @return Course saved
 	 * @throws MessageException message to the user
 	 */
-	@RequestMapping(method = RequestMethod.PUT)
+	@RequestMapping(value="course",  method = RequestMethod.PUT)
 	public @ResponseBody Course saveCourse(HttpServletRequest request, @RequestBody Course course) throws MessageException {
 		try{
 			initialize(request);
@@ -112,7 +112,7 @@ public class CourseController extends ReviewerController {
 	 * @return Course deleted
 	 * @throws MessageException message to the user
 	 */
-	@RequestMapping(value="{courseId}",method = RequestMethod.DELETE)
+	@RequestMapping(value="{course/courseId}",method = RequestMethod.DELETE)
 	public @ResponseBody Course deleteCourse(HttpServletRequest request,@PathVariable Long courseId) throws MessageException {
 		try{
 			initialize(request);
@@ -138,7 +138,7 @@ public class CourseController extends ReviewerController {
 		}
 	}
 
-	@RequestMapping(value="/{courseId}", method = RequestMethod.GET)
+	@RequestMapping(value="course/{courseId}", method = RequestMethod.GET)
 	public @ResponseBody  Course getCourse(HttpServletRequest request,@PathVariable Long courseId) throws MessageException { 
 		Course course = null;
 		try{

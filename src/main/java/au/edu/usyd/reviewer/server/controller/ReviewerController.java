@@ -15,6 +15,7 @@ import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.CourseDao;
+import au.edu.usyd.reviewer.server.OrganizationDao;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
 
@@ -31,6 +32,7 @@ public abstract class ReviewerController {
 	protected AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 	protected UserDao userDao = UserDao.getInstance();
 	protected CourseDao courseDao = CourseDao.getInstance();
+	protected OrganizationDao organizationDao = OrganizationDao.getInstance();
 	
 	// logged user
 	protected User user = null;
@@ -109,12 +111,10 @@ public abstract class ReviewerController {
 				user = (User) obj;
 			}
 			Principal principal = request.getUserPrincipal();
-			/** MARIELA **/
 			if (principal == null){
 				user = new User();
 				user = userDao.getUserByEmail("admin@smart-sourcing.com.ar");
 			}
-			/** MARIELA **/
 			else {
 				if  (user == null){
 					user = userDao.getUserByEmail(principal.getName());
@@ -158,7 +158,7 @@ public abstract class ReviewerController {
 				if ( e instanceof MessageException){
 					throw (MessageException) e;
 				} else {
-					throw new MessageException(Constants.EXCEPTION_MOCKING_USER);
+					throw new MessageException(Constants.EXCEPTION_MOCKED_USER);
 				}
 			}
 	   } else {

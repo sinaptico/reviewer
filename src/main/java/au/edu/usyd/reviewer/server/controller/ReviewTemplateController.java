@@ -18,11 +18,11 @@ import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.OrganizationDao;
 
 @Controller
-@RequestMapping("/ReviewTemplate")
+@RequestMapping("/")
 public class ReviewTemplateController extends ReviewerController{
 
 	
-	@RequestMapping(value="/", method = RequestMethod.PUT)
+	@RequestMapping(value="/reviewtemplate", method = RequestMethod.PUT)
 	public @ResponseBody ReviewTemplate saveReviewTemplate(HttpServletRequest request,ReviewTemplate reviewTemplate) throws MessageException {
 		try{
 			initialize(request);
@@ -46,7 +46,7 @@ public class ReviewTemplateController extends ReviewerController{
 	}
 
 
-	@RequestMapping(value="/{organizationId}", method = RequestMethod.GET)
+	@RequestMapping(value="reviewtemplates/{organizationId}", method = RequestMethod.GET)
 	public @ResponseBody List<ReviewTemplate> getReviewTemplates(HttpServletRequest request, @PathVariable Long organizationId) throws MessageException {
 		List<ReviewTemplate> reviewTemplates = new ArrayList<ReviewTemplate>();
 		try{
@@ -83,7 +83,7 @@ public class ReviewTemplateController extends ReviewerController{
 	}
 	
 	
-	@RequestMapping(value="/{reviewTemplateId}", method = RequestMethod.DELETE)
+	@RequestMapping(value="reviewtemplate/{reviewTemplateId}", method = RequestMethod.DELETE)
 	public @ResponseBody ReviewTemplate deleteReviewTemplate(HttpServletRequest request,@PathVariable Long reviewTemplateId) throws MessageException {
 		try{
 			initialize(request);
@@ -106,7 +106,7 @@ public class ReviewTemplateController extends ReviewerController{
 		}
 	}
 
-	@RequestMapping(value="/{reviewTemplateId}", method = RequestMethod.GET)
+	@RequestMapping(value="reviewtemplate/{reviewTemplateId}", method = RequestMethod.GET)
 	public @ResponseBody ReviewTemplate getReviewTemplate(HttpServletRequest request, @PathVariable Long reviewTemplateId) throws MessageException {
 		ReviewTemplate reviewTemplate = null;
 		try{

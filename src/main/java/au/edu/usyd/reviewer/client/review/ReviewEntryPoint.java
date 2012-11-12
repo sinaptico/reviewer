@@ -476,14 +476,14 @@ public class ReviewEntryPoint implements EntryPoint {
 					if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course, reviewEntry)) {
 						if(!isCourseInstructor(course, reviewEntry) && (review.getEarlySubmitted())){
 							reviewForm.setLocked(true);
-						} else{
+						} else {
 							submitPanel.setWidth("100%");
 							submitPanel.add(thirdStepTitle);
 							//submitPanel.add(saveDate);
 							
-							
+						
 							/***************************  CELL BROWSER (SpeedBack Function) **********************************/
-							if (isCourseInstructor(course, reviewEntry)){
+							if (isCourseInstructor(course, reviewEntry) && !(review instanceof QuestionReview) && !(review instanceof ReviewReply)){
 								final WritingActivity writingActivityForMail = writingActivity;
 								reviewService.getDocumentTypes(writingActivity.getGenre(), new AsyncCallback<Collection<DocumentType>>() {
 	
