@@ -98,9 +98,52 @@ public class Constants {
 	public static String EXCEPTION_MOCKED_USER="Failed to get mocked user";
 	public static String EXCEPTION_MOCKED_USER_NOT_FOUND="Mocked user not found";
 	public static String EXCEPTION_ORGANIZATION_NOT_FOUND="Organization not found";
+	public static String EXCEPTION_WRITING_ACTIVITY_NOT_FOUND="Writing activity not found";
+	public static String EXCEPTION_WRITING_ACTIVITY_COURSE_NOT_FOUND="Failed to get the course of the writing activity";
+	public static String EXCEPTION_SAVE_WRITING_ACTIVITY ="Failed to save the writing activity";
+	public static String EXCEPTION_GET_DEADLINE="Failed to get the deadline";
+	public static String EXCEPTION_GET_DOCENTRY="Failed to get the doc entry";
+	public static String EXCEPTION_GET_REVIEWENTRY="Failed to get the review entry";
+	public static String EXCEPTION_GET_GRADE="Failed to get the grade";
+	public static String EXCEPTION_GET_RATING="Failed to get the rating";
+	public static String EXCEPTION_GET_REVIWING_ACTIVITY="Failed to get the reviewing activity";
+	public static String EXCEPTION_GET_USERGROUP="Failed to get the user group";
+	public static String EXCEPTION_GET_WRITING_ACTIVITY="Failed to get the writing activity";
+	public static String EXCEPTION_GET_DOCUMENT_TYPES="Failed to get the document types";
+	public static String EXCEPTION_GET_ORGANIZATIONS="Failed to get the organizations";
+	public static String EXCEPTION_GET_AUTOMATIC_REVIEWERS="Failed to get the automatic reviewers of the course";
+	public static String EXCEPTION_GET_LECTURERS="Failed to get the lecturers of the course";
+	public static String EXCEPTION_GET_TUTORS="Failed to get the tutors of the course";
+	public static String EXCEPTION_GET_ORGANIZATION="Failed to get the organization";
+	public static String EXCEPTION_GET_USER_GROUPS="Failed to get the user groups of the course";
+	public static String EXCEPTION_GET_TEMPLATES="Failed to get the templates of the course";
+	public static String EXCEPTION_GET_TUTORIALS="Failed to get the tutorials of the course";
+	public static String EXCEPTION_GET_WRITING_ACTIVITIES="Failed to get the writing activities of the course";
+	public static String EXCEPTION_GET_ORGANIZATION_PROPERTIES = "Failed to get the properties of the organization";
+	public static String EXCEPTION_SAVE_REVIEWER ="Failed to save the reviewre";
+	public static String EXCEPTION_SAVE_LECTURER ="Failed to save the lecturer";
+	public static String EXCEPTION_SAVE_TUTOR ="Failed to save the tutor";
+	public static String EXCEPTION_SAVE_USER_GROUP ="Failed to save the user group";
+	public static String EXCEPTION_SAVE_SUPERVISOR ="Failed to save the supervisor";
+	public static String EXCEPTION_SAVE_TEMPLATE ="Failed to save the template (doc entry)";
+	public static String EXCEPTION_INVALID_LECTURER="Invalid lecturer";
+	public static String EXCEPTION_EMPTY_LECTURERS_LIST="Empty lecturer list";
+	
+	
+	
 	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
 	public static String ROLE_ADMIN = "Admin";
-	public static String ROLE_GUEST = "Guest";	
+	public static String ROLE_GUEST = "Guest";
+	
+	
+	public static String ALL = "all";
+	public static String TUTORS = "tutors";
+	public static String LECTURERS = "lecturers";
+	public static String STUDENTS = "students";
+	public static String ACTIVITIES = "activities";
+	public static String TEMPLATES = "templates";
+	public static String ORGANIZATION ="organization";
+	
 }

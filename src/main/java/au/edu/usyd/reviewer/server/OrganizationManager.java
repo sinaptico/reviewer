@@ -315,7 +315,7 @@ public class OrganizationManager {
 		return users;
 	}
 	
-	public Collection<Organization> getOrganizations(){
+	public Collection<Organization> getOrganizations() throws MessageException{
 		return organizationDao.getOrganizations();
 	}
 	

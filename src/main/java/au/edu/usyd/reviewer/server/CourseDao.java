@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Property;
@@ -17,6 +18,7 @@ import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 /**
@@ -266,39 +268,213 @@ public class CourseDao extends ObjectDao{
         return result;
 	}	
 
+//	/**
+//	 * Return a list of courses belong to the organization and whose semester and year are equals to the parameters received
+//	 * Use pagination with page and limit
+//	 * @param semester course semester
+//	 * @param year course year
+//	 * @param organization organization owner of the course
+//	 * @param int page used in pagination
+//	 * @param int limit used in pagination
+//	 * @return list of courses
+//	 * @throws MessageException message to the logged user
+//	 */
+//	public List<Course> loadCourses(Integer semester, Integer year, Organization organization, int page, int limit) throws MessageException{
+//		Session session = null;
+//		List<Course> result = new ArrayList<Course>();
+//		try{
+//			session = getSession();
+//			session.beginTransaction();
+//			String query = "from Course course " + "where course.semester=:semester AND course.year=:year and course.organization=:organization";
+//			List<Course> courses = session.createQuery(query).setParameter("semester", semester)
+//															 .setParameter("year", year)
+//															 .setParameter("organization", organization)
+//															 .setMaxResults(limit).setFirstResult(limit * page).list();
+//			session.getTransaction().commit();
+//				
+//			for(Course course: courses){
+//				if (course != null){
+//	 				result.add(course.clone());
+//				}
+//			}
+//		} catch(HibernateException he){
+//			if ( session != null && session.getTransaction() != null){
+//				session.getTransaction().rollback();
+//			}
+//			he.printStackTrace();
+//			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
+//		}
+//        return result;		
+//	}
+	
+//	/**
+//	 * Return all the courses of all the organization. Use pagination
+//	 * @param semester
+//	 * @param year
+//	 * @param page
+//	 * @param limit
+//	 * @return
+//	 * @throws MessageException
+//	 */
+//	public List<Course> loadCourses(Integer semester, Integer year, int page, int limit) throws MessageException{
+//		Session session = null;
+//		List<Course> result = new ArrayList<Course>();
+//		try{
+//			session = getSession();
+//			session.beginTransaction();
+//			String query = "from Course course " + "where course.semester=:semester AND course.year=:year";
+//			List<Course> courses = session.createQuery(query).setParameter("semester", semester)
+//															 .setParameter("year", year)
+//															 .setMaxResults(limit)
+//															 .setFirstResult(limit * page).list();
+//			session.getTransaction().commit();
+//				
+//			for(Course course: courses){
+//				if (course != null){
+//					result.add(course.clone());
+//				}
+//			}
+//		} catch(HibernateException he){
+//			if ( session != null && session.getTransaction() != null){
+//				session.getTransaction().rollback();
+//			}
+//			he.printStackTrace();
+//			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
+//		}
+//        return result;		
+//	}
+	
 	/**
-	 * Return a list of courses belong to the organization and whose semester and year are equals to the parameters received
-	 * @param semester course semester
-	 * @param year course year
-	 * @param organization organization owner of the course
-	 * @return list of courses
-	 * @throws MessageException message to the logged user
+	 * Return all the courses of the organization without pagination
+	 * @param semester
+	 * @param year
+	 * @param organization
+	 * @return
+	 * @throws MessageException
 	 */
 	public List<Course> loadCourses(Integer semester, Integer year, Organization organization) throws MessageException{
 		Session session = null;
 		List<Course> result = new ArrayList<Course>();
-		if ( organization != null){
-			try{
-				session = getSession();
-				session.beginTransaction();
-				String query = "from Course course " + "where course.semester=:semester AND course.year=:year and course.organization=:organization";
-				List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).setParameter("organization", organization).list();
-				session.getTransaction().commit();
+		try{
+			session = getSession();
+			session.beginTransaction();
+			String query = "from Course course " + "where course.semester=:semester AND course.year=:year and course.organization=:organization";
+			
+			List<Course> courses = session.createQuery(query).setParameter("semester", semester)
+															 .setParameter("year", year)
+															 .setParameter("organization", organization)
+															 .list();				
+			session.getTransaction().commit();
 				
-				for(Course course: courses){
-					if (course != null){
-						result.add(course.clone());
-					}
+			for(Course course: courses){
+				if (course != null){
+					result.add(course.clone());
 				}
-			} catch(HibernateException he){
-				if ( session != null && session.getTransaction() != null){
-					session.getTransaction().rollback();
-				}
-				he.printStackTrace();
-				throw new MessageException(Constants.EXCEPTION_GET_COURSES);
 			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
 		}
         return result;		
+	}
+	
+	/**
+	 * Return the courses belong to the organization where the user is student,tutor or lecturer. Use Pagination
+	 * @param semester
+	 * @param year
+	 * @param page
+	 * @param limit
+	 * @param user
+	 * @return
+	 * @throws MessageException
+	 */
+	public List<Course> loadCourses(Integer semester, Integer year, Organization organization, User user, Integer limit, Integer page) throws MessageException{
+		Session session = null;
+		try{
+			 
+			String sQuery = "SELECT DISTINCT course FROM Course course ";
+			String where = "";
+			
+			if ( user != null){
+				sQuery +=  "LEFT JOIN course.lecturers lecturer " +
+				   		 "LEFT JOIN course.tutors tutor " +
+				   		 "LEFT JOIN course.studentGroups studentGroup " + 
+				   		 "LEFT JOIN studentGroup.users student " ;
+				where += "(lecturer=:user OR tutor=:user OR student=:user) ";
+			}
+				
+			if (semester != null){
+				if (!StringUtil.isBlank(where)){
+					where += " AND course.semester=:semester";
+				} else {
+					where += "course.semester=:semester";
+				}
+			}
+			
+			if (year != null){
+				if (!StringUtil.isBlank(where)){
+					where += " AND course.year=:year";
+				} else {
+					where += "course.year=:year";
+				}
+			}
+			
+			if (organization != null){
+				if (!StringUtil.isBlank(where)){
+					where += " AND course.organization=:organization";
+				} else {
+					where += "course.organization=:organization";
+				} 
+			}
+					
+			session = this.getSession();
+			session.beginTransaction();
+			
+			if (!StringUtil.isBlank(where)){
+				sQuery += " WHERE " + where;
+			}
+			sQuery += " ORDER BY course.name";
+			Query query= session.createQuery(sQuery);
+			if (semester!=null){
+				query.setParameter("semester", semester);
+			}
+			if (year != null){		 
+				query.setParameter("year", year);
+			}
+			if (user!=null){
+				query.setParameter("user", user);
+			}
+			if (organization!= null){
+				query.setParameter("organization", organization);
+			}
+			if (limit == null || (limit != null && limit < 1)){
+				limit = 10;
+			}
+			if (page == null || (page!=null && page < 1)){
+				page = 1;
+			}
+			
+			query.setMaxResults(limit);
+			query.setFirstResult(limit * (page - 1));
+			List<Course> courses = query.list();
+			session.getTransaction().commit();
+			List<Course> resultList = new ArrayList<Course>();
+			for(Course course : courses){
+				if (course != null){
+					resultList.add(course.clone());
+				}
+			}
+			return resultList;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+		}
 	}
 	
 	@Override

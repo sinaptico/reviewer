@@ -106,7 +106,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			if (organizationSelected != null){
 				courses = courseDao.loadCourses(semester, year, organizationSelected);
 			}
-		} else {
+		} else { 
 			courses = assignmentDao.loadLecturerCourses(semester, year, user);
 		}
 		return courses;

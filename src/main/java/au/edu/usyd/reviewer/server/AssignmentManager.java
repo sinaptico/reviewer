@@ -166,9 +166,10 @@ public class AssignmentManager {
 		File activityFolder = new File(getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), "all", organization));
 		activityFolder.mkdirs();
 		for (DocEntry docEntry : writingActivity.getEntries()) {
-			UserGroup studentGroup = writingActivity.getGroups() ? docEntry.getOwnerGroup() : assignmentDao.loadUserGroupWhereUser(course, docEntry.getOwner());
-			String filePath = activityFolder.getAbsolutePath() + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf";
 			try {
+				UserGroup studentGroup = writingActivity.getGroups() ? docEntry.getOwnerGroup() : assignmentDao.loadUserGroupWhereUser(course, docEntry.getOwner());
+				String filePath = activityFolder.getAbsolutePath() + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf";
+				
 				if (docEntry instanceof LogbookDocEntry) {
 					// do nothing
 				} else {
@@ -714,7 +715,7 @@ public class AssignmentManager {
 					} catch (MessageException e) {
 						logger.error("Error running acctivity " + activityId);
 						e.printStackTrace();
-					}
+					}	
 				}
 			}, writingActivity.getStartDate());
 		} else if (writingActivity.getStatus() < Activity.STATUS_FINISH || !writingActivity.getReviewingActivities().isEmpty()) {
@@ -1339,4 +1340,121 @@ public class AssignmentManager {
 		}
 	}
 
+	/**
+	 * Create or update the lecturers in the database, in Google Docs and in the course
+	 * @param course Course where the user will be lecturer
+	 * @param lecturer list of users
+	 * @param loggedUser logged user used in Google Apps
+	 * @throws Exception
+	 */
+	public void saveLecturers(Course course, List<User> lecturers, User loggedUser) throws Exception {
+		
+		for (User lecturer : lecturers) {
+			// search the lecturer in the database
+			User user = userDao.getUserByEmail(lecturer.getEmail());
+			
+			if (user == null) {
+			
+				// create lecture in Google Apps
+				if (lecturer.getDomain() != null &&  lecturer.getOrganization() != null && 
+						lecturer.getOrganization().getGoogleDomain() != null &&
+						lecturer.getDomain().toLowerCase().equals(lecturer.getOrganization().getGoogleDomain().toLowerCase())){	
+					assignmentRepository.createUser(lecturer);
+				} else {
+					throw new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
+				}
+				
+				//send password notification if not a wasm user
+				if (!lecturer.getWasmuser()){
+					emailNotifier.sendPasswordNotification(lecturer, course.getName());
+					user.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
+				}
+				
+				// save the lecturer in the database
+				userDao.save(lecturer);
+			}
+			else {
+				lecturer.setId(user.getId());
+			}	
+			
+			// add the lecturer to the course 
+			course.getLecturers().add(lecturer);
+		}
+		
+		// update course document permissions
+		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
+
+		// save course in DB in order to save the relationshiop with the course
+		course = courseDao.save(course);		
+		
+		// for each activity create documents and reviewers for new users
+		processActivitiesForNewUsers(course);
+	}
+	
+	
+	/**
+	 * Create or update a tutors in the database, in Google Apps, assign permissions to the documents in GoogleDocs and add him/her to the course
+	 * @param course course where the user will be tutor
+	 * @param tutor List of users representing the tutors
+	 * @param loggedUser loggedUser used to add permissions in GoogleDoc
+	 * @throws Exception
+	 */
+	public void saveTutors(Course course, List<User> tutors, User loggedUser) throws Exception {
+		
+		for (User tutor : course.getTutors()) {
+			// search the tutor in the database
+			User user = userDao.getUserByEmail(tutor.getEmail());
+			if (user == null) {
+				// create tutor in Google Apps
+				if (tutor.getDomain() != null && tutor.getOrganization() != null && 
+						tutor.getOrganization().getGoogleDomain()!= null &&
+						tutor.getDomain().toLowerCase().equals(tutor.getOrganization().getGoogleDomain().toLowerCase())){
+					assignmentRepository.createUser(tutor);
+				} else {
+					throw new Exception(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
+				}
+				
+				//send password notification if not a wasm user
+				if (!tutor.getWasmuser()){					
+					emailNotifier.sendPasswordNotification(tutor, course.getName());
+					tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
+				}
+				// save tutor into the database
+				userDao.save(tutor);
+			} else {
+				tutor.setId(user.getId());
+			}
+			// add the tutor to the course 
+			course.getTutors().add(tutor);
+		}
+		
+		// update course document permissions
+		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
+		
+		// save course in DB
+		course = courseDao.save(course);		
+		
+		// for each activity create documents and reviewers for new users
+		processActivitiesForNewUsers(course);
+	}
+	
+	/**
+	 * Create or update the user group (students) in the database, in Google Docs
+	 * @param course Course where the users will be students
+	 * @param loggedUser logged user used in Google Docs
+	 * @throws Exception
+	 */
+	public void saveUserGroup(Course course, User loggedUser) throws Exception {
+		saveUserGroupDB(course);
+		
+		// update course document permissions
+		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
+			
+		// save course in DB
+		course = courseDao.save(course);		
+		///Local DataBase//////////////////////////////////////////////////////
+		
+		// for each activity create documents and reviewers for new users
+		processActivitiesForNewUsers(course);
+	}
 }

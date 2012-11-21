@@ -19,6 +19,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.server.OrganizationDao;
 
 
 /**
@@ -27,12 +28,10 @@ import au.edu.usyd.reviewer.client.core.util.Constants;
  */
 @Entity
 public class Organization implements Serializable {
+	
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-
+	
 	//The organization id
 	@Id
 	@GeneratedValue

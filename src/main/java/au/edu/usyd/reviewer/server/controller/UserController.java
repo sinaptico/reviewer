@@ -3,6 +3,7 @@ package au.edu.usyd.reviewer.server.controller;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.OrganizationProperty;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
@@ -40,7 +42,7 @@ public class UserController extends ReviewerController{
 	 * @return Mocked user
 	 * @throws MessageException
 	 */
-	@RequestMapping(value="user/mock/{email}", method = RequestMethod.POST)
+	@RequestMapping(value="users/mock/{email}", method = RequestMethod.POST)
 	public @ResponseBody User mockUser(HttpServletRequest request, @PathVariable String email) throws MessageException {
 		try{
 			initialize(request);
@@ -50,6 +52,9 @@ public class UserController extends ReviewerController{
 					if (mockedUser != null){
 						logger.info("Mocking user: " + mockedUser.getEmail());
 						request.getSession().setAttribute("mockedUser", mockedUser);
+						Organization anOrganization = mockedUser.getOrganization();
+						anOrganization.setOrganizationProperties(new HashSet<OrganizationProperty>());
+						mockedUser.setOrganization(anOrganization);
 						return mockedUser;
 					} else{
 						throw new MessageException(Constants.EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST);
@@ -76,7 +81,7 @@ public class UserController extends ReviewerController{
 	 * @return User user with id equals to userId
 	 * @throws MessageException message to the user
 	 */
-	@RequestMapping(value="user/{userId}", method = RequestMethod.GET)
+	@RequestMapping(value="users/{userId}", method = RequestMethod.GET)
 	public @ResponseBody User getUser(HttpServletRequest request, @PathVariable Long userId) throws MessageException{
 		User resultUser = null;	
 		try{
@@ -86,7 +91,14 @@ public class UserController extends ReviewerController{
 				if (userId != null){
 					resultUser = userDao.load(userId);
 					if (resultUser != null){
-						return resultUser;
+						Organization anOrganization = resultUser.getOrganization();
+						if (anOrganization!= null && organization.getId().equals(anOrganization.getId())){
+							anOrganization.setOrganizationProperties(new HashSet<OrganizationProperty>());
+							resultUser.setOrganization(anOrganization);
+							return resultUser;
+						} else {
+							throw new MessageException( Constants.EXCEPTION_PERMISSION_DENIED);
+						}
 					} else {
 						throw new MessageException(Constants.EXCEPTION_USER_NOT_FOUND);
 					}
@@ -107,46 +119,23 @@ public class UserController extends ReviewerController{
 		}
 	}
 	
-	@RequestMapping(value="users/{lastname}/{organizationId}", method = RequestMethod.GET)
-	public @ResponseBody  List<User> getUsers(HttpServletRequest request, @PathVariable String lastname, @PathVariable Long organizationId) throws MessageException { 
-		List<User> users = new ArrayList<User>();
-		try{
-			initialize(request);
-			if (isAdminOrSuperAdmin()) {
-				if (!StringUtils.isBlank(lastname)){
-					Organization organization = null;
-					if (organizationId != null){
-						organization = organizationDao.load(organizationId);
-					} else {
-						organization = user.getOrganization();
-						if (organization == null){
-							throw new MessageException(Constants.EXCEPTION_ORGANIZATION_NOT_FOUND);
-						}
-					}
-					users = userDao.geUsers(lastname,organization);
-				} else {
-					throw new MessageException(Constants.EXCEPTION_USER_NOT_FOUND);
-				}
-			} else {
-				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-			}
-		} catch( Exception e){
-			if (e instanceof MessageException){
-				throw (MessageException) e;
-			} else {
-				e.printStackTrace();
-				throw new MessageException(Constants.EXCEPTION_GET_USERS);
-			}
-		}
-		return users;
-	}
 	
-	@RequestMapping(value="user/logged", method = RequestMethod.GET)
+	/**
+	 * This method returns the logged user
+	 * @param request HttpServletRequest used to initialize the controller
+	 * @return User logged user
+	 * @throws MessageException message to the user
+	 */
+	@RequestMapping(value="users/logged", method = RequestMethod.GET)
 	public @ResponseBody User getLoggedUser(HttpServletRequest request) throws MessageException{
 		try{
 			initialize(request);
 			if (this.isAdminOrSuperAdminOrGuest()){
-				return user;
+				User aUser = user.clone();
+				Organization anOrganization = aUser.getOrganization();
+				anOrganization.setOrganizationProperties(new HashSet<OrganizationProperty>());
+				aUser.setOrganization(anOrganization);
+				return aUser;
 			} else {
 				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 			}
@@ -161,12 +150,20 @@ public class UserController extends ReviewerController{
 	}
 
 	
-	@RequestMapping(value="user/mocked", method = RequestMethod.GET)
+	/**
+	 * This method returns the mocked user
+	 * @return User mocked user
+	 * @throws MessageException message to the user
+	 */
+	@RequestMapping(value="users/mocked", method = RequestMethod.GET)
 	public @ResponseBody User getMockedUser(HttpServletRequest request) throws MessageException{
 		try{
 			initialize(request);
 			User mockedUser = super.getMockedUser(request);
 			if (mockedUser != null && user != null && !mockedUser.equals(user)){
+				Organization anOrganization = mockedUser.getOrganization();
+				anOrganization.setOrganizationProperties(new HashSet<OrganizationProperty>());
+				mockedUser.setOrganization(anOrganization);
 				return mockedUser;
 			} else {
 				throw new MessageException(Constants.EXCEPTION_MOCKED_USER_NOT_FOUND);
@@ -182,5 +179,56 @@ public class UserController extends ReviewerController{
 		}
 	}
 
-	
+
+//	/**
+//	 * Return a list of user whose lastname start with the lastname received as parameter and belong to the organization with id equals to organizationId
+//	 * @param request HttpServletRequest used to initialize the controller
+//	 * @param lastname lastname of the users
+//	 * @param organizationId id of the organization which users belong to
+//	 * @return List<User> list of users
+//	 * @throws MessageException message to the user
+//	 */
+//	@RequestMapping(value="users/{lastname}/{organizationId}", method = RequestMethod.GET)
+//	public @ResponseBody  List<User> getUsers(HttpServletRequest request, @PathVariable String lastname, @PathVariable Long organizationId) throws MessageException { 
+//		List<User> users = new ArrayList<User>();
+//		try{
+//			initialize(request);
+//			if (isAdminOrSuperAdmin()) {
+//				if (!StringUtils.isBlank(lastname)){
+//					Organization anOrganization = null;
+//					if (organizationId != null){
+//						anOrganization = organizationDao.load(organizationId);
+//					} else {
+//						anOrganization = user.getOrganization();
+//						if (anOrganization == null){
+//							throw new MessageException(Constants.EXCEPTION_ORGANIZATION_NOT_FOUND);
+//						}
+//					}
+//					
+//					if (anOrganization != null){
+//						anOrganization.setOrganizationProperties(new HashSet<OrganizationProperty>());
+//					}
+//					users = userDao.geUsers(lastname,organization);
+//					for(User aUser:users){
+//						if (aUser != null){			
+//							aUser.setOrganization(anOrganization);
+//						}
+//					}
+//				} else {
+//					throw new MessageException(Constants.EXCEPTION_USER_NOT_FOUND);
+//				}
+//			} else {
+//				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+//			}
+//		} catch( Exception e){
+//			if (e instanceof MessageException){
+//				throw (MessageException) e;
+//			} else {
+//				e.printStackTrace();
+//				throw new MessageException(Constants.EXCEPTION_GET_USERS);
+//			}
+//		}
+//		return users;
+//	}
+
 }

@@ -18,6 +18,11 @@ import au.edu.usyd.reviewer.server.util.CalendarUtil;
 @RequestMapping("/")
 public class UtilController extends ReviewerController {
 
+	/**
+	 * This method returns a list of years. The current year and 5 years before
+	 * @return List<Integer> list of years
+	 * @throws MessageException message to the user
+	 */
 	@RequestMapping(value="/years", method = RequestMethod.GET)
 	public @ResponseBody Collection<Integer> getYears(HttpServletRequest request) throws MessageException{
 		try{

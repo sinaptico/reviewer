@@ -29,23 +29,23 @@ import au.edu.usyd.reviewer.server.report.UserStatsAnalyser;
  */
 
 @Controller
-@RequestMapping("/WritingActivity")
+@RequestMapping("/")
 public class WritingActivityController extends ReviewerController {
 
-	@RequestMapping(method = RequestMethod.DELETE)
-	public @ResponseBody WritingActivity deleteWritingActivity(HttpServletRequest request,@RequestBody WritingActivity writingActivity) throws MessageException {
+	@RequestMapping(value="activities/{writingActivityId}", method = RequestMethod.DELETE)
+	public @ResponseBody WritingActivity deleteWritingActivity(HttpServletRequest request,@PathVariable Long writingActivityId) throws MessageException {
 		try{
 			initialize(request);
-			if (isAdminOrSuperAdmin() || isCourseLecturer(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) {
-				try {
+			WritingActivity writingActivity = assignmentDao.loadWritingActivity(writingActivityId);
+			if (writingActivity != null){
+				if (isAdminOrSuperAdmin() || isCourseLecturer(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) {
 					assignmentManager.deleteActivity(writingActivity);
 					return writingActivity;
-				} catch (Exception e) {
-					e.printStackTrace();
-					throw e;
+				} else {
+					throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 				}
 			} else {
-				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+				throw new MessageException(Constants.EXCEPTION_WRITING_ACTIVITY_NOT_FOUND);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -57,19 +57,27 @@ public class WritingActivityController extends ReviewerController {
 		}
 	}
 	
-	@RequestMapping(value="/stats/{writingActivityId}", method = RequestMethod.GET)
+	@RequestMapping(value="activities/stats/{writingActivityId}", method = RequestMethod.GET)
 	public @ResponseBody Collection<UserStats> getWritingActivityStats(HttpServletRequest request, @PathVariable Long writingActivityId) throws MessageException {
 		Collection<UserStats> stats = new ArrayList<UserStats>();
 		try{
 			initialize(request);
 			WritingActivity writingActivity = assignmentDao.loadWritingActivity(writingActivityId);
-			Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
-			Set<User> users = new HashSet<User>();
-			for(UserGroup studentGroup : course.getStudentGroups()) {
-				users.addAll(studentGroup.getUsers());
+			if ( writingActivity != null){
+				Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
+				if (course != null){
+					Set<User> users = new HashSet<User>();
+					for(UserGroup studentGroup : course.getStudentGroups()) {
+						users.addAll(studentGroup.getUsers());
+					}
+					UserStatsAnalyser userStatsAnalyser = new UserStatsAnalyser(assignmentManager.getAssignmentRepository().getGoogleDocsServiceImpl());
+					stats = userStatsAnalyser.calculateStats(writingActivity, users);
+				} else {
+					throw new MessageException(Constants.EXCEPTION_WRITING_ACTIVITY_COURSE_NOT_FOUND);
+				}
+			} else {
+				throw new MessageException(Constants.EXCEPTION_WRITING_ACTIVITY_NOT_FOUND);
 			}
-			UserStatsAnalyser userStatsAnalyser = new UserStatsAnalyser(assignmentManager.getAssignmentRepository().getGoogleDocsServiceImpl());
-			stats = userStatsAnalyser.calculateStats(writingActivity, users);
 		} catch (Exception e) {
 			e.printStackTrace();
 			if (e instanceof MessageException){
@@ -79,5 +87,26 @@ public class WritingActivityController extends ReviewerController {
 			}
 		}
 		return stats;
+	}
+	
+	@RequestMapping(value="activities/{courseId}", method = RequestMethod.PUT)
+	public @ResponseBody WritingActivity saveWritingActivity(HttpServletRequest request, @PathVariable Long courseId, 
+		   @PathVariable WritingActivity writingActivity) throws Exception {
+		try{
+			initialize(request);
+			Course course = courseDao.loadCourse(courseId);
+			if (isAdminOrSuperAdmin() || isCourseLecturer(course)) {
+				return assignmentManager.saveActivity(course, writingActivity);
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				throw (MessageException) e;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_SAVE_WRITING_ACTIVITY);
+			}
+		}
 	}
 }

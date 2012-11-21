@@ -61,7 +61,7 @@ public abstract class ReviewerController {
 	
 
 	/**
-	 * Return a boolean indicatin if the logged user is an admin or a super admin
+	 * Return a boolean indicating if the logged user is an admin or a super admin
 	 * @return true if the logged user has admin or super admin role.
 	 */
 	protected boolean isAdminOrSuperAdmin(){
@@ -69,11 +69,20 @@ public abstract class ReviewerController {
 	}
 	
 	/**
-	 * Return a boolean indicatin if the logged user is an admin or a super admin or a guest
+	 * Return a boolean indicating if the logged user is an admin or a super admin or a guest
 	 * @return true if the logged user has admin or super admin role or a guest
 	 */
 	protected boolean isAdminOrSuperAdminOrGuest(){
 		return this.isAdmin() || this.isSuperAdmin() || this.isGuest();
+	}
+	
+	
+	/**
+	 * Return a boolean indicating if the logged user is an admin or  or a guest
+	 * @return true if the logged user has admin or  or a guest
+	 */
+	protected boolean isAdminOrGuest(){
+		return this.isAdmin() ||  this.isGuest();
 	}
 	
 	/**
@@ -82,7 +91,7 @@ public abstract class ReviewerController {
 	 * @return true if the logged user is one of the lectureres of the course
 	 */
 	protected boolean isCourseLecturer(Course course) {
-		return user == null ? false : course.getLecturers().contains(user);
+		return user == null ? false : course != null && course.getLecturers().contains(user);
 	}
 
 	/**

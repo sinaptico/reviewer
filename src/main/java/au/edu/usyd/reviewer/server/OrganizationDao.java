@@ -2,6 +2,8 @@ package au.edu.usyd.reviewer.server;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import java.util.List;
 
@@ -11,7 +13,10 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
 
+import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.OrganizationProperty;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
@@ -150,7 +155,7 @@ public class OrganizationDao extends ObjectDao{
 	 * Return all the organizations order by name
 	 * @return list of organizations
 	 */
-	public List<Organization> getOrganizations(){
+	public List<Organization> getOrganizations() throws MessageException{
 		List<Organization> organizations = new ArrayList<Organization>();
 		Session session = null;
 		try {
@@ -173,5 +178,29 @@ public class OrganizationDao extends ObjectDao{
 		}
 		
 		return organizations;
+	}
+	
+	
+	public Set<OrganizationProperty> getOrganizationProperties(Long organizationId) throws MessageException{
+		Set<OrganizationProperty> properties = new HashSet<OrganizationProperty>();
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			List<OrganizationProperty> organizationProperties =  session.createCriteria(OrganizationProperty.class).add(Property.forName("organizationId").eq(organizationId)).list();
+			session.getTransaction().commit();
+			for(OrganizationProperty organizationProperty : organizationProperties){
+				if (organizationProperty != null){
+					properties.add(organizationProperty.clone());
+				}
+			}
+			return properties;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_ORGANIZATIONS);
+		}
 	}
 }
