@@ -44,7 +44,7 @@ public class ReviewerAdminServiceImpl extends RemoteServiceServlet implements Re
 	public Organization saveOrganization(Organization organization) throws Exception {
 		if (isAdminOrSuperAdmin()){
 			if (!StringUtil.isBlank(organization.getName())){
-				return  organizationManager.saveOrganization(organization); 
+				return  organizationManager.saveOrganization(organization,true); 
 			} else {
 				throw new MessageException(Constants.EXCEPTION_ORGANIZATION_EMPTY);
 			}

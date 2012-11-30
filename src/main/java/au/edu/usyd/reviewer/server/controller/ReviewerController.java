@@ -1,23 +1,25 @@
 package au.edu.usyd.reviewer.server.controller;
 
+import java.io.IOException;
 import java.security.Principal;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
-import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
-import au.edu.usyd.reviewer.server.CourseDao;
-import au.edu.usyd.reviewer.server.OrganizationDao;
+import au.edu.usyd.reviewer.server.CourseManager;
+import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
-import au.edu.usyd.reviewer.server.UserDao;
 
 /**
  * This class is the super class of all the controller.
@@ -29,11 +31,8 @@ import au.edu.usyd.reviewer.server.UserDao;
 public abstract class ReviewerController {
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	protected AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
-	protected AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
-	protected UserDao userDao = UserDao.getInstance();
-	protected CourseDao courseDao = CourseDao.getInstance();
-	protected OrganizationDao organizationDao = OrganizationDao.getInstance();
-	
+	protected OrganizationManager organizationManager = OrganizationManager.getInstance();
+	protected CourseManager courseManager = CourseManager.getInstance();
 	// logged user
 	protected User user = null;
 	// logged user organization
@@ -66,6 +65,10 @@ public abstract class ReviewerController {
 	 */
 	protected boolean isAdminOrSuperAdmin(){
 		return this.isAdmin() || this.isSuperAdmin();
+	}
+	
+	protected boolean isGuestOrAdmin(){
+		return this.isAdmin() || this.isGuest();
 	}
 	
 	/**
@@ -104,6 +107,7 @@ public abstract class ReviewerController {
 	   	organization = user.getOrganization();	
 	   	Reviewer.initializeAssignmentManager(organization);
 	   	assignmentManager = Reviewer.getAssignmentManager();
+	   	courseManager.setAssignmentManager(assignmentManager);
    }
 
    /**
@@ -122,24 +126,29 @@ public abstract class ReviewerController {
 			Principal principal = request.getUserPrincipal();
 			if (principal == null){
 				user = new User();
-				user = userDao.getUserByEmail("admin@smart-sourcing.com.ar");
+				user = organizationManager.getUserByEmail("admin@smart-sourcing.com.ar");
 			}
 			else {
 				if  (user == null){
-					user = userDao.getUserByEmail(principal.getName());
+					user = organizationManager.getUserByEmail(principal.getName());
 					request.getSession().setAttribute("user", user);
 				} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
-					user = userDao.getUserByEmail(principal.getName());
+					user = organizationManager.getUserByEmail(principal.getName());
 					request.getSession().setAttribute("user", user);
 				}
 			}
 		} catch (Exception e) {
+			MessageException me = null;
 			e.printStackTrace();
 			if ( e instanceof MessageException){
-				throw (MessageException) e;
+				me = (MessageException) e;
 			} else {
-				throw new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);
+				me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);
 			}
+			if ( me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			}
+			throw me;
 		}
 		return user;
    }
@@ -151,28 +160,42 @@ public abstract class ReviewerController {
     */
    protected User getMockedUser(HttpServletRequest request) throws MessageException{
 	   User mockedUser = null;
-	   if (isAdminOrSuperAdmin()){
-			try {
+	   MessageException me = null;
+	   try{
+		   if (isAdminOrSuperAdmin()){
 				mockedUser = (User) request.getSession().getAttribute("mockedUser");
 				if ( mockedUser != null && mockedUser.getOrganization() == null){
-					mockedUser = userDao.getUserByEmail(mockedUser.getEmail());
+					mockedUser = organizationManager.getUserByEmail(mockedUser.getEmail());
 					request.getSession().setAttribute("mockedUser", mockedUser);
 				}
 				else if ( mockedUser == null){
 						mockedUser = user;
 						request.getSession().setAttribute("mockedUser", mockedUser);
-				} 
-			} catch (Exception e) {
-				e.printStackTrace();
-				if ( e instanceof MessageException){
-					throw (MessageException) e;
-				} else {
-					throw new MessageException(Constants.EXCEPTION_MOCKED_USER);
 				}
+		   } else {
+				me = new MessageException( Constants.EXCEPTION_PERMISSION_DENIED);
+				me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+				throw me;
 			}
-	   } else {
-			throw new MessageException( Constants.EXCEPTION_PERMISSION_DENIED);
-		}
+	   } catch(Exception e){
+		   if (e instanceof MessageException){
+			   me = (MessageException) e;
+		   } else {
+			   me = new MessageException(Constants.EXCEPTION_MOCKED_USER);
+		   }
+		   if ( me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+		   }
+		   throw me;
+	   }
 		return mockedUser;
 	}
+   
+   
+   @ExceptionHandler(MessageException.class)
+   public @ResponseBody String handleException(MessageException ex, HttpServletResponse response) throws IOException{
+	  response.setHeader("Content-Type", "application/json");
+	  response.sendError(ex.getStatusCode(), ex.getMessage());
+      return ex.getMessage();
+   }
 }

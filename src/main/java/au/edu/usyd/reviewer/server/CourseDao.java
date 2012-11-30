@@ -17,6 +17,7 @@ import org.hibernate.criterion.Restrictions;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
@@ -228,7 +229,9 @@ public class CourseDao extends ObjectDao{
 			session.beginTransaction();
 			course = (Course) session.createCriteria(Course.class).add(Property.forName(COURSE_ID).eq(courseId)).uniqueResult();
 			session.getTransaction().commit();
-			course =  course.clone();
+			if (course != null){
+				return course.clone();
+			}
 		} catch(HibernateException he){
 			if ( session != null && session.getTransaction() != null){
 				session.getTransaction().rollback();
@@ -268,81 +271,6 @@ public class CourseDao extends ObjectDao{
         return result;
 	}	
 
-//	/**
-//	 * Return a list of courses belong to the organization and whose semester and year are equals to the parameters received
-//	 * Use pagination with page and limit
-//	 * @param semester course semester
-//	 * @param year course year
-//	 * @param organization organization owner of the course
-//	 * @param int page used in pagination
-//	 * @param int limit used in pagination
-//	 * @return list of courses
-//	 * @throws MessageException message to the logged user
-//	 */
-//	public List<Course> loadCourses(Integer semester, Integer year, Organization organization, int page, int limit) throws MessageException{
-//		Session session = null;
-//		List<Course> result = new ArrayList<Course>();
-//		try{
-//			session = getSession();
-//			session.beginTransaction();
-//			String query = "from Course course " + "where course.semester=:semester AND course.year=:year and course.organization=:organization";
-//			List<Course> courses = session.createQuery(query).setParameter("semester", semester)
-//															 .setParameter("year", year)
-//															 .setParameter("organization", organization)
-//															 .setMaxResults(limit).setFirstResult(limit * page).list();
-//			session.getTransaction().commit();
-//				
-//			for(Course course: courses){
-//				if (course != null){
-//	 				result.add(course.clone());
-//				}
-//			}
-//		} catch(HibernateException he){
-//			if ( session != null && session.getTransaction() != null){
-//				session.getTransaction().rollback();
-//			}
-//			he.printStackTrace();
-//			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
-//		}
-//        return result;		
-//	}
-	
-//	/**
-//	 * Return all the courses of all the organization. Use pagination
-//	 * @param semester
-//	 * @param year
-//	 * @param page
-//	 * @param limit
-//	 * @return
-//	 * @throws MessageException
-//	 */
-//	public List<Course> loadCourses(Integer semester, Integer year, int page, int limit) throws MessageException{
-//		Session session = null;
-//		List<Course> result = new ArrayList<Course>();
-//		try{
-//			session = getSession();
-//			session.beginTransaction();
-//			String query = "from Course course " + "where course.semester=:semester AND course.year=:year";
-//			List<Course> courses = session.createQuery(query).setParameter("semester", semester)
-//															 .setParameter("year", year)
-//															 .setMaxResults(limit)
-//															 .setFirstResult(limit * page).list();
-//			session.getTransaction().commit();
-//				
-//			for(Course course: courses){
-//				if (course != null){
-//					result.add(course.clone());
-//				}
-//			}
-//		} catch(HibernateException he){
-//			if ( session != null && session.getTransaction() != null){
-//				session.getTransaction().rollback();
-//			}
-//			he.printStackTrace();
-//			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
-//		}
-//        return result;		
-//	}
 	
 	/**
 	 * Return all the courses of the organization without pagination
@@ -486,4 +414,30 @@ public class CourseDao extends ObjectDao{
 		}
 		return user;
 	}
+	
+	public Course loadCourseWhereWritingActivity(WritingActivity writingActivity) throws MessageException{
+		Session session = null;
+		try{
+			String query = "from Course course " + 
+			"join fetch course.writingActivities writingActivity " + 
+			"where writingActivity=:writingActivity";
+			session = this.getSession();
+			session.beginTransaction();
+			Course course = (Course) session.createQuery(query).setParameter("writingActivity", writingActivity).uniqueResult();
+			session.getTransaction().commit();
+			if (course != null){
+				course = course.clone();
+			}
+			return course;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+		}
+	}
+	
+	
+	
 }

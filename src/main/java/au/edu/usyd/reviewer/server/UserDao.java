@@ -32,6 +32,7 @@ public class UserDao extends ObjectDao {
 	private String USER_FIRSTNAME = "firstname";
 	private String USER_EMAIL="email";
 	private String ORGANIZATION = "organization";
+	private String ORGANIZATION_ID = "organizationId";
 	
 	// Singleton
 	public static UserDao instance = null;
@@ -68,10 +69,10 @@ public class UserDao extends ObjectDao {
 			}
 			session.getTransaction().commit();
 		} catch(HibernateException he){
+			he.printStackTrace();
 			if ( session != null && session.getTransaction() != null){
 				session.getTransaction().rollback();
 			}
-			he.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_GET_USER);
 		} 
 		return user;
@@ -137,18 +138,27 @@ public class UserDao extends ObjectDao {
 	 */
 	public List<User> geUsers(String lastName, Organization organization) throws MessageException{
 		List<User> usersResult = new ArrayList<User>();
-		Session session = getSession();
-		session.beginTransaction();
-		Criteria criteria = session.createCriteria(User.class);
-		criteria.add(Restrictions.like(USER_LASTNAME, lastName +"%"));
-		criteria.add(Restrictions.eq(ORGANIZATION, organization));
-		criteria.addOrder( Order.asc(USER_LASTNAME) );
-		List<User> users = criteria.list();
-		session.getTransaction().commit();
-		for(User user: users){
-			if (user!=null){
-				usersResult.add(user.clone());
+		Session session = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			Criteria criteria = session.createCriteria(User.class);
+			criteria.add(Restrictions.like(USER_LASTNAME, lastName +"%"));
+			criteria.add(Restrictions.eq(ORGANIZATION, organization));
+			criteria.addOrder( Order.asc(USER_LASTNAME) );
+			List<User> users = criteria.list();
+			session.getTransaction().commit();
+			for(User user: users){
+				if (user!=null){
+					usersResult.add(user.clone());
+				}
 			}
+		}catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USERS);
 		}
 		return usersResult;
 	}
@@ -185,12 +195,23 @@ public class UserDao extends ObjectDao {
 	 * @throws MessageException message to the user
 	 */
 	public boolean hasUsers(Organization organization) throws MessageException{
-		String query = "from User user where organizationId=:organizationId";
-		Session session = getSession();
-		session.beginTransaction();
-		List<User> users = session.createQuery(query).setParameter(ORGANIZATION, organization).list();
-		session.getTransaction().commit();
-		return (users.size() > 0);
+		boolean hasUsers = false;
+		Session session = null;
+		try{
+			String query = "from User user where organizationId=:organizationId";
+			session = getSession();
+			session.beginTransaction();
+			List<User> users = session.createQuery(query).setParameter(ORGANIZATION_ID, organization.getId()).list();
+			session.getTransaction().commit();
+			hasUsers = (users.size() > 0);
+		}catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USERS);
+		}
+		return hasUsers;
 	}
 
 	/**
@@ -199,72 +220,47 @@ public class UserDao extends ObjectDao {
 	 * @param organization  user organization
 	 * @param firstName user first name
 	 * @param lastName user last name
-	 * @param startRow start row
-	 * @param maxRows max record returned
+	 * @param page page to show
+	 * @param limit quantity of users per page
 	 * @return collection of users
 	 * @throws MessageException message to the logged user
 	 */
-	public Collection<User> geUsers(Organization organization, String firstName,  String lastName, int startRow,int  maxRows) throws MessageException {
-		Session session = getSession();
-		Criteria criteria = session.createCriteria(User.class);
-		if (!StringUtil.isBlank(firstName)){
-			criteria.add(Restrictions.like(USER_FIRSTNAME, firstName +"%"));
-		}
-		
-		if (!StringUtil.isBlank(lastName)){
-			criteria.add(Restrictions.like(USER_LASTNAME, lastName +"%"));
-		}
-		
-		criteria.add(Restrictions.eq(ORGANIZATION, organization));
-		
-		criteria.addOrder(Order.asc(USER_LASTNAME));
-		criteria.setMaxResults(maxRows);
-		criteria.setFirstResult(startRow);
-		session.beginTransaction();
-		List<User> users = criteria.list();
-		session.getTransaction().commit();
-		
+	public Collection<User> geUsers(Organization organization, String firstName,  String lastName, int page,int  limit) throws MessageException {
+		Session session = null;
+		List<User> users = new ArrayList<User>();
 		List<User> usersResult = new ArrayList<User>();
-		for(User user: users){
-			if(user!=null){
-				usersResult.add(user.clone());
+		try{
+			session = getSession();
+			session.beginTransaction();
+			Criteria criteria = session.createCriteria(User.class);
+			
+			if (!StringUtil.isBlank(firstName)){
+				criteria.add(Restrictions.like(USER_FIRSTNAME, firstName +"%"));
 			}
-		}
-		return usersResult;
-	}
-	
-	/**
-	 * Returns a collection of users belong to all the organizations
-	 * @param firstName
-	 * @param lastName
-	 * @param startRow
-	 * @param maxRows
-	 * @return
-	 * @throws MessageException
-	 */
-	public Collection<User> geUsers(String firstName,  String lastName, int startRow,int  maxRows) throws MessageException {
-		Session session = getSession();
-		Criteria criteria = session.createCriteria(User.class);
-		if (!StringUtil.isBlank(firstName)){
-			criteria.add(Restrictions.like(USER_FIRSTNAME, firstName +"%"));
-		}
-		
-		if (!StringUtil.isBlank(lastName)){
-			criteria.add(Restrictions.like(USER_LASTNAME, lastName +"%"));
-		}
-		
-		criteria.addOrder(Order.asc(USER_LASTNAME));
-		criteria.setMaxResults(maxRows);
-		criteria.setFirstResult(startRow);
-		session.beginTransaction();
-		List<User> users = criteria.list();
-		session.getTransaction().commit();
-		
-		List<User> usersResult = new ArrayList<User>();
-		for(User user: users){
-			if (user != null){
-				usersResult.add(user.clone());
+			
+			if (!StringUtil.isBlank(lastName)){
+				criteria.add(Restrictions.like(USER_LASTNAME, lastName +"%"));
 			}
+			
+			criteria.add(Restrictions.eq(ORGANIZATION, organization));
+			
+			criteria.addOrder(Order.asc(USER_LASTNAME));
+			criteria.setMaxResults(limit);
+			criteria.setFirstResult(limit * (page - 1));
+			session.getTransaction().commit();
+			
+			
+			for(User user: users){
+				if(user!=null){
+					usersResult.add(user.clone());
+				}
+			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USERS);
 		}
 		return usersResult;
 	}
@@ -287,12 +283,22 @@ public class UserDao extends ObjectDao {
 	 * @throws MessageException message to the logged user
 	 */
 	private User getUniqueUserByField(String field, String value) throws MessageException {
-		Session session = getSession();
-		session.beginTransaction();
-		User user = (User) session.createCriteria(User.class).add(Property.forName(field).eq(value)).uniqueResult();
-		session.getTransaction().commit();
-		if (user != null){
-			user = user.clone();
+		Session session = null;
+		User user = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			user = (User) session.createCriteria(User.class).add(Property.forName(field).eq(value)).uniqueResult();
+			session.getTransaction().commit();
+			if (user != null){
+				user = user.clone();
+			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USER);
 		}
 		return user;
 	}
@@ -305,17 +311,27 @@ public class UserDao extends ObjectDao {
 	 * @throws MessageException
 	 */
 	public User getUserByUsername(String username, Organization organization) throws MessageException{
-		Session session = getSession();
-		session.beginTransaction();
-		
-		Criteria criteria = session.createCriteria(User.class);
-		criteria.add(Restrictions.eq("username", username));
-		criteria.add(Restrictions.eq(ORGANIZATION, organization));
-		criteria.addOrder( Order.asc(USER_LASTNAME) );
-		User user = (User) criteria.uniqueResult();
-		session.getTransaction().commit();
-		if (user != null){
-			user = user.clone();
+		Session session = null;
+		User user = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			
+			Criteria criteria = session.createCriteria(User.class);
+			criteria.add(Restrictions.eq("username", username));
+			criteria.add(Restrictions.eq(ORGANIZATION, organization));
+			criteria.addOrder( Order.asc(USER_LASTNAME) );
+			user = (User) criteria.uniqueResult();
+			session.getTransaction().commit();
+			if (user != null){
+				user = user.clone();
+			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USERS);
 		}
 		return user;
 	}
@@ -328,7 +344,10 @@ public class UserDao extends ObjectDao {
 	 */
 	public User save(User user) throws MessageException{
 		user = (User) super.save(user);
-		return user.clone();
+		if (user != null){
+			return user.clone();
+		}
+		return user;
 	}
 	
 	/**
@@ -339,30 +358,40 @@ public class UserDao extends ObjectDao {
 	 * @throws MessageException message to the logged user
 	 */
 	public Collection<User> geUsers(User user) throws MessageException {
-		Session session = getSession();
-		session.beginTransaction();
-		Criteria criteria = session.createCriteria(User.class);
-		if (!StringUtil.isBlank(user.getFirstname())){
-			criteria.add(Restrictions.like(USER_FIRSTNAME, user.getFirstname() +"%"));
-		}
-		
-		if (!StringUtil.isBlank(user.getLastname())){
-			criteria.add(Restrictions.like(USER_LASTNAME, user.getLastname() +"%"));
-		}
-		
-		Organization organization = user.getOrganization();
-		criteria.add(Restrictions.eq(ORGANIZATION, organization));
-		
-		criteria.addOrder(Order.asc(USER_LASTNAME));
-		
-		List<User> users = criteria.list();
-		session.getTransaction().commit();
-		
+		Session session = null;
 		List<User> usersResult = new ArrayList<User>();
-		for(User aUser: users){
-			if(aUser!=null){
-				usersResult.add(aUser.clone());
+		try{
+			session = getSession();
+			session.beginTransaction();
+			Criteria criteria = session.createCriteria(User.class);
+			if (!StringUtil.isBlank(user.getFirstname())){
+				criteria.add(Restrictions.like(USER_FIRSTNAME, user.getFirstname() +"%"));
 			}
+			
+			if (!StringUtil.isBlank(user.getLastname())){
+				criteria.add(Restrictions.like(USER_LASTNAME, user.getLastname() +"%"));
+			}
+			
+			Organization organization = user.getOrganization();
+			criteria.add(Restrictions.eq(ORGANIZATION, organization));
+			
+			criteria.addOrder(Order.asc(USER_LASTNAME));
+			
+			List<User> users = criteria.list();
+			session.getTransaction().commit();
+			
+			
+			for(User aUser: users){
+				if(aUser!=null){
+					usersResult.add(aUser.clone());
+				}
+			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USERS);
 		}
 		return usersResult;
 	}

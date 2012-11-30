@@ -46,6 +46,7 @@ import au.edu.usyd.reviewer.client.core.Choice;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Grade;
 import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
 import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
@@ -62,6 +63,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.reviewstratergy.RandomReviewStratergy;
 import au.edu.usyd.reviewer.server.reviewstratergy.ReviewStratergy;
@@ -372,7 +374,10 @@ public class AssignmentManager {
 				}
 			}
 		} else {
-			throw new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_FINISHED + " File " + filePath);
+			
+			MessageException me = new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_FINISHED + " File " + filePath);
+			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			throw me;
 		}
 
 		// update activity status
@@ -459,13 +464,18 @@ public class AssignmentManager {
 
 	public WritingActivity saveActivity(Course course, WritingActivity writingActivity) throws Exception {
 		// check if status is valid
+		MessageException me = null;
 		if (writingActivity.getId() != null && writingActivity.getStatus() != assignmentDao.loadWritingActivity(writingActivity.getId()).getStatus()) {
-			throw new Exception("Invalid status");
+			me = new MessageException(Constants.EXCEPTION_INVALID_STATUS);
+			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			throw me;
 		}
 
 		// check if tutorial is valid
 		if (!course.getTutorials().contains(writingActivity.getTutorial()) && !writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL)) {
-			throw new Exception(Constants.EXCEPTION_INVALID_TUTORIAL);
+			me = new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL);
+			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			throw me;
 		}
 
 		// create activity folder
@@ -486,7 +496,7 @@ public class AssignmentManager {
 		}
 		return writingActivity;
 	}
-
+	
 	private void setUpFoldersAndTemplates(Course course) throws Exception{
 		
 		List<DocumentListEntry> templates = assignmentRepository.setUpFolders(course);
@@ -1350,6 +1360,7 @@ public class AssignmentManager {
 	public void saveLecturers(Course course, List<User> lecturers, User loggedUser) throws Exception {
 		
 		for (User lecturer : lecturers) {
+			lecturer.setOrganization(course.getOrganization());
 			// search the lecturer in the database
 			User user = userDao.getUserByEmail(lecturer.getEmail());
 			
@@ -1361,7 +1372,9 @@ public class AssignmentManager {
 						lecturer.getDomain().toLowerCase().equals(lecturer.getOrganization().getGoogleDomain().toLowerCase())){	
 					assignmentRepository.createUser(lecturer);
 				} else {
-					throw new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
+					MessageException me = new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
+					me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+					throw me;
 				}
 				
 				//send password notification if not a wasm user
@@ -1402,9 +1415,11 @@ public class AssignmentManager {
 	public void saveTutors(Course course, List<User> tutors, User loggedUser) throws Exception {
 		
 		for (User tutor : course.getTutors()) {
+			tutor.setOrganization(course.getOrganization());
 			// search the tutor in the database
 			User user = userDao.getUserByEmail(tutor.getEmail());
 			if (user == null) {
+				
 				// create tutor in Google Apps
 				if (tutor.getDomain() != null && tutor.getOrganization() != null && 
 						tutor.getOrganization().getGoogleDomain()!= null &&
@@ -1445,6 +1460,7 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public void saveUserGroup(Course course, User loggedUser) throws Exception {
+		/// @TODO REVISAR BIEN ESTE METODO
 		saveUserGroupDB(course);
 		
 		// update course document permissions
@@ -1457,4 +1473,11 @@ public class AssignmentManager {
 		// for each activity create documents and reviewers for new users
 		processActivitiesForNewUsers(course);
 	}
+	
+	
+	public WritingActivity loadWritingActivity(long writingActivityId)throws MessageException {
+		return assignmentDao.loadWritingActivity(writingActivityId);
+	}
+	
+	
 }

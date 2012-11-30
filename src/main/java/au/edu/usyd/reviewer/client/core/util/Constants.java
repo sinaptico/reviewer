@@ -61,13 +61,7 @@ public class Constants {
 	public static String EXCEPTION_GET_LOGGED_USER="There was an error obtaining the logged user information";
 	public static String EXCEPTION_ACTIVITY_NOT_FINISHED ="The activity wasn't finished because the file doesn't exist.";
 	
-	
-//	public static String EXCEPTION_SAVE_MESSAGE="could not be saved";
-//	public static String EXCEPTION_LOAD_MESSAGE="could not be obtained from the database";
-//	public static String EXCEPTION_COURSE_NO_LOADED = "The course could not be loaded";
-//	public static String EXCEPTION_USER_NO_LOADED = "The user could not be loaded";
-//	public static String EXCEPTION_USERS_NO_LOADED = "The users could not be loaded";
-	
+		
 	// Dao Exceptions
 	public static String EXCEPTION_HIBERNATE_SESSION_MESSAGE="Failed to create a session to database";
 	public static String EXCEPTION_DELETE="Object could not be deleted";
@@ -121,29 +115,49 @@ public class Constants {
 	public static String EXCEPTION_GET_WRITING_ACTIVITIES="Failed to get the writing activities of the course";
 	public static String EXCEPTION_GET_ORGANIZATION_PROPERTIES = "Failed to get the properties of the organization";
 	public static String EXCEPTION_SAVE_REVIEWER ="Failed to save the reviewre";
-	public static String EXCEPTION_SAVE_LECTURER ="Failed to save the lecturer";
-	public static String EXCEPTION_SAVE_TUTOR ="Failed to save the tutor";
-	public static String EXCEPTION_SAVE_USER_GROUP ="Failed to save the user group";
+	public static String EXCEPTION_SAVE_LECTURERS ="Failed to save the list of lecturers";
+	public static String EXCEPTION_SAVE_TUTORS ="Failed to save ths list of tutors";
+	public static String EXCEPTION_SAVE_USERS_GROUPS ="Failed to save the students groups";
 	public static String EXCEPTION_SAVE_SUPERVISOR ="Failed to save the supervisor";
 	public static String EXCEPTION_SAVE_TEMPLATE ="Failed to save the template (doc entry)";
 	public static String EXCEPTION_INVALID_LECTURER="Invalid lecturer";
-	public static String EXCEPTION_EMPTY_LECTURERS_LIST="Empty lecturer list";
-	
-	
-	
+	public static String EXCEPTION_EMPTY_LECTURERS_LIST="Empty list of lecturers";
+	public static String EXCEPTION_EMPTY_TUTORS_LIST="Empty list of tutors";
+	public static String EXCEPTION_EMPTY_USERS_GROUPS_LIST="Empty list of students groups";
+	public static String EXCEPTION_INVALID_STATUS="Invalid status";
+	public static String EXCEPTION_SAVE_REVIEWING_ACTIVITIES="Failed to save the reviewing activities";
+	public static String EXCEPTION_SAVE_ORGANIZATION ="Failed to save ths organization";
+	public static String EXCEPTION_USERNAME_NO_EXIST="The user doesn't exist. Please enter other username";
+	public static String EXCEPTION_GET_REVIEWER_PROPERTY="Failed to get reviewer property";
+	public static String EXCEPTION_GET_REVIEWER_PROPERTIES="Failed to get reviewer properties";
 	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
 	public static String ROLE_ADMIN = "Admin";
 	public static String ROLE_GUEST = "Guest";
 	
-	
+	// Rest methods parameters include and object attributes used in relationships or to generate Json maps and lists
 	public static String ALL = "all";
 	public static String TUTORS = "tutors";
 	public static String LECTURERS = "lecturers";
 	public static String STUDENTS = "students";
 	public static String ACTIVITIES = "activities";
 	public static String TEMPLATES = "templates";
-	public static String ORGANIZATION ="organization";
+	public static String ORGANIZATION = "organization";
+	public static String DEADLINES ="deadlines";
+	public static String DOC_ENTRIES ="docEntries";
+	public static String GRADES ="grades";
+	public static String REVIEWING_ACTIVITIES ="reviewingActivities";
+	public static String PROPERTIES = "properties";
+	public static String TUTORIALS = "tutorials";
+	public static String ID = "id";
+	
+	// HTML error codes
+	public static int HTTP_CODE_FORBIDDEN = 403;
+	public static int HTTP_CODE_MESSAGE = 600;
+	public static int HTTP_CODE_NOT_FOUND = 404;
+	
+	
+	
 	
 }
