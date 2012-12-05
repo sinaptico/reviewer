@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.server.controller;
 
 import java.io.BufferedReader;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -21,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.CommonsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
 
 public class OrganizationControllerClient extends ControllerClient {
@@ -78,7 +78,8 @@ public class OrganizationControllerClient extends ControllerClient {
 		try{
 			initializeRestTemplate();
 			String json="{\"name\":\"Organization TEST 4\",\"organizationProperties\":[],\"properties\":[]}";
-			save(new URL("http://127.0.0.1:8888/v1/organizations/"), json);
+			String userPassword = "superAdmin@demo-sinaptico.com:reviewer";
+			save(new URL("http://127.0.0.1:8888/v1/organizations/"), json, userPassword);
 			List<Organization> organizations = getOrganizations();
 			for(Organization organization: organizations){
 				getOrganization(organization.getId());

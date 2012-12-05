@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
@@ -27,6 +28,8 @@ private static CourseManager courseManager = null;
 	
 	private CourseDao courseDao = CourseDao.getInstance();
 	private AssignmentManager assignmentManager = null;
+	private OrganizationManager organizationManager = OrganizationManager.getInstance();
+	private UserDao userDao = UserDao.getInstance();
 	
 	/***
 	 * Constructor 
@@ -58,143 +61,138 @@ private static CourseManager courseManager = null;
 	 * @throws MessageException message to the user
 	 */
 	public List<Course> getCourses(Integer semester, Integer year, Organization organization, User user, 
-			                       Integer limit, Integer page) throws Exception{
-		List<Course> courses = courseDao.loadCourses(semester, year, organization, user, limit, page);
+			                       Integer limit, Integer page, String tasks, boolean finished) throws Exception{
+		List<Course> courses = courseDao.loadCourses(semester, year, organization, user, limit, page, tasks, finished);
 		return courses;
 	}
 	
-	
+	/**
+	 * Create or update the course received as parameter
+	 * @param course to save
+	 * @param loggedUser logged user
+	 * @return Course Saved course
+	 * @throws Exception
+	 */
 	public Course saveCourse(Course course, User loggedUser) throws Exception{
 		course = assignmentManager.saveCourse(course, loggedUser);
-		if (course != null){
-			course.setAutomaticReviewers(new HashSet<User>());
-			course.setLecturers(new HashSet<User>());
-			Organization anOrganization = course.getOrganization();
-			if (anOrganization != null){
-				anOrganization.setOrganizationProperties(new HashSet<OrganizationProperty>());
-			}
-			course.setOrganization(anOrganization);
-			course.setStudentGroups(new HashSet<UserGroup>());
-			course.setSupervisors(new HashSet<User>());
-			course.setTemplates(new HashSet<DocEntry>());
-			course.setTutorials(new HashSet<String>());
-			course.setTutors(new HashSet<User>());
-			course.setWritingActivities(new HashSet<WritingActivity>());
-		}
 		return course;
 	}
 	
+	/**
+	 * Set the assignment manager in the course manager
+	 * @param manager assignment manager
+	 */
 	public void setAssignmentManager(AssignmentManager manager){
 		assignmentManager = manager;
 	}
 	
+	/**
+	 * Get the course with id equals to the id received as parameter
+	 * @param courseId id of the course to get
+	 * @return Course 
+	 * @throws Exception
+	 */
 	public Course getCourse(Long courseId) throws Exception{
 		return courseDao.load(courseId);
 	}
 	
-//	/**
-//	 * Prepare the course taking in the consideration the parameters include and relationships
-//	 * @param course Course to return
-//	 * @param include if include is equals to all then return all the information of the course including the relationshipss
-//	 * @param relationships indicates which relationships is include. It's used to get a course with a specific relationships
-//	 * @return Course course prepared to sent to the user interface
-//	 * @throws MessageException
-//	 */
-//	public Course prepareCourse(Course course, String include, String relationships) throws MessageException{
-//		
-//		boolean tutors = !StringUtil.isBlank(relationships) && relationships.contains(Constants.TUTORS);
-//		boolean lecturers = !StringUtil.isBlank(relationships) && relationships.contains(Constants.LECTURERS);
-//		boolean students = !StringUtil.isBlank(relationships) && relationships.contains(Constants.STUDENTS);
-//		boolean templates = !StringUtil.isBlank(relationships) && relationships.contains(Constants.TEMPLATES);
-//		boolean activities = !StringUtil.isBlank(relationships) && relationships.contains(Constants.ACTIVITIES);
-//
-//		if (Constants.ALL.equals(include)){
-//			tutors = true;
-//			lecturers = true;
-//			students = true;
-//			templates = true;
-//			activities = true;
-//		} 
-//		
-//		course.setAutomaticReviewers(new HashSet<User>());
-//		course.setSupervisors(new HashSet<User>());
-//		
-//		// Lecturers
-//		if (lecturers){
-//			for(User lecturer: course.getLecturers()){
-//				if (lecturer != null){
-//					lecturer.setOrganization(null);
-//				}
-//			}
-//		} else {
-//			course.setLecturers(new HashSet<User>());
-//		}
-//		
-//		// Students
-//		if (students){
-//			for(UserGroup group : course.getStudentGroups()){
-//				for(User student: group.getUsers()){
-//					if (student != null){
-//						student.setOrganization(null);
-//					}
-//				}
-//			}
-//		} else {
-//			course.setStudentGroups(new HashSet<UserGroup>());
-//		} 
-//		
-//		// Templates
-//		if (templates){
-//			for(DocEntry entry:course.getTemplates()){
-//				if (entry != null){
-//					User owner = entry.getOwner();
-//					if (owner != null){
-//						owner.setOrganization(null);
-//					}
-//					UserGroup ownerGroup = entry.getOwnerGroup();
-//					if (ownerGroup != null){
-//						for(User student :ownerGroup.getUsers()){
-//							if (student != null){
-//								student.setOrganization(null);
-//							}
-//						}
-//					}
-//					entry.setReviews(new HashSet<Review>());
-//				}
-//			}
-//		} else {
-//			course.setTemplates(new HashSet<DocEntry>());
-//		}
-//		
-//		// Tutors
-//		if (tutors){
-//			for(User tutor : course.getTutors()){
-//				if (tutor != null){
-//					tutor.setOrganization(null);
-//				}
-//			}
-//		} else {
-//			course.setTutors(new HashSet<User>());
-//		}
-//		
-//		// Activities
-//		if (activities){
-//			for(WritingActivity activity:course.getWritingActivities()){
-//				if (activity != null){
-//					activity.setDeadlines(new ArrayList<Deadline>());
-//					activity.setEntries(new HashSet<DocEntry>());
-//					activity.setGrades(new HashSet<Grade>());
-//					activity.setReviewingActivities(new ArrayList<ReviewingActivity>());
-//				}
-//			}
-//		} else {
-//			course.setWritingActivities(new HashSet<WritingActivity>());
-//		}
-//		return course;
-//	}
-		
-
+	/**
+	 *  Get the course owner of the writing activity received as parameter
+	 * @param writingActivity writing activity to look for the course
+	 * @return Course owner of the writing activity
+	 * @throws MessageException
+	 */
 	public Course loadCourseWhereWritingActivity(WritingActivity writingActivity) throws MessageException{
 		return courseDao.loadCourseWhereWritingActivity(writingActivity);
 	}
+	
+	public Course loadCourseRelationships(Course course, Organization organization) throws MessageException{
+		MessageException me = null;
+		try{
+			// Set organization
+			if (course.getOrganization() == null){
+				course.setOrganization(organization);
+			} else {
+				Organization anOrganization = organizationManager.getOrganization(course.getOrganization().getId());
+				if (anOrganization != null){
+					course.setOrganization(anOrganization);
+				} else {
+					me = new MessageException(Constants.EXCEPTION_ORGANIZATION_NOT_FOUND);
+					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+					throw me;
+				}
+			}
+			
+			// load lecturers
+			Set<User> lecturers = new HashSet<User>();
+			for(User lecturer :course.getLecturers()){
+				if (lecturer != null && lecturer.getId() != null){
+					lecturer = userDao.load(lecturer.getId());
+				}
+				lecturers.add(lecturer);
+			}
+			course.setLecturers(lecturers);
+			
+			// load tutors
+			Set<User> tutors = new HashSet<User>();
+			for(User tutor :course.getTutors()){
+				if (tutor != null && tutor.getId() != null){
+					tutor = userDao.load(tutor.getId());
+				}
+				tutors.add(tutor);
+			}
+			course.setTutors(tutors);
+			
+			// load student Groups
+			Set<UserGroup> groups = new HashSet<UserGroup>();
+			for(UserGroup group :course.getStudentGroups()){
+				Set<User> students = new HashSet<User>();
+				if(group != null && group.getId()!= null){
+					group = assignmentManager.loadUserGroup(group.getId());
+					for(User student:group.getUsers()){
+						if(student != null && student.getId() != null){
+							student = userDao.load(student.getId());
+						}
+						students.add(student);
+					}
+				}
+				groups.add(group);
+			}
+			course.setStudentGroups(groups);
+			
+			// load templates
+			Set<DocEntry> entries = new HashSet<DocEntry>();
+			for(DocEntry entry :course.getTemplates()){
+				if (entry!= null && entry.getId() != null){
+					entry = assignmentManager.loadDocEntry(entry.getId());
+				}
+				entries.add(entry);
+			}
+			course.setTemplates(entries);
+			
+			// load activities
+			Set<WritingActivity> activities = new HashSet<WritingActivity>();
+			for (WritingActivity activity : course.getWritingActivities()){
+				if (activity != null && activity.getId() != null){
+					activity = assignmentManager.loadWritingActivity(activity.getId());
+				}
+				activities.add(activity);
+			}
+			course.setWritingActivities(activities);
+			
+			return course;
+		} catch(Exception e){
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				me = (MessageException) e;
+			} else {
+				me = new MessageException(Constants.EXCEPTION_SAVE_COURSE);
+			}
+			if ( me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			}
+			throw me;
+		}
+	}
+	
 }

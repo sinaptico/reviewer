@@ -1452,32 +1452,75 @@ public class AssignmentManager {
 		// for each activity create documents and reviewers for new users
 		processActivitiesForNewUsers(course);
 	}
-	
-	/**
-	 * Create or update the user group (students) in the database, in Google Docs
-	 * @param course Course where the users will be students
-	 * @param loggedUser logged user used in Google Docs
-	 * @throws Exception
-	 */
-	public void saveUserGroup(Course course, User loggedUser) throws Exception {
-		/// @TODO REVISAR BIEN ESTE METODO
-		saveUserGroupDB(course);
 		
-		// update course document permissions
-		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
-			
-		// save course in DB
-		course = courseDao.save(course);		
-		///Local DataBase//////////////////////////////////////////////////////
-		
-		// for each activity create documents and reviewers for new users
-		processActivitiesForNewUsers(course);
-	}
-	
-	
 	public WritingActivity loadWritingActivity(long writingActivityId)throws MessageException {
 		return assignmentDao.loadWritingActivity(writingActivityId);
 	}
 	
+
+	public DocEntry loadDocEntry(Long id) throws Exception{
+		return assignmentDao.loadDocEntryWhereId(id);
+	}
 	
+	public WritingActivity loadWritingActivityRelationships(WritingActivity activity)throws MessageException {
+		MessageException me = null;
+		try{
+			// load deadlines
+			List<Deadline> deadlines = new ArrayList<Deadline>();
+			for(Deadline deadline: activity.getDeadlines()){
+				if (deadline != null && deadline.getId() != null){
+					deadline = assignmentDao.loadDeadline(deadline.getId());
+				}
+				deadlines.add(deadline);
+			}
+			activity.setDeadlines(deadlines);
+			
+			// load entries
+			Set<DocEntry> entries = new HashSet<DocEntry>();
+			for(DocEntry entry:activity.getEntries()){
+				if (entry != null && entry.getId() != null){
+					entry = loadDocEntry(entry.getId());
+				}
+				entries.add(entry);
+			}
+			activity.setEntries(entries);
+			
+			// load grades
+			Set<Grade> grades = new HashSet<Grade>();
+			for(Grade grade:activity.getGrades()){
+				if (grade != null && grade.getId() != null){
+					grade = assignmentDao.loadGrade(grade.getId());
+				}
+				grades.add(grade);
+			}
+			activity.setGrades(grades);
+			
+			// load reviewing activities
+			List<ReviewingActivity> reviewingActivities = new ArrayList<ReviewingActivity>();
+			for(ReviewingActivity reviewingActivity :activity.getReviewingActivities()){
+				if (reviewingActivity != null && reviewingActivity.getId() != null){
+					reviewingActivity = assignmentDao.loadReviewingActivity(reviewingActivity.getId());
+				}
+				reviewingActivities.add(reviewingActivity);
+			}
+			activity.setReviewingActivities(reviewingActivities);
+			
+			return activity;
+		} catch(Exception e){
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				me = (MessageException) e;
+			} else {
+				me = new MessageException(Constants.EXCEPTION_SAVE_WRITING_ACTIVITIES);
+			}
+			if ( me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			}
+			throw me;
+		}
+	}
+	
+	public UserGroup loadUserGroup(Long id) throws  MessageException {
+		return assignmentDao.loadUserGroup(id);
+	}
 }

@@ -172,10 +172,9 @@ public abstract class ReviewerController {
 						mockedUser = user;
 						request.getSession().setAttribute("mockedUser", mockedUser);
 				}
-		   } else {
-				me = new MessageException( Constants.EXCEPTION_PERMISSION_DENIED);
-				me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
-				throw me;
+		   } else { // Guest
+			   mockedUser = user;
+			   request.getSession().setAttribute("mockedUser", mockedUser);
 			}
 	   } catch(Exception e){
 		   if (e instanceof MessageException){

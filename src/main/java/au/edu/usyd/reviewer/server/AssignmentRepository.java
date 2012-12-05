@@ -89,6 +89,7 @@ public class AssignmentRepository {
 	public void createActivity(Course course, WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException,MessageException {
 		try{
 			String folderName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
+			logger.debug("FolderName " + folderName + " course folder Id " + course.getFolderId());
 			FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
 			writingActivity.setFolderId(folderEntry.getResourceId());
 		} catch(ResourceNotFoundException e){

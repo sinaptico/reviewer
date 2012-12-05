@@ -164,12 +164,8 @@
 	<!-- MARIELA -->
 	<security-constraint>
 		<web-resource-collection>
-			<web-resource-name>/User/*</web-resource-name>
-			<url-pattern>/v1/User/*</url-pattern>
-		</web-resource-collection>
-		<web-resource-collection>
 			<web-resource-name>au.edu.usyd.reviewer.controller.*</web-resource-name>
-			<url-pattern>/v1/*</url-pattern>
+			<url-pattern>/*</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
 			<role-name>SuperAdmin</role-name>

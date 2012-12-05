@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import au.edu.usyd.reviewer.client.admin.report.UserStats;
 import au.edu.usyd.reviewer.client.core.Course;
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
@@ -201,53 +202,6 @@ public class ActivityController extends ReviewerController {
 		}
 	}
 	
-	/**
-	 * This method create or update the writing activity received as parameter
-	 * @param request HttpServletRequest to initialize the controller
-	 * @param writingActivity writing activity to create or update
-	 * @return WritingActivity writing activity created or updated
-	 * @throws MessageException message to the user
-	 */
-	@RequestMapping(value="activities",  method = RequestMethod.PUT)
-	public @ResponseBody Map<String,Object> saveWritingActivity(HttpServletRequest request,  
-									   		   @RequestBody WritingActivity writingActivity) throws MessageException {
-		MessageException me = null;
-		try{
-			initialize(request);
-			if (writingActivity != null){
-				Course course = courseManager.loadCourseWhereWritingActivity(writingActivity);
-				if (course != null){
-					if (isAdminOrSuperAdmin() || isCourseLecturer(course)) {
-						writingActivity = assignmentManager.saveActivity(course, writingActivity);
-						Map<String,Object> activityMap = ObjectConverter.convertObjectInMap(writingActivity, "", "",0);
-						return activityMap;
-					} else {
-						me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-						me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
-						throw me;
-					}
-				} else {
-					me = new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
-					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
-					throw me;
-				}
-			} else {
-				me = new MessageException(Constants.EXCEPTION_WRITING_ACTIVITY_NOT_FOUND);
-				me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
-				throw me;
-			}
-		} catch(Exception e){
-			e.printStackTrace();
-			if (e instanceof MessageException){
-				me = (MessageException) e;
-			} else {	
-				me = new MessageException(Constants.EXCEPTION_GET_WRITING_ACTIVITIES);
-			}
-			if ( me.getStatusCode() == 0){
-				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
-			}
-			throw me;
-			
-		}
-	}
+
+	
 }

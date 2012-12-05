@@ -286,7 +286,7 @@ public class AdminEntryPoint implements EntryPoint {
 			public void execute() {
 				WritingActivity writingActivity = new WritingActivity();
 				writingActivity.getDeadlines().add(new Deadline("Final"));
-			
+				
 				activityForm.setCourses(courses);		
 				activityForm.setGlosserSites(glosserSites);
 				activityForm.setWritingActivity(writingActivity);

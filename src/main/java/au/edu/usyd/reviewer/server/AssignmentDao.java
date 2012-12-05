@@ -901,4 +901,46 @@ public class AssignmentDao {
 		}
 		return reviewReply;
 	}
+	
+	public Grade loadGrade(Long id) throws MessageException{
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			Grade grade = (Grade) session.createCriteria(Grade.class).add(Property.forName("id").eq(id)).uniqueResult();
+			session.getTransaction().commit();
+			if (grade != null){
+				grade = grade.clone();
+			}
+			return grade;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_GRADE);
+		}
+	}
+	
+	public UserGroup loadUserGroup(Long id) throws MessageException {
+		Session session = null;
+		try{
+			String query = "from UserGroup " +  
+						   "where id=:id";
+			session = this.getSession();
+			session.beginTransaction();
+			UserGroup group = (UserGroup) session.createQuery(query).setParameter("id", id).uniqueResult();
+			session.getTransaction().commit();
+			if (group != null){
+			 group = group.clone();
+			}
+			return group;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_USERGROUP);
+		}
+	}
 }

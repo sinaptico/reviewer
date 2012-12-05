@@ -150,6 +150,7 @@ public class ActivityForm extends Composite {
 	 * Instantiates a new activity form and populates the "Static" Drop-menus with the "Document Types", "Document genres" and "Activity statuses".  
 	 */
 	public ActivityForm() {
+
 		initWidget(mainPanel);
 		
 		// assessment
@@ -389,7 +390,7 @@ public class ActivityForm extends Composite {
 		VerticalPanel reviewPanel = new VerticalPanel();
 		reviewPanel.add(reviewTable);
 		reviewPanel.add(addReview);
-		
+		mainPanel.clear();
 		mainPanel.add(activityGrid);
 		mainPanel.add(new HTML("<br/><b>Automatic Feedback</b>"));
 		mainPanel.add(feedbackGrid);

@@ -319,19 +319,50 @@ public class CourseDao extends ObjectDao{
 	 * @return
 	 * @throws MessageException
 	 */
-	public List<Course> loadCourses(Integer semester, Integer year, Organization organization, User user, Integer limit, Integer page) throws MessageException{
+	public List<Course> loadCourses(Integer semester, Integer year, Organization organization, User user, 
+			                        Integer limit, Integer page, String tasks, boolean finished) throws MessageException{
 		Session session = null;
 		try{
 			 
 			String sQuery = "SELECT DISTINCT course FROM Course course ";
 			String where = "";
-			
 			if ( user != null){
+				where = "(lecturer=:user OR tutor=:user OR student=:user)";
+			}
+		
+			if ( tasks != null && tasks.contains(Constants.WRITING)){
+					sQuery +=  "LEFT JOIN FETCH course.lecturers lecturer " +
+				   	   "LEFT JOIN FETCH course.tutors tutor " +
+				   	   "LEFT JOIN FETCH course.studentGroups studentGroup " + 
+				   	   "LEFT JOIN FETCH studentGroup.users student " +
+				   	   "JOIN FETCH course.writingActivities writingActivity " +
+				   	   "JOIN FETCH writingActivity.entries docEntry " + 
+				   	   "LEFT JOIN FETCH docEntry.ownerGroup ownerGroup " +
+				   	   "LEFT JOIN FETCH ownerGroup.users owner ";
+					if (user != null){
+						where += " AND (docEntry.owner=:user OR owner=:user)";
+					}
+			
+				
+			} else if ( tasks != null && tasks.contains(Constants.REVIEWING)){
+				sQuery +=  "LEFT JOIN FETCH course.lecturers lecturer " +
+					   	   "LEFT JOIN FETCH course.tutors tutor " +
+					   	   "LEFT JOIN FETCH course.studentGroups studentGroup " + 
+					   	   "LEFT JOIN FETCH studentGroup.users student " +
+					   	   "JOIN FETCH course.writingActivities writingActivity " +
+					   	   "JOIN FETCH writingActivity.reviewingActivities reviewingAcitvity " +
+					   	   "JOIN FETCH reviewingAcitvity.entries reviewEntry ";
+				if (user != null){
+					where += " AND (reviewEntry.owner=:user)";
+				}
+				if (!finished){
+					where = where + "AND (reviewingAcitvity.status = 1)";	
+				}
+			} else {
 				sQuery +=  "LEFT JOIN course.lecturers lecturer " +
-				   		 "LEFT JOIN course.tutors tutor " +
-				   		 "LEFT JOIN course.studentGroups studentGroup " + 
-				   		 "LEFT JOIN studentGroup.users student " ;
-				where += "(lecturer=:user OR tutor=:user OR student=:user) ";
+				   		   "LEFT JOIN course.tutors tutor " +
+				   		   "LEFT JOIN course.studentGroups studentGroup " + 
+				   		   "LEFT JOIN studentGroup.users student " ;
 			}
 				
 			if (semester != null){
@@ -438,6 +469,4 @@ public class CourseDao extends ObjectDao{
 		}
 	}
 	
-	
-	
-}
+	}

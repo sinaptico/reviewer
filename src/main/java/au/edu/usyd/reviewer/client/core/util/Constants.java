@@ -130,6 +130,8 @@ public class Constants {
 	public static String EXCEPTION_USERNAME_NO_EXIST="The user doesn't exist. Please enter other username";
 	public static String EXCEPTION_GET_REVIEWER_PROPERTY="Failed to get reviewer property";
 	public static String EXCEPTION_GET_REVIEWER_PROPERTIES="Failed to get reviewer properties";
+	public static String EXCEPTION_SAVE_WRITING_ACTIVITIES ="Failed to save the writing activity";
+	
 	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
@@ -151,6 +153,8 @@ public class Constants {
 	public static String PROPERTIES = "properties";
 	public static String TUTORIALS = "tutorials";
 	public static String ID = "id";
+	public static String REVIEWING = "reviewing";
+	public static String WRITING = "writing";
 	
 	// HTML error codes
 	public static int HTTP_CODE_FORBIDDEN = 403;

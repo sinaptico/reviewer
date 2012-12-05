@@ -169,7 +169,8 @@ private static void addLecturer(Long courseId){
 			conn.setRequestMethod("PUT");
 			conn.setRequestProperty("Content-Type", "application/json");
 	 			
-			String json = "{\"id\":null,\"email\":\"lecturerTest@demo-sinaptico.com\",\"firstname\":\"Lecturer\",\"lastname\":\"Test Json\",\"nativeSpeaker\":null,\"wasmuser\":false,\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\",\"role_name\":[\"Admin\"],\"organization\":{\"id\":1,\"name\":\"Demo Sinaptico\",\"organizationProperties\":[],\"properties\":[]},\"username\":\"lecturerTest\",\"domain\":\"demo-sinaptico.com\",\"superAdmin\":false,\"admin\":true,\"guest\":false}";
+//			String json = "{\"id\":null,\"email\":\"lecturerTest@demo-sinaptico.com\",\"firstname\":\"Lecturer\",\"lastname\":\"Test Json\",\"nativeSpeaker\":null,\"wasmuser\":false,\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\",\"role_name\":[\"Admin\"],\"organization\":{\"id\":1,\"name\":\"Demo Sinaptico\",\"organizationProperties\":[],\"properties\":[]},\"username\":\"lecturerTest\",\"domain\":\"demo-sinaptico.com\",\"superAdmin\":false,\"admin\":true,\"guest\":false}";
+			String json = "{\"id\":null,\"email\":\"lecturerTest@demo-sinaptico.com\",\"firstname\":\"Lecturer\",\"lastname\":\"Test Json\",\"nativeSpeaker\":null,\"wasmuser\":false,\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\",\"role_name\":[\"Admin\"],\"organization\":1,\"username\":\"lecturerTest\",\"domain\":\"demo-sinaptico.com\",\"superAdmin\":false,\"admin\":true,\"guest\":false}";
 			
 			OutputStream os = conn.getOutputStream();
 			os.write(json.getBytes());
@@ -258,16 +259,29 @@ private static void addTutor(Long courseId){
 		try{
 			System.out.println("/******************* START **********************/");
 			initializeRestTemplate();
-			String json ="{\"name\":\"COURSE TEST\",\"year\":2012,\"semester\":3,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[],\"lecturers\":[],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[],\"writingActivities\":[],\"templates\":[],\"automaticReviewers\":[],\"organization\":null}";
-//			save(new URL("http://127.0.0.1:8888/v1/courses/"), json);
-			List<Course> coursesForAdmin = getCoursesForAdmin();
+			// create course
+			String json ="{\"name\":\"COURSE TEST 666\",\"year\":2012,\"semester\":3,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[],\"writingActivities\":[],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";
+			String userPassword = "admin@smart-sourcing.com.ar:reviewer";
+			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
+						
+			// update course
+			json ="{\"id\":48,\"name\":\"COURSE TEST MODIFIED 2\",\"year\":2012,\"semester\":2,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[],\"writingActivities\":[{\"id\":27}],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";
+			userPassword = "admin@smart-sourcing.com.ar:reviewer";
+			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
+	
+//			userPassword = "superAdmin@demo-sinaptico.com:reviewer";
+			// add lecturer
+//			json="{\"username\":\"test\",\"email\":\"test@demo-sinaptico.com\",\"wasmuser\":false,\"Organization\":1,\"lastname\":\"Lecturer for API\",\"firstname\":\"test\",\"role_name\":[\"Admin\"],\"password\":null,\"nativeSpeaker\":null}";
+//			save(new URL("http://127.0.0.1:8888/v1/courses/27/lecturers"), json, userPassword);
+			
+//			List<Course> coursesForAdmin = getCoursesForAdmin();
 //			List<Course> coursesForSuperAdmin = getCoursesForSuperAdmin();
 //			if (coursesForAdmin.size() > 0){
 //				getCourse(coursesForAdmin.get(0).getId());
 	//			addLecturer(coursesForAdmin.get(0).getId());
 	//			addTutor(coursesForAdmin.get(0).getId());
 //			}
-			getCourse(new Long(1));
+//			getCourse(new Long(1));
 	//		deleteCourses(courses);
 			System.out.println("/******************* END **********************/");
 		} catch(Exception e){

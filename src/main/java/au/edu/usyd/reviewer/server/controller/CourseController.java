@@ -43,7 +43,10 @@ public class CourseController extends ReviewerController {
 	 * @param year  Integer year of the courses
 	 * @param page Integer page to show (pagination)
 	 * @param limit Integer quantity of courses per page (pagination)
-	 * @param role boolean if role is true return the courses where the logged user is lecturer, tutor or student
+	 * @param include if it is equals to all then it returns all the relationships of the courses 
+	 * @param relationships It indicates the relationships to be included in the courses. It can be tutors,lecturers, studentGroups,templates,writingActivities,organization
+	 * @param role boolean if role is true return the courses where the logged user is lecturer, tutor or student 
+	 * @param tasks It can be reviewing, writing. It's used to return course with the reviewing or writing task of the mocked or loggued user
 	 * @return List of courses
 	 * @throws MessageException message to the user
 	 */
@@ -55,21 +58,22 @@ public class CourseController extends ReviewerController {
 			@RequestParam(value="limit", required=false) Integer limit,
 			@RequestParam(value="role", required=false) boolean role, 
 			@RequestParam(value="include", required=false) String include, 
-			@RequestParam(value="relationships", required=false) String relationships) throws MessageException {
+			@RequestParam(value="relationships", required=false) String relationships,
+			@RequestParam(value="tasks", required=false) String tasks,
+			@RequestParam(value="finished", required=false) boolean finished) throws MessageException {
 		MessageException me = null;
 		try{
+			
 			initialize(request);
 			List<Course> courses = new ArrayList<Course>();
-			if (isAdmin()) { 
-				if (role){ // returns all the courses belong to the organization where the logged user is student, lecturer or tutor
-					courses = courseManager.getCourses(semester, year, organization, user, limit, page);
-				} else { // returns the courses belong to the user organization
-					courses = courseManager.getCourses(semester, year, organization,null, limit, page);
-				}
+			User aUser = null;
+			if (role){
+				aUser = super.getMockedUser(request);
+			}
+			if (isAdminOrGuest()) { 
+				courses = courseManager.getCourses(semester, year, organization, aUser, limit, page, tasks,finished);
 			} else if (isSuperAdmin()){ // return the courses of all the organizations
-				courses = courseManager.getCourses(semester, year,null, null, limit, page);
-			} else if (isGuest()){ // return the courses of the organization wher the logged user is student, lecturer or tutor
-				courses = courseManager.getCourses(semester, year, organization, user, limit, page);
+				courses = courseManager.getCourses(semester, year,null, aUser, limit, page, tasks, finished);
 			} else {	
 				me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 				me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
@@ -100,6 +104,10 @@ public class CourseController extends ReviewerController {
 	 * @param organizationId id of the organization owner of the courses
 	 * @param page page to show in pagination
 	 * @param limit quantity of courses per page
+	 * @param include if it is equals to all then it returns all the relationships of the courses
+	 * @param relationships It indicates the relationships to be included in the courses. It can be tutors,lecturers, studentGroups,templates,writingActivities,organization
+	 * @param role boolean if role is true return the courses where the logged user is lecturer, tutor or student 
+	 * @param tasks It can be reviewing, writing. It's used to return course with the reviewing or writing task of the mocked or loggued user
 	 * @return List<Course> list of courses
 	 * @throws MessageException message to the user
 	 */
@@ -111,7 +119,10 @@ public class CourseController extends ReviewerController {
 									  	  @RequestParam(value="page", required=false) Integer page, 
 									  	  @RequestParam(value="limit", required=false) Integer limit,
 									  	  @RequestParam(value="include", required=false) String include, 
-									  	  @RequestParam(value="relationships", required=false) String relationships) throws MessageException {
+									  	  @RequestParam(value="relationships", required=false) String relationships,
+									  	  @RequestParam(value="role", required=false) boolean role,
+									  	  @RequestParam(value="tasks", required=false) String tasks,
+									  	  @RequestParam(value="finished", required=false) boolean finished) throws MessageException {
 		MessageException me = null;
 		try{
 			initialize(request);
@@ -128,7 +139,14 @@ public class CourseController extends ReviewerController {
 						me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
 						throw me;
 					} else {
-						List<Course> courses = courseManager.getCourses(semester, year, organizationSelected, null, limit, page);
+						User aUser = null;
+						if (role){
+							aUser = super.getMockedUser(request);
+						} else if (tasks != null && (tasks.contains(Constants.REVIEWING) || tasks.contains(Constants.WRITING))){
+							aUser = super.getMockedUser(request);
+						}
+						
+						List<Course> courses = courseManager.getCourses(semester, year, organizationSelected, aUser, limit, page,tasks,finished);
 						List coursesList = ObjectConverter.convertCollectiontInList(courses, include,relationships,0);
 						return coursesList;
 					}
@@ -165,10 +183,8 @@ public class CourseController extends ReviewerController {
 		try{
 			initialize(request);
 			if (isAdminOrSuperAdmin() || isCourseLecturer(courseManager.getCourse(course.getId()))) {
+				course = courseManager.loadCourseRelationships(course,organization);
 				// Before save the course set its organization
-				if (course.getOrganization() == null){
-					course.setOrganization(organization);
-				}
 				course = courseManager.saveCourse(course, user);
 				Map<String,Object> courseMap = ObjectConverter.convertObjectInMap(course, "", "",0);
 				return courseMap;
@@ -253,8 +269,9 @@ public class CourseController extends ReviewerController {
 	 * @throws MessageException
 	 */
 	@RequestMapping(value="courses/{id}",method = RequestMethod.GET)
-	public @ResponseBody  Map getCourse(HttpServletRequest request,@PathVariable Long id, @RequestParam(value="include", required=false) String include, 
-			@RequestParam(value="relationships", required=false) String relationships) throws MessageException { 
+	public @ResponseBody  Map getCourse(HttpServletRequest request,@PathVariable Long id,
+			                            @RequestParam(value="include", required=false) String include, 
+			                            @RequestParam(value="relationships", required=false) String relationships) throws MessageException  {
 		Course course = null;
 		MessageException me =null;
 		try{
@@ -408,26 +425,35 @@ public class CourseController extends ReviewerController {
 			}
 			throw me;
 		}
-	}
+	}	
 	
 	/**
-	 * Add a new activity to the course with id equals to {id}
+	 * This method create or update the writing activity received as parameter
 	 * @param request HttpServletRequest to initialize the controller
-	 * @param id id of the course which the tutors belong to
-	 * @param writingActivity Writing activity to add to the course
+	 * @param writingActivity writing activity to create or update
+	 * @return WritingActivity writing activity created or updated
 	 * @throws MessageException message to the user
 	 */
-	@RequestMapping(value="courses/{id}/activities", method = RequestMethod.PUT)
-	public @ResponseBody void addWritingActivity(HttpServletRequest request, @PathVariable Long id, @RequestBody WritingActivity writingActivity)throws MessageException{
+	@RequestMapping(value="courses/{id}/activities",  method = RequestMethod.PUT)
+	public @ResponseBody Map<String,Object> saveWritingActivity(HttpServletRequest request,  
+									   		   @RequestBody WritingActivity writingActivity,
+									   		   @PathVariable Long id) throws MessageException {
 		MessageException me = null;
 		try{
 			initialize(request);
-			if (isAdminOrSuperAdmin()){
-				if ( id != null){
+			if (writingActivity != null){
+				if (id == null){
+					me = new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
+					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+					throw me;
+				} else {
 					Course course = courseManager.getCourse(id);
-					if (course !=  null){
-						if (organization.getId().equals(course.getOrganization().getId())){
-							assignmentManager.saveActivity(course, writingActivity);
+					if (course != null){
+						if (isAdminOrSuperAdmin() || isCourseLecturer(course)) {
+							writingActivity = assignmentManager.loadWritingActivityRelationships(writingActivity);
+							writingActivity = assignmentManager.saveActivity(course, writingActivity);
+							Map<String,Object> activityMap = ObjectConverter.convertObjectInMap(writingActivity, "", "",0);
+							return activityMap;
 						} else {
 							me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 							me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
@@ -438,30 +464,24 @@ public class CourseController extends ReviewerController {
 						me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
 						throw me;
 					}
-				} else {
-					me = new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
-					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
-					throw me;
 				}
-			}  else{
-				me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-				me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+			} else {
+				me = new MessageException(Constants.EXCEPTION_WRITING_ACTIVITY_NOT_FOUND);
+				me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
 				throw me;
 			}
-		} catch( Exception e){
+		} catch(Exception e){
 			e.printStackTrace();
 			if (e instanceof MessageException){
 				me = (MessageException) e;
-			} else {					
-				me = new MessageException(Constants.EXCEPTION_SAVE_WRITING_ACTIVITY);
-			}	
-			
+			} else {	
+				me = new MessageException(Constants.EXCEPTION_SAVE_WRITING_ACTIVITIES);
+			}
 			if ( me.getStatusCode() == 0){
 				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
 			}
 			throw me;
 		}
-	}
-	
+	}	
 
 }
