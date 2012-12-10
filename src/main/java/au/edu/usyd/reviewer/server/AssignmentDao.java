@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Property;
@@ -966,4 +967,44 @@ public class AssignmentDao {
 		}
 	}
 
+	public List<ReviewTemplate> loadReviewTemplates(Organization organization, Integer page, Integer limit) throws MessageException{
+		List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
+		Session session = null;
+		try{
+			if ( organization != null){
+				String sQuery = "from ReviewTemplate review " + "where review.organization=:organization";
+		        session = this.getSession();
+		        session.beginTransaction();
+		        Query query = session.createQuery(sQuery);
+		        if (organization != null){
+		        	query.setParameter("organization", organization);
+		        }
+		        
+		        if (limit == null || (limit != null && limit < 1)){
+					limit = 10;
+				}
+				if (page == null || (page!=null && page < 1)){
+					page = 1;
+				}
+				
+				query.setMaxResults(limit);
+				query.setFirstResult(limit * (page - 1));
+		        List<ReviewTemplate> reviewTemplates = query.list();
+		        session.getTransaction().commit();
+		        for (ReviewTemplate template:reviewTemplates){
+		        	if (template != null){
+		        		result.add(template.clone());
+		        	}
+		        }
+			}
+	 		return result;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
+		}
+
+	}
 }

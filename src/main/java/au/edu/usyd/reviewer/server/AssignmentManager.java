@@ -1538,7 +1538,7 @@ public class AssignmentManager {
 		return assignmentDao.loadReviewingActivity(id);
 	}
 	
-	public List<ReviewTemplate> loadReviewTemplates(Organization organization) throws MessageException{
-		return assignmentDao.loadReviewTemplates(organization);
+	public List<ReviewTemplate> loadReviewTemplates(Organization organization, Integer page, Integer limit) throws MessageException{
+		return assignmentDao.loadReviewTemplates(organization, page, limit);
 	}
 }
