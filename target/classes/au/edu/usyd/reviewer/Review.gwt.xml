@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<module>
-	<inherits name='au.edu.usyd.reviewer.Core' />
-	<inherits name="com.smartgwt.SmartGwt"/>
-  	<entry-point class='au.edu.usyd.reviewer.client.review.ReviewEntryPoint' />
-  	<source path="client/review"/>
-</module>

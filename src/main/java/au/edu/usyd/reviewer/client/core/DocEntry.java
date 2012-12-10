@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.core;
 
-import java.util.Date;
+import java.util.Date
+;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,7 +41,6 @@ public class DocEntry extends Entry {
 	protected String documentId;
 	
 	/** The reviews. */
-	/*MARIELA I added cascade remove */
 	@OneToMany(cascade = CascadeType.REMOVE)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name = "DocEntry_Reviews_Review")

@@ -2,18 +2,15 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
 
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
-
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * This class represents the relationship between Organization and ReviewerProperty classes
@@ -50,6 +47,7 @@ public class OrganizationProperty implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "organizationId", updatable = false, insertable = false, referencedColumnName = "id")
 	//@PrimaryKeyJoinColumn(name="organizationId", referencedColumnName="id")
+	@JsonIgnore
 	private Organization organization;
 
 	public OrganizationProperty(){
@@ -89,10 +87,12 @@ public class OrganizationProperty implements Serializable {
 		this.property = property;
 	}
 
+	@JsonIgnore
 	public Organization getOrganization() {
 		return organization;
 	}
 
+	@JsonIgnore
 	public void setOrganization(Organization organization) {
 		this.organization = organization;
 	}	

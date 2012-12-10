@@ -161,7 +161,25 @@
 	<security-role><role-name>Guest</role-name></security-role>
 	<security-role><role-name>Admin</role-name></security-role>
 	<security-role><role-name>SuperAdmin</role-name></security-role>
-
+	<!-- MARIELA -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>au.edu.usyd.reviewer.controller.*</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>SuperAdmin</role-name>
+			<role-name>Admin</role-name>
+			<role-name>Guest</role-name>
+		</auth-constraint>
+	</security-constraint>
+	<security-constraint>
+		<user-data-constraint>
+			<description>SSL</description>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+	<!-- MARIELA -->
 	<!-- session config -->
 	<session-config>
 		<session-timeout>300</session-timeout>

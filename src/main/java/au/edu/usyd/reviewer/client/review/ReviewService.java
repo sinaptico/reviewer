@@ -103,4 +103,12 @@ public interface ReviewService extends RemoteService {
 	 * @throws Exception the exception
 	 */
 	public Collection<DocumentType> getDocumentTypes(String genre) throws Exception;
+	
+	/**
+	 * Returns the glosser url
+	 * @param siteId site used in glosser
+	 * @param docId doc id to access in glosser
+	 * @return glosser url to access to document recieved as parameter
+	 */
+	public String getGlosserUrl(Long siteId, String docId);
 }

@@ -46,6 +46,7 @@ import au.edu.usyd.reviewer.client.core.Choice;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.Grade;
 import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
 import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
@@ -62,6 +63,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.reviewstratergy.RandomReviewStratergy;
 import au.edu.usyd.reviewer.server.reviewstratergy.ReviewStratergy;
@@ -107,12 +109,56 @@ public class AssignmentManager {
 	}
 
 	public void deleteCourse(Course course) throws Exception {
+
+		// lecturers
+		Set<User> lecturerToDelete = new HashSet<User>();
+		Set<User> lecturerToAdd = new HashSet<User>();
+		for(User lecturer : course.getLecturers()){
+			if (lecturer != null){
+				if  (lecturer.getId() == null){
+					User newLecturer = userDao.getUserByEmail(lecturer.getEmail());
+					if (newLecturer == null){
+						lecturerToDelete.add(lecturer);
+					} else{
+						lecturerToAdd.add(newLecturer);
+						lecturerToDelete.add(lecturer);
+					}
+				} 
+			}  
+		}
+		course.getLecturers().removeAll(lecturerToDelete);
+		course.getLecturers().addAll(lecturerToAdd);
+		
+		// tutors
+		Set<User> tutorToDelete = new HashSet<User>();
+		Set<User> tutorToAdd = new HashSet<User>();
+		for(User tutor : course.getTutors()){
+			if (tutor != null){
+				if  (tutor.getId() == null){
+					User newTutor= userDao.getUserByEmail(tutor.getEmail());
+					if (newTutor == null){
+						tutorToDelete.add(tutor);
+					} else{
+						tutorToAdd.add(newTutor);
+						tutorToDelete.add(tutor);
+					}
+				} 
+			}  
+		}
+		course.getLecturers().removeAll(lecturerToDelete);
+		course.getLecturers().addAll(lecturerToAdd);
+		
+		// writing activities
 		for (WritingActivity writingActivity : course.getWritingActivities()) {
 			Timer timer = activityTimers.get(writingActivity.getId());
 			if (timer != null) {
 				timer.cancel();
 			}
-		}
+			course.getWritingActivities().remove(writingActivity);
+			courseDao.save(course);
+			assignmentDao.delete(writingActivity);
+			assignmentRepository.deleteActivity(writingActivity);
+		}	
 		assignmentDao.delete(course);
 		assignmentRepository.deleteCourse(course);
 	}
@@ -122,9 +168,10 @@ public class AssignmentManager {
 		File activityFolder = new File(getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), "all", organization));
 		activityFolder.mkdirs();
 		for (DocEntry docEntry : writingActivity.getEntries()) {
-			UserGroup studentGroup = writingActivity.getGroups() ? docEntry.getOwnerGroup() : assignmentDao.loadUserGroupWhereUser(course, docEntry.getOwner());
-			String filePath = activityFolder.getAbsolutePath() + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf";
 			try {
+				UserGroup studentGroup = writingActivity.getGroups() ? docEntry.getOwnerGroup() : assignmentDao.loadUserGroupWhereUser(course, docEntry.getOwner());
+				String filePath = activityFolder.getAbsolutePath() + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf";
+				
 				if (docEntry instanceof LogbookDocEntry) {
 					// do nothing
 				} else {
@@ -327,7 +374,10 @@ public class AssignmentManager {
 				}
 			}
 		} else {
-			throw new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_FINISHED + " File " + filePath);
+			
+			MessageException me = new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_FINISHED + " File " + filePath);
+			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			throw me;
 		}
 
 		// update activity status
@@ -414,13 +464,18 @@ public class AssignmentManager {
 
 	public WritingActivity saveActivity(Course course, WritingActivity writingActivity) throws Exception {
 		// check if status is valid
+		MessageException me = null;
 		if (writingActivity.getId() != null && writingActivity.getStatus() != assignmentDao.loadWritingActivity(writingActivity.getId()).getStatus()) {
-			throw new Exception("Invalid status");
+			me = new MessageException(Constants.EXCEPTION_INVALID_STATUS);
+			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			throw me;
 		}
 
 		// check if tutorial is valid
 		if (!course.getTutorials().contains(writingActivity.getTutorial()) && !writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL)) {
-			throw new Exception(Constants.EXCEPTION_INVALID_TUTORIAL);
+			me = new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL);
+			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			throw me;
 		}
 
 		// create activity folder
@@ -441,7 +496,7 @@ public class AssignmentManager {
 		}
 		return writingActivity;
 	}
-
+	
 	private void setUpFoldersAndTemplates(Course course) throws Exception{
 		
 		List<DocumentListEntry> templates = assignmentRepository.setUpFolders(course);
@@ -670,7 +725,7 @@ public class AssignmentManager {
 					} catch (MessageException e) {
 						logger.error("Error running acctivity " + activityId);
 						e.printStackTrace();
-					}
+					}	
 				}
 			}, writingActivity.getStartDate());
 		} else if (writingActivity.getStatus() < Activity.STATUS_FINISH || !writingActivity.getReviewingActivities().isEmpty()) {
@@ -1295,4 +1350,195 @@ public class AssignmentManager {
 		}
 	}
 
+	/**
+	 * Create or update the lecturers in the database, in Google Docs and in the course
+	 * @param course Course where the user will be lecturer
+	 * @param lecturer list of users
+	 * @param loggedUser logged user used in Google Apps
+	 * @throws Exception
+	 */
+	public void saveLecturers(Course course, List<User> lecturers, User loggedUser) throws Exception {
+		
+		for (User lecturer : lecturers) {
+			lecturer.setOrganization(course.getOrganization());
+			// search the lecturer in the database
+			User user = userDao.getUserByEmail(lecturer.getEmail());
+			
+			if (user == null) {
+			
+				// create lecture in Google Apps
+				if (lecturer.getDomain() != null &&  lecturer.getOrganization() != null && 
+						lecturer.getOrganization().getGoogleDomain() != null &&
+						lecturer.getDomain().toLowerCase().equals(lecturer.getOrganization().getGoogleDomain().toLowerCase())){	
+					assignmentRepository.createUser(lecturer);
+				} else {
+					MessageException me = new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
+					me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+					throw me;
+				}
+				
+				//send password notification if not a wasm user
+				if (!lecturer.getWasmuser()){
+					emailNotifier.sendPasswordNotification(lecturer, course.getName());
+					user.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
+				}
+				
+				// save the lecturer in the database
+				userDao.save(lecturer);
+			}
+			else {
+				lecturer.setId(user.getId());
+			}	
+			
+			// add the lecturer to the course 
+			course.getLecturers().add(lecturer);
+		}
+		
+		// update course document permissions
+		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
+
+		// save course in DB in order to save the relationshiop with the course
+		course = courseDao.save(course);		
+		
+		// for each activity create documents and reviewers for new users
+		processActivitiesForNewUsers(course);
+	}
+	
+	
+	/**
+	 * Create or update a tutors in the database, in Google Apps, assign permissions to the documents in GoogleDocs and add him/her to the course
+	 * @param course course where the user will be tutor
+	 * @param tutor List of users representing the tutors
+	 * @param loggedUser loggedUser used to add permissions in GoogleDoc
+	 * @throws Exception
+	 */
+	public void saveTutors(Course course, List<User> tutors, User loggedUser) throws Exception {
+		
+		for (User tutor : course.getTutors()) {
+			tutor.setOrganization(course.getOrganization());
+			// search the tutor in the database
+			User user = userDao.getUserByEmail(tutor.getEmail());
+			if (user == null) {
+				
+				// create tutor in Google Apps
+				if (tutor.getDomain() != null && tutor.getOrganization() != null && 
+						tutor.getOrganization().getGoogleDomain()!= null &&
+						tutor.getDomain().toLowerCase().equals(tutor.getOrganization().getGoogleDomain().toLowerCase())){
+					assignmentRepository.createUser(tutor);
+				} else {
+					throw new Exception(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
+				}
+				
+				//send password notification if not a wasm user
+				if (!tutor.getWasmuser()){					
+					emailNotifier.sendPasswordNotification(tutor, course.getName());
+					tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
+				}
+				// save tutor into the database
+				userDao.save(tutor);
+			} else {
+				tutor.setId(user.getId());
+			}
+			// add the tutor to the course 
+			course.getTutors().add(tutor);
+		}
+		
+		// update course document permissions
+		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
+		
+		// save course in DB
+		course = courseDao.save(course);		
+		
+		// for each activity create documents and reviewers for new users
+		processActivitiesForNewUsers(course);
+	}
+		
+	/**
+	 * Get a writing activity
+	 * @param writingActivityId
+	 * @return
+	 * @throws MessageException
+	 */
+	public WritingActivity loadWritingActivity(long writingActivityId)throws MessageException {
+		return assignmentDao.loadWritingActivity(writingActivityId);
+	}
+	
+
+	public DocEntry loadDocEntry(Long id) throws Exception{
+		return assignmentDao.loadDocEntryWhereId(id);
+	}
+	
+	public WritingActivity loadWritingActivityRelationships(WritingActivity activity)throws MessageException {
+		MessageException me = null;
+		try{
+			// load deadlines
+			List<Deadline> deadlines = new ArrayList<Deadline>();
+			for(Deadline deadline: activity.getDeadlines()){
+				if (deadline != null && deadline.getId() != null){
+					deadline = assignmentDao.loadDeadline(deadline.getId());
+				}
+				deadlines.add(deadline);
+			}
+			activity.setDeadlines(deadlines);
+			
+			// load entries
+			Set<DocEntry> entries = new HashSet<DocEntry>();
+			for(DocEntry entry:activity.getEntries()){
+				if (entry != null && entry.getId() != null){
+					entry = loadDocEntry(entry.getId());
+				}
+				entries.add(entry);
+			}
+			activity.setEntries(entries);
+			
+			// load grades
+			Set<Grade> grades = new HashSet<Grade>();
+			for(Grade grade:activity.getGrades()){
+				if (grade != null && grade.getId() != null){
+					grade = assignmentDao.loadGrade(grade.getId());
+				}
+				grades.add(grade);
+			}
+			activity.setGrades(grades);
+			
+			// load reviewing activities
+			List<ReviewingActivity> reviewingActivities = new ArrayList<ReviewingActivity>();
+			for(ReviewingActivity reviewingActivity :activity.getReviewingActivities()){
+				if (reviewingActivity != null && reviewingActivity.getId() != null){
+					reviewingActivity = assignmentDao.loadReviewingActivity(reviewingActivity.getId());
+				}
+				reviewingActivities.add(reviewingActivity);
+			}
+			activity.setReviewingActivities(reviewingActivities);
+			
+			return activity;
+		} catch(Exception e){
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				me = (MessageException) e;
+			} else {
+				me = new MessageException(Constants.EXCEPTION_SAVE_WRITING_ACTIVITIES);
+			}
+			if ( me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			}
+			throw me;
+		}
+	}
+	
+	public UserGroup loadUserGroup(Long id) throws  MessageException {
+		return assignmentDao.loadUserGroup(id);
+	}
+	
+	public ReviewTemplate loadReviewTemplate(Long id) throws MessageException {
+		return assignmentDao.loadReviewTemplate(id);
+	}
+	
+	public ReviewingActivity loadReviewingActivity(Long id) throws MessageException {
+		return assignmentDao.loadReviewingActivity(id);
+	}
+	
+	public List<ReviewTemplate> loadReviewTemplates(Organization organization) throws MessageException{
+		return assignmentDao.loadReviewTemplates(organization);
+	}
 }

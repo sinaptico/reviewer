@@ -1,8 +1,11 @@
 package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -43,5 +46,31 @@ public class QuestionReview extends Review implements Serializable {
 
 	public void setQuestions(List<Question> questions) {
 		this.questions = questions;
+	}
+	
+	public QuestionReview clone(){
+		QuestionReview questionReview = new QuestionReview();
+		questionReview.setContent(this.getContent());
+		questionReview.setEarlySubmitted(this.getEarlySubmitted());
+		
+		Set<FeedbackTemplate> templates = new HashSet<FeedbackTemplate>();
+		for(FeedbackTemplate template : this.getFeedback_templates()){
+			if (template != null){
+				templates.add(template.clone());
+			}
+		}
+		questionReview.setFeedback_templates(templates);
+		questionReview.setFeedbackTemplateType(this.getFeedbackTemplateType());
+		questionReview.setId(this.getId());
+		
+		List<Question> questions = new ArrayList<Question>();
+		for(Question question: this.getQuestions()){
+			if (question != null){
+				questions.add(question.clone());
+			}
+		}
+		questionReview.setQuestions(questions);
+		questionReview.setSaved(this.getSaved());
+		return questionReview;
 	}
 }

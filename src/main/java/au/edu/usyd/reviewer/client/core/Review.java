@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,7 +54,7 @@ public class Review implements Serializable {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@javax.persistence.OrderBy("number")
 	private Set<FeedbackTemplate> feedback_templates = new HashSet<FeedbackTemplate>();
-	
+		
 	/** The feedback template type. */
 	private String feedbackTemplateType = FeedbackTemplate.FEEDBACK_TYPE_DESCRIPTION_DEFAULT;
 

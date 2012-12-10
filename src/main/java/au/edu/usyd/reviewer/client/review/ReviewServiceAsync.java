@@ -88,7 +88,15 @@ public interface ReviewServiceAsync {
 	 * Gets the document types.
 	 *
 	 * @param genre the genre
-	 * @param callback the callback	 * 
+	 * @param callback the callback	  
 	 */
 	public void getDocumentTypes(String genre, AsyncCallback<Collection<DocumentType>> callback);
+	
+	/**
+	 * Returns the glosser url
+	 * @param siteId site used in glosser
+	 * @param docId doc id to access in glosser
+	 * param callback the glosser url to access to document recieved as parameter
+	 */
+	public void getGlosserUrl(Long siteId, String docId,AsyncCallback<String> callback);
 }

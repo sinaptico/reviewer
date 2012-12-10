@@ -122,7 +122,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		return reviewSetup;
 	}
 	
-	private DocEntry returnDocEntry(User reviewee) {
+	private DocEntry returnDocEntry(User reviewee) throws MessageException{
 		DocEntry docEntry;
 		UserGroup revieweeUserGroup = null;
 		

@@ -2,11 +2,13 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
 
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+
 
 /**
  * <p>Class used to define the basic fields of the Document entries such as title, if it's been locked, downloaded, 

@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Property;
@@ -15,7 +16,10 @@ import org.hibernate.criterion.Restrictions;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 /**
@@ -70,7 +74,7 @@ public class CourseDao extends ObjectDao{
 				session.getTransaction().rollback();
 			}
 			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_COURSE_NO_LOADED);
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
 		} 
 		if (course != null){
 			course = course.clone();
@@ -83,9 +87,14 @@ public class CourseDao extends ObjectDao{
 	 * @param course course to save
 	 */
 	public Course save(Course course) throws MessageException{
-		course = (Course) super.save(course);
-		if (course != null){
-			course = course.clone();
+		try{
+			course = (Course) super.save(course);
+			if (course != null){
+				course = course.clone();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_SAVE_COURSE);
 		}
 		return course;
 	}
@@ -96,9 +105,15 @@ public class CourseDao extends ObjectDao{
 	 * @return Course course whose id is equals to the objectId receive as parameter
 	 */
 	public Course load(Long courseId) throws MessageException{
-		Course course = (Course) super.load(courseId);
-		if (course != null){
-			course = course.clone();
+		Course course = null;
+		try{
+			course = (Course) super.load(courseId);
+			if (course != null){
+				course = course.clone();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
 		}
 		return course;
 	}
@@ -109,13 +124,18 @@ public class CourseDao extends ObjectDao{
 	 */
 	public List<Course> getCourses(String courseName) throws MessageException{
 		List<Course> courses = new ArrayList<Course>();
-		List<Object> objects = super.loadObjects(courseName);
-	
-		for(Object obj: objects){
-			Course course = (Course) obj;
-			if (course != null){
-				course = course.clone();
+		try{
+			List<Object> objects = super.loadObjects(courseName);
+			for(Object obj: objects){
+				Course course = (Course) obj;
+				if (course != null){
+					course = course.clone();
+					courses.add(course);
+				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
 		}
 		return courses;
 	}
@@ -125,43 +145,28 @@ public class CourseDao extends ObjectDao{
 	 * @return list of objects (courses)
 	 */
 	protected List<Object> getObjects(String courseName) throws MessageException{
-		Session session = getSession();
+		Session session = null;
 		List<Course> courses = new ArrayList<Course>();
 		try{
+			session = getSession();
+			session.beginTransaction();
 			Criteria criteria = session.createCriteria(Course.class);
 			criteria.add(Restrictions.like(COURSE_NAME, courseName +"%"));
 			criteria.addOrder( Order.asc(COURSE_NAME) );
 			courses = criteria.list();
+			session.getTransaction().commit();
 		} catch(HibernateException he){
 			if ( session != null && session.getTransaction() != null){
 				session.getTransaction().rollback();
 			}
 			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_COURSE_NO_LOADED);
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
 		}
 		List<Object> objects = new ArrayList<Object>();
 		objects.addAll(courses);
 		return objects;
 	}
 
-	
-	/**
-	 * Return the course whose name is equals to the name received as parameter
-	 * @return object whose name is equals to the name received as parameter
-	 */
-	protected Object getObject(String name) throws MessageException{
-		Session session = getSession();
-		Course course = (Course) session.createCriteria(Course.class).add(Property.forName(COURSE_NAME).eq(name)).uniqueResult();
-		try {
-			if (course != null){
-				course = course.clone();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_COURSE_NO_LOADED);
-		}
-		return course;
-	}
 	
 	
 	/**
@@ -170,12 +175,15 @@ public class CourseDao extends ObjectDao{
 	 * @return Course course whose id is equals to the objectId received as parameter
 	 */
 	public Course load(String name) throws MessageException{
-		Course course = (Course) super.load(name);
+		Course course = null;
 		try {
-			course = course.clone();
+			course = (Course) super.load(name);
+			if (course != null){
+				course = course.clone();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_COURSE_NO_LOADED);
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
 		}
 		return course;
 	}
@@ -188,12 +196,23 @@ public class CourseDao extends ObjectDao{
 	 * @throws MessageException message to the user
 	 */
 	public boolean hasCourses(Organization organization) throws MessageException{
-		String query = "from Course course where organizationId=:organizationId";
-		Session session = getSession();
-		session.beginTransaction();
-		List<Course> courses = session.createQuery(query).setParameter("organizationId", organization.getId()).list();
-		session.getTransaction().commit();
-		return courses.size() > 0;
+		Session session = null;
+		boolean hasCourses = false;
+		try{
+			session = getSession();
+			String query = "from Course course where organizationId=:organizationId";
+			session.beginTransaction();
+			List<Course> courses = session.createQuery(query).setParameter("organizationId", organization.getId()).list();
+			session.getTransaction().commit();
+			hasCourses =  courses.size() > 0;
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
+		}
+		return hasCourses;
 	}
 
 	/**
@@ -203,11 +222,24 @@ public class CourseDao extends ObjectDao{
 	 * @throws MessageException message to the logged user
 	 */
 	public Course loadCourse(Long courseId) throws MessageException{
-		Session session = getSession();
-		session.beginTransaction();
-		Course course = (Course) session.createCriteria(Course.class).add(Property.forName(COURSE_ID).eq(courseId)).uniqueResult();
-		session.getTransaction().commit();
-		return course.clone();
+		Session session = null;
+		Course course = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			course = (Course) session.createCriteria(Course.class).add(Property.forName(COURSE_ID).eq(courseId)).uniqueResult();
+			session.getTransaction().commit();
+			if (course != null){
+				return course.clone();
+			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+		}
+		return course;
 	}
 
 	/**
@@ -217,51 +249,224 @@ public class CourseDao extends ObjectDao{
 	 * @throws MessageException message to the logged user
 	 */
 	public List<Course> loadCourses(Organization organization) throws MessageException{
-		String query = "from Course course " + "where course.organization=:organization";
-        Session session = getSession();
-        session.beginTransaction();
-        List<Course> courses = session.createQuery(query).setParameter("organization", organization).list();
-        session.getTransaction().commit();
-        List<Course> result = new ArrayList<Course>();
-        for(Course course: courses){
-        	result.add(course.clone());
-        }
+		List<Course> result = new ArrayList<Course>();
+		Session session = null;
+		try{
+			String query = "from Course course " + "where course.organization=:organization";
+	        session = getSession();
+	        session.beginTransaction();
+	        List<Course> courses = session.createQuery(query).setParameter("organization", organization).list();
+	        session.getTransaction().commit();
+	        
+	        for(Course course: courses){
+	        	result.add(course.clone());
+	        }
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
+		}
         return result;
 	}	
 
+	
 	/**
-	 * Return a list of courses belong to the organization and whose semester and year are equals to the parameters received
-	 * @param semester course semester
-	 * @param year course year
-	 * @param organization organization owner of the course
-	 * @return list of courses
-	 * @throws MessageException message to the logged user
+	 * Return all the courses of the organization without pagination
+	 * @param semester
+	 * @param year
+	 * @param organization
+	 * @return
+	 * @throws MessageException
 	 */
 	public List<Course> loadCourses(Integer semester, Integer year, Organization organization) throws MessageException{
 		Session session = null;
 		List<Course> result = new ArrayList<Course>();
-		if ( organization != null){
-			try{
-				session = getSession();
-				session.beginTransaction();
-				String query = "from Course course " + "where course.semester=:semester AND course.year=:year and course.organization=:organization";
-				List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).setParameter("organization", organization).list();
-				session.getTransaction().commit();
+		try{
+			session = getSession();
+			session.beginTransaction();
+			String query = "from Course course " + "where course.semester=:semester AND course.year=:year and course.organization=:organization";
+			
+			List<Course> courses = session.createQuery(query).setParameter("semester", semester)
+															 .setParameter("year", year)
+															 .setParameter("organization", organization)
+															 .list();				
+			session.getTransaction().commit();
 				
-				for(Course course: courses){
-					if (course != null){
-						result.add(course.clone());
-					}
+			for(Course course: courses){
+				if (course != null){
+					result.add(course.clone());
 				}
-			} catch(HibernateException he){
-				if ( session != null && session.getTransaction() != null){
-					session.getTransaction().rollback();
-				}
-				he.printStackTrace();
-				throw new MessageException(Constants.EXCEPTION_COURSES_NO_LOADED);
 			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
 		}
         return result;		
 	}
-
-}
+	
+	/**
+	 * Return the courses belong to the organization where the user is student,tutor or lecturer. Use Pagination
+	 * @param semester
+	 * @param year
+	 * @param page
+	 * @param limit
+	 * @param user
+	 * @return
+	 * @throws MessageException
+	 */
+	public List<Course> loadCourses(Integer semester, Integer year, Organization organization, User user, 
+			                        Integer limit, Integer page, String tasks, boolean finished) throws MessageException{
+		Session session = null;
+		try{
+			 
+			String sQuery = "SELECT DISTINCT course FROM Course course ";
+			String where = "";
+			if ( user != null){
+				where = "(lecturer=:user OR tutor=:user OR student=:user)";
+			}
+		
+			if ( tasks != null && tasks.contains(Constants.WRITING)){
+					sQuery +=  "LEFT JOIN FETCH course.lecturers lecturer " +
+				   	   "LEFT JOIN FETCH course.tutors tutor " +
+				   	   "LEFT JOIN FETCH course.studentGroups studentGroup " + 
+				   	   "LEFT JOIN FETCH studentGroup.users student " +
+				   	   "JOIN FETCH course.writingActivities writingActivity " +
+				   	   "JOIN FETCH writingActivity.entries docEntry " + 
+				   	   "LEFT JOIN FETCH docEntry.ownerGroup ownerGroup " +
+				   	   "LEFT JOIN FETCH ownerGroup.users owner ";
+					if (user != null){
+						where += " AND (docEntry.owner=:user OR owner=:user)";
+					}
+			
+				
+			} else if ( tasks != null && tasks.contains(Constants.REVIEWING)){
+				sQuery +=  "LEFT JOIN FETCH course.lecturers lecturer " +
+					   	   "LEFT JOIN FETCH course.tutors tutor " +
+					   	   "LEFT JOIN FETCH course.studentGroups studentGroup " + 
+					   	   "LEFT JOIN FETCH studentGroup.users student " +
+					   	   "JOIN FETCH course.writingActivities writingActivity " +
+					   	   "JOIN FETCH writingActivity.reviewingActivities reviewingAcitvity " +
+					   	   "JOIN FETCH reviewingAcitvity.entries reviewEntry ";
+				if (user != null){
+					where += " AND (reviewEntry.owner=:user)";
+				}
+				if (!finished){
+					where = where + "AND (reviewingAcitvity.status = 1)";	
+				}
+			} else {
+				sQuery +=  "LEFT JOIN course.lecturers lecturer " +
+				   		   "LEFT JOIN course.tutors tutor " +
+				   		   "LEFT JOIN course.studentGroups studentGroup " + 
+				   		   "LEFT JOIN studentGroup.users student " ;
+			}
+				
+			if (semester != null){
+				if (!StringUtil.isBlank(where)){
+					where += " AND course.semester=:semester";
+				} else {
+					where += "course.semester=:semester";
+				}
+			}
+			
+			if (year != null){
+				if (!StringUtil.isBlank(where)){
+					where += " AND course.year=:year";
+				} else {
+					where += "course.year=:year";
+				}
+			}
+			
+			if (organization != null){
+				if (!StringUtil.isBlank(where)){
+					where += " AND course.organization=:organization";
+				} else {
+					where += "course.organization=:organization";
+				} 
+			}
+					
+			session = this.getSession();
+			session.beginTransaction();
+			
+			if (!StringUtil.isBlank(where)){
+				sQuery += " WHERE " + where;
+			}
+			sQuery += " ORDER BY course.name";
+			Query query= session.createQuery(sQuery);
+			if (semester!=null){
+				query.setParameter("semester", semester);
+			}
+			if (year != null){		 
+				query.setParameter("year", year);
+			}
+			if (user!=null){
+				query.setParameter("user", user);
+			}
+			if (organization!= null){
+				query.setParameter("organization", organization);
+			}
+			if (limit == null || (limit != null && limit < 1)){
+				limit = 10;
+			}
+			if (page == null || (page!=null && page < 1)){
+				page = 1;
+			}
+			
+			query.setMaxResults(limit);
+			query.setFirstResult(limit * (page - 1));
+			List<Course> courses = query.list();
+			session.getTransaction().commit();
+			List<Course> resultList = new ArrayList<Course>();
+			for(Course course : courses){
+				if (course != null){
+					resultList.add(course.clone());
+				}
+			}
+			return resultList;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+		}
+	}
+	
+	@Override
+	protected Object getObject(String name) throws MessageException{
+		Session session = getSession();
+		User user = (User) session.createCriteria(User.class).add(Property.forName(COURSE_NAME).eq(name)).uniqueResult();
+		if (user != null){
+			user = user.clone();
+		}
+		return user;
+	}
+	
+	public Course loadCourseWhereWritingActivity(WritingActivity writingActivity) throws MessageException{
+		Session session = null;
+		try{
+			String query = "from Course course " + 
+			"join fetch course.writingActivities writingActivity " + 
+			"where writingActivity=:writingActivity";
+			session = this.getSession();
+			session.beginTransaction();
+			Course course = (Course) session.createQuery(query).setParameter("writingActivity", writingActivity).uniqueResult();
+			session.getTransaction().commit();
+			if (course != null){
+				course = course.clone();
+			}
+			return course;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+		}
+	}
+	
+	}

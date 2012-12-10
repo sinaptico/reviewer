@@ -45,11 +45,16 @@ public class AssignmentRepository {
 	private GoogleDocsServiceImpl googleDocsServiceImpl;
 	private GoogleSpreadsheetServiceImpl googleSpreadsheetServiceImpl;
 	private GoogleUserServiceImpl googleUserServiceImpl;	
-	
+	private String googleUserEmail = null;
 	public AssignmentRepository(String username, String password, String domain) throws  MessageException{
 		try {
+			googleUserEmail = username;
 			this.googleDocsServiceImpl = new GoogleDocsServiceImpl(username, password);
+			this.googleDocsServiceImpl.setAuthSubToken(null);
+			this.googleDocsServiceImpl.setUserCredentials(username, password);
 			this.googleSpreadsheetServiceImpl = new GoogleSpreadsheetServiceImpl(username, password);
+			this.googleSpreadsheetServiceImpl.setAuthSubToken(null);
+			this.googleSpreadsheetServiceImpl.setUserCredentials(username, password);
 		} catch (AuthenticationException e) {
 			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
@@ -84,6 +89,7 @@ public class AssignmentRepository {
 	public void createActivity(Course course, WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException,MessageException {
 		try{
 			String folderName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
+			logger.debug("FolderName " + folderName + " course folder Id " + course.getFolderId());
 			FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
 			writingActivity.setFolderId(folderEntry.getResourceId());
 		} catch(ResourceNotFoundException e){
@@ -347,16 +353,19 @@ public class AssignmentRepository {
 		UserGroup instructors = new UserGroup();
 		instructors.getUsers().addAll(course.getLecturers());
 		instructors.getUsers().addAll(course.getTutors());
-		// Add the logged user to assign permissions to him/her
-		// Logged user is who is creating activity
-		instructors.getUsers().add(user);
-
+	
+		// if the logged user (who is creating the document) is not equals to the user used to enter to Google Docs then
+		// add permissions to the logged used to access to the course spreadsheet in Google Docs
+		if ( googleUserEmail != null &&  !googleUserEmail.equals(user.getEmail())){
+			instructors.getUsers().add(user);
+		}
+		
 		DocEntry courseFolder = new DocEntry();
 		courseFolder.setDocumentId(course.getFolderId());
 		courseFolder.setLocked(true);
 		courseFolder.setOwnerGroup(instructors);
 		this.updateDocument(courseFolder);
-			
+	
 		DocEntry courseSpreadsheet = new DocEntry();
 		courseSpreadsheet.setDocumentId(course.getSpreadsheetId());
 		courseSpreadsheet.setLocked(false);
@@ -385,7 +394,8 @@ public class AssignmentRepository {
 		List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
+				String email = owner.getUsername() + "@" + googleUserServiceImpl.getDomain();
+				if (aclEntry.getScope().getValue().equals(email)) {
 					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 					continue USER_LOOP;
 				}

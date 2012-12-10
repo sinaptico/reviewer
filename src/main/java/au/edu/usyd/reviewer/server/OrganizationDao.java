@@ -3,6 +3,9 @@ package au.edu.usyd.reviewer.server;
 
 import java.util.ArrayList;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import java.util.List;
 
 import org.hibernate.Criteria;
@@ -12,6 +15,8 @@ import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
 
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.OrganizationProperty;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
@@ -52,9 +57,20 @@ public class OrganizationDao extends ObjectDao{
 	 * @return Object organization whose id is equals to the objectId receive as parameter
 	 */
 	protected Object getObject(Long objectId) throws MessageException{
-		Session session = getSession();
-		session.beginTransaction();
-		Organization organization = (Organization) session.createCriteria(Organization.class).add(Property.forName("id").eq(objectId)).uniqueResult();
+		Organization organization = null;
+		Session session = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			organization = (Organization) session.createCriteria(Organization.class).add(Property.forName("id").eq(objectId)).uniqueResult();
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_ORGANIZATION);
+		}
 		return organization;
 	}
 	
@@ -105,15 +121,26 @@ public class OrganizationDao extends ObjectDao{
 	 * @return list of objects (organizations)
 	 */
 	protected List<Object> getObjects(String organizationName) throws MessageException{
-		Session session = getSession();
-		Criteria criteria = session.createCriteria(Organization.class);
-		if (!StringUtil.isBlank(organizationName)){
-			criteria.add(Restrictions.like("name", organizationName +"%"));
-		}
-		criteria.addOrder( Order.asc("name") );
-		List<Organization> organizations = criteria.list();
+		Session session = null;
 		List<Object> objects = new ArrayList<Object>();
-		objects.addAll(organizations);		
+		try{
+			session = getSession();
+			session.beginTransaction();
+			Criteria criteria = session.createCriteria(Organization.class);
+			if (!StringUtil.isBlank(organizationName)){
+				criteria.add(Restrictions.like("name", organizationName +"%"));
+			}
+			criteria.addOrder( Order.asc("name") );
+			List<Organization> organizations = criteria.list();
+			objects.addAll(organizations);
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_ORGANIZATIONS);
+		}
 		return objects;
 	}
 
@@ -123,10 +150,22 @@ public class OrganizationDao extends ObjectDao{
 	 * @return object whose name is equals to the name received as parameter
 	 */
 	protected Object getObject(String name) throws MessageException{
-		Session session = getSession();
-		Organization organization = (Organization) session.createCriteria(Organization.class).add(Property.forName("name").eq(name)).uniqueResult();
-		if (organization != null){
-			organization = organization.clone();
+		Session session = null;
+		Organization organization = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			organization = (Organization) session.createCriteria(Organization.class).add(Property.forName("name").eq(name)).uniqueResult();
+			if (organization != null){
+				organization = organization.clone();
+			}
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_ORGANIZATION);
 		}
 		return organization;
 	}
@@ -150,7 +189,7 @@ public class OrganizationDao extends ObjectDao{
 	 * Return all the organizations order by name
 	 * @return list of organizations
 	 */
-	public List<Organization> getOrganizations(){
+	public List<Organization> getOrganizations() throws MessageException{
 		List<Organization> organizations = new ArrayList<Organization>();
 		Session session = null;
 		try {
@@ -172,6 +211,70 @@ public class OrganizationDao extends ObjectDao{
 			}
 		}
 		
+		return organizations;
+	}
+	
+	
+	public Set<OrganizationProperty> getOrganizationProperties(Long organizationId) throws MessageException{
+		Set<OrganizationProperty> properties = new HashSet<OrganizationProperty>();
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			List<OrganizationProperty> organizationProperties =  session.createCriteria(OrganizationProperty.class).add(Property.forName("organizationId").eq(organizationId)).list();
+			session.getTransaction().commit();
+			for(OrganizationProperty organizationProperty : organizationProperties){
+				if (organizationProperty != null){
+					properties.add(organizationProperty.clone());
+				}
+			}
+			return properties;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_ORGANIZATIONS);
+		}
+	}
+
+	/**
+	 * Returns all the organization with pagination. If the name is not empty it uses it as filter
+	 * @param page page to look for
+	 * @param limit quantity of organizations per page
+	 * @param name name to filter
+	 * @return List of Organizations
+	 * @throws MessageException
+	 */
+	public List<Organization> getOrganizations(Integer page, Integer limit, String name) throws MessageException{
+		List<Organization> organizations = new ArrayList<Organization>();
+		Session session = null;
+		try {
+			session = getSession();
+			session.beginTransaction();
+			Criteria criteria = session.createCriteria(Organization.class);
+			if (!StringUtil.isBlank(name)){
+				criteria.add(Restrictions.like("name", name +"%"));
+			}
+			criteria.addOrder( Order.asc("name") );
+			if (limit == null || (limit != null && limit < 1)){
+				limit = 10;
+			}
+			criteria.setMaxResults(limit);
+			if (page == null || (page!=null && page < 1)){
+				page = 1;
+			}
+			criteria.setFirstResult(limit * (page - 1));
+			
+		    organizations = criteria.list();
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			} 
+			throw new MessageException(Constants.EXCEPTION_GET_ORGANIZATIONS);
+		}
 		return organizations;
 	}
 }
