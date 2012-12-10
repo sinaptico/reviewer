@@ -1453,6 +1453,12 @@ public class AssignmentManager {
 		processActivitiesForNewUsers(course);
 	}
 		
+	/**
+	 * Get a writing activity
+	 * @param writingActivityId
+	 * @return
+	 * @throws MessageException
+	 */
 	public WritingActivity loadWritingActivity(long writingActivityId)throws MessageException {
 		return assignmentDao.loadWritingActivity(writingActivityId);
 	}
@@ -1522,5 +1528,17 @@ public class AssignmentManager {
 	
 	public UserGroup loadUserGroup(Long id) throws  MessageException {
 		return assignmentDao.loadUserGroup(id);
+	}
+	
+	public ReviewTemplate loadReviewTemplate(Long id) throws MessageException {
+		return assignmentDao.loadReviewTemplate(id);
+	}
+	
+	public ReviewingActivity loadReviewingActivity(Long id) throws MessageException {
+		return assignmentDao.loadReviewingActivity(id);
+	}
+	
+	public List<ReviewTemplate> loadReviewTemplates(Organization organization) throws MessageException{
+		return assignmentDao.loadReviewTemplates(organization);
 	}
 }

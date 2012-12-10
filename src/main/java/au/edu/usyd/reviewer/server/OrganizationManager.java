@@ -291,15 +291,6 @@ public class OrganizationManager {
 	}
 		
 	
-	public Collection<User> getUsers(Organization organization, String firstName, String lastName, int startRow, int maxRows) throws Exception{
-		Collection<User> users = new ArrayList<User>();
-		if (!StringUtil.isBlank(firstName) || !StringUtil.isBlank(lastName)){
-			users = userDao.geUsers(organization, firstName, lastName, startRow, maxRows);
-		} else {
-			throw new MessageException(Constants.EXCEPTION_FIELD_EMPTIES);
-		}
-		return users;
-	}
 	
 	public Collection<Organization> getOrganizations() throws MessageException{
 		return organizationDao.getOrganizations();
@@ -334,5 +325,9 @@ public class OrganizationManager {
 	
 	public User getUser(Long userId) throws MessageException{
 		return userDao.load(userId);
+	}
+
+	public List<User> getUsers(Organization organization,Integer page, Integer limit, String roles, boolean assigned) throws MessageException{
+		return userDao.getUsers(organization,page,limit,roles, assigned);
 	}
 }

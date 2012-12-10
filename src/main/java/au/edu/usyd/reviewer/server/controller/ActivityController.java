@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import au.edu.usyd.reviewer.client.admin.report.UserStats;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
@@ -202,6 +203,49 @@ public class ActivityController extends ReviewerController {
 		}
 	}
 	
+
+	@RequestMapping(value="reviewing/{id}",method = RequestMethod.GET)
+	public @ResponseBody  Map getReviewingctivity(HttpServletRequest request, @PathVariable Long id, 
+			@RequestParam(value="include", required=false) String include, 
+			@RequestParam(value="relationships", required=false) String relationships) throws MessageException { 
+		ReviewingActivity activity = null;
+		MessageException me = null;
+		try{
+			initialize(request);
+			if (isAdminOrSuperAdminOrGuest()){
+				if (id == null){
+					me = new MessageException(Constants.EXCEPTION_REVIEWING_ACTIVITY_NOT_FOUND);
+					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+					throw me;
+				} else { 
+					activity = assignmentManager.loadReviewingActivity(id);
+					if (activity !=  null){
+						Map activityMap = ObjectConverter.convertObjectInMap(activity, include,relationships,0);
+						return activityMap;	
+					} else {
+						me = new MessageException(Constants.EXCEPTION_REVIEWING_ACTIVITY_NOT_FOUND);
+						me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+						throw me;
+					}
+				}
+			} else {
+				me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+				me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+				throw me;
+			}
+		} catch( Exception e){
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				me = (MessageException) e;
+			} else {	
+				me = new MessageException(Constants.EXCEPTION_REVIEWING_ACTIVITY_NOT_FOUND);
+			}
+			if ( me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			}
+			throw me;
+		}
+	}
 
 	
 }

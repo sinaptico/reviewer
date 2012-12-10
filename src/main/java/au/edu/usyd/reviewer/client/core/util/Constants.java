@@ -131,7 +131,8 @@ public class Constants {
 	public static String EXCEPTION_GET_REVIEWER_PROPERTY="Failed to get reviewer property";
 	public static String EXCEPTION_GET_REVIEWER_PROPERTIES="Failed to get reviewer properties";
 	public static String EXCEPTION_SAVE_WRITING_ACTIVITIES ="Failed to save the writing activity";
-	
+	public static String EXCEPTION_REVIEWING_ACTIVITY_NOT_FOUND="Reviewing activity not found";
+	public static String EXCEPTION_WRITING_ACTIVITY_NOT_EQUALS_ID="The writing activity id is not equals to path id";
 	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";

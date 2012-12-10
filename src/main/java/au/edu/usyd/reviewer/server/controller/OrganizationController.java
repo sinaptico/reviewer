@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.OrganizationProperty;
+import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewerProperty;
+import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
@@ -95,7 +97,7 @@ public class OrganizationController extends ReviewerController {
 	 * @throws MessageException message to the user
 	 */
 	@RequestMapping(value="organizations/{id}", method = RequestMethod.GET)
-	public @ResponseBody  Map<String,Object> getOrganizations(HttpServletRequest request, @PathVariable Long id,
+	public @ResponseBody  Map<String,Object> getOrganization(HttpServletRequest request, @PathVariable Long id,
 		   @RequestParam(value="include", required=false) String include) throws MessageException {
 		Organization anOrganization = null;
 		MessageException me = null;
@@ -223,4 +225,118 @@ public class OrganizationController extends ReviewerController {
 			throw me;
 		}
 	}
+	
+	/**
+	 * This method returns the users belong to the organization with id equals to {id}
+	 * @param request HttpServletRequest to initialize the controller 
+	 * @param id Long id of the organization
+	 * @param page page to show, used in pagination
+	 * @param limit quantity of users per page
+	 * @param include if it's equals to all returns all the relationships of the users
+	 * @param roles can be lecturers, students, tutors or all. It's used to indicate the role of the returned users
+	 * @param relationships indicates which relationships or the user must be included 
+	 * @param assigned used to indicate that the method must return only the users assigned to a course
+	 * @return List of users
+	 * @throws MessageException message to the logged user
+	 */
+	@RequestMapping(value="organizations/{id}/users", method = RequestMethod.GET)
+	public @ResponseBody  List<Object> getOrganizationUsers(HttpServletRequest request, @PathVariable Long id,
+												@RequestParam(value="page", required=false) Integer page,
+												@RequestParam(value="limit", required=false) Integer limit,
+												@RequestParam(value="include", required=false) String include,
+												@RequestParam(value="roles", required=false) String roles,
+												@RequestParam(value="relationships", required=false) String relationships,
+												@RequestParam(value="assigned", required=false) boolean assigned) throws MessageException {
+		Organization anOrganization = null;
+		MessageException me = null;
+		List<Object> usersList = new ArrayList<Object>();
+		try{
+			initialize(request);
+			if (isSuperAdmin() ){
+				if (id != null) {
+					anOrganization = organizationManager.getOrganization(id);
+					if (anOrganization == null) {
+						me = new MessageException(Constants.EXCEPTION_ORGANIZATION_NOT_FOUND);
+						me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+						throw me;
+					} 
+				}
+			} else if (isAdmin() && organization.getId().equals(id)){
+				anOrganization = organization.clone();
+			} else {
+				me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+				me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+				throw me;
+			}
+			List<User> users = organizationManager.getUsers(anOrganization, page, limit, roles,assigned);
+			usersList = ObjectConverter.convertCollectiontInList(users, include, relationships, 0);
+			return usersList;
+		} catch( Exception e){
+			if (e instanceof MessageException){
+				me = (MessageException) e;
+			} else {
+				e.printStackTrace();
+				me = new MessageException(Constants.EXCEPTION_GET_ORGANIZATION);
+			}
+			if (me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			}
+			throw me;
+		}
+	}
+	
+//	/**
+//	 * This method returns a list of review template belong to the organization whose id is equals to the organizationId received as paramter
+//	 * @param request HttpServletRequest to initialize the controller
+//	 * @param organizationId id of the organization which the review template belong to
+//	 * @return List<ReviewTemplate> list of review template
+//	 * @throws MessageException message to the user
+//	 */
+//	@RequestMapping(value="organizations/{id}/templates", method = RequestMethod.GET)
+//	public @ResponseBody List<Object> getReviewTemplates(HttpServletRequest request, @PathVariable Long id,
+//															@RequestParam(value="page", required=false) Integer page,
+//															@RequestParam(value="limit", required=false) Integer limit,
+//															@RequestParam(value="include", required=false) String include,
+//															@RequestParam(value="relationships", required=false) String relationships
+//														) throws MessageException {
+//		
+//		MessageException me = null;
+//		try{
+//			initialize(request);	
+//			if (isAdminOrSuperAdmin()) {
+//				Organization organizationSelected = null;
+//				if (id == null) {
+//					me = new MessageException(Constants.EXCEPTION_ORGANIZATION_NOT_FOUND);
+//					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+//					throw me;	
+//				} else {
+//					if ( isSuperAdmin() || (isAdmin() && organization.getId().equals(id))){
+//						if (organization.getId().equals(id)){
+//							organizationSelected = organization.clone();
+//						} else {
+//							organizationSelected = organizationManager.getOrganization(id);
+//						}
+//						if (organizationSelected != null){
+//							List<ReviewTemplate> reviewTemplates = new ArrayList<ReviewTemplate>();
+//							reviewTemplates =  assignmentManager.loadReviewTemplates(organizationSelected);
+//							List<Object> reviewTemplatesList = ObjectConverter.convertCollectiontInList(reviewTemplates, include, relationships, 0);
+//							return reviewTemplatesList;
+//						}
+//					} else {
+//						me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+//						me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+//						throw me;
+//					}
+//				} 
+//			}
+//		} catch(Exception e){
+//			if (e instanceof MessageException){
+//				throw (MessageException) e;
+//			} else {
+//				e.printStackTrace();
+//				throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
+//			}
+//		}
+//	}
+
 }

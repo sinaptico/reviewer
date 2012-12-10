@@ -7,7 +7,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Property;
@@ -395,5 +397,107 @@ public class UserDao extends ObjectDao {
 		}
 		return usersResult;
 	}
-	
+
+	public List<User> getUsers(Organization organization,Integer page, Integer limit, String roles, boolean assigned) throws MessageException{
+		Session session = null;
+		List<User> users = new ArrayList<User>();
+		List<User> usersResult = new ArrayList<User>();
+		try{
+			session = getSession();
+			session.beginTransaction();
+			String queryString = "select distinct user from User user ";
+			String where =		 "where user.organization=:organization ";
+								 
+			String conditions = "";
+			
+			boolean lecturers = roles != null && roles.contains(Constants.LECTURERS); 
+			boolean tutors = roles != null && roles.contains(Constants.TUTORS);
+			boolean students = roles!= null && roles.contains(Constants.STUDENTS);
+			boolean all = roles != null && roles.contains(Constants.ALL); 
+			
+			if ( assigned && ( all || lecturers || tutors || students )){
+				queryString +=", Course course ";
+				where += "and user.organization=course.organization ";
+			}
+						
+			if (all){
+				lecturers = false;
+				tutors = false;
+				students = false;
+			} 
+			
+			if (lecturers && assigned){
+				queryString += "left join course.lecturers lecturer "; 
+				conditions = "(lecturer=user ";
+			} 
+
+			if (tutors && assigned) {
+				queryString += "left join course.tutors tutor ";
+				if (conditions.equals("")){
+					conditions = "(tutor=user ";
+				} else {
+					conditions += " OR tutor=user ";
+				}
+			} 
+			
+			if ( (lecturers || tutors) && !assigned && !all){
+				queryString += " join user.role_name role " ;
+				conditions += " ('" + Constants.ROLE_ADMIN + "' = role "; ;
+			}
+			
+			if (students && assigned) {
+				queryString += "join course.studentGroups studentGroup " + 
+				 				"join studentGroup.users student ";
+				if (conditions.equals("")){
+					conditions = "(student=user ";
+				} else {
+					conditions += " OR student=user ";
+				}
+			} else if (students && !assigned && !all) {
+				if ( conditions.equals("")){
+					queryString += " join user.role_name role " ;
+					conditions += " ('" + Constants.ROLE_GUEST + "' = role ";
+				} else {
+					conditions += " or '" + Constants.ROLE_GUEST + "' = role ";;
+				}
+			}
+			
+			if (!conditions.equals("")){
+				conditions +=")";
+				queryString += where + " and " + conditions;
+			} else {
+				queryString += where;
+			}
+			String order = " order by user.name";
+			Query query = session.createQuery(queryString);
+			query.setParameter(ORGANIZATION, organization);
+			
+			if (limit == null || (limit != null && limit < 1)){
+				limit = 10;
+			}
+			query.setMaxResults(limit);
+			
+			if (page == null || (page!=null && page < 1)){
+				page = 1;
+			}
+			query.setFirstResult(limit * (page - 1));
+			
+			users = query.list();
+			
+			session.getTransaction().commit();
+			
+			for(User user: users){
+				if(user!=null){
+					usersResult.add(user.clone());
+				}
+			}
+			return usersResult;
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USERS);
+		}
+	}
 }

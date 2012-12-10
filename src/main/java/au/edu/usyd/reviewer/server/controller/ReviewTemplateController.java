@@ -1,17 +1,23 @@
 package au.edu.usyd.reviewer.server.controller;
 
 
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.OrganizationDao;
+import au.edu.usyd.reviewer.server.util.ObjectConverter;
 
 @Controller
 @RequestMapping("/")
@@ -121,35 +127,44 @@ public class ReviewTemplateController extends ReviewerController{
 //		}
 //	}
 //
-//	/**
-//	 * Return the review template which id is equals to reviewTemplateId
-//	 * @param request HttpServletRequest to initialize the controller
-//	 * @param reviewTemplateId id of the review template to get
-//	 * @return ReviewTemplate review template with id equals to reviewTemplateId
-//	 * @throws MessageException message to the user
-//	 */
-//	@RequestMapping(value="reviewtemplate/{reviewTemplateId}", method = RequestMethod.GET)
-//	public @ResponseBody ReviewTemplate getReviewTemplate(HttpServletRequest request, @PathVariable Long reviewTemplateId) throws MessageException {
-//		ReviewTemplate reviewTemplate = null;
-//		try{
-//			initialize(request);
-//			if (isAdminOrSuperAdmin()) {
-//				reviewTemplate = assignmentDao.loadReviewTemplate(reviewTemplateId);
-//				if (reviewTemplate != null) {
-//					return reviewTemplate;
-//				} else {
-//					throw new MessageException(Constants.EXCEPTION_REVIEW_TEMPLATE_NOT_FOUND);					
-//				}
-//			} else {
-//				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-//			}
-//		} catch(Exception e){
-//			if (e instanceof MessageException){
-//				throw (MessageException) e;
-//			} else {
-//				e.printStackTrace();
-//				throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATE);
-//			}
-//		}
-//	}
+
+	@RequestMapping(value="reviewtemplate/{id}", method = RequestMethod.GET)
+	public @ResponseBody Map getReviewTemplate(HttpServletRequest request, 
+												@PathVariable Long id,
+												@RequestParam(value="include", required=false) String include, 
+												@RequestParam(value="relationships", required=false) String relationships) throws MessageException {
+				
+		MessageException me = null;
+		try{
+			initialize(request);
+			if (isAdminOrSuperAdmin()) {
+				if (id == null){
+					me = new MessageException(Constants.EXCEPTION_REVIEW_TEMPLATE_NOT_FOUND);
+					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+					throw me;
+				} else { 
+					ReviewTemplate reviewTemplate = assignmentManager.loadReviewTemplate(id);
+					if (reviewTemplate != null) {
+						Map reviewTemplateMap = ObjectConverter.convertObjectInMap(reviewTemplate, include,relationships,0);
+						return reviewTemplateMap;
+					} else {
+						throw new MessageException(Constants.EXCEPTION_REVIEW_TEMPLATE_NOT_FOUND);					
+					}
+				}
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
+		} catch( Exception e){
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				me = (MessageException)e;
+			} else {
+				me = new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATE);; 
+			}
+			if ( me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			}
+			throw me;
+		}
+	}
 }

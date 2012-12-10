@@ -412,7 +412,6 @@ public class AssignmentDao {
 			String ownerQuery = "select distinct course from Course course " + 
 			"left join fetch course.lecturers lecturer " + 
 			"left join fetch course.tutors tutor " + 
-			"left join fetch course.supervisors supervisor " + 
 			"join fetch course.studentGroups studentGroup " + 
 			"join fetch studentGroup.users student " + 
 			"join fetch course.writingActivities writingActivity " + 
@@ -943,4 +942,28 @@ public class AssignmentDao {
 			throw new MessageException(Constants.EXCEPTION_GET_USERGROUP);
 		}
 	}
+	
+	public Review loadReview(long reviewId) throws MessageException{
+		Session session = null;
+		try{
+			String ownerQuery = "from Review review " + 
+								"where review.id=:reviewId ";
+	
+			session = this.getSession();
+			session.beginTransaction();
+			Review review = (Review) session.createQuery(ownerQuery).setParameter("reviewId", reviewId).uniqueResult();
+			session.getTransaction().commit();
+			if (review != null){
+				review = review.clone();
+			}
+			return review;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIWING_ACTIVITY);
+		}
+	}
+
 }

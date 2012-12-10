@@ -1,6 +1,8 @@
 package au.edu.usyd.reviewer.server.controller;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
 
 import java.util.Map;
 
@@ -9,6 +11,9 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.type.TypeFactory;
+import org.codehaus.jackson.type.TypeReference;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import edu.emory.mathcs.backport.java.util.Arrays;
+import edu.emory.mathcs.backport.java.util.Collections;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
@@ -322,24 +330,24 @@ public class CourseController extends ReviewerController {
 	 * @throws MessageException message to the user
 	 */
 	@RequestMapping(value="courses/{id}/lecturers/",method = RequestMethod.PUT)
-	public @ResponseBody void addLecturer(HttpServletRequest request, @PathVariable Long id, @RequestBody List<User> lecturers)throws MessageException{
+	public @ResponseBody void addLecturer(HttpServletRequest request, @PathVariable Long id, @RequestBody User[] lecturersArray)throws MessageException{
 		MessageException me=null;
 		try{
 			initialize(request);
 			if (isAdminOrSuperAdmin()){
 				if ( id != null){
 					Course course = courseManager.getCourse(id);
+					if (isAdmin() && !organization.getId().equals(course.getOrganization().getId())){
+						me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+						me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+						throw me;
+					}
 					if (course !=  null){
-						if (organization.getId().equals(course.getOrganization().getId())){
-							if (!lecturers.isEmpty()) {
-								assignmentManager.saveLecturers(course,lecturers,user);
-							} else {
-								new MessageException(Constants.EXCEPTION_EMPTY_LECTURERS_LIST);
-							}
+						List<User> lecturers = Arrays.asList(lecturersArray);
+						if (!lecturers.isEmpty()) {
+							assignmentManager.saveLecturers(course,lecturers,user);
 						} else {
-							me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-							me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
-							throw me;
+							new MessageException(Constants.EXCEPTION_EMPTY_LECTURERS_LIST);
 						}
 					} else {
 						me = new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
@@ -378,24 +386,24 @@ public class CourseController extends ReviewerController {
 	 * @throws MessageException message to the user
 	 */
 	@RequestMapping(value="courses/{id}/tutors", method = RequestMethod.PUT)
-	public @ResponseBody void addTutor(HttpServletRequest request, @PathVariable Long id, @RequestBody List<User> tutors)throws MessageException{
+	public @ResponseBody void addTutor(HttpServletRequest request, @PathVariable Long id, @RequestBody User[] tutorsArray)throws MessageException{
 		MessageException me = null;
 		try{
 			initialize(request);
 			if (isAdminOrSuperAdmin()){
 				if ( id != null){
 					Course course = courseManager.getCourse(id);
+					if (isAdmin() && !organization.getId().equals(course.getOrganization().getId())){
+						me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+						me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+						throw me;
+					}
 					if (course !=  null){
-						if (organization.getId().equals(course.getOrganization().getId())){
-							if (!tutors.isEmpty()) {
-								assignmentManager.saveTutors(course,tutors,user);
-							} else {
-								new MessageException(Constants.EXCEPTION_EMPTY_TUTORS_LIST);
-							}
+						List<User> tutors = Arrays.asList(tutorsArray);
+						if (!tutors.isEmpty()) {
+							assignmentManager.saveLecturers(course,tutors,user);
 						} else {
-							me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-							me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
-							throw me;
+							new MessageException(Constants.EXCEPTION_EMPTY_TUTORS_LIST);
 						}
 					} else {
 						me = new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
@@ -449,6 +457,11 @@ public class CourseController extends ReviewerController {
 				} else {
 					Course course = courseManager.getCourse(id);
 					if (course != null){
+						if (isAdmin() && !organization.getId().equals(course.getOrganization().getId())){
+							me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+							me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+							throw me;
+						}
 						if (isAdminOrSuperAdmin() || isCourseLecturer(course)) {
 							writingActivity = assignmentManager.loadWritingActivityRelationships(writingActivity);
 							writingActivity = assignmentManager.saveActivity(course, writingActivity);
@@ -483,5 +496,5 @@ public class CourseController extends ReviewerController {
 			throw me;
 		}
 	}	
-
+		
 }

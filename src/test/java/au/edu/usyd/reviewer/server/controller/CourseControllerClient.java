@@ -103,12 +103,6 @@ public class CourseControllerClient extends ControllerClient {
 				System.out.println(responseEntity.getBody().toString());
 			}
 			
-//			ResponseEntity<Course[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Course.class);
-//			Course[] coursesArray = responseEntity.getBody();
-//			courses = Arrays.asList(coursesArray);
-//			for(Course course: courses){
-//				System.out.println("Course " + course.getName() + " id " + course.getId());
-//			}			
 		} catch(Exception e){
 			e.printStackTrace();
 			System.out.println(e.getMessage());
@@ -116,30 +110,6 @@ public class CourseControllerClient extends ControllerClient {
 		return courses;
 	}
 
-	
-//	private static List<Course> getCoursesForSuperAdmin(){
-//		List<Course> courses = new ArrayList<Course>();
-//		try{
-//
-//			HttpClient client = new HttpClient();
-//			UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("superAdmin@demo-sinaptico.com","reviewer");
-//			client.getState().setCredentials(new AuthScope("127.0.0.1", 8888, AuthScope.ANY_REALM), credentials);
-//			CommonsClientHttpRequestFactory commons = new CommonsClientHttpRequestFactory(client);
-//			restTemplate = new RestTemplate(commons);
-//			
-//			String url = "http://127.0.0.1:8888/v1/organizations/1/courses?semester=3&year=2012&page=1&limit=2";
-//			ResponseEntity<Course[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Course[].class);
-//			Course[] coursesArray = responseEntity.getBody();
-//			courses = Arrays.asList(coursesArray);
-//			for(Course course: courses){
-//				System.out.println("Course " + course.getName() + " id " + course.getId());
-//			}			
-//		} catch(Exception e){
-//			e.printStackTrace();
-//			System.out.println(e.getMessage());
-//		}
-//		return courses;
-//	}
 
 	/**
 	 * Delete all the courses received as parameter
@@ -151,7 +121,6 @@ public class CourseControllerClient extends ControllerClient {
 		}
 	}
 
-	
 	
 private static void addLecturer(Long courseId){
 		
@@ -169,9 +138,7 @@ private static void addLecturer(Long courseId){
 			conn.setRequestMethod("PUT");
 			conn.setRequestProperty("Content-Type", "application/json");
 	 			
-//			String json = "{\"id\":null,\"email\":\"lecturerTest@demo-sinaptico.com\",\"firstname\":\"Lecturer\",\"lastname\":\"Test Json\",\"nativeSpeaker\":null,\"wasmuser\":false,\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\",\"role_name\":[\"Admin\"],\"organization\":{\"id\":1,\"name\":\"Demo Sinaptico\",\"organizationProperties\":[],\"properties\":[]},\"username\":\"lecturerTest\",\"domain\":\"demo-sinaptico.com\",\"superAdmin\":false,\"admin\":true,\"guest\":false}";
-			String json = "{\"id\":null,\"email\":\"lecturerTest@demo-sinaptico.com\",\"firstname\":\"Lecturer\",\"lastname\":\"Test Json\",\"nativeSpeaker\":null,\"wasmuser\":false,\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\",\"role_name\":[\"Admin\"],\"organization\":1,\"username\":\"lecturerTest\",\"domain\":\"demo-sinaptico.com\",\"superAdmin\":false,\"admin\":true,\"guest\":false}";
-			
+			String json = "[{\"id\":4,\"username\":\"testAPI\",\"email\":\"lecturer@demo-sinaptico.com\",\"wasmuser\":false,\"Organization\":{\"id\":1},\"lastname\":\"For Demo Sinaptico\",\"firstname\":\"Lecturer\",\"role_name\":[\"Admin\"],\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\"}]";
 			OutputStream os = conn.getOutputStream();
 			os.write(json.getBytes());
 			os.flush();
@@ -179,9 +146,7 @@ private static void addLecturer(Long courseId){
 			if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
 				System.out.println("Failed : HTTP error code : " + conn.getResponseCode());
 				System.out.println(conn.getResponseMessage());
-//				
 			} else {
-			
 				BufferedReader br = new BufferedReader(new InputStreamReader(
 						(conn.getInputStream())));
 		 
@@ -220,7 +185,59 @@ private static void addTutor(Long courseId){
 		conn.setRequestMethod("PUT");
 		conn.setRequestProperty("Content-Type", "application/json");
  			
-		String json = "{\"id\":null,\"email\":\"tutorTest@demo-sinaptico.com\",\"firstname\":\"Lecturer\",\"lastname\":\"Test Json\",\"nativeSpeaker\":null,\"wasmuser\":false,\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\",\"role_name\":[\"Admin\"],\"organization\":{\"id\":1,\"name\":\"Demo Sinaptico\",\"organizationProperties\":[],\"properties\":[]},\"username\":\"tutorTest\",\"domain\":\"demo-sinaptico.com\",\"superAdmin\":false,\"admin\":true,\"guest\":false}";
+		String json = "[{\"id\":5,\"username\":\"testAPI\",\"email\":\"tutor@demo-sinaptico.com\",\"wasmuser\":false,\"Organization\":{\"id\":1},\"lastname\":\"For Demo Sinaptico\",\"firstname\":\"Tutor\",\"role_name\":[\"Admin\"],\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\"}]";
+
+		
+		OutputStream os = conn.getOutputStream();
+		os.write(json.getBytes());
+		os.flush();
+		
+		if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+			System.out.println("Failed : HTTP error code : " + conn.getResponseCode());
+			System.out.println(conn.getResponseMessage());
+		} else {
+		
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(conn.getInputStream())));
+	 
+			String output;
+			System.out.println("Output from Server .... \n");
+			while ((output = br.readLine()) != null) {
+				System.out.println(output);
+			}
+		}
+		conn.disconnect();
+ 
+	} catch (MalformedURLException e) {
+		System.out.println(e.getMessage());
+		e.printStackTrace();
+	} catch (IOException e) {
+		System.out.println(e.getMessage());
+		e.printStackTrace();
+	}
+			
+}
+
+
+private static void addStudent(Long courseId){
+	
+	URL url;
+	try {
+		url = new URL("http://127.0.0.1:8888/v1/courses/"+courseId.toString()+"/students/");
+		
+		String userPassword = "admin@demo-sinaptico.com:reviewer";   
+		String encoding = (new Base64()).encode(userPassword.getBytes());   
+		URLConnection uc = url.openConnection();   
+		uc.setRequestProperty("Authorization", "Basic " + encoding); 
+		
+		HttpURLConnection conn = (HttpURLConnection) uc;
+		conn.setDoOutput(true);
+		conn.setRequestMethod("PUT");
+		conn.setRequestProperty("Content-Type", "application/json");
+ 			
+		String json = "[{\"id\":11,\"username\":\"testAPI\",\"email\":\"student2@demo-sinaptico.com\",\"wasmuser\":false,\"Organization\":{\"id\":1},\"lastname\":\"For Sinaptico\",\"firstname\":\"student2\",\"role_name\":[\"Admin\"],\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\"}]";
+
+
 		
 		OutputStream os = conn.getOutputStream();
 		os.write(json.getBytes());
@@ -260,15 +277,18 @@ private static void addTutor(Long courseId){
 			System.out.println("/******************* START **********************/");
 			initializeRestTemplate();
 			// create course
-			String json ="{\"name\":\"COURSE TEST 666\",\"year\":2012,\"semester\":3,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[],\"writingActivities\":[],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";
-			String userPassword = "admin@smart-sourcing.com.ar:reviewer";
-			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
+//			String json ="{\"name\":\"COURSE TEST 666\",\"year\":2012,\"semester\":3,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[],\"writingActivities\":[],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";
+//			String userPassword = "admin@smart-sourcing.com.ar:reviewer";
+////			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
 						
 			// update course
-			json ="{\"id\":48,\"name\":\"COURSE TEST MODIFIED 2\",\"year\":2012,\"semester\":2,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[],\"writingActivities\":[{\"id\":27}],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";
-			userPassword = "admin@smart-sourcing.com.ar:reviewer";
-			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
+//			json ="{\"id\":48,\"name\":\"COURSE TEST MODIFIED 130\",\"year\":2012,\"semester\":2,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[{\"id\":1}],\"writingActivities\":[{\"id\":28}],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";
+//			userPassword = "admin@smart-sourcing.com.ar:reviewer";
+//			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
 	
+			addLecturer(new Long(27));
+			addTutor(new Long(27));
+//			addStudent(new Long(27));
 //			userPassword = "superAdmin@demo-sinaptico.com:reviewer";
 			// add lecturer
 //			json="{\"username\":\"test\",\"email\":\"test@demo-sinaptico.com\",\"wasmuser\":false,\"Organization\":1,\"lastname\":\"Lecturer for API\",\"firstname\":\"test\",\"role_name\":[\"Admin\"],\"password\":null,\"nativeSpeaker\":null}";
