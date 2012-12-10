@@ -2,10 +2,12 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
 
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+
 
 //TODO: Improve the model so more than one mark can be given for a deadline.
 
@@ -146,7 +148,9 @@ public class Grade implements Serializable {
 		}
 		
 		grade.setId(this.getId());
-		grade.setUser(this.getUser().clone());
+		if ( this.getUser() != null){
+			grade.setUser(this.getUser().clone());
+		}
 		grade.setValue(this.getValue());
 		return grade;
 	}

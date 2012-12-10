@@ -45,33 +45,21 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	public Collection<Course> getUserActivities(int semester, int year,  Long organizationId) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (!isAdminOrSuperAdmin() || mockedUser != null){
+		if (isAdminOrSuperAdmin()){
 			return assignmentDao.loadUserActivities(semester, year,mockedUser);
 		} else {
-			Organization  organization = null;
-			if (organizationId == null){
-				organization = user.getOrganization();
-			} else {
-				organization = organizationDao.load(organizationId);
-			}
-			return courseDao.loadCourses(semester, year, organization);
-		}	
+			throw new Exception("Permission denied");
+		}
 	}
 
 	@Override
 	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews,  Long organizationId) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (!isAdminOrSuperAdmin() || mockedUser != null){
+		if (isGuestOrAdminOrSuperAdmin()){
 			return assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, mockedUser);
 		} else {
-			Organization  organization = null;
-			if (organizationId == null){
-				organization = user.getOrganization();
-			} else {
-				organization = organizationDao.load(organizationId);
-			}
-			return courseDao.loadCourses(semester, year, organization);
+			throw new Exception("Permission denied");
 		}
 	}
 
@@ -79,16 +67,10 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	public Collection<Course> getUserWritingTasks(int semester, int year, Long organizationId ) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (!isAdminOrSuperAdmin() || mockedUser != null){
+		if (isGuestOrAdminOrSuperAdmin()){
 				return assignmentDao.loadUserWritingTasks(semester, year, mockedUser);
 		} else {
-			Organization  organization = null;
-			if (organizationId == null){
-				organization = user.getOrganization();
-			} else {
-				organization = organizationDao.load(organizationId);
-			}
-			return courseDao.loadCourses(semester, year, organization);
+			throw new Exception("Permission denied");
 		}
 			
 	}
@@ -211,13 +193,15 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 			HttpServletRequest request = this.getThreadLocalRequest();
 			mockedUser = (User) request.getSession().getAttribute("mockedUser");
 			 
-			if ( mockedUser != null && mockedUser.getOrganization() == null){
-				mockedUser = userDao.getUserByEmail(mockedUser.getEmail());
-				request.getSession().setAttribute("mockedUser", mockedUser);
-			}
-			else if ( mockedUser == null && !user.isSuperAdmin()){
-					mockedUser = user;
+			if ( mockedUser != null) {
+				if (mockedUser.getOrganization() == null){
+					mockedUser = userDao.getUserByEmail(mockedUser.getEmail());
 					request.getSession().setAttribute("mockedUser", mockedUser);
+				}
+			}
+			else {
+				mockedUser = user;
+				request.getSession().setAttribute("mockedUser", mockedUser);
 			} 
 		} catch (MessageException e) {
 			e.printStackTrace();
@@ -236,6 +220,14 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	
 	private boolean isAdminOrSuperAdmin(){
 		return this.isAdmin() || this.isSuperAdmin();
+	}
+	
+	private boolean isGuestOrAdminOrSuperAdmin(){
+		return this.isAdmin() || this.isSuperAdmin() || isGuest();
+	}
+	
+	private boolean isGuest(){
+		return user == null? false : user.isGuest();
 	}
 	
 	

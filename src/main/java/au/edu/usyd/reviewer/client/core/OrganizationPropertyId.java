@@ -2,6 +2,7 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
 
+
 /**
  * This class represents the organization property id used by hibernate
  * @author mdagraca

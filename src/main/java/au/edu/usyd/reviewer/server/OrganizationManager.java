@@ -3,13 +3,14 @@ package au.edu.usyd.reviewer.server;
 import java.util.ArrayList;
 
 
+
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import java.util.Set;
 
 
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,6 @@ import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.OrganizationProperty;
 import au.edu.usyd.reviewer.client.core.ReviewerProperty;
 import au.edu.usyd.reviewer.client.core.User;
-//import au.edu.usyd.reviewer.client.core.util.AESCipher;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
@@ -73,10 +73,10 @@ public class OrganizationManager {
 	 * This method calls organizationDao to save the organization received as parameter
 	 * @param organization organization to save
 	 */
-	public Organization saveOrganization(Organization organization) throws Exception{
+	public Organization saveOrganization(Organization organization, boolean includeAll) throws Exception{
 		Organization organizationSaved = null;
 		Organization otherOrganization = getOrganization(organization.getName());
-		if ( otherOrganization == null || (otherOrganization != null && otherOrganization.getId().equals(organization.getId()))){
+		if ( otherOrganization == null || (otherOrganization != null && organization.getId() != null && otherOrganization.getId().equals(organization.getId()))){
 			organizationSaved = organizationDao.save(organization);;
 			if (!organizationSaved.hasProperties()){
 				organization = addProperties(organization);
@@ -89,6 +89,9 @@ public class OrganizationManager {
 			// there is an organization with the same name
 			throw new MessageException(Constants.EXCEPTION_ORGANIZATION_EXISTS);
 		}
+		if (!includeAll){
+			organizationSaved.setOrganizationProperties(new HashSet<OrganizationProperty>());
+		}
 		return organizationSaved; 
 	}
 	
@@ -98,6 +101,7 @@ public class OrganizationManager {
 	 * @return organization with id equals to the organization id received as parameter
 	 */
 	public Organization getOrganization(Long organizationId)throws MessageException{
+		
 		Organization organization = organizationDao.load(organizationId);
 		return organization;
 	}
@@ -226,14 +230,6 @@ public class OrganizationManager {
 	 * @throws MessageException message for the user
 	 */
 	public OrganizationProperty saveOrganizationProperty(OrganizationProperty organizationProperty) throws Exception{
-//		if (organizationProperty != null && organizationProperty.getProperty() != null && organizationProperty.getProperty().isPassword()){
-//			AESCipher cipherAES = AESCipher.getInstance();
-//			String value = organizationProperty.getValue();
-//			if ( value != null){
-//				String encryptedValue = cipherAES.encrypt(value);
-//				organizationProperty.setValue(encryptedValue);
-//			}
-//		}
 		return organizationPropertyDao.save(organizationProperty);
 	}
 	
@@ -293,29 +289,10 @@ public class OrganizationManager {
 		}
 		return users;
 	}
-	
-	public Collection<User> getUsers(String firstName, String lastName, int startRow, int maxRows) throws Exception{
-		Collection<User> users = new ArrayList<User>();
-		if (!StringUtil.isBlank(firstName) || !StringUtil.isBlank(lastName)){
-			users = userDao.geUsers(firstName, lastName, startRow, maxRows);
-		} else {
-			throw new MessageException(Constants.EXCEPTION_FIELD_EMPTIES);
-		}
-		return users;
-	}
+		
 	
 	
-	public Collection<User> getUsers(Organization organization, String firstName, String lastName, int startRow, int maxRows) throws Exception{
-		Collection<User> users = new ArrayList<User>();
-		if (!StringUtil.isBlank(firstName) || !StringUtil.isBlank(lastName)){
-			users = userDao.geUsers(organization, firstName, lastName, startRow, maxRows);
-		} else {
-			throw new MessageException(Constants.EXCEPTION_FIELD_EMPTIES);
-		}
-		return users;
-	}
-	
-	public Collection<Organization> getOrganizations(){
+	public Collection<Organization> getOrganizations() throws MessageException{
 		return organizationDao.getOrganizations();
 	}
 	
@@ -334,5 +311,23 @@ public class OrganizationManager {
 			throw new MessageException(Constants.EXCEPTION_USER_EXISTS);
 		}
 		return userSaved; 
+	}
+	
+	public List<Organization> getOrganizations(Integer page, Integer limit, String name) throws MessageException{
+		return organizationDao.getOrganizations(page, limit, name);
+	}
+	
+	
+	public User getUserByEmail(String email) throws MessageException{
+		return userDao.getUserByEmail(email);
+	}
+	
+	
+	public User getUser(Long userId) throws MessageException{
+		return userDao.load(userId);
+	}
+
+	public List<User> getUsers(Organization organization,Integer page, Integer limit, String roles, boolean assigned) throws MessageException{
+		return userDao.getUsers(organization,page,limit,roles, assigned);
 	}
 }

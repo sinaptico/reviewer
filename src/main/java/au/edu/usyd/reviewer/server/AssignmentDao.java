@@ -17,9 +17,11 @@ import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.DocumentType;
 import au.edu.usyd.reviewer.client.core.Grade;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.QuestionReview;
 import au.edu.usyd.reviewer.client.core.Rating;
 import au.edu.usyd.reviewer.client.core.Review;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
+import au.edu.usyd.reviewer.client.core.ReviewReply;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.TemplateReply;
@@ -49,7 +51,7 @@ public class AssignmentDao {
 				session.getTransaction().rollback();
 			}
 			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_DELETE_MESSAGE);
+			throw new MessageException(Constants.EXCEPTION_DELETE);
 		}
 	}
 
@@ -59,437 +61,686 @@ public class AssignmentDao {
 
 
 
-	public Course loadCourseWhereDeadline(Deadline deadline) {
-		String query = "select distinct course from Course course " 
-			+ "join fetch course.writingActivities writingActivity " 
-			+ "join fetch writingActivity.deadlines deadline " 
-			+ "where deadline=:deadline";
-		Session session = this.getSession();
-		session.beginTransaction();
-		Course course = (Course) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
-		session.getTransaction().commit();
-		if (course != null){
-			course = course.clone();
+	public Course loadCourseWhereDeadline(Deadline deadline) throws MessageException{
+		Session session = null;
+		try{
+			String query = "select distinct course from Course course " 
+				+ "join fetch course.writingActivities writingActivity " 
+				+ "join fetch writingActivity.deadlines deadline " 
+				+ "where deadline=:deadline";
+			session = this.getSession();
+			session.beginTransaction();
+			Course course = (Course) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
+			session.getTransaction().commit();
+			if (course != null){
+				course = course.clone();
+			}
+			return course;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
 		}
-		return course;
+
 	}
 	
-	public Course loadCourseWhereReviewingActivity(ReviewingActivity reviewingActivity) {
-		String query = "from Course course " + 
-		"join fetch course.writingActivities writingActivity " + 
-		"join fetch writingActivity.reviewingActivities reviewingActivity " +
-		"where reviewingActivity=:reviewingActivity";
-		Session session = this.getSession();
-		session.beginTransaction();
-		Course course = (Course) session.createQuery(query).setParameter("reviewingActivity", reviewingActivity).uniqueResult();
-		session.getTransaction().commit();
-		if (course != null){
-			course = course.clone();
+	public Course loadCourseWhereReviewingActivity(ReviewingActivity reviewingActivity) throws MessageException{
+		Session session = null;
+		try{
+			String query = "from Course course " + 
+			"join fetch course.writingActivities writingActivity " + 
+			"join fetch writingActivity.reviewingActivities reviewingActivity " +
+			"where reviewingActivity=:reviewingActivity";
+			session = this.getSession();
+			session.beginTransaction();
+			Course course = (Course) session.createQuery(query).setParameter("reviewingActivity", reviewingActivity).uniqueResult();
+			session.getTransaction().commit();
+			if (course != null){
+				course = course.clone();
+			}
+			return course;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
 		}
-		return course;
+
 	}
 
-	public Course loadCourseWhereWritingActivity(WritingActivity writingActivity) {
-		String query = "from Course course " + 
-		"join fetch course.writingActivities writingActivity " + 
-		"where writingActivity=:writingActivity";
-		Session session = this.getSession();
-		session.beginTransaction();
-		Course course = (Course) session.createQuery(query).setParameter("writingActivity", writingActivity).uniqueResult();
-		session.getTransaction().commit();
-		if (course != null){
-			course = course.clone();
+	public Course loadCourseWhereWritingActivity(WritingActivity writingActivity) throws MessageException{
+		Session session = null;
+		try{
+			String query = "from Course course " + 
+			"join fetch course.writingActivities writingActivity " + 
+			"where writingActivity=:writingActivity";
+			session = this.getSession();
+			session.beginTransaction();
+			Course course = (Course) session.createQuery(query).setParameter("writingActivity", writingActivity).uniqueResult();
+			session.getTransaction().commit();
+			if (course != null){
+				course = course.clone();
+			}
+			return course;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
 		}
-		return course;
 	}
 
-	public Deadline loadDeadline(Long deadlineId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		Deadline deadline = (Deadline) session.createCriteria(Deadline.class).add(Property.forName("id").eq(deadlineId)).uniqueResult();
-		session.getTransaction().commit();
-		if (deadline != null){
-			deadline = deadline.clone();
+	public Deadline loadDeadline(Long deadlineId) throws MessageException {
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			Deadline deadline = (Deadline) session.createCriteria(Deadline.class).add(Property.forName("id").eq(deadlineId)).uniqueResult();
+			session.getTransaction().commit();
+			if (deadline != null){
+				deadline = deadline.clone();
+			}
+			return deadline;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_DEADLINE);
 		}
-		return deadline;
 	}
 
-	public DocEntry loadDocEntry(String documentId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		DocEntry docEntry = (DocEntry) session.createCriteria(DocEntry.class).add(Property.forName("documentId").eq(documentId)).uniqueResult();
-		session.getTransaction().commit();
-		if (docEntry != null){
-			docEntry = docEntry.clone();
+	public DocEntry loadDocEntry(String documentId) throws MessageException{
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			DocEntry docEntry = (DocEntry) session.createCriteria(DocEntry.class).add(Property.forName("documentId").eq(documentId)).uniqueResult();
+			session.getTransaction().commit();
+			if (docEntry != null){
+				docEntry = docEntry.clone();
+			}
+			return docEntry;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_DOCENTRY);
 		}
-		return docEntry;
 	}
 	
-	public DocEntry loadDocEntryWhereId(Long id) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		DocEntry docEntry = (DocEntry) session.createCriteria(DocEntry.class).add(Property.forName("id").eq(id)).uniqueResult();
-		session.getTransaction().commit();
-		if (docEntry != null){
-			docEntry = docEntry.clone();
+	public DocEntry loadDocEntryWhereId(Long id) throws MessageException{
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			DocEntry docEntry = (DocEntry) session.createCriteria(DocEntry.class).add(Property.forName("id").eq(id)).uniqueResult();
+			session.getTransaction().commit();
+			if (docEntry != null){
+				docEntry = docEntry.clone();
+			}
+			return docEntry;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_DOCENTRY);
 		}
-		return docEntry;
 	}	
 	
-	public ReviewEntry loadReviewEntry(Long reviewEntryId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		ReviewEntry reviewEntry = (ReviewEntry) session.createCriteria(ReviewEntry.class).add(Property.forName("id").eq(reviewEntryId)).uniqueResult();
-		session.getTransaction().commit();
-		if (reviewEntry != null){
-			reviewEntry = reviewEntry.clone();
+	public ReviewEntry loadReviewEntry(Long reviewEntryId) throws MessageException{
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			ReviewEntry reviewEntry = (ReviewEntry) session.createCriteria(ReviewEntry.class).add(Property.forName("id").eq(reviewEntryId)).uniqueResult();
+			session.getTransaction().commit();
+			if (reviewEntry != null){
+				reviewEntry = reviewEntry.clone();
+			}
+			return reviewEntry;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEWENTRY);
 		}
-		return reviewEntry;
 	}	
 
 	
-	public DocEntry loadDocEntryWhereOwnerGroup(WritingActivity writingActivity, UserGroup ownerGroup) {
-		String query = "from Activity activity " + 
-		"join fetch activity.entries docEntry " + 
-		"where activity=:activity AND docEntry.ownerGroup=:ownerGroup";
-		Session session = this.getSession();
-		session.beginTransaction();
-		writingActivity = (WritingActivity) session.createQuery(query).setParameter("activity", writingActivity).setParameter("ownerGroup", ownerGroup).uniqueResult();
-		session.getTransaction().commit();
-		if (writingActivity == null) {
-			return null;
-		} else {
-			DocEntry doc = writingActivity.getEntries().iterator().next();
-			if (doc != null){
-				doc = doc.clone();
+	public DocEntry loadDocEntryWhereOwnerGroup(WritingActivity writingActivity, UserGroup ownerGroup) throws MessageException {
+		Session session = null;
+		try{
+			String query = "from Activity activity " + 
+			"join fetch activity.entries docEntry " + 
+			"where activity=:activity AND docEntry.ownerGroup=:ownerGroup";
+			session = this.getSession();
+			session.beginTransaction();
+			writingActivity = (WritingActivity) session.createQuery(query).setParameter("activity", writingActivity).setParameter("ownerGroup", ownerGroup).uniqueResult();
+			session.getTransaction().commit();
+			if (writingActivity == null) {
+				return null;
+			} else {
+				DocEntry doc = writingActivity.getEntries().iterator().next();
+				if (doc != null){
+					doc = doc.clone();
+				}
+				return doc;
 			}
-			return doc;
-		}
-	}
-
-	public DocEntry loadDocEntryWhereUser(WritingActivity writingActivity, User user) {
-		String query = "from Activity activity " + 
-		"join fetch activity.entries docEntry " + 
-		"where activity=:activity AND docEntry.owner=:user";
-		Session session = this.getSession();
-		session.beginTransaction();
-		writingActivity = (WritingActivity) session.createQuery(query).setParameter("activity", writingActivity).setParameter("user", user).uniqueResult();
-		session.getTransaction().commit();
-		if (writingActivity == null) {
-			return null;
-		} else {
-			DocEntry doc = writingActivity.getEntries().iterator().next();
-			if (doc != null){
-				doc = doc.clone();
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
 			}
-			return doc;
+			throw new MessageException(Constants.EXCEPTION_GET_DOCENTRY);
 		}
 	}
 
-	public Grade loadGrade(Deadline deadline, User user) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		Grade grade = (Grade) session.createCriteria(Grade.class).add(Property.forName("deadline").eq(deadline)).add(Property.forName("user").eq(user)).uniqueResult();
-		session.getTransaction().commit();
-		if (grade != null){
-			grade = grade.clone();
+	public DocEntry loadDocEntryWhereUser(WritingActivity writingActivity, User user)throws MessageException {
+		Session session = null;
+		try{
+			String query = "from Activity activity " + 
+			"join fetch activity.entries docEntry " + 
+			"where activity=:activity AND docEntry.owner=:user";
+			session = this.getSession();
+			session.beginTransaction();
+			writingActivity = (WritingActivity) session.createQuery(query).setParameter("activity", writingActivity).setParameter("user", user).uniqueResult();
+			session.getTransaction().commit();
+			if (writingActivity == null) {
+				return null;
+			} else {
+				DocEntry doc = writingActivity.getEntries().iterator().next();
+				if (doc != null){
+					doc = doc.clone();
+				}
+				return doc;
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_DOCENTRY);
 		}
-		return grade;
 	}
 
-	public List<Course> loadLecturerCourses(Integer semester, Integer year, User lecturer) {
-		String query = "from Course course " + "join fetch course.lecturers lecturer " + "where lecturer=:lecturer and course.semester=:semester AND course.year=:year";
-		Session session = this.getSession();
-		session.beginTransaction();
-		List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).setParameter("lecturer", lecturer).list();
-		session.getTransaction().commit();
-		List<Course> resultList = new ArrayList<Course>();
-		for(Course course : courses){
+	public Grade loadGrade(Deadline deadline, User user) throws MessageException{
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			Grade grade = (Grade) session.createCriteria(Grade.class).add(Property.forName("deadline").eq(deadline)).add(Property.forName("user").eq(user)).uniqueResult();
+			session.getTransaction().commit();
+			if (grade != null){
+				grade = grade.clone();
+			}
+			return grade;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_GRADE);
+		}
+	}
+
+	public List<Course> loadLecturerCourses(Integer semester, Integer year, User lecturer) throws MessageException{
+		Session session = null;
+		try{
+			String query = "from Course course " + "join fetch course.lecturers lecturer " + "where lecturer=:lecturer and course.semester=:semester AND course.year=:year";
+			session = this.getSession();
+			session.beginTransaction();
+			List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).setParameter("lecturer", lecturer).list();
+			session.getTransaction().commit();
+			List<Course> resultList = new ArrayList<Course>();
+			for(Course course : courses){
+				if (course != null){
+					resultList.add(course.clone());
+				}
+			}
+			return resultList;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+		}
+	}
+
+	public Rating loadRating(Long ratingId) throws MessageException{
+		Session session =null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("id").eq(ratingId)).uniqueResult();
+			session.getTransaction().commit();
+			if (rating != null){
+				rating = rating.clone();
+			}
+			return rating;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_RATING);
+		}
+	}
+
+	public Review loadReview(Long reviewId) throws MessageException {
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			Review review = (Review) session.createCriteria(Review.class).add(Property.forName("id").eq(reviewId)).uniqueResult();
+			session.getTransaction().commit();
+			if (review != null){
+				review = review.clone();
+			}
+			return review;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW);
+		}
+	}
+
+	public ReviewEntry loadReviewEntryWhereDocEntryAndOwner(DocEntry docEntry, User owner) throws MessageException{
+		Session session = null;
+		try{
+			String ownerQuery = "select distinct reviewEntry from ReviewEntry reviewEntry " + 
+			"join fetch reviewEntry.docEntry docEntry " + 
+			"join fetch reviewEntry.owner owner " + 
+			"where owner=:owner AND docEntry=:docEntry";
+	
+			session = this.getSession();
+			session.beginTransaction();
+			ReviewEntry reviewEntry = (ReviewEntry) session.createQuery(ownerQuery).setParameter("owner", owner).setParameter("docEntry", docEntry).uniqueResult();
+			session.getTransaction().commit();
+			if (reviewEntry != null){
+				reviewEntry = reviewEntry.clone();
+			}
+			return reviewEntry;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEWENTRY);
+		}
+	}
+
+	public ReviewEntry loadReviewEntryWhereReview(Review review) throws MessageException {
+		Session session = null;
+		try{
+			String ownerQuery = "select reviewEntry from ReviewEntry reviewEntry " + 
+			"join fetch reviewEntry.review review " + 
+			"where review=:review";
+	
+			session = this.getSession();
+			session.beginTransaction();
+			ReviewEntry reviewEntry = (ReviewEntry) session.createQuery(ownerQuery).setParameter("review", review).uniqueResult();
+			session.getTransaction().commit();
+			if (reviewEntry != null){
+				reviewEntry = reviewEntry.clone();
+			}
+			return reviewEntry;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEWENTRY);
+		}
+	}
+
+
+	public Course loadReviewForViewing(User user, long reviewId) throws MessageException{
+		Session session = null;
+		try{
+			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
+			String ownerQuery = "select distinct course from Course course " + 
+			"left join fetch course.lecturers lecturer " + 
+			"left join fetch course.tutors tutor " + 
+			"join fetch course.studentGroups studentGroup " + 
+			"join fetch studentGroup.users student " + 
+			"join fetch course.writingActivities writingActivity " + 
+			"join fetch writingActivity.entries docEntry " + 
+			"join fetch docEntry.reviews review " + 
+			"where review.id=:reviewId " +
+			"AND (supervisor=:user OR tutor=:user OR lecturer=:user OR (student=:user AND (docEntry.owner=:user OR docEntry.ownerGroup=studentGroup)))";
+	
+			session = this.getSession();
+			session.beginTransaction();
+			Course course = (Course) session.createQuery(ownerQuery).setParameter("user", user).setParameter("reviewId", reviewId).uniqueResult();
+			session.getTransaction().commit();
 			if (course != null){
-				resultList.add(course.clone());
+				course = course.clone();
 			}
+			return course;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
 		}
-		return resultList;
 	}
 
-	public Rating loadRating(Long ratingId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("id").eq(ratingId)).uniqueResult();
-		session.getTransaction().commit();
-		if (rating != null){
-			rating = rating.clone();
+	public ReviewingActivity loadReviewingActivity(Long reviewingActivityId) throws MessageException{
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			ReviewingActivity reviewingActivity = (ReviewingActivity) session.createCriteria(ReviewingActivity.class).add(Property.forName("id").eq(reviewingActivityId)).uniqueResult();
+			session.getTransaction().commit();
+			if (reviewingActivity != null){
+				reviewingActivity = reviewingActivity.clone();
+			}
+			return reviewingActivity;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIWING_ACTIVITY);
 		}
-		return rating;
 	}
 
-	public Review loadReview(Long reviewId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		Review review = (Review) session.createCriteria(Review.class).add(Property.forName("id").eq(reviewId)).uniqueResult();
-		session.getTransaction().commit();
-		if (review != null){
-			review = review.clone();
+	public ReviewingActivity loadReviewingActivityWhereReview(Review review)throws MessageException {
+		Session session = null;
+		try{
+			String query = "from ReviewingActivity reviewingActivity " + 
+			"join fetch reviewingActivity.entries reviewEntry " + 
+			"where reviewEntry.review=:review";
+			session = this.getSession();
+			session.beginTransaction();
+			ReviewingActivity reviewingActivity = (ReviewingActivity) session.createQuery(query).setParameter("review", review).uniqueResult();
+			session.getTransaction().commit();
+			if (reviewingActivity != null){
+				reviewingActivity = reviewingActivity.clone();
+			}
+			return reviewingActivity;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIWING_ACTIVITY);
 		}
-		return review;
 	}
 
-	public ReviewEntry loadReviewEntryWhereDocEntryAndOwner(DocEntry docEntry, User owner) {
-		String ownerQuery = "select distinct reviewEntry from ReviewEntry reviewEntry " + 
-		"join fetch reviewEntry.docEntry docEntry " + 
-		"join fetch reviewEntry.owner owner " + 
-		"where owner=:owner AND docEntry=:docEntry";
-
-		Session session = this.getSession();
-		session.beginTransaction();
-		ReviewEntry reviewEntry = (ReviewEntry) session.createQuery(ownerQuery).setParameter("owner", owner).setParameter("docEntry", docEntry).uniqueResult();
-		session.getTransaction().commit();
-		if (reviewEntry != null){
-			reviewEntry = reviewEntry.clone();
-		}
-		return reviewEntry;
-	}
-
-	public ReviewEntry loadReviewEntryWhereReview(Review review) {
-		String ownerQuery = "select reviewEntry from ReviewEntry reviewEntry " + 
-		"join fetch reviewEntry.review review " + 
-		"where review=:review";
-
-		Session session = this.getSession();
-		session.beginTransaction();
-		ReviewEntry reviewEntry = (ReviewEntry) session.createQuery(ownerQuery).setParameter("review", review).uniqueResult();
-		session.getTransaction().commit();
-		if (reviewEntry != null){
-			reviewEntry = reviewEntry.clone();
-		}
-		return reviewEntry;
-	}
-
-
-	public Course loadReviewForViewing(User user, long reviewId) {
-		logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
-		String ownerQuery = "select distinct course from Course course " + 
-		"left join fetch course.lecturers lecturer " + 
-		"left join fetch course.tutors tutor " + 
-		"left join fetch course.supervisors supervisor " + 
-		"join fetch course.studentGroups studentGroup " + 
-		"join fetch studentGroup.users student " + 
-		"join fetch course.writingActivities writingActivity " + 
-		"join fetch writingActivity.entries docEntry " + 
-		"join fetch docEntry.reviews review " + 
-		"where review.id=:reviewId " +
-		"AND (supervisor=:user OR tutor=:user OR lecturer=:user OR (student=:user AND (docEntry.owner=:user OR docEntry.ownerGroup=studentGroup)))";
-
-		Session session = this.getSession();
-		session.beginTransaction();
-		Course course = (Course) session.createQuery(ownerQuery).setParameter("user", user).setParameter("reviewId", reviewId).uniqueResult();
-		session.getTransaction().commit();
-		if (course != null){
-			course = course.clone();
-		}
-		return course;
-	}
-
-	public ReviewingActivity loadReviewingActivity(Long reviewingActivityId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		ReviewingActivity reviewingActivity = (ReviewingActivity) session.createCriteria(ReviewingActivity.class).add(Property.forName("id").eq(reviewingActivityId)).uniqueResult();
-		session.getTransaction().commit();
-		if (reviewingActivity != null){
-			reviewingActivity = reviewingActivity.clone();
-		}
-		return reviewingActivity;
-	}
-
-	public ReviewingActivity loadReviewingActivityWhereReview(Review review) {
-		String query = "from ReviewingActivity reviewingActivity " + 
-		"join fetch reviewingActivity.entries reviewEntry " + 
-		"where reviewEntry.review=:review";
-		Session session = this.getSession();
-		session.beginTransaction();
-		ReviewingActivity reviewingActivity = (ReviewingActivity) session.createQuery(query).setParameter("review", review).uniqueResult();
-		session.getTransaction().commit();
-		if (reviewingActivity != null){
-			reviewingActivity = reviewingActivity.clone();
-		}
-		return reviewingActivity;
-	}
-
-	public List<Course> loadUserActivities(int semester, int year, User user) {
-		logger.debug("Loading user activities: user.username=" + user.getUsername());
-		String query = "select distinct course from Course course " 
-			+ "left join fetch course.lecturers lecturer " 
-			+ "left join fetch course.tutors tutor " 
-			+ "where (lecturer=:user OR tutor=:user)"
-			+ "AND (course.semester=:semester AND course.year=:year)"; 
-
-		Session session = this.getSession();
-		session.beginTransaction();
-		List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
-		session.getTransaction().commit();
+	public List<Course> loadUserActivities(int semester, int year, User user) throws MessageException{
 		List<Course> resultList = new ArrayList<Course>();
-		for(Course course : courses){
-			if (course != null){
-				resultList.add(course.clone());
-			}
-		}
-		return resultList;
-	}
-
-	public UserGroup loadUserGroupWhereUser(Course course, User user) {
-		String query = "from Course course " + "join fetch course.studentGroups studentGroup " + 
-					   "join fetch studentGroup.users student " + 
-					   "where course=:course AND student=:user";
-		Session session = this.getSession();
-		session.beginTransaction();
-		course = (Course) session.createQuery(query).setParameter("course", course).setParameter("user", user).uniqueResult();
-		session.getTransaction().commit();
-		if (course == null) {
-			return null;
-		} else {
-			 UserGroup group = course.getStudentGroups().iterator().next();
-			 if (group != null){
-				 group = group.clone();
-			 }
-			 return group;
-		}
-	}
-
-	public Rating loadUserRatingForEditing(User owner, Review review) {
-		logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
-		Session session = this.getSession();
-		session.beginTransaction();
-		Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("owner").eq(owner)).add(Property.forName("review").eq(review)).uniqueResult();
-		session.getTransaction().commit();
-		if (rating != null){
-			rating = rating.clone();
-		}
-		return rating;
-	}
-
-	public Course loadUserReviewForEditing(User user, long reviewId) {
-		logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
-		String query = "select distinct course from Course course " + 
-		"left join fetch course.lecturers lecturer " + 
-		"left join fetch course.tutors tutor " + 
-		"left join fetch course.supervisors supervisor " + 
-		"left join fetch course.automaticReviewers automaticReviewer " +
-		"join fetch course.studentGroups studentGroup " + 
-		"join fetch studentGroup.users student " + 
-		"join fetch course.writingActivities writingActivity " + 
-		"join fetch writingActivity.reviewingActivities reviewingActivity " + 
-		"join fetch reviewingActivity.entries entry " + 
-		"where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) " +
-		"AND entry.owner=:user AND entry.review.id=:reviewId";
-		Session session = this.getSession();
-		session.beginTransaction();
-		Course course = (Course) session.createQuery(query).setParameter("user", user).setParameter("reviewId", reviewId).uniqueResult();
-		session.getTransaction().commit();
-		if (course != null){
-			course = course.clone();
-		}
-		return course;
-	}
-
-	public List<Course> loadUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, User user) {
-		logger.debug("Loading user reviews: user.username=" + user.getUsername());
-		String query = "select distinct course from Course course " 
-			+ "left join fetch course.lecturers lecturer " 
-			+ "left join fetch course.tutors tutor " 
-			+ "left join fetch course.supervisors supervisor " 
-			+ "left join fetch course.automaticReviewers automaticReviewer "
-			+ "join fetch course.studentGroups studentGroup " 
-			+ "join fetch studentGroup.users student " 
-			+ "join fetch course.writingActivities writingActivity " 
-			+ "join fetch writingActivity.reviewingActivities reviewingAcitvity " 
-			+ "join fetch reviewingAcitvity.entries reviewEntry "
-			+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) "
-			+ "AND (reviewEntry.owner=:user)"
-			+ "AND (course.semester=:semester AND course.year=:year)";
-		
-		if (!includeFinishedReviews){
-			query = query + "AND (reviewingAcitvity.status = 1)";	
-		}
+		Session session = null;
+		try{
+			logger.debug("Loading user activities: user.username=" + user.getUsername());
+			String query = "select distinct course from Course course " 
+				+ "left join fetch course.lecturers lecturer " 
+				+ "left join fetch course.tutors tutor " 
+				+ "where (lecturer=:user OR tutor=:user)"
+				+ "AND (course.semester=:semester AND course.year=:year)"; 
+	
+			session = this.getSession();
+			session.beginTransaction();
+			List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
+			session.getTransaction().commit();
 			
+			for(Course course : courses){
+				if (course != null){
+					resultList.add(course.clone());
+				}
+			}
+			return resultList;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
+		}
+	}
+
+	public UserGroup loadUserGroupWhereUser(Course course, User user) throws MessageException{
+		Session session = null;
+		try{
+			String query = "from Course course " + "join fetch course.studentGroups studentGroup " + 
+						   "join fetch studentGroup.users student " + 
+						   "where course=:course AND student=:user";
+			session = this.getSession();
+			session.beginTransaction();
+			course = (Course) session.createQuery(query).setParameter("course", course).setParameter("user", user).uniqueResult();
+			session.getTransaction().commit();
+			if (course == null) {
+				return null;
+			} else {
+				 UserGroup group = course.getStudentGroups().iterator().next();
+				 if (group != null){
+					 group = group.clone();
+				 }
+				 return group;
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_USERGROUP);
+		}
+	}
+
+	public Rating loadUserRatingForEditing(User owner, Review review)throws MessageException {
+		Session session = null;
+		try{
+			logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
+			session = this.getSession();
+			session.beginTransaction();
+			Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("owner").eq(owner)).add(Property.forName("review").eq(review)).uniqueResult();
+			session.getTransaction().commit();
+			if (rating != null){
+				rating = rating.clone();
+			}
+			return rating;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_RATING);
+		}
+	}
+
+	public Course loadUserReviewForEditing(User user, long reviewId) throws MessageException{
+		Session session = null;
+		try{
+			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
+			String query = "select distinct course from Course course " + 
+			"left join fetch course.lecturers lecturer " + 
+			"left join fetch course.tutors tutor " + 
+			"left join fetch course.supervisors supervisor " + 
+			"left join fetch course.automaticReviewers automaticReviewer " +
+			"join fetch course.studentGroups studentGroup " + 
+			"join fetch studentGroup.users student " + 
+			"join fetch course.writingActivities writingActivity " + 
+			"join fetch writingActivity.reviewingActivities reviewingActivity " + 
+			"join fetch reviewingActivity.entries entry " + 
+			"where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) " +
+			"AND entry.owner=:user AND entry.review.id=:reviewId";
+			session = this.getSession();
+			session.beginTransaction();
+			Course course = (Course) session.createQuery(query).setParameter("user", user).setParameter("reviewId", reviewId).uniqueResult();
+			session.getTransaction().commit();
+			if (course != null){
+				course = course.clone();
+			}
+			return course;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+		}
+	}
+
+	public List<Course> loadUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, User user) throws MessageException{
+		Session session = null;
+		List<Course> resultList = new ArrayList<Course>();
+		try{
+			logger.debug("Loading user reviews: user.username=" + user.getUsername());
+			String query = "select distinct course from Course course " 
+				+ "left join fetch course.lecturers lecturer " 
+				+ "left join fetch course.tutors tutor " 
+				+ "left join fetch course.supervisors supervisor " 
+				+ "left join fetch course.automaticReviewers automaticReviewer "
+				+ "join fetch course.studentGroups studentGroup " 
+				+ "join fetch studentGroup.users student " 
+				+ "join fetch course.writingActivities writingActivity " 
+				+ "join fetch writingActivity.reviewingActivities reviewingAcitvity " 
+				+ "join fetch reviewingAcitvity.entries reviewEntry "
+				+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) "
+				+ "AND (reviewEntry.owner=:user)"
+				+ "AND (course.semester=:semester AND course.year=:year)";
 			
-		Session session = this.getSession();
-		session.beginTransaction();
-		List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
-		session.getTransaction().commit();
-		List<Course> resultList = new ArrayList<Course>();
-		for(Course course : courses){
-			if (course != null){
-				resultList.add(course.clone());
+			if (!includeFinishedReviews){
+				query = query + "AND (reviewingAcitvity.status = 1)";	
 			}
+				
+				
+			session = this.getSession();
+			session.beginTransaction();
+			List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
+			session.getTransaction().commit();
+			
+			for(Course course : courses){
+				if (course != null){
+					resultList.add(course.clone());
+				}
+			}
+			return resultList;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
 		}
-		return resultList;
 	}
 
-	public List<Course> loadUserWritingTasks(int semester, int year, User user) {
-		logger.debug("Loading user reviews: user.username=" + user.getUsername());
-		String query = "select distinct course from Course course " 
-			+ "left join fetch course.lecturers lecturer " 
-			+ "left join fetch course.tutors tutor " 
-			+ "left join fetch course.supervisors supervisor " 
-			+ "join fetch course.studentGroups studentGroup " 
-			+ "join fetch studentGroup.users student " 
-			+ "join fetch course.writingActivities writingActivity " 
-			+ "join fetch writingActivity.entries docEntry " 
-			+ "left join fetch docEntry.ownerGroup ownerGroup "
-			+ "left join fetch ownerGroup.users owner "
-			+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user) "
-			+ "AND (docEntry.owner=:user OR owner=:user)"
-			+ "AND (course.semester=:semester AND course.year=:year)";
-		Session session = this.getSession();
-		session.beginTransaction();
-		List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
-		session.getTransaction().commit();
+	public List<Course> loadUserWritingTasks(int semester, int year, User user) throws MessageException{
+		Session session = null;
 		List<Course> resultList = new ArrayList<Course>();
-		for(Course course : courses){
-			if (course != null){
-				resultList.add(course.clone());
+		try{
+			logger.debug("Loading user reviews: user.username=" + user.getUsername());
+			String query = "select distinct course from Course course " 
+				+ "left join fetch course.lecturers lecturer " 
+				+ "left join fetch course.tutors tutor " 
+				+ "left join fetch course.supervisors supervisor " 
+				+ "join fetch course.studentGroups studentGroup " 
+				+ "join fetch studentGroup.users student " 
+				+ "join fetch course.writingActivities writingActivity " 
+				+ "join fetch writingActivity.entries docEntry " 
+				+ "left join fetch docEntry.ownerGroup ownerGroup "
+				+ "left join fetch ownerGroup.users owner "
+				+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user) "
+				+ "AND (docEntry.owner=:user OR owner=:user)"
+				+ "AND (course.semester=:semester AND course.year=:year)";
+			session = this.getSession();
+			session.beginTransaction();
+			List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
+			session.getTransaction().commit();
+			
+			for(Course course : courses){
+				if (course != null){
+					resultList.add(course.clone());
+				}
 			}
+			return resultList;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
 		}
-		return resultList;
 	}
 
-	public WritingActivity loadWritingActivity(long writingActivityId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		WritingActivity writingActivity = (WritingActivity) session.createCriteria(WritingActivity.class).add(Property.forName("id").eq(writingActivityId)).uniqueResult();
-		session.getTransaction().commit();
-		if (writingActivity != null){
-			writingActivity = writingActivity.clone();
+	public WritingActivity loadWritingActivity(long writingActivityId)throws MessageException {
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			WritingActivity writingActivity = (WritingActivity) session.createCriteria(WritingActivity.class).add(Property.forName("id").eq(writingActivityId)).uniqueResult();
+			session.getTransaction().commit();
+			if (writingActivity != null){
+				writingActivity = writingActivity.clone();
+			}
+			return writingActivity;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_WRITING_ACTIVITY);
 		}
-		return writingActivity;
 	}
 	
-	public WritingActivity loadWritingActivityWhereDeadline(Deadline deadline) {
-		String query = "select distinct writingActivity from WritingActivity writingActivity " 
-			+ "join fetch writingActivity.deadlines deadline " 
-			+ "where deadline=:deadline ";
-		Session session = this.getSession();
-		session.beginTransaction();
-		WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
-		session.getTransaction().commit();
-		if (writingActivity != null){
-			writingActivity = writingActivity.clone();
+	public WritingActivity loadWritingActivityWhereDeadline(Deadline deadline) throws MessageException{
+		Session session = null;
+		try{
+			String query = "select distinct writingActivity from WritingActivity writingActivity " 
+				+ "join fetch writingActivity.deadlines deadline " 
+				+ "where deadline=:deadline ";
+			session = this.getSession();
+			session.beginTransaction();
+			WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
+			session.getTransaction().commit();
+			if (writingActivity != null){
+				writingActivity = writingActivity.clone();
+			}
+			return writingActivity;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_WRITING_ACTIVITY);
 		}
-		return writingActivity;
+
 	}
 	
-	public WritingActivity loadWritingActivityWhereDocEntry(DocEntry docEntry) {
-		String query = "from WritingActivity writingActivity " + 
-		"join fetch writingActivity.entries docEntry " + 
-		"where docEntry=:docEntry";
-		Session session = this.getSession();
-		session.beginTransaction();
-		WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("docEntry", docEntry).uniqueResult();
-		session.getTransaction().commit();
-		if (writingActivity != null){
-			writingActivity = writingActivity.clone();
+	public WritingActivity loadWritingActivityWhereDocEntry(DocEntry docEntry) throws MessageException{
+		Session session = null;
+		try{
+			String query = "from WritingActivity writingActivity " + 
+			"join fetch writingActivity.entries docEntry " + 
+			"where docEntry=:docEntry";
+			session = this.getSession();
+			session.beginTransaction();
+			WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("docEntry", docEntry).uniqueResult();
+			session.getTransaction().commit();
+			if (writingActivity != null){
+				writingActivity = writingActivity.clone();
+			}
+			return writingActivity;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_WRITING_ACTIVITY);
 		}
-		return writingActivity;
+
 	}
 
 	public void save(Object object) throws MessageException{
@@ -503,63 +754,216 @@ public class AssignmentDao {
 				session.getTransaction().rollback();
 			}
 			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_SAVE_MESSAGE);
+			throw new MessageException(Constants.EXCEPTION_SAVE);
 		}
 	}
 
-	public Collection<ReviewTemplate> loadReviewTemplates(Organization organization) {
+	public List<ReviewTemplate> loadReviewTemplates(Organization organization) throws MessageException{
 		List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
-		if ( organization != null){
-			String query = "from ReviewTemplate review " + "where review.organization=:organization";
-	        Session session = this.getSession();
-	        session.beginTransaction();
-	        List<ReviewTemplate> reviewTemplates = session.createQuery(query).setParameter("organization", organization).list();
-	        session.getTransaction().commit();
-	        for (ReviewTemplate template:reviewTemplates){
-	        	if (template != null){
-	        		result.add(template.clone());
-	        	}
-	        }
+		Session session = null;
+		try{
+			if ( organization != null){
+				String query = "from ReviewTemplate review " + "where review.organization=:organization";
+		        session = this.getSession();
+		        session.beginTransaction();
+		        List<ReviewTemplate> reviewTemplates = session.createQuery(query).setParameter("organization", organization).list();
+		        session.getTransaction().commit();
+		        for (ReviewTemplate template:reviewTemplates){
+		        	if (template != null){
+		        		result.add(template.clone());
+		        	}
+		        }
+			}
+	 		return result;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
 		}
- 		return result;
+
 	}
 	
-	public ReviewTemplate loadReviewTemplate(Long reviewTemplateId) {
-		Session session = this.getSession();
-		session.beginTransaction();
-		ReviewTemplate reviewTemplate = (ReviewTemplate) session.createCriteria(ReviewTemplate.class).add(Property.forName("id").eq(reviewTemplateId)).uniqueResult();
-		session.getTransaction().commit();
-		if (reviewTemplate != null){
-			reviewTemplate = reviewTemplate.clone();
+	public ReviewTemplate loadReviewTemplate(Long reviewTemplateId) throws MessageException{
+		Session session = null;
+		ReviewTemplate reviewTemplate = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			reviewTemplate = (ReviewTemplate) session.createCriteria(ReviewTemplate.class).add(Property.forName("id").eq(reviewTemplateId)).uniqueResult();
+			session.getTransaction().commit();
+			if (reviewTemplate != null){
+				reviewTemplate = reviewTemplate.clone();
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
 		}
 		return reviewTemplate;
 	}
 
 	public boolean isReviewTemplateInUse(ReviewTemplate reviewTemplate) {
-		String query = "from TemplateReply templateReply " + 
-		"where reviewTemplate=:template";
-		Session session = this.getSession();
-		session.beginTransaction();		 
-		List<TemplateReply> templateReplies = session.createQuery(query).setParameter("template", reviewTemplate).list();
-		session.getTransaction().commit();
-		return templateReplies.size() > 0;
+		Session session = null;
+		boolean result = false;
+		try{
+			String query = "from TemplateReply templateReply " + 
+			"where reviewTemplate=:template";
+			session = this.getSession();
+			session.beginTransaction();		 
+			List<TemplateReply> templateReplies = session.createQuery(query).setParameter("template", reviewTemplate).list();
+			session.getTransaction().commit();
+			return templateReplies.size() > 0;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			return false;
+		}
 	}
 
-	public Collection<DocumentType> loadDocumentTypes(String genre) {
-		String query = "from DocumentType documentType " + 
-		"where genre=:genre";
-		Session session = this.getSession();
-		session.beginTransaction();
-		List<DocumentType> documentTypes = session.createQuery(query).setParameter("genre",genre).list();
-		session.getTransaction().commit();
-		
-		List<DocumentType> types = new ArrayList<DocumentType>();
-		for(DocumentType docType : documentTypes){
-			if (docType != null){
-				types.add(docType.clone());
+	public Collection<DocumentType> loadDocumentTypes(String genre) throws MessageException {
+		Session session = null;
+		try{
+			String query = "from DocumentType documentType " + 
+			"where genre=:genre";
+			session = this.getSession();
+			session.beginTransaction();
+			List<DocumentType> documentTypes = session.createQuery(query).setParameter("genre",genre).list();
+			session.getTransaction().commit();
+			
+			List<DocumentType> types = new ArrayList<DocumentType>();
+			for(DocumentType docType : documentTypes){
+				if (docType != null){
+					types.add(docType.clone());
+				}
 			}
-		}
-		return types;
+			return types;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_DOCUMENT_TYPES);
+		} 
 	}
 	
+	public QuestionReview loadQuestionReview(Review review) throws MessageException{
+		QuestionReview questionReview = new QuestionReview();
+		Session session = null;
+		try{
+			String query = "select distinct questionReview from QuestionReview questionReview " +  
+			"where id=:id";
+
+			session = this.getSession();
+			session.beginTransaction();
+			questionReview =  (QuestionReview) session.createQuery(query).setParameter("id", review.getId()).uniqueResult();
+			session.getTransaction().commit();
+			if (questionReview != null){
+				questionReview = questionReview.clone();
+			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW);
+		}
+		return questionReview;
+	}
+
+	
+	public ReviewReply loadReviewReply(Review review) throws MessageException{
+		ReviewReply reviewReply = new ReviewReply();
+		Session session = null;
+		try{
+			String query = "select distinct reviewReply from ReviewReply reviewReply " +  
+			"where id=:id";
+
+			session = this.getSession();
+			session.beginTransaction();
+			reviewReply =  (ReviewReply) session.createQuery(query).setParameter("id", review.getId()).uniqueResult();
+			session.getTransaction().commit();
+			if (reviewReply != null){
+				reviewReply = reviewReply.clone();
+			}
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW);
+		}
+		return reviewReply;
+	}
+	
+	public Grade loadGrade(Long id) throws MessageException{
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			Grade grade = (Grade) session.createCriteria(Grade.class).add(Property.forName("id").eq(id)).uniqueResult();
+			session.getTransaction().commit();
+			if (grade != null){
+				grade = grade.clone();
+			}
+			return grade;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_GRADE);
+		}
+	}
+	
+	public UserGroup loadUserGroup(Long id) throws MessageException {
+		Session session = null;
+		try{
+			String query = "from UserGroup " +  
+						   "where id=:id";
+			session = this.getSession();
+			session.beginTransaction();
+			UserGroup group = (UserGroup) session.createQuery(query).setParameter("id", id).uniqueResult();
+			session.getTransaction().commit();
+			if (group != null){
+			 group = group.clone();
+			}
+			return group;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_USERGROUP);
+		}
+	}
+	
+	public Review loadReview(long reviewId) throws MessageException{
+		Session session = null;
+		try{
+			String ownerQuery = "from Review review " + 
+								"where review.id=:reviewId ";
+	
+			session = this.getSession();
+			session.beginTransaction();
+			Review review = (Review) session.createQuery(ownerQuery).setParameter("reviewId", reviewId).uniqueResult();
+			session.getTransaction().commit();
+			if (review != null){
+				review = review.clone();
+			}
+			return review;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIWING_ACTIVITY);
+		}
+	}
+
 }

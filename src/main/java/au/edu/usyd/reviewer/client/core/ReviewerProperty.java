@@ -2,6 +2,7 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
 
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,7 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -41,6 +42,7 @@ public class ReviewerProperty implements Serializable {
 	/** The organizations */
 	@OneToMany(mappedBy="property")
 	@LazyCollection(LazyCollectionOption.FALSE)
+	@JsonIgnore
 	private Set<OrganizationProperty> organizationProperties= new HashSet<OrganizationProperty>();
 
 	public ReviewerProperty(){
@@ -68,12 +70,12 @@ public class ReviewerProperty implements Serializable {
 		this.name = name;
 	}
 
-	
+	@JsonIgnore
 	public Set<OrganizationProperty> getOrganizationsProperties() {
 		return organizationProperties;
 	}
 
-
+	@JsonIgnore 
 	public void setOrganizationProperties(Set<OrganizationProperty> organizationProperties) {
 		this.organizationProperties = organizationProperties;
 	}
@@ -123,15 +125,5 @@ public class ReviewerProperty implements Serializable {
 		property.setId(this.getId());
 		property.setName(this.getName());
 		return property;
-	}
-	
-	/**
-	 * Return a boolean to indicate if the property is a password or not
-	 * @return true if property is a password otherwise false;
-	 */
-	public boolean isPassword(){
-		boolean result = Constants.REVIEWER_EMAIL_PASSWORD.equals(this.getName());
-		result |= Constants.REVIEWER_GOOGLE_PASSWORD.equals(this.getName());
-		return result;
 	}
 }

@@ -3,6 +3,8 @@ package au.edu.usyd.reviewer.client.core;
 import java.io.Serializable;
 
 
+
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,6 +21,7 @@ import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+
 
 /**
  * <p>Class used for courses management, include the details of name, year, semester and the if 

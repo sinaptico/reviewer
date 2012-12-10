@@ -150,6 +150,7 @@ public class ActivityForm extends Composite {
 	 * Instantiates a new activity form and populates the "Static" Drop-menus with the "Document Types", "Document genres" and "Activity statuses".  
 	 */
 	public ActivityForm() {
+
 		initWidget(mainPanel);
 		
 		// assessment
@@ -331,15 +332,15 @@ public class ActivityForm extends Composite {
 		activityGrid.setWidget(5, 1, trackReviews);
 	
 
-		HorizontalPanel showStatsPanel = new HorizontalPanel();
-		showStatsPanel.add(showStats);
-		showStatsPanel.add(new Label(" show writing statistics to students."));
+//		HorizontalPanel showStatsPanel = new HorizontalPanel();
+//		showStatsPanel.add(showStats);
+//		showStatsPanel.add(new Label(" show writing statistics to students."));
 
 		Grid feedbackGrid = new Grid(2, 2);
 		feedbackGrid.setWidget(0, 0, new Label("Glosser:"));
 		feedbackGrid.setWidget(0, 1, glosserList);
-		feedbackGrid.setWidget(1, 0, new Label("MyStats:"));
-		feedbackGrid.setWidget(1, 1, showStatsPanel);
+//		feedbackGrid.setWidget(1, 0, new Label("MyStats:"));
+//		feedbackGrid.setWidget(1, 1, showStatsPanel);
 
 		HorizontalPanel groupsPanel = new HorizontalPanel();
 		groupsPanel.add(groups);
@@ -389,7 +390,7 @@ public class ActivityForm extends Composite {
 		VerticalPanel reviewPanel = new VerticalPanel();
 		reviewPanel.add(reviewTable);
 		reviewPanel.add(addReview);
-		
+		mainPanel.clear();
 		mainPanel.add(activityGrid);
 		mainPanel.add(new HTML("<br/><b>Automatic Feedback</b>"));
 		mainPanel.add(feedbackGrid);

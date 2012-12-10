@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
+
 import java.util.Date;
 
 import javax.persistence.Entity;

@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.core;
 
 import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -142,7 +143,6 @@ public class WritingActivity extends Activity<DocEntry> {
 	private List<ReviewingActivity> reviewingActivities = new ArrayList<ReviewingActivity>();
 	
 	/** The grades. */
-	/** MARIELA I add cascade all **/
 	@OneToMany
 	@Cascade(CascadeType.ALL)
 	@LazyCollection(LazyCollectionOption.FALSE)

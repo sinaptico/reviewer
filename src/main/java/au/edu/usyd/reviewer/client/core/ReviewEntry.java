@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.core;
 
 import javax.persistence.Entity;
+
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 

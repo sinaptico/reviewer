@@ -282,8 +282,16 @@ public class ReviewEntryPoint implements EntryPoint {
 					
 					// glosser link
 					if (!writingActivity.getGlosserSite().equals(WritingActivity.GLOSSER_SITE_NONE)) {
-						Anchor glosserLink = new Anchor();
-						UrlLib.glosserUrl(glosserLink,writingActivity.getGlosserSite(), docEntry.getDocumentId());
+						final Anchor glosserLink = new Anchor();
+//						UrlLib.glosserUrl(glosserLink,writingActivity.getGlosserSite(), docEntry.getDocumentId());
+						reviewService.getGlosserUrl(writingActivity.getGlosserSite(), docEntry.getDocumentId(), new AsyncCallback<String>() {
+							public void onFailure(Throwable caught) {
+							    Window.alert("Failed to get Glosser's Host: " + caught.getMessage());
+							}
+							public void onSuccess(String result) {
+								glosserLink.setHref(result);
+							}
+						});
 						//glosserLink.setHref(UrlLib.glosserUrl(writingActivity.getGlosserSite(), docEntry.getDocumentId()));
 						//glosserLink.setHTML("<img style='margin-left:20px; margin-top:-4px;' height='19px' src='images/glosser.png'> <span>(View this document in Glosser)</span></img>");
 						glosserLink.setHTML("<img style='margin-left:5px; margin-top:16px;' height='0px' src='images/glosser.png'><span>(View this document in Glosser)</span></img>");
@@ -468,14 +476,14 @@ public class ReviewEntryPoint implements EntryPoint {
 					if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course, reviewEntry)) {
 						if(!isCourseInstructor(course, reviewEntry) && (review.getEarlySubmitted())){
 							reviewForm.setLocked(true);
-						} else{
+						} else {
 							submitPanel.setWidth("100%");
 							submitPanel.add(thirdStepTitle);
 							//submitPanel.add(saveDate);
 							
-							
+						
 							/***************************  CELL BROWSER (SpeedBack Function) **********************************/
-							if (isCourseInstructor(course, reviewEntry)){
+							if (isCourseInstructor(course, reviewEntry) && !(review instanceof QuestionReview) && !(review instanceof ReviewReply)){
 								final WritingActivity writingActivityForMail = writingActivity;
 								reviewService.getDocumentTypes(writingActivity.getGenre(), new AsyncCallback<Collection<DocumentType>>() {
 	

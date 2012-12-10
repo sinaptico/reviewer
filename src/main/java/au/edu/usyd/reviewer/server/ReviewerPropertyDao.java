@@ -12,6 +12,7 @@ import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
 
 import au.edu.usyd.reviewer.client.core.ReviewerProperty;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 /**
@@ -41,10 +42,22 @@ public class ReviewerPropertyDao extends ObjectDao {
 	
 	@Override
 	protected Object getObject(Long objectId) throws MessageException{
-		Session session = getSession();
-		ReviewerProperty property = (ReviewerProperty) session.createCriteria(ReviewerProperty.class).add(Property.forName("id").eq(objectId)).uniqueResult();
-		if (property != null){
-			property = property.clone();
+		Session session = null;
+		ReviewerProperty property = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			property = (ReviewerProperty) session.createCriteria(ReviewerProperty.class).add(Property.forName("id").eq(objectId)).uniqueResult();
+			if (property != null){
+				property = property.clone();
+			}
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEWER_PROPERTY);
 		}
 		return property;
 
@@ -52,21 +65,43 @@ public class ReviewerPropertyDao extends ObjectDao {
 
 	@Override
 	protected List<Object> getObjects(String name) throws MessageException {
-		Session session = getSession();
-		Criteria criteria = session.createCriteria(ReviewerProperty.class);
-		criteria.add(Restrictions.like("name", name +"%"));
-		criteria.addOrder( Order.asc("name") );
-		List<ReviewerProperty> properties = criteria.list();
+		Session session = null;
 		List<Object> objects = new ArrayList<Object>();
-		objects.addAll(properties);
+		try{
+			session = getSession();
+			session.beginTransaction();
+			Criteria criteria = session.createCriteria(ReviewerProperty.class);
+			criteria.add(Restrictions.like("name", name +"%"));
+			criteria.addOrder( Order.asc("name") );
+			List<ReviewerProperty> properties = criteria.list();
+			objects.addAll(properties);
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEWER_PROPERTIES);
+		}
 		return objects;
 	}
 
 	@Override
 	protected ReviewerProperty getObject(String name) throws MessageException{
-		Session session = getSession();
-		ReviewerProperty property = (ReviewerProperty) session.createCriteria(ReviewerProperty.class).add(Property.forName("name").eq(name)).uniqueResult();
-		property = property.clone();
+		Session session = null;
+		ReviewerProperty property = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			property = (ReviewerProperty) session.createCriteria(ReviewerProperty.class).add(Property.forName("name").eq(name)).uniqueResult();
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEWER_PROPERTY);
+		}
 		return property;
 	}
 	

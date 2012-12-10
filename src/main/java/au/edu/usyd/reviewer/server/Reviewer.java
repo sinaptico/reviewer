@@ -42,13 +42,15 @@ public class Reviewer {
 
 	}
 	public static synchronized AssignmentManager getAssignmentManager() {
-		assignmentManager = new AssignmentManager();
+		if (assignmentManager == null){
+			assignmentManager = new AssignmentManager();
+		}
 		return assignmentManager;
 	}
 	
 	public static synchronized void initializeAssignmentManager(Organization anOrganization) throws Exception{
 		
-		if ((organization == null) || (assignmentManager == null) || (assignmentRepository == null) ||
+		if ((organization == null) || (assignmentManager == null) || (assignmentRepository == null) || 
 			(assignmentManager != null && assignmentManager.getAssignmentRepository() == null) ||
 			(organization != null && anOrganization != null && 
 			(!organization.getId().equals(anOrganization.getId())) || !organization.getGoogleDomain().equals(anOrganization.getGoogleDomain()))){

@@ -52,107 +52,108 @@ public class FileServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
 			initialize(request);
+		
+			String docId = request.getParameter("docId");
+			String docVersion = request.getParameter("docVersion");
+			String tutorial = request.getParameter("tutorial");
+			String fileType = request.getParameter("fileType");
+			String reviewingActivity = request.getParameter("review");
+			
+			DocEntry docEntry = null;
+	
+			File file = null;
+			String filename = null;
+			if (docVersion != null) {
+				Deadline deadline = assignmentDao.loadDeadline(Long.valueOf(docVersion));
+				if (docId != null) {
+					// get document course and activity
+					docEntry = assignmentDao.loadDocEntry(docId);
+					WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
+					Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
+	
+					// check if user owns the document or is a lecturer or tutor
+					if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
+						file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
+						filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
+					} else {
+						// check if user is a reviewer of a document
+						ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user);
+						if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
+							file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
+							filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
+						}
+					}
+				} else if (tutorial != null) {
+					// get course and activity
+					WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
+					Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
+	
+					// check if user is a lecturer or tutor of the course
+					if (course.getLecturers().contains(user)|| course.getTutors().contains(user)) {
+						// check tutorial value
+						if (writingActivity.getTutorial().equals(tutorial) || course.getTutorials().contains(tutorial) && writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL)) {
+							
+							if (reviewingActivity!=null){
+								file = new File(assignmentManager.getDocumentsFolder(course.getId(), Long.valueOf(reviewingActivity), deadline.getId(), tutorial, organization) + ".zip");
+							}else{
+								file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), tutorial, organization) + ".zip");
+							}
+							
+							filename = writingActivity.getName() + " (" + tutorial + ") - " + deadline.getName() + ".zip";
+						}
+					}
+				}
+			}
+	
+			if (StringUtils.equals(fileType, "uploaded")){
+				// check if user is a lecturer or tutor of the course
+				if (docId != null) {				
+					docEntry = assignmentDao.loadDocEntry(docId);
+					WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
+					Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
+					   // check if user is a lecturer or tutor of the course
+					if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
+							filename = docEntry.getFileName();
+							file = new File(UPLOAD_DIRECTORY +"/"+filename);					
+						}		
+				}
+			}
+			
+			// serve file
+			if ((file != null)) {
+				ServletOutputStream out = response.getOutputStream();
+				if (file.exists() && (filename != null)) {
+					response.setContentType("application/octet-stream");
+					response.setHeader("Content-Disposition", "attachment; filename=\"" + FileUtil.escapeFilename(filename) + "\"");			
+					response.setContentLength((int) file.length());
+					logger.info("Serving file: " + file.getAbsolutePath());
+					int length = 0;
+					byte[] bbuf = new byte[1024];
+					DataInputStream in = new DataInputStream(new FileInputStream(file));
+					while ((in != null) && ((length = in.read(bbuf)) != -1)) {
+						out.write(bbuf, 0, length);
+					}
+					in.close();
+				}else{ //empty file				
+					file = new File(EMPTY_FILE);				
+					response.setContentType("application/octet-stream");
+					response.setHeader("Content-Disposition", "attachment; filename=\"" + FileUtil.escapeFilename("Empty.pdf") + "\"");			
+					response.setContentLength((int) file.length());
+					logger.info("Serving empty file: " + file.getAbsolutePath());
+					int length = 0;
+					byte[] bbuf = new byte[1024];
+					DataInputStream in = new DataInputStream(new FileInputStream(file));
+					while ((in != null) && ((length = in.read(bbuf)) != -1)) {
+						out.write(bbuf, 0, length);
+					}
+					in.close();				
+				}
+				out.flush();
+				out.close();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new ServletException(e.getMessage());
-		}
-		String docId = request.getParameter("docId");
-		String docVersion = request.getParameter("docVersion");
-		String tutorial = request.getParameter("tutorial");
-		String fileType = request.getParameter("fileType");
-		String reviewingActivity = request.getParameter("review");
-		
-		DocEntry docEntry = null;
-
-		File file = null;
-		String filename = null;
-		if (docVersion != null) {
-			Deadline deadline = assignmentDao.loadDeadline(Long.valueOf(docVersion));
-			if (docId != null) {
-				// get document course and activity
-				docEntry = assignmentDao.loadDocEntry(docId);
-				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
-				Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
-
-				// check if user owns the document or is a lecturer or tutor
-				if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
-					file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
-					filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
-				} else {
-					// check if user is a reviewer of a document
-					ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user);
-					if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
-						file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
-						filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
-					}
-				}
-			} else if (tutorial != null) {
-				// get course and activity
-				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
-				Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
-
-				// check if user is a lecturer or tutor of the course
-				if (course.getLecturers().contains(user)|| course.getTutors().contains(user)) {
-					// check tutorial value
-					if (writingActivity.getTutorial().equals(tutorial) || course.getTutorials().contains(tutorial) && writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL)) {
-						
-						if (reviewingActivity!=null){
-							file = new File(assignmentManager.getDocumentsFolder(course.getId(), Long.valueOf(reviewingActivity), deadline.getId(), tutorial, organization) + ".zip");
-						}else{
-							file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), tutorial, organization) + ".zip");
-						}
-						
-						filename = writingActivity.getName() + " (" + tutorial + ") - " + deadline.getName() + ".zip";
-					}
-				}
-			}
-		}
-
-		if (StringUtils.equals(fileType, "uploaded")){
-			// check if user is a lecturer or tutor of the course
-			if (docId != null) {				
-				docEntry = assignmentDao.loadDocEntry(docId);
-				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
-				Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
-				   // check if user is a lecturer or tutor of the course
-				if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
-						filename = docEntry.getFileName();
-						file = new File(UPLOAD_DIRECTORY +"/"+filename);					
-					}		
-			}
-		}
-		
-		// serve file
-		if ((file != null)) {
-			ServletOutputStream out = response.getOutputStream();
-			if (file.exists() && (filename != null)) {
-				response.setContentType("application/octet-stream");
-				response.setHeader("Content-Disposition", "attachment; filename=\"" + FileUtil.escapeFilename(filename) + "\"");			
-				response.setContentLength((int) file.length());
-				logger.info("Serving file: " + file.getAbsolutePath());
-				int length = 0;
-				byte[] bbuf = new byte[1024];
-				DataInputStream in = new DataInputStream(new FileInputStream(file));
-				while ((in != null) && ((length = in.read(bbuf)) != -1)) {
-					out.write(bbuf, 0, length);
-				}
-				in.close();
-			}else{ //empty file				
-				file = new File(EMPTY_FILE);				
-				response.setContentType("application/octet-stream");
-				response.setHeader("Content-Disposition", "attachment; filename=\"" + FileUtil.escapeFilename("Empty.pdf") + "\"");			
-				response.setContentLength((int) file.length());
-				logger.info("Serving empty file: " + file.getAbsolutePath());
-				int length = 0;
-				byte[] bbuf = new byte[1024];
-				DataInputStream in = new DataInputStream(new FileInputStream(file));
-				while ((in != null) && ((length = in.read(bbuf)) != -1)) {
-					out.write(bbuf, 0, length);
-				}
-				in.close();				
-			}
-			out.flush();
-			out.close();
 		}
 	}
 
