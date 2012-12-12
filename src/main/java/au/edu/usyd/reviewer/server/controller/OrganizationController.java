@@ -286,10 +286,13 @@ public class OrganizationController extends ReviewerController {
 	}
 	
 	/**
-	 * This method returns a list of review template belong to the organization whose id is equals to the organizationId received as paramter
+	 * This method returns a list of review template belong to the organization whose id is equals to the organizationId received as parameter
+	 * @param page page to show, used in pagination
+	 * @param limit quantity of users per page
 	 * @param request HttpServletRequest to initialize the controller
-	 * @param organizationId id of the organization which the review template belong to
-	 * @return List<ReviewTemplate> list of review template
+	 * @param id long id of the organization which the review template belong to
+	 * @param relationships It can be sections or organization to indicate that the templates will include this relationships otherwise only theirs ids
+	 * @return List<Object> list of review templates
 	 * @throws MessageException message to the user
 	 */
 	@RequestMapping(value="organizations/{id}/templates", method = RequestMethod.GET)

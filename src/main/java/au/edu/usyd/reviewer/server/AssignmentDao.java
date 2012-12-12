@@ -25,6 +25,7 @@ import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewReply;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
+import au.edu.usyd.reviewer.client.core.Section;
 import au.edu.usyd.reviewer.client.core.TemplateReply;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
@@ -1006,5 +1007,28 @@ public class AssignmentDao {
 			throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
 		}
 
+	}
+	
+	public Section loadSection(Long id) throws MessageException {
+		Session session = null;
+		try{
+			String ownerQuery = "from Section section " + 
+								"where section.id=:id ";
+	
+			session = this.getSession();
+			session.beginTransaction();
+			Section section = (Section) session.createQuery(ownerQuery).setParameter("id", id).uniqueResult();
+			session.getTransaction().commit();
+			if (section != null){
+				section = section.clone();
+			}
+			return section;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_SECTION);
+		}
 	}
 }
