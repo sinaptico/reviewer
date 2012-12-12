@@ -9,11 +9,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.util.Constants;
@@ -186,7 +188,7 @@ public class ReviewTemplateController extends ReviewerController{
 	 * @throws MessageException message to the user
 	 */
 	@RequestMapping(value="/reviewtemplates", method = RequestMethod.PUT)
-	public @ResponseBody Map saveReviewTemplate(HttpServletRequest request,ReviewTemplate reviewTemplate) throws MessageException {
+	public @ResponseBody Map<String,Object> saveReviewTemplate(HttpServletRequest request, @RequestBody ReviewTemplate reviewTemplate) throws MessageException {
 		MessageException me = null;
 		try{
 			initialize(request);

@@ -513,7 +513,7 @@ public class CourseController extends ReviewerController {
 		 * @param students list of lecturers users
 		 * @throws MessageException message to the user
 		 */
-		@RequestMapping(value="courses/{id}/students/",method = RequestMethod.PUT)
+		@RequestMapping(value="courses/{id}/students/", method = RequestMethod.PUT)
 		public @ResponseBody void saveStudents(HttpServletRequest request, @PathVariable Long id, 
 													@RequestBody User[] studentsArray,
 													@RequestParam String group,

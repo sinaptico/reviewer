@@ -37,7 +37,7 @@ public class ControllerClient {
 		requestEntity = new HttpEntity<Object>(requestHeaders);
 
 		HttpClient client = new HttpClient();
-		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("superAdmin@demo-sinaptico.cm","reviewer");
+		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("superAdmin@demo-sinaptico.com","reviewer");
 		client.getState().setCredentials(new AuthScope("127.0.0.1", 8888, AuthScope.ANY_REALM), credentials);
 		CommonsClientHttpRequestFactory commons = new CommonsClientHttpRequestFactory(client);
 		restTemplate = new RestTemplate(commons);
