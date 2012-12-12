@@ -223,7 +223,7 @@ private static void addStudent(Long courseId){
 	
 	URL url;
 	try {
-		url = new URL("http://127.0.0.1:8888/v1/courses/"+courseId.toString()+"/students/");
+		url = new URL("http://127.0.0.1:8888/v1/courses/"+courseId.toString()+"/students?group=666&tutorial=mon");
 		
 		String userPassword = "admin@demo-sinaptico.com:reviewer";   
 		String encoding = (new Base64()).encode(userPassword.getBytes());   
@@ -235,10 +235,7 @@ private static void addStudent(Long courseId){
 		conn.setRequestMethod("PUT");
 		conn.setRequestProperty("Content-Type", "application/json");
  			
-		String json = "[{\"id\":11,\"username\":\"testAPI\",\"email\":\"student2@demo-sinaptico.com\",\"wasmuser\":false,\"Organization\":{\"id\":1},\"lastname\":\"For Sinaptico\",\"firstname\":\"student2\",\"role_name\":[\"Admin\"],\"password\":\"7ba917e4e5158c8a9ed6eda08a6ec572\"}]";
-
-
-		
+		String json = "[{\"id\":11,\"username\":\"student\",\"email\":\"student2@demo-sinaptico.com\",\"Organization\":{\"id\":1},\"lastname\":\"For Sinaptico\",\"firstname\":\"student2\",\"role_name\":[\"Guest\"]}]";
 		OutputStream os = conn.getOutputStream();
 		os.write(json.getBytes());
 		os.flush();
@@ -247,7 +244,6 @@ private static void addStudent(Long courseId){
 			System.out.println("Failed : HTTP error code : " + conn.getResponseCode());
 			System.out.println(conn.getResponseMessage());
 		} else {
-		
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					(conn.getInputStream())));
 	 
@@ -266,7 +262,6 @@ private static void addStudent(Long courseId){
 		System.out.println(e.getMessage());
 		e.printStackTrace();
 	}
-			
 }
 
 	/**
@@ -279,30 +274,25 @@ private static void addStudent(Long courseId){
 			// create course
 //			String json ="{\"name\":\"COURSE TEST 666\",\"year\":2012,\"semester\":3,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[],\"writingActivities\":[],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";
 //			String userPassword = "admin@smart-sourcing.com.ar:reviewer";
-////			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
+//			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
 						
 			// update course
 //			json ="{\"id\":48,\"name\":\"COURSE TEST MODIFIED 130\",\"year\":2012,\"semester\":2,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[{\"id\":1}],\"writingActivities\":[{\"id\":28}],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";
 //			userPassword = "admin@smart-sourcing.com.ar:reviewer";
 //			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
 	
-			addLecturer(new Long(27));
-			addTutor(new Long(27));
-//			addStudent(new Long(27));
+//			addLecturer(new Long(27));
+//			addTutor(new Long(27));
+			addStudent(new Long(27));
+
 //			userPassword = "superAdmin@demo-sinaptico.com:reviewer";
 			// add lecturer
 //			json="{\"username\":\"test\",\"email\":\"test@demo-sinaptico.com\",\"wasmuser\":false,\"Organization\":1,\"lastname\":\"Lecturer for API\",\"firstname\":\"test\",\"role_name\":[\"Admin\"],\"password\":null,\"nativeSpeaker\":null}";
 //			save(new URL("http://127.0.0.1:8888/v1/courses/27/lecturers"), json, userPassword);
 			
-//			List<Course> coursesForAdmin = getCoursesForAdmin();
-//			List<Course> coursesForSuperAdmin = getCoursesForSuperAdmin();
-//			if (coursesForAdmin.size() > 0){
-//				getCourse(coursesForAdmin.get(0).getId());
-	//			addLecturer(coursesForAdmin.get(0).getId());
-	//			addTutor(coursesForAdmin.get(0).getId());
-//			}
 //			getCourse(new Long(1));
-	//		deleteCourses(courses);
+//			deleteCourses(courses);
+			
 			System.out.println("/******************* END **********************/");
 		} catch(Exception e){
 			e.printStackTrace();

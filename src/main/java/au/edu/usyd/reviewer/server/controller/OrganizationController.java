@@ -285,58 +285,64 @@ public class OrganizationController extends ReviewerController {
 		}
 	}
 	
-//	/**
-//	 * This method returns a list of review template belong to the organization whose id is equals to the organizationId received as paramter
-//	 * @param request HttpServletRequest to initialize the controller
-//	 * @param organizationId id of the organization which the review template belong to
-//	 * @return List<ReviewTemplate> list of review template
-//	 * @throws MessageException message to the user
-//	 */
-//	@RequestMapping(value="organizations/{id}/templates", method = RequestMethod.GET)
-//	public @ResponseBody List<Object> getReviewTemplates(HttpServletRequest request, @PathVariable Long id,
-//															@RequestParam(value="page", required=false) Integer page,
-//															@RequestParam(value="limit", required=false) Integer limit,
-//															@RequestParam(value="include", required=false) String include,
-//															@RequestParam(value="relationships", required=false) String relationships
-//														) throws MessageException {
-//		
-//		MessageException me = null;
-//		try{
-//			initialize(request);	
-//			if (isAdminOrSuperAdmin()) {
-//				Organization organizationSelected = null;
-//				if (id == null) {
-//					me = new MessageException(Constants.EXCEPTION_ORGANIZATION_NOT_FOUND);
-//					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
-//					throw me;	
-//				} else {
-//					if ( isSuperAdmin() || (isAdmin() && organization.getId().equals(id))){
-//						if (organization.getId().equals(id)){
-//							organizationSelected = organization.clone();
-//						} else {
-//							organizationSelected = organizationManager.getOrganization(id);
-//						}
-//						if (organizationSelected != null){
-//							List<ReviewTemplate> reviewTemplates = new ArrayList<ReviewTemplate>();
-//							reviewTemplates =  assignmentManager.loadReviewTemplates(organizationSelected);
-//							List<Object> reviewTemplatesList = ObjectConverter.convertCollectiontInList(reviewTemplates, include, relationships, 0);
-//							return reviewTemplatesList;
-//						}
-//					} else {
-//						me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
-//						me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
-//						throw me;
-//					}
-//				} 
-//			}
-//		} catch(Exception e){
-//			if (e instanceof MessageException){
-//				throw (MessageException) e;
-//			} else {
-//				e.printStackTrace();
-//				throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
-//			}
-//		}
-//	}
+	/**
+	 * This method returns a list of review template belong to the organization whose id is equals to the organizationId received as parameter
+	 * @param page page to show, used in pagination
+	 * @param limit quantity of users per page
+	 * @param request HttpServletRequest to initialize the controller
+	 * @param id long id of the organization which the review template belong to
+	 * @param relationships It can be sections or organization to indicate that the templates will include this relationships otherwise only theirs ids
+	 * @return List<Object> list of review templates
+	 * @throws MessageException message to the user
+	 */
+	@RequestMapping(value="organizations/{id}/templates", method = RequestMethod.GET)
+	public @ResponseBody List<Object> getReviewTemplates(HttpServletRequest request, @PathVariable Long id,
+															@RequestParam(value="page", required=false) Integer page,
+															@RequestParam(value="limit", required=false) Integer limit,
+															@RequestParam(value="include", required=false) String include,
+															@RequestParam(value="relationships", required=false) String relationships
+														) throws MessageException {
+		
+		MessageException me = null;
+		try{
+			initialize(request);	
+			Organization organizationSelected = null;
+			if (id == null) {
+				me = new MessageException(Constants.EXCEPTION_ORGANIZATION_NOT_FOUND);
+				me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+				throw me;	
+			} else {
+				if ( isSuperAdmin() || (isAdmin() && organization.getId().equals(id))){
+					if (organization.getId().equals(id)){
+						organizationSelected = organization.clone();
+					} else {
+						organizationSelected = organizationManager.getOrganization(id);
+					}
+					if (organizationSelected != null){
+						List<ReviewTemplate> reviewTemplates = new ArrayList<ReviewTemplate>();
+						reviewTemplates =  assignmentManager.loadReviewTemplates(organizationSelected, page, limit);
+						List<Object> reviewTemplatesList = ObjectConverter.convertCollectiontInList(reviewTemplates, include, relationships, 0);
+						return reviewTemplatesList;
+					} else {
+						me = new MessageException(Constants.EXCEPTION_ORGANIZATION_NOT_FOUND);
+						me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+						throw me;	
+					}
+				} else {
+					me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+					me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+					throw me;
+				}
+			} 
+		} catch(Exception e){
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				throw (MessageException) e;
+			} else {
+
+				throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
+			}
+		}
+	}
 
 }

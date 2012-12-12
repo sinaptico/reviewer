@@ -106,6 +106,13 @@ private static CourseManager courseManager = null;
 		return courseDao.loadCourseWhereWritingActivity(writingActivity);
 	}
 	
+	/**
+	 * Return a course with all its relationships
+	 * @param course course without relationships (the objects have only the id)
+	 * @param organization organization of the logged user
+	 * @return Course with all its relationships 
+	 * @throws MessageException message to the logged user
+	 */
 	public Course loadCourseRelationships(Course course, Organization organization) throws MessageException{
 		MessageException me = null;
 		try{
