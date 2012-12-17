@@ -81,6 +81,7 @@ public class AssignmentManager {
 	private FeedbackServiceImpl feedBackService = new FeedbackServiceImpl();
 	private FeedbackTrackingDao feedBackTrackingService = new FeedbackTrackingDao() ;		
 	private CourseDao courseDao = CourseDao.getInstance();
+	private OrganizationManager organizationManager = OrganizationManager.getInstance();
 	
 	public AssignmentManager() {
 	}
@@ -1464,10 +1465,22 @@ public class AssignmentManager {
 	}
 	
 
+	/**
+	 * Return a doc entry with id equals to the id received as parameter
+	 * @param id Long id of the doc entry to look for
+	 * @return DocEntry with id equals to the id received as parameter
+	 * @throws Exception 
+	 */
 	public DocEntry loadDocEntry(Long id) throws Exception{
 		return assignmentDao.loadDocEntryWhereId(id);
 	}
 	
+	/**
+	 * Return the writing activity with all its relationships
+	 * @param activity writing activity with relationships object only with theirs ids
+	 * @return WritingActivity writing activity with its relationships
+	 * @throws MessageException
+	 */
 	public WritingActivity loadWritingActivityRelationships(WritingActivity activity)throws MessageException {
 		MessageException me = null;
 		try{
@@ -1538,7 +1551,126 @@ public class AssignmentManager {
 		return assignmentDao.loadReviewingActivity(id);
 	}
 	
-	public List<ReviewTemplate> loadReviewTemplates(Organization organization) throws MessageException{
-		return assignmentDao.loadReviewTemplates(organization);
+	public List<ReviewTemplate> loadReviewTemplates(Organization organization, Integer page, Integer limit) throws MessageException{
+		return assignmentDao.loadReviewTemplates(organization, page, limit);
+	}
+	
+	/**
+	 * Return a review template with all its relationships
+	 * @param ReviewTemplate review template without relationships (the objects have only the id)
+	 * @param organization organization of the logged user
+	 * @return ReviewTemplate review template with all its relationships 
+	 * @throws MessageException message to the logged user
+	 */
+	public ReviewTemplate loadReviewTemplateRelationships(ReviewTemplate reviewTemplate, Organization organization) throws MessageException{
+		MessageException me = null;
+		try{
+			// Set organization
+			if (reviewTemplate.getOrganization() == null){
+				reviewTemplate.setOrganization(organization);
+			} else {
+				Organization anOrganization = organizationManager.getOrganization(reviewTemplate.getOrganization().getId());
+				if (anOrganization != null){
+					reviewTemplate.setOrganization(anOrganization);
+				} else {
+					me = new MessageException(Constants.EXCEPTION_ORGANIZATION_NOT_FOUND);
+					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+					throw me;
+				}
+			}
+			
+			// load sections
+			List<Section> sections = new ArrayList<Section>();
+			for(Section section :reviewTemplate.getSections()){
+				if (section != null && section.getId() != null){
+					section = assignmentDao.loadSection(section.getId());
+				}
+				sections.add(section);
+			}
+			
+			reviewTemplate.setSections(sections);
+			return reviewTemplate;
+		} catch(Exception e){
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				me = (MessageException) e;
+			} else {
+				me = new MessageException(Constants.EXCEPTION_SAVE_COURSE);
+			}
+			if ( me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			}
+			throw me;
+		}
+	}
+	
+	/**
+	 * Save students in a student group and add it to the course
+	 * @param course course where the users will be students
+	 * @param students students to add to the course
+	 * @param group number of the group of students
+	 * @param tutorial it must be equals to the course tutorial
+	 * @throws Exception
+	 */
+	public void saveStudentsGroup(Course course, Set<User> students, String group, String tutorial) throws Exception {
+				
+		if (!course.getTutorials().contains(tutorial)) {
+			throw new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL);
+		}
+	
+		for(User student: students){
+			// search student by email so it's no necessary get it by organization because the email is unique
+			User user = userDao.getUserByEmail(student.getEmail());
+			if (user == null) {
+				// set the organization
+				if (student.getOrganization() == null){
+					student.setOrganization(course.getOrganization());
+				}
+				// check if student domanin is equals to the organization domain
+				if ( student.getDomain() != null && student.getOrganization() != null && 
+						student.getOrganization().getGoogleDomain()!= null &&
+						student.getDomain().toLowerCase().equals(student.getOrganization().getGoogleDomain().toLowerCase())){	
+					assignmentRepository.createUser(student);
+				} else {
+					throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN);
+				}
+				
+				// wasmuser is true only for Sydney University students
+				student.setWasmuser(false);
+		
+				// Generate a ramdom password
+				student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+				
+				// Students have Guest role
+				student.getRole_name().add(Constants.ROLE_GUEST);
+				
+				// send email notivication with password
+				emailNotifier.sendPasswordNotification(student, course.getName());
+				
+				// encrypt the password with MD5
+				student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
+				
+				// save the user in the database
+				student = userDao.save(student);
+			} else{
+				student.setId(user.getId());
+			}
+		}
+		
+		// create a new user group
+		UserGroup studentGroup = new UserGroup();
+		studentGroup.setTutorial(tutorial);
+		studentGroup.setUsers(students);
+		studentGroup.setName(group);
+		
+		//save the user group
+		assignmentDao.save(studentGroup);
+		
+		//add the user group to the course
+		course.getStudentGroups().add(studentGroup);
+		
+		//save the course in DB
+		course = courseDao.save(course);
+		
 	}
 }

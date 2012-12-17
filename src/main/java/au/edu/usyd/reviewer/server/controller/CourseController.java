@@ -1,7 +1,9 @@
 package au.edu.usyd.reviewer.server.controller;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 
 import java.util.Map;
@@ -190,12 +192,19 @@ public class CourseController extends ReviewerController {
 		MessageException me = null;
 		try{
 			initialize(request);
-			if (isAdminOrSuperAdmin() || isCourseLecturer(courseManager.getCourse(course.getId()))) {
+			boolean isCourseLecturer = isCourseLecturer(courseManager.getCourse(course.getId()));
+			if (isAdminOrSuperAdmin() || isCourseLecturer){
 				course = courseManager.loadCourseRelationships(course,organization);
-				// Before save the course set its organization
-				course = courseManager.saveCourse(course, user);
-				Map<String,Object> courseMap = ObjectConverter.convertObjectInMap(course, "", "",0);
-				return courseMap;
+				if ((isAdmin() || isCourseLecturer) && !organization.getId().equals(course.getOrganization().getId())){
+					me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+					me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+					throw me;
+				} else {
+					// Before save the course set its organization
+					course = courseManager.saveCourse(course, user);
+					Map<String,Object> courseMap = ObjectConverter.convertObjectInMap(course, "", "",0);
+					return courseMap;
+				}
 			} else {
 				me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 				me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
@@ -330,7 +339,7 @@ public class CourseController extends ReviewerController {
 	 * @throws MessageException message to the user
 	 */
 	@RequestMapping(value="courses/{id}/lecturers/",method = RequestMethod.PUT)
-	public @ResponseBody void addLecturer(HttpServletRequest request, @PathVariable Long id, @RequestBody User[] lecturersArray)throws MessageException{
+	public @ResponseBody void saveLecturer(HttpServletRequest request, @PathVariable Long id, @RequestBody User[] lecturersArray)throws MessageException{
 		MessageException me=null;
 		try{
 			initialize(request);
@@ -386,7 +395,7 @@ public class CourseController extends ReviewerController {
 	 * @throws MessageException message to the user
 	 */
 	@RequestMapping(value="courses/{id}/tutors", method = RequestMethod.PUT)
-	public @ResponseBody void addTutor(HttpServletRequest request, @PathVariable Long id, @RequestBody User[] tutorsArray)throws MessageException{
+	public @ResponseBody void saveTutor(HttpServletRequest request, @PathVariable Long id, @RequestBody User[] tutorsArray)throws MessageException{
 		MessageException me = null;
 		try{
 			initialize(request);
@@ -495,6 +504,68 @@ public class CourseController extends ReviewerController {
 			}
 			throw me;
 		}
-	}	
+	}
+		
+		/**
+		 * Add a the list of students to the course with id equals to {id}
+		 * @param request HttpServletRequest to initialize the controller
+		 * @param id id of the course which the students belong to
+		 * @param students list of lecturers users
+		 * @throws MessageException message to the user
+		 */
+		@RequestMapping(value="courses/{id}/students/", method = RequestMethod.PUT)
+		public @ResponseBody void saveStudents(HttpServletRequest request, @PathVariable Long id, 
+													@RequestBody User[] studentsArray,
+													@RequestParam String group,
+													@RequestParam String tutorial
+											  )throws MessageException{
+		MessageException me = null;
+		try{
+			initialize(request);
+			if (isAdminOrSuperAdmin()){
+				if ( id != null){
+					Course course = courseManager.getCourse(id);
+					if (isAdmin() && !organization.getId().equals(course.getOrganization().getId())){
+						me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+						me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+						throw me;
+					}
+					if (course !=  null){
+						Set<User> students = new HashSet<User>();
+						Collections.addAll(students, studentsArray);
+						if (!students.isEmpty()) {
+							assignmentManager.saveStudentsGroup(course,students, group, tutorial);
+						} else {
+							new MessageException(Constants.EXCEPTION_EMPTY_STUDENTS_LIST);
+						}
+					} else {
+						me = new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
+						me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+						throw me;
+					}
+				} else {
+					me = new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
+					me.setStatusCode(Constants.HTTP_CODE_NOT_FOUND);
+					throw me;
+				}
+			}  else{
+				me = new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+				me.setStatusCode(Constants.HTTP_CODE_FORBIDDEN);
+				throw me;
+			}
+		} catch( Exception e){
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				me = (MessageException) e;
+			} else {
+				me = new MessageException(Constants.EXCEPTION_SAVE_STUDENTS);
+			}
+			
+			if ( me.getStatusCode() == 0){
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			}
+			throw me;
+		}
+	}
 		
 }

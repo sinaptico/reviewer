@@ -122,6 +122,7 @@ public class Constants {
 	public static String EXCEPTION_SAVE_TEMPLATE ="Failed to save the template (doc entry)";
 	public static String EXCEPTION_INVALID_LECTURER="Invalid lecturer";
 	public static String EXCEPTION_EMPTY_LECTURERS_LIST="Empty list of lecturers";
+	public static String EXCEPTION_EMPTY_STUDENTS_LIST="Empgy list of students";
 	public static String EXCEPTION_EMPTY_TUTORS_LIST="Empty list of tutors";
 	public static String EXCEPTION_EMPTY_USERS_GROUPS_LIST="Empty list of students groups";
 	public static String EXCEPTION_INVALID_STATUS="Invalid status";
@@ -133,7 +134,8 @@ public class Constants {
 	public static String EXCEPTION_SAVE_WRITING_ACTIVITIES ="Failed to save the writing activity";
 	public static String EXCEPTION_REVIEWING_ACTIVITY_NOT_FOUND="Reviewing activity not found";
 	public static String EXCEPTION_WRITING_ACTIVITY_NOT_EQUALS_ID="The writing activity id is not equals to path id";
-	
+	public static String EXCEPTION_GET_SECTION = "Failed to get the section";
+	public static String EXCEPTION_SAVE_STUDENTS = "Failed to save the students";
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
 	public static String ROLE_ADMIN = "Admin";
