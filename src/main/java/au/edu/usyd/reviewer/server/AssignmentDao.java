@@ -414,6 +414,7 @@ public class AssignmentDao {
 			String ownerQuery = "select distinct course from Course course " + 
 			"left join fetch course.lecturers lecturer " + 
 			"left join fetch course.tutors tutor " + 
+			"left join fetch course.supervisors supervisor " +
 			"join fetch course.studentGroups studentGroup " + 
 			"join fetch studentGroup.users student " + 
 			"join fetch course.writingActivities writingActivity " + 

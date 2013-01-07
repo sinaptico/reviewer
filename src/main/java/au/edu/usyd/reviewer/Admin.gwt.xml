@@ -5,5 +5,4 @@
 	<inherits name='com.google.gwt.visualization.Visualization' />
 	<entry-point class='au.edu.usyd.reviewer.client.admin.AdminEntryPoint' />
 	<source path="client/admin"/>
-	<source path="client/admin"/>
 </module>

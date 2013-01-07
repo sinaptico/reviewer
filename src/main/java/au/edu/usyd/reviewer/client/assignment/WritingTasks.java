@@ -109,65 +109,63 @@ public class WritingTasks extends Composite {
 				//File uploads
 				String UPLOAD_ACTION_URL = "file";
 				if (writingActivity.getStatus() < WritingActivity.STATUS_FINISH){					
-				
-				if (writingActivity.getDocumentType().equals(
-						WritingActivity.DOCUMENT_TYPE_FILE_UPLOAD)) {
-					final FormPanel form = new FormPanel();
-					form.setAction(UPLOAD_ACTION_URL);
-					form.setEncoding(FormPanel.ENCODING_MULTIPART);
-					form.setMethod(FormPanel.METHOD_POST);
-					form.addStyleName("table-center");
-					form.addStyleName("demo-panel-padded");
-					form.setWidth("275px");					
-
-					final VerticalPanel holder = new VerticalPanel();
-					
-					Hidden param = new Hidden();
-					param.setName("docId");					               
-					param.setValue(docEntry.getDocumentId().toString());					
-					holder.add(param);					
-
-					final FileUpload upload = new FileUpload();
-					upload.setName("upload");
-					holder.add(upload);
-					
-					if (docEntry.isUploaded()){
-					  holder.add(new HTML("A file has been already uploaded"));
-					}else{
-					  holder.add(new HTML("No file uploaded"));
-					}
-					
-					holder.add(new HTML("<hr />"));
-
-					holder.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
-					holder.add(new Button("Submit", new ClickListener() {
-						public void onClick(Widget sender) { form.submit();}
-					}));
-
-					form.add(holder);
-
-					form.addFormHandler(new FormHandler() {
-						public void onSubmit(FormSubmitEvent event) {
-      						if (upload.getFilename().length() == 0){      							
-								Window.alert("Please select a file first");
-								event.setCancelled(true);
-							}else if (!upload.getFilename().contains(".pdf")){      							
-								Window.alert("You can upload only PDF files");
-								event.setCancelled(true);
-							}else if (docEntry.isUploaded()){
-								if (!Window.confirm("A file has been already uploaded for this activity, Do you want to overwrite it?")){
-							 		event.setCancelled(true);
-								}															
-							}
+					if (writingActivity.getDocumentType().equals(WritingActivity.DOCUMENT_TYPE_FILE_UPLOAD)) {
+						final FormPanel form = new FormPanel();
+						form.setAction(UPLOAD_ACTION_URL);
+						form.setEncoding(FormPanel.ENCODING_MULTIPART);
+						form.setMethod(FormPanel.METHOD_POST);
+						form.addStyleName("table-center");
+						form.addStyleName("demo-panel-padded");
+						form.setWidth("275px");					
+	
+						final VerticalPanel holder = new VerticalPanel();
+						
+						Hidden param = new Hidden();
+						param.setName("docId");					               
+						param.setValue(docEntry.getDocumentId().toString());					
+						holder.add(param);					
+	
+						final FileUpload upload = new FileUpload();
+						upload.setName("upload");
+						holder.add(upload);
+						
+						if (docEntry.isUploaded()){
+						  holder.add(new HTML("A file has been already uploaded"));
+						}else{
+						  holder.add(new HTML("No file uploaded"));
 						}
 						
-						public void onSubmitComplete(FormSubmitCompleteEvent event) {
-							Window.alert("File successfully uploaded");
-							Window.Location.reload();							
-						}
-					});
-					documentLinks.add(form);
-				}
+						holder.add(new HTML("<hr />"));
+	
+						holder.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
+						holder.add(new Button("Submit", new ClickListener() {
+							public void onClick(Widget sender) { form.submit();}
+						}));
+	
+						form.add(holder);
+	
+						form.addFormHandler(new FormHandler() {
+							public void onSubmit(FormSubmitEvent event) {
+	      						if (upload.getFilename().length() == 0){      							
+									Window.alert("Please select a file first");
+									event.setCancelled(true);
+								}else if (!upload.getFilename().contains(".pdf")){      							
+									Window.alert("You can upload only PDF files");
+									event.setCancelled(true);
+								}else if (docEntry.isUploaded()){
+									if (!Window.confirm("A file has been already uploaded for this activity, Do you want to overwrite it?")){
+								 		event.setCancelled(true);
+									}															
+								}
+							}
+							
+							public void onSubmitComplete(FormSubmitCompleteEvent event) {
+								Window.alert("File successfully uploaded");
+								Window.Location.reload();							
+							}
+						});
+						documentLinks.add(form);
+					}
 				}
 				//////////////////////////////////////////////////////////
 				

@@ -3,6 +3,7 @@ package au.edu.usyd.reviewer.client.login;
 //import java.util.regex.Matcher;
 //import java.util.regex.Pattern;
 
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -77,30 +78,18 @@ public class LoginForm extends Composite {
 	/**
 	 * Validates login.
 	 *
-	 * @param email the email
-	 * @param password the password
+	 * @param email the email of the user
+	 * @param password the password of the user
 	 * @return true, if successful
 	 */
 	private boolean validateLogin(String username, String password) {
-		if (StringUtil.isNotBlank(username) && StringUtil.isNotBlank(password) && isValidEmail(username)) {
+		if (StringUtil.isNotBlank(username) && StringUtil.isNotBlank(password)) {
 			errorLabel.setText("");
 			return true;
 		} else {
-			errorLabel.setText("Invalid username or password.");
+			errorLabel.setText(Constants.EXCEPTION_INVALID_LOGIN);
 			return false;
 		}
 	}
 	
-	/**
-	 * Verify if the email is a valid email or not
-	 * @param email email to verify
-	 * @return true if email is correct otherwise false
-	 */
-	private boolean isValidEmail(String email){
-//		String  expression="^[_a-z0-9-]+(\\.[_a-z0-9-]+)*@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,4})$"; 
-//		Pattern pattern = Pattern.compile(expression,Pattern.CASE_INSENSITIVE); 
-//		Matcher matcher = pattern.matcher(email);
-//		return matcher.matches();
-		return true;
-	}
 }

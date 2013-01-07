@@ -118,7 +118,7 @@ public class Constants {
 	public static String EXCEPTION_SAVE_LECTURERS ="Failed to save the list of lecturers";
 	public static String EXCEPTION_SAVE_TUTORS ="Failed to save ths list of tutors";
 	public static String EXCEPTION_SAVE_USERS_GROUPS ="Failed to save the students groups";
-	public static String EXCEPTION_SAVE_SUPERVISOR ="Failed to save the supervisor";
+//	public static String EXCEPTION_SAVE_SUPERVISOR ="Failed to save the supervisor";
 	public static String EXCEPTION_SAVE_TEMPLATE ="Failed to save the template (doc entry)";
 	public static String EXCEPTION_INVALID_LECTURER="Invalid lecturer";
 	public static String EXCEPTION_EMPTY_LECTURERS_LIST="Empty list of lecturers";
@@ -136,6 +136,11 @@ public class Constants {
 	public static String EXCEPTION_WRITING_ACTIVITY_NOT_EQUALS_ID="The writing activity id is not equals to path id";
 	public static String EXCEPTION_GET_SECTION = "Failed to get the section";
 	public static String EXCEPTION_SAVE_STUDENTS = "Failed to save the students";
+	public static String EXCEPTION_LOGOUT = "Failed to logout the user";
+	public static String MESSAGE_LOGOUT_OK ="You are logged out";
+	public static String EXCEPTION_GOOGLE_USER_HAS_ACCESS = "This user already has access to the document.";
+	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";
+	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
 	public static String ROLE_ADMIN = "Admin";
