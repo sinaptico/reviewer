@@ -42,7 +42,9 @@ import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.report.UserStatsAnalyser;
+import au.edu.usyd.reviewer.server.servlet.LogoutServlet;
 import au.edu.usyd.reviewer.server.util.CalendarUtil;
+import au.edu.usyd.reviewer.server.util.ConnectionUtil;
 
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -404,24 +406,6 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	}
 	
 	public void logout() throws Exception{
-		
-		
-		try{
-			HttpServletRequest request = this.getThreadLocalRequest();
-			HttpSession	 session = request.getSession();
-			if (user != null) {
-				logger.debug("Logging out user: " + user.getEmail());
-			}
-			if (session != null)
-			{
-				session.invalidate();
-			}
-			HttpServletResponse response = this.getThreadLocalResponse();
-//			response.sendError(401,Constants.MESSAGE_LOGOUT_OK);
-//			response.sendRedirect(request.getRequestURL().toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_LOGOUT);
-		}
+		ConnectionUtil.logout(this.getThreadLocalRequest());
 	}
 }
