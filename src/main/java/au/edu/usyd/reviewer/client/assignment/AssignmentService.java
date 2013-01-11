@@ -93,4 +93,6 @@ public interface AssignmentService extends RemoteService {
 	 * @throws Exception the exception
 	 */
 	public Collection<Organization> getOrganizations() throws Exception;
+	
+	public void logout() throws Exception;
 }

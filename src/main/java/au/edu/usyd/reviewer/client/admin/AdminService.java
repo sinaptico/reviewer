@@ -182,4 +182,6 @@ public interface AdminService extends RemoteService {
 	 * @return Collection of integers (years)
 	 */
 	public Collection<Integer> getYears();
+	
+	public void logout() throws Exception;
 }

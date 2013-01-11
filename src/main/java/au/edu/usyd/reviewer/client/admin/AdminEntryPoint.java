@@ -33,8 +33,11 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -49,6 +52,7 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.ui.FlexTable;
 
 //TODO Documentation - include description of GlosserSite
 //TODO Move CSS style to external files
@@ -750,9 +754,8 @@ public class AdminEntryPoint implements EntryPoint {
 		adminPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 		adminPanel.add(mainPanel);
 	
-		
-		RootPanel.get("adminPanel").add(headerPanel);
-		
+	
+			
 		refreshCourseTreeButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {				
@@ -774,11 +777,40 @@ public class AdminEntryPoint implements EntryPoint {
 				setYearsPanel(years); 
 			}
 		});
-			
-	    
+				
+		// Add Logout command
+		Command logoutCommand = new Command(){
+			public void execute() {
+				adminService.logout(new AsyncCallback<Void>(){
+					@Override
+					public void onFailure(Throwable caught) {
+						Window.alert("Logout failed" + caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						Window.Location.replace(GWT.getHostPageBaseURL()+"iWrite.html");
+					}
+				});
+			}
+		};
+
+		// logout header menu
+		MenuBar logoutMenu = new MenuBar(true);
+		logoutMenu.addItem("Logout",logoutCommand);
+		
+		FlexTable headerTable = new FlexTable();
+		headerTable.setSize("100%", "5%");
+		headerTable.setWidget(0, 0, new HTML ("<div "+cssDivStyle +" align='center'><h1 "+cssH1Style +">IWRITE ADMIN PAGE </h1>"));
+		headerTable.setWidget(0, 1, logoutMenu);
+		headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT, HasVerticalAlignment.ALIGN_MIDDLE);
+		headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		RootPanel.get("adminPanel").add(headerTable);
+		RootPanel.get("adminPanel").add(headerPanel);
+		RootPanel.get("adminPanel").add(new HTML("</br>"));
 	    RootPanel.get("adminPanel").add(yearSemesterPanel);
 	    RootPanel.get("adminPanel").add(new HTML("</br>"));
-				
 		RootPanel.get("adminPanel").add(adminPanel);
 		
 //		this.refreshCoursesTree();
@@ -924,14 +956,16 @@ public class AdminEntryPoint implements EntryPoint {
 	
 	private void setLoggedUser(User user){
 		loggedUser = user;
-		headerPanel.add(new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">IWRITE ADMIN PAGE </h1>" ));
 		Organization organization = user.getOrganization();
+//		headerPanel.add(new HTML ("<div "+cssDivStyle +" align='center'><h1 "+cssH1Style +">IWRITE ADMIN PAGE </h1>" ));
 		VerticalPanel userPanel = new VerticalPanel();
 		userPanel.add(new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName()));
 		userPanel.setStyleName("contentDeco");
+		headerPanel.add(new HTML("</br>"));
 		headerPanel.add(userPanel);
 		HTML htmlAssigments = new HTML ("<a href='Assignments.html'><< Go to the Assignments List</a></br></br><img src='images/icon-info.gif'/> If you have selected the option 'Impersonate User' then by clicking the link above you will see the assignments list of that user. </br>In order to go back to your normal 'Assignments list' you have to click the 'Assginments' link at the top of the page again.</div></br>");
 		headerPanel.add(htmlAssigments);
+		
 	}
 	
 	private int getListBoxValuesIndex(ListBox lb, String value) {

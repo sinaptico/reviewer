@@ -2,6 +2,7 @@ package au.edu.usyd.reviewer.server.rpc;
 
 import java.security.Principal;
 
+
 import java.util.Collection;
 
 
@@ -11,6 +12,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +42,9 @@ import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.report.UserStatsAnalyser;
+import au.edu.usyd.reviewer.server.servlet.LogoutServlet;
 import au.edu.usyd.reviewer.server.util.CalendarUtil;
+import au.edu.usyd.reviewer.server.util.ConnectionUtil;
 
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -397,5 +403,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 
 	public Collection<Integer> getYears(){
 		return CalendarUtil.getYears();
+	}
+	
+	public void logout() throws Exception{
+		ConnectionUtil.logout(this.getThreadLocalRequest());
 	}
 }

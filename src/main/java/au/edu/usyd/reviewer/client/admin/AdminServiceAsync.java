@@ -164,4 +164,7 @@ interface AdminServiceAsync {
 	 * @param callback is the collection of integer
 	 */
 	public void getYears(AsyncCallback<Collection<Integer>> callback);
+	
+	
+	public void logout(AsyncCallback<Void> callback);
 }

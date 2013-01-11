@@ -150,7 +150,14 @@ public class AssignmentRepository {
 		  USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
 				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
-					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+					try{
+						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+					} catch(com.google.gdata.util.VersionConflictException vce){
+						vce.printStackTrace();
+						if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
+							throw vce;
+						}
+					}
 					continue USER_LOOP;
 				}
 			}
@@ -356,7 +363,8 @@ public class AssignmentRepository {
 	
 		// if the logged user (who is creating the document) is not equals to the user used to enter to Google Docs then
 		// add permissions to the logged used to access to the course spreadsheet in Google Docs
-		if ( googleUserEmail != null &&  !googleUserEmail.equals(user.getEmail())){
+		if ( googleUserEmail != null && user != null &&  user.getEmail() != null &&
+			 !googleUserEmail.toLowerCase().equals(user.getEmail().toLowerCase())){
 			instructors.getUsers().add(user);
 		}
 		
@@ -396,11 +404,25 @@ public class AssignmentRepository {
 			for (AclEntry aclEntry : aclEntries) {
 				String email = owner.getUsername() + "@" + googleUserServiceImpl.getDomain();
 				if (aclEntry.getScope().getValue().equals(email)) {
-					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+					try{
+						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+					} catch(com.google.gdata.util.VersionConflictException vce){
+						vce.printStackTrace();
+						if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
+							throw vce;
+						}
+					}
 					continue USER_LOOP;
 				}
 			}
-			googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+			try{
+				googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+			} catch(com.google.gdata.util.VersionConflictException vce){
+				vce.printStackTrace();
+				if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
+					throw vce;
+				}
+			}
 		}
 		
 		// delete permissions
@@ -410,7 +432,14 @@ public class AssignmentRepository {
 			//user.setUsername(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
 			if (!owners.contains(user) && aclEntry.getRole().equals(AclRole.WRITER)) {
 				if (docEntry instanceof LogpageDocEntry) {
-					googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());
+					try{
+						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());
+					} catch(com.google.gdata.util.VersionConflictException vce){
+						vce.printStackTrace();
+						if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
+							throw vce;
+						}
+					}
 				}else{
 					aclEntry.delete();
 				}

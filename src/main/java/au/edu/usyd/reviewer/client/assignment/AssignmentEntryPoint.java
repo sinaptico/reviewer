@@ -19,15 +19,19 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.TabPanel;
@@ -107,8 +111,39 @@ public class AssignmentEntryPoint implements EntryPoint {
 		// uncaught exception handler
 		GWT.setUncaughtExceptionHandler( new CustomUncaughtExceptionHandler() );
 		
+		// logout
+		// Add Logout command
+		Command logoutCommand = new Command(){
+			public void execute() {
+				assignmentService.logout(new AsyncCallback<Void>(){
+					@Override
+					public void onFailure(Throwable caught) {
+						Window.alert("Logout failed" + caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						Window.Location.replace(GWT.getHostPageBaseURL()+"iWrite.html");
+					}
+				});
+			}
+		};
+
+		// logout header menu
+		MenuBar logoutMenu = new MenuBar(true);
+		logoutMenu.addItem("Logout",logoutCommand);
+		
+		FlexTable headerTable = new FlexTable();
+		headerTable.setSize("100%", "5%");
+		headerTable.setWidget(0, 0, new HTML ("<h1 "+cssH1Style +">ASSIGNMENTS LIS </h1>"));
+		headerTable.setWidget(0, 1, logoutMenu);
+		headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT, HasVerticalAlignment.ALIGN_MIDDLE);
+		headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
+
 		//Assignment pages header
-		mainPanel.add(new HTML("<h1 "+cssH1Style +" >ASSIGNMENTS LIST</h1></br>"));
+//		mainPanel.add(new HTML("<h1 "+cssH1Style +" >ASSIGNMENTS LIST</h1></br>"));
+		RootPanel.get("mainPanel").add(headerTable);
+		mainPanel.add(new HTML("</br>"));
 		mainPanel.add(new HTML("<p "+cssTextStyle +" >This section of the website provides an environment for students and academics to manage their written assignments, and reviews. The assignment</br> submission system is based on Google Docs. </p></br>"));
 		// Support 
 		// How does the assignment submission system work? Visit our Help page to learn more. If you have trouble, </br>please see the Troubleshooting Guide on the Help page for solutions to common problems or contact <a href='mailto:i.write@sydney.edu.au'>i.write@sydney.edu.au</a> for futher support.
