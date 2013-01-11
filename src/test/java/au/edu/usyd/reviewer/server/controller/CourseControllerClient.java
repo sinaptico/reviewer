@@ -272,9 +272,9 @@ private static void addStudent(Long courseId){
 			System.out.println("/******************* START **********************/");
 			initializeRestTemplate();
 			// create course
-//			String json ="{\"name\":\"COURSE TEST 666\",\"year\":2012,\"semester\":3,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[],\"writingActivities\":[],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";
-//			String userPassword = "admin@smart-sourcing.com.ar:reviewer";
-//			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
+			String json ="{\"name\":\"COURSE TEST 666\",\"year\":2012,\"semester\":3,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[],\"writingActivities\":[],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":2}}";
+			String userPassword = "admin@smart-sourcing.com.ar:reviewer";
+			save(new URL("http://127.0.0.1:8888/v1/courses/"), json, userPassword);
 						
 			// update course
 //			json ="{\"id\":48,\"name\":\"COURSE TEST MODIFIED 130\",\"year\":2012,\"semester\":2,\"folderId\":null,\"templatesFolderId\":null,\"spreadsheetId\":null,\"domainName\":\"smart-sourcing.com.ar\",\"tutorials\":[\"mon\"],\"lecturers\":[{\"id\":9}],\"tutors\":[],\"supervisors\":[],\"studentGroups\":[{\"id\":1}],\"writingActivities\":[{\"id\":28}],\"templates\":[],\"automaticReviewers\":[],\"organization\":{\"id\":1}}";

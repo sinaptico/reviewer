@@ -229,3 +229,11 @@ gridOrganizationPropertyLargButtonColumn{
 	width: 80px;
 } 
 
+.loginDiv{
+	position:absolute;
+     width:300px;
+     height:300px;
+     top:50%;
+     left:50%;
+     margin:-150px 0 0 -200px;
+}

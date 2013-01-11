@@ -27,6 +27,8 @@ import au.edu.usyd.reviewer.server.OrganizationDao;
 import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
+import au.edu.usyd.reviewer.server.servlet.LogoutServlet;
+import au.edu.usyd.reviewer.server.util.ConnectionUtil;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -239,6 +241,10 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 			organizations = organizationManager.getOrganizations();
 		} 
 		return organizations;
+	}
+	
+	public void logout() throws Exception{
+		ConnectionUtil.logout(this.getThreadLocalRequest());
 	}
 }
 	

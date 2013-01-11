@@ -83,4 +83,5 @@ interface AssignmentServiceAsync {
 	 */
 	public void getOrganizations(AsyncCallback<Collection<Organization>> callback);
 
+	public void logout(AsyncCallback<Void> callback);
 }

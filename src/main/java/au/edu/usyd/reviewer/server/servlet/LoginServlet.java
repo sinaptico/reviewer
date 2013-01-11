@@ -15,6 +15,7 @@ import au.edu.usyd.iwrite.security.WasmResponse;
 import au.edu.usyd.iwrite.security.WasmService;
 import au.edu.usyd.iwrite.security.WasmSocketFactory;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
@@ -24,51 +25,40 @@ public class LoginServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private DigitalSigner digitalSigner = Reviewer.getDigitalSigner();
+//	private DigitalSigner digitalSigner = Reviewer.getDigitalSigner();
 		
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		String userId = null;
-
+		String email = null;
 		if (request.getUserPrincipal() != null) {
 			// tomcat sso login
-			userId = request.getUserPrincipal().getName();
-		} else if (request.getParameter("loginName") != null && request.getParameter("sKey") != null) {
-			// url login
-			String sKey = request.getParameter("sKey");
-			String loginName = request.getParameter("loginName");
-			try {
-				if (digitalSigner.verify(loginName, sKey)) {
-					userId = loginName;
-				}
-			} catch (Exception e) {
-				logger.error("Error authenticating user: " + loginName, e);
-			}
+			email = request.getUserPrincipal().getName();
 		} else {
-			// wasm login
-			WasmSocketFactory wasmSocketFactory = new WasmSocketFactory();
-			RandomMessageIDGenerator randomMessageIDGenerator = new RandomMessageIDGenerator();
-			WasmAuthenticationProtocol wasmAuthenticationProtocol = new WasmAuthenticationProtocol(wasmSocketFactory, randomMessageIDGenerator);
-			WasmService wasmService = new WasmService(wasmAuthenticationProtocol);
-			WasmResponse wasmResponse = wasmService.authenticateOrRedirect(request, response);
-			if (wasmResponse != null) {
-				userId = wasmResponse.getLoginName();
-			}
+			
 		}
 
-		if (userId != null) {
-//			user.setUsername(userId);
+		if (email != null) {
 			UserDao userDao = UserDao.getInstance();
 			User user = null;
 			try {
-				user = userDao.getUserByEmail(userId);
+				user = userDao.getUserByEmail(email);
 			} catch (MessageException e) {
 				e.printStackTrace();
 			}
-			request.getSession().setAttribute("user", user);
-			logger.debug("Logging in user: " + user.getEmail());
-			response.sendRedirect(request.getRequestURL().toString().replace("/login", ""));
+			String password = request.getParameter("password");
+			if (password != null && password.equals(user.getPassword())){
+				request.getSession().setAttribute("user", user);
+				logger.debug("Logging in user: " + user.getEmail());
+				if (user.isAdmin() || user.isSuperAdmin()){
+					response.sendRedirect(request.getRequestURL().toString().replace("/Admin.html", ""));
+				} else {
+					response.sendRedirect(request.getRequestURL().toString().replace("/Assignments.html", ""));
+				}
+			} else {
+				response.sendRedirect(request.getRequestURL().toString().replace("/login", ""));
+				throw new IOException(Constants.EXCEPTION_INVALID_LOGIN);
+			}
 		}
 	}
 }
