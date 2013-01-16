@@ -104,6 +104,10 @@ public abstract class ReviewerController {
 	protected boolean isCourseLecturer(Course course) {
 		return user == null ? false : course != null && course.getLecturers().contains(user);
 	}
+	
+	protected boolean isCourseInstructor(Course course) throws Exception {
+		return user == null ? false : course.getLecturers().contains(user) || course.getTutors().contains(user) || course.getSupervisors().contains(user);
+	}
 
 	/**
 	 * Initialize the controller. Obtain the logged user and initialize the Reviewer class
