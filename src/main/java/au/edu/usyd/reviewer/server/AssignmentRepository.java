@@ -13,9 +13,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import glosser.gdata.GoogleDocsServiceImpl;
-import glosser.gdata.GoogleSpreadsheetServiceImpl;
-import glosser.gdata.GoogleUserServiceImpl;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
@@ -25,6 +22,9 @@ import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleSpreadsheetServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleUserServiceImpl;
 
 import com.google.gdata.data.acl.AclEntry;
 import com.google.gdata.data.acl.AclRole;
@@ -149,9 +149,11 @@ public class AssignmentRepository {
 		  List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		  USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
+//				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
+				if (aclEntry.getScope().getValue().equals(owner.getEmail())) {
 					try{
-						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+						//googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getEmail());
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
 						if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
@@ -161,7 +163,8 @@ public class AssignmentRepository {
 					continue USER_LOOP;
 				}
 			}
-			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+//			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getEmail());
 		  }
 		}
 		return docEntry;
@@ -343,7 +346,6 @@ public class AssignmentRepository {
 				student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 				student.getRole_name().add("guest");
 			}
-			
 			// check if student group already exists
 			if (studentGroups.contains(studentGroup)) {
 				studentGroup = studentGroups.get(studentGroups.indexOf(studentGroup));
@@ -402,10 +404,12 @@ public class AssignmentRepository {
 		List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-				String email = owner.getUsername() + "@" + googleUserServiceImpl.getDomain();
+//				String email = owner.getUsername() + "@" + googleUserServiceImpl.getDomain();
+				String email = owner.getEmail();
 				if (aclEntry.getScope().getValue().equals(email)) {
 					try{
-						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+//						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, email);
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
 						if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
@@ -416,7 +420,8 @@ public class AssignmentRepository {
 				}
 			}
 			try{
-				googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
+				googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getEmail());
+				//googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 			} catch(com.google.gdata.util.VersionConflictException vce){
 				vce.printStackTrace();
 				if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
@@ -430,20 +435,33 @@ public class AssignmentRepository {
 			User user = new User();
 			user.setEmail(aclEntry.getScope().getValue());
 			//user.setUsername(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
-			if (!owners.contains(user) && aclEntry.getRole().equals(AclRole.WRITER)) {
+			if (!isAnOwner(owners, user) && aclEntry.getRole().equals(AclRole.WRITER)) {
 				if (docEntry instanceof LogpageDocEntry) {
 					try{
-						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());
+						//googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());
+						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getEmail());
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
 						if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
 							throw vce;
 						}
 					}
-				}else{
+				}else{ 
 					aclEntry.delete();
 				}
 			}
 		}	
-	}	
+	}
+	
+	private boolean isAnOwner(Collection<User> owners, User user) {
+		boolean result = false;
+		for(User owner : owners){
+			if (owner != null && owner.getEmail() != null && user != null &&
+				owner.getEmail().equalsIgnoreCase(user.getEmail())){
+				result = true;
+				break;
+			}
+		}
+		return result;
+	}
 }

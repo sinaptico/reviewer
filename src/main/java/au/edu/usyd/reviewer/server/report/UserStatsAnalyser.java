@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.server.report;
 
 import java.io.IOException;
+
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,10 +12,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import glosser.gdata.GoogleDocsServiceImpl;
 import au.edu.usyd.reviewer.client.admin.report.UserStats;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
 
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.RevisionEntry;
