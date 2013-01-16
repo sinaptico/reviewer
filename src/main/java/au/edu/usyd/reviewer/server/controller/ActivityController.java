@@ -10,6 +10,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,6 +40,8 @@ import au.edu.usyd.reviewer.server.util.ObjectConverter;
 @Controller
 @RequestMapping("/")
 public class ActivityController extends ReviewerController {
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * Delete the writing activity with id equals to {id}

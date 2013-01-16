@@ -33,6 +33,7 @@ import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.util.PDFMergerUtility;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -593,7 +594,7 @@ public class AssignmentManager {
 			if(user == null){
 				//send password notification if not a wasm user
 				if (!lecturer.getWasmuser()){
-					emailNotifier.sendPasswordNotification(lecturer, course.getName());
+					emailNotifier.sendPasswordNotification(lecturer, course.getName()); 
 					lecturer.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
 				}
 				if (lecturer.getOrganization() == null){
@@ -1672,5 +1673,25 @@ public class AssignmentManager {
 		//save the course in DB
 		course = courseDao.save(course);
 		
+	}
+	
+	public Course loadCourseWhereDeadline(Deadline deadline) throws MessageException{
+		return assignmentDao.loadCourseWhereDeadline(deadline);
+	}
+
+	public Grade loadGrade(Deadline deadline, User user) throws MessageException{
+		return assignmentDao.loadGrade(deadline, user);
+	}
+	
+	public void saveGrade(Grade grade) throws Exception {
+		assignmentDao.save(grade);
+	}
+	
+	public  WritingActivity loadWritingActivityWhereDeadline(Deadline deadline) throws Exception {
+		return assignmentDao.loadWritingActivityWhereDeadline(deadline);
+	}
+	
+	public void saveWritingActivity(WritingActivity activity) throws Exception{
+			assignmentDao.save(activity);
 	}
 }
