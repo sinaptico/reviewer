@@ -23,7 +23,7 @@ public class QuestionDao {
 	}
 
 	public List<Question> getQuestion(String docId) {
-		logger.debug("Retrieving question: id=" + docId);
+//		logger.debug("Retrieving question: id=" + docId);
 		String query = "select distinct question from Question question where docId=:docId";
 		Session session = this.getSession();
 		session.beginTransaction();
@@ -40,7 +40,7 @@ public class QuestionDao {
 	}
 
 	public List<QuestionScore> getScore(Question question) {
-		logger.debug("Retrieving score!");
+//		logger.debug("Retrieving score!");
 		String query = "select distinct score from QuestionScore score" + " join fetch score.question question " + "where question=:question";
 		Session session = this.getSession();
 		session.beginTransaction();
@@ -55,7 +55,7 @@ public class QuestionDao {
 
 	public void saveQuestion(Question question) {
 
-		logger.debug("Saving question");
+//		logger.debug("Saving question");
 		Session session = this.getSession();
 		session.beginTransaction();
 		session.saveOrUpdate(question);
@@ -63,7 +63,7 @@ public class QuestionDao {
 	}
 
 	public void saveScore(QuestionScore questionScore) {
-		logger.debug("Saving score!");
+//		logger.debug("Saving score!");
 		Session session = this.getSession();
 		session.beginTransaction();
 		session.saveOrUpdate(questionScore);
@@ -71,7 +71,7 @@ public class QuestionDao {
 	}
 
 	public void saveScoreAndDocOwner(QuestionScore questionScore, User user) {
-		logger.debug("Saving score!");
+//		logger.debug("Saving score!");
 		Session session = this.getSession();
 		session.beginTransaction();
 		session.update(user);
@@ -80,7 +80,7 @@ public class QuestionDao {
 	}
 
 	public List<Question> searchQuestions(User user, String docId) {
-		logger.debug("Geting Question List from user:" + user.getUsername() + "Doc:" + docId);
+//		logger.debug("Geting Question List from user:" + user.getUsername() + "Doc:" + docId);
 		Session session = this.getSession();
 		session.beginTransaction();
 		String query = "select distinct question from Question question join fetch question.owner owner " + "where docId=:docId AND owner=:user";

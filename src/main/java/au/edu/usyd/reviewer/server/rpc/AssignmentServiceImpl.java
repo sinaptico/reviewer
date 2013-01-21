@@ -129,7 +129,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 		initialize();
 		User mockedUser = getMockedUser();
 		if ( mockedUser != null){
-			logger.info("Getting user details, email=" + mockedUser.getEmail());
+//			logger.info("Getting user details, email=" + mockedUser.getEmail());
 		} else {
 			mockedUser = user;
 		}
@@ -139,7 +139,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 	@Override
 	public User updateUserPassword(User user, String newPassword) throws Exception {
 		initialize();
-		logger.info("Changing user password, email =" + user.getEmail());
+//		logger.info("Changing user password, email =" + user.getEmail());
 		User storedUser = userDao.load(user.getId());
 		
 		String typedPasswordDigested = RealmBase.Digest(user.getPassword(), "MD5",null);
@@ -178,7 +178,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 			if  (user == null){
 				user = userDao.getUserByEmail(principal.getName());
 				request.getSession().setAttribute("user", user);
-				logger.info("Logged User: " + user.getEmail());
+//				logger.info("Logged User: " + user.getEmail());
 			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
 				user = userDao.getUserByEmail(principal.getName());
 				request.getSession().setAttribute("user", user);

@@ -67,7 +67,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		initialize();
 		if (isAdminOrSuperAdmin()) {
 			try {
-				assignmentManager.deleteCourse(course);
+				if (course != null){
+					assignmentManager.deleteCourse(course);
+					course = course.clone();
+				} else {
+					throw new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
+				}
 				return course;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -83,7 +88,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		initialize();
 		if (isAdminOrSuperAdmin() || isCourseLecturer(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) {
 			try {
-				assignmentManager.deleteActivity(writingActivity);
+				if (writingActivity != null){
+					assignmentManager.deleteActivity(writingActivity);
+					writingActivity = writingActivity.clone();
+				} else {
+					throw new MessageException(Constants.EXCEPTION_WRITING_ACTIVITY_COURSE_NOT_FOUND);
+				}
 				return writingActivity;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -186,7 +196,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 			User mockedUser = userDao.getUserByEmail(email);
 			if (mockedUser != null){
-				logger.info("Mocking user: " + mockedUser.getEmail());
+//				logger.info("Mocking user: " + mockedUser.getEmail());
 				this.getThreadLocalRequest().getSession().setAttribute("mockedUser", mockedUser);
 				return mockedUser;
 			} else{
@@ -311,7 +321,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		initialize();
 		if (isAdminOrSuperAdmin()) {
 			try {
-				assignmentManager.deleteReviewTemplate(reviewTemplate);
+				if ( reviewTemplate != null){
+					assignmentManager.deleteReviewTemplate(reviewTemplate);
+					reviewTemplate = reviewTemplate.clone();
+				} else {
+					throw new MessageException(Constants.EXCEPTION_REVIEW_TEMPLATE_NOT_FOUND);
+				}
 				return reviewTemplate;
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -113,6 +113,8 @@ public class Course implements Serializable {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Organization organization;
 	
+	private boolean deleted = false;
+	
 	public Course(){}
 	
 	/* (non-Javadoc)
@@ -440,6 +442,16 @@ public class Course implements Serializable {
 
 	public void setOrganization(Organization organization) {
 		this.organization = organization;
+	}
+	
+	
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deteled) {
+		this.deleted = deteled;
 	}
 
 	public Course clone(){

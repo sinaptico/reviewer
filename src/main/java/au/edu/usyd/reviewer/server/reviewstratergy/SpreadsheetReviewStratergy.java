@@ -144,6 +144,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 			File empty = new File(organization.getEmptyDocument());
 			if (empty.length() == file.length()){return true;}			
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("Error reading empty document.", e);					
 		}	
 
@@ -173,6 +174,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 			WorksheetEntry worksheetEntry = assignmentRepository.getGoogleSpreadsheetServiceImpl().getSpreadsheetWorksheets(spreadsheetEntry).get(1);
 			listEntries = assignmentRepository.getGoogleSpreadsheetServiceImpl().getWorksheetRows(worksheetEntry);
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("Failed to alloation reviews", e);
 		}
 		return listEntries;

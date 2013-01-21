@@ -238,6 +238,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 						}
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					logger.error("Error Sending email notification. Error: "+e.getMessage()+" - ReviewingActivity: "+reviewingActivity.getName());
 				}
 				

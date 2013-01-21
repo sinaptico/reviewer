@@ -89,7 +89,7 @@ public class AssignmentRepository {
 	public void createActivity(Course course, WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException,MessageException {
 		try{
 			String folderName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
-			logger.debug("FolderName " + folderName + " course folder Id " + course.getFolderId());
+//			logger.debug("FolderName " + folderName + " course folder Id " + course.getFolderId());
 			FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
 			writingActivity.setFolderId(folderEntry.getResourceId());
 		} catch(ResourceNotFoundException e){
@@ -177,6 +177,7 @@ public class AssignmentRepository {
 			if (e.getErrorCode().equals(AppsForYourDomainErrorCode.EntityExists)) {
 				// continue
 			} else {
+				e.printStackTrace();
 				logger.error("Failed to save user", e);
 				throw e;
 			}
@@ -224,10 +225,12 @@ public class AssignmentRepository {
 						}
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					logger.error("Error updating document permission.", e);
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("Error getting folder documents.", e);
 		}
 	}

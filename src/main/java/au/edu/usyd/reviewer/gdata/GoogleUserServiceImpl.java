@@ -58,7 +58,7 @@ public class GoogleUserServiceImpl {
     }
 
     public UserEntry createUser(String username, String firstname, String lastname, String password) throws AppsForYourDomainException, ServiceException, IOException {
-        logger.info("Creating user: id='" + username + "' firstname='" + firstname + "' lastname='" + lastname + "'");
+//        logger.info("Creating user: id='" + username + "' firstname='" + firstname + "' lastname='" + lastname + "'");
         UserEntry entry = new UserEntry();
         Login login = new Login();
         login.setAgreedToTerms(true);
@@ -75,7 +75,7 @@ public class GoogleUserServiceImpl {
     }
 
     public void deleteUser(String username) throws AppsForYourDomainException, ServiceException, IOException {
-        logger.info("Deleting user: id='" + username + "'");
+//        logger.info("Deleting user: id='" + username + "'");
         URL deleteUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
         userService.delete(deleteUrl);
     }
@@ -85,7 +85,7 @@ public class GoogleUserServiceImpl {
     }
 
     public UserEntry retrieveUser(String username) throws AppsForYourDomainException, ServiceException, IOException {
-        logger.info("Retrieving user: id='" + username + "'");
+//        logger.info("Retrieving user: id='" + username + "'");
         URL retrieveUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
         return userService.getEntry(retrieveUrl, UserEntry.class);
     }

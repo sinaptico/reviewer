@@ -170,6 +170,38 @@ public class AdminEntryPoint implements EntryPoint {
 		// uncaught exception handler
 		GWT.setUncaughtExceptionHandler( new CustomUncaughtExceptionHandler() );
 		
+		// Glosser sites panel
+		final ShowSitesComposite glosserPanel = new ShowSitesComposite();
+		glosserService.getAllSites(new AsyncCallback<List<SiteForm>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Failed to get Glosser sites: " + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(final List<SiteForm> sites) {
+				glosserSites = sites;
+				glosserService.getToolList(new AsyncCallback<List<String>>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(final List<String> tools) {
+						glosserPanel.setSitesAndTools(sites, tools);
+					}
+				});
+			}
+		});
+
+		final TabLayoutPanel tabs = new TabLayoutPanel(25, Unit.PX);
+		tabs.add(new ScrollPanel(assignmentsPanel), "Assignments");
+		tabs.add(new ScrollPanel(gradeBookPanel), "GradeBook");
+		tabs.add(new ScrollPanel(reportsPanel), "Reports");
+		tabs.add(new ScrollPanel(glosserPanel), "Glosser");
+		tabs.add(new ScrollPanel(reviewTemplatesContentPanel), "Review Templates");
+		
 		// semesters 
 		courseSemester.addItem("1", "1");
 		courseSemester.addItem("2", "2");
@@ -204,33 +236,7 @@ public class AdminEntryPoint implements EntryPoint {
 				}
 			});
 		} 	
-		
-		
-		// Glosser sites panel
-		final ShowSitesComposite glosserPanel = new ShowSitesComposite();
-		glosserService.getAllSites(new AsyncCallback<List<SiteForm>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				Window.alert("Failed to get Glosser sites: " + caught.getMessage());
-			}
-
-			@Override
-			public void onSuccess(final List<SiteForm> sites) {
-				glosserSites = sites;
-				glosserService.getToolList(new AsyncCallback<List<String>>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
-					}
-
-					@Override
-					public void onSuccess(final List<String> tools) {
-						glosserPanel.setSitesAndTools(sites, tools);
-					}
-				});
-			}
-		});
-		
+				
 		
 		// Save Course
 		Command newCourseCmd = new Command() {
@@ -242,25 +248,30 @@ public class AdminEntryPoint implements EntryPoint {
 				createButton.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
-						createButton.updateStateSubmitting();
-						adminService.saveCourse(courseForm.getCourse(), new AsyncCallback<Course>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								if (caught instanceof MessageException){
-									Window.alert(caught.getMessage());
-								} else {
-									Window.alert("Failed to create course: " + caught.getMessage());
+						Course course = courseForm.getCourse();
+						if (!StringUtil.isBlank(course.getName())){
+							createButton.updateStateSubmitting();
+							adminService.saveCourse(course, new AsyncCallback<Course>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									if (caught instanceof MessageException){
+										Window.alert(caught.getMessage());
+									} else {
+										Window.alert("Failed to create course: " + caught.getMessage());
+									}
+									createButton.updateStateSubmit();
 								}
-								createButton.updateStateSubmit();
-							}
 
-							@Override
-							public void onSuccess(Course course) {
-								dialogBox.hide();
-								refreshCoursesTree();
-								createButton.updateStateSubmit();
-							}
-						});
+								@Override
+								public void onSuccess(Course course) {
+									dialogBox.hide();
+									refreshCoursesTree();
+									createButton.updateStateSubmit();
+								}
+							});
+						} else {
+							Window.alert("The name of the course is empty, this field is mandatory.");
+						}
 					}
 				});
 
@@ -476,7 +487,7 @@ public class AdminEntryPoint implements EntryPoint {
 			@Override
 			public void onSelection(SelectionEvent<TreeItem> event) {
 				final TreeItem treeItem = event.getSelectedItem();
-
+				tabs.selectTab(0);
 				if (treeItem.getUserObject() instanceof Course) {
 					Course course = (Course) treeItem.getUserObject();
 					activityLabel.setHTML("<b>" + course.getName() + "</b>");
@@ -625,8 +636,8 @@ public class AdminEntryPoint implements EntryPoint {
     	reviewTemplateTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
 			@Override
 			public void onSelection(SelectionEvent<TreeItem> event) {
-				final TreeItem treeItem = event.getSelectedItem();
-
+					final TreeItem treeItem = event.getSelectedItem();
+					tabs.selectTab(4);
 					ReviewTemplate reviewTemplate = (ReviewTemplate) treeItem.getUserObject();
 					activityLabel.setHTML("<b>" + reviewTemplate.getName() + "</b>");
 					final ReviewTemplateForm reviewTemplateForm = new ReviewTemplateForm();
@@ -714,12 +725,12 @@ public class AdminEntryPoint implements EntryPoint {
     	});
     	
     	
-		TabLayoutPanel tabs = new TabLayoutPanel(25, Unit.PX);
-		tabs.add(new ScrollPanel(assignmentsPanel), "Assignments");
-		tabs.add(new ScrollPanel(gradeBookPanel), "GradeBook");
-		tabs.add(new ScrollPanel(reportsPanel), "Reports");
-		tabs.add(new ScrollPanel(glosserPanel), "Glosser");
-		tabs.add(new ScrollPanel(reviewTemplatesContentPanel), "Review Templates");
+//		TabLayoutPanel tabs = new TabLayoutPanel(25, Unit.PX);
+//		tabs.add(new ScrollPanel(assignmentsPanel), "Assignments");
+//		tabs.add(new ScrollPanel(gradeBookPanel), "GradeBook");
+//		tabs.add(new ScrollPanel(reportsPanel), "Reports");
+//		tabs.add(new ScrollPanel(glosserPanel), "Glosser");
+//		tabs.add(new ScrollPanel(reviewTemplatesContentPanel), "Review Templates");
 		tabs.setPixelSize(690, 650);
 		tabs.selectTab(0);
 

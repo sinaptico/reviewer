@@ -33,7 +33,7 @@ public class Reviewer {
 			config = new PropertiesConfiguration("reviewer.properties");
 			for (Iterator<String> keys = config.getKeys(); keys.hasNext();) {
 				String property = keys.next();
-				logger.debug("Setting property: " + property + "=" + config.getString(property));
+//				logger.debug("Setting property: " + property + "=" + config.getString(property));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -87,6 +87,7 @@ public class Reviewer {
 			try {
 				digitalSigner = new DigitalSigner(organization.getPrivateKeyPath(), organization.getPublicKeyPath());
 			} catch (Throwable e) {
+				e.printStackTrace();
 				logger.error("Failed to initialise digital signer.", e);
 			}
 		}
@@ -100,6 +101,7 @@ public class Reviewer {
 			try {
 				sessionFactory = new AnnotationConfiguration().configure().buildSessionFactory();
 			} catch (Throwable e) {
+				e.printStackTrace();
 				logger.error("Failed to initialise hibernate session factory.", e);
 			}
 		}
@@ -129,7 +131,7 @@ public class Reviewer {
 		for (OrganizationProperty property : organization.getOrganizationProperties()){
 			String propertyName = property.getProperty().getName();
 			String value = property.getValue();
-			logger.debug("Setting property: " + property + "=" + value);
+//			logger.debug("Setting property: " + property + "=" + value);
 			if (String.valueOf(propertyName).startsWith("system.")) {
 				System.setProperty(StringUtils.substringAfter(propertyName, "system."), value);
 			}

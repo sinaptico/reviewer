@@ -2,7 +2,9 @@ package au.edu.usyd.reviewer.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -69,7 +71,8 @@ public class AssignmentDao {
 			String query = "select distinct course from Course course " 
 				+ "join fetch course.writingActivities writingActivity " 
 				+ "join fetch writingActivity.deadlines deadline " 
-				+ "where deadline=:deadline";
+				+ "where deadline=:deadline "
+				+ " and course.deleted = false and writingActivity.deleted = false";
 			session = this.getSession();
 			session.beginTransaction();
 			Course course = (Course) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
@@ -94,7 +97,8 @@ public class AssignmentDao {
 			String query = "from Course course " + 
 			"join fetch course.writingActivities writingActivity " + 
 			"join fetch writingActivity.reviewingActivities reviewingActivity " +
-			"where reviewingActivity=:reviewingActivity";
+			"where reviewingActivity=:reviewingActivity " +
+			" and course.deleted = false and writingActivity.deleted = false ";
 			session = this.getSession();
 			session.beginTransaction();
 			Course course = (Course) session.createQuery(query).setParameter("reviewingActivity", reviewingActivity).uniqueResult();
@@ -118,7 +122,8 @@ public class AssignmentDao {
 		try{
 			String query = "from Course course " + 
 			"join fetch course.writingActivities writingActivity " + 
-			"where writingActivity=:writingActivity";
+			"where writingActivity=:writingActivity and course.deleted=false "+
+			" and writingActivity.deleted = false";
 			session = this.getSession();
 			session.beginTransaction();
 			Course course = (Course) session.createQuery(query).setParameter("writingActivity", writingActivity).uniqueResult();
@@ -222,7 +227,7 @@ public class AssignmentDao {
 		try{
 			String query = "from Activity activity " + 
 			"join fetch activity.entries docEntry " + 
-			"where activity=:activity AND docEntry.ownerGroup=:ownerGroup";
+			"where activity=:activity AND docEntry.ownerGroup=:ownerGroup and activity.deleted = false";
 			session = this.getSession();
 			session.beginTransaction();
 			writingActivity = (WritingActivity) session.createQuery(query).setParameter("activity", writingActivity).setParameter("ownerGroup", ownerGroup).uniqueResult();
@@ -250,7 +255,7 @@ public class AssignmentDao {
 		try{
 			String query = "from Activity activity " + 
 			"join fetch activity.entries docEntry " + 
-			"where activity=:activity AND docEntry.owner=:user";
+			"where activity=:activity AND docEntry.owner=:user AND activity.deleted = false";
 			session = this.getSession();
 			session.beginTransaction();
 			writingActivity = (WritingActivity) session.createQuery(query).setParameter("activity", writingActivity).setParameter("user", user).uniqueResult();
@@ -296,7 +301,9 @@ public class AssignmentDao {
 	public List<Course> loadLecturerCourses(Integer semester, Integer year, User lecturer) throws MessageException{
 		Session session = null;
 		try{
-			String query = "from Course course " + "join fetch course.lecturers lecturer " + "where lecturer=:lecturer and course.semester=:semester AND course.year=:year";
+			String query = "from Course course " + 
+						   "join fetch course.lecturers lecturer " + 
+						   "where lecturer=:lecturer and course.semester=:semester AND course.year=:year AND course.deleted=false";
 			session = this.getSession();
 			session.beginTransaction();
 			List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).setParameter("lecturer", lecturer).list();
@@ -304,6 +311,13 @@ public class AssignmentDao {
 			List<Course> resultList = new ArrayList<Course>();
 			for(Course course : courses){
 				if (course != null){
+					Set<WritingActivity> activities = new HashSet<WritingActivity>();
+					for(WritingActivity activity : course.getWritingActivities()){
+						if (!activity.isDeleted()){
+							activities.add(activity);	
+						}
+					}
+					course.setWritingActivities(activities);
 					resultList.add(course.clone());
 				}
 			}
@@ -410,7 +424,7 @@ public class AssignmentDao {
 	public Course loadReviewForViewing(User user, long reviewId) throws MessageException{
 		Session session = null;
 		try{
-			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
+//			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
 			String ownerQuery = "select distinct course from Course course " + 
 			"left join fetch course.lecturers lecturer " + 
 			"left join fetch course.tutors tutor " + 
@@ -421,7 +435,8 @@ public class AssignmentDao {
 			"join fetch writingActivity.entries docEntry " + 
 			"join fetch docEntry.reviews review " + 
 			"where review.id=:reviewId " +
-			"AND (supervisor=:user OR tutor=:user OR lecturer=:user OR (student=:user AND (docEntry.owner=:user OR docEntry.ownerGroup=studentGroup)))";
+			"AND (supervisor=:user OR tutor=:user OR lecturer=:user OR (student=:user AND (docEntry.owner=:user OR docEntry.ownerGroup=studentGroup))) " +
+			" and course.deleted = false AND writingActivity.deleted = false";
 	
 			session = this.getSession();
 			session.beginTransaction();
@@ -445,7 +460,9 @@ public class AssignmentDao {
 		try{
 			session = this.getSession();
 			session.beginTransaction();
-			ReviewingActivity reviewingActivity = (ReviewingActivity) session.createCriteria(ReviewingActivity.class).add(Property.forName("id").eq(reviewingActivityId)).uniqueResult();
+			ReviewingActivity reviewingActivity = (ReviewingActivity) session.createCriteria(ReviewingActivity.class)
+																			 .add(Property.forName("id").eq(reviewingActivityId))
+																			 .add(Property.forName("deleted").eq(false)).uniqueResult();
 			session.getTransaction().commit();
 			if (reviewingActivity != null){
 				reviewingActivity = reviewingActivity.clone();
@@ -465,10 +482,11 @@ public class AssignmentDao {
 		try{
 			String query = "from ReviewingActivity reviewingActivity " + 
 			"join fetch reviewingActivity.entries reviewEntry " + 
-			"where reviewEntry.review=:review";
+			"where reviewEntry.review=:review and reviewingActivity.deleted=false";
 			session = this.getSession();
 			session.beginTransaction();
-			ReviewingActivity reviewingActivity = (ReviewingActivity) session.createQuery(query).setParameter("review", review).uniqueResult();
+			ReviewingActivity reviewingActivity = (ReviewingActivity) session.createQuery(query)
+																			 .setParameter("review", review).uniqueResult();
 			session.getTransaction().commit();
 			if (reviewingActivity != null){
 				reviewingActivity = reviewingActivity.clone();
@@ -487,12 +505,13 @@ public class AssignmentDao {
 		List<Course> resultList = new ArrayList<Course>();
 		Session session = null;
 		try{
-			logger.debug("Loading user activities: user.username=" + user.getUsername());
+//			logger.debug("Loading user activities: user.username=" + user.getUsername());
 			String query = "select distinct course from Course course " 
 				+ "left join fetch course.lecturers lecturer " 
 				+ "left join fetch course.tutors tutor " 
 				+ "where (lecturer=:user OR tutor=:user)"
-				+ "AND (course.semester=:semester AND course.year=:year)"; 
+				+ "AND (course.semester=:semester AND course.year=:year) " 
+				+ " and course.deleted = false";
 	
 			session = this.getSession();
 			session.beginTransaction();
@@ -501,6 +520,13 @@ public class AssignmentDao {
 			
 			for(Course course : courses){
 				if (course != null){
+					Set<WritingActivity> activities = new HashSet<WritingActivity>();
+					for(WritingActivity activity : course.getWritingActivities()){
+						if (!activity.isDeleted()){
+							activities.add(activity);	
+						}
+					}
+					course.setWritingActivities(activities);
 					resultList.add(course.clone());
 				}
 			}
@@ -519,7 +545,8 @@ public class AssignmentDao {
 		try{
 			String query = "from Course course " + "join fetch course.studentGroups studentGroup " + 
 						   "join fetch studentGroup.users student " + 
-						   "where course=:course AND student=:user";
+						   "where course=:course AND student=:user " 
+						   + " and course.deleted = false";
 			session = this.getSession();
 			session.beginTransaction();
 			course = (Course) session.createQuery(query).setParameter("course", course).setParameter("user", user).uniqueResult();
@@ -545,7 +572,7 @@ public class AssignmentDao {
 	public Rating loadUserRatingForEditing(User owner, Review review)throws MessageException {
 		Session session = null;
 		try{
-			logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
+//			logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
 			session = this.getSession();
 			session.beginTransaction();
 			Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("owner").eq(owner)).add(Property.forName("review").eq(review)).uniqueResult();
@@ -566,7 +593,7 @@ public class AssignmentDao {
 	public Course loadUserReviewForEditing(User user, long reviewId) throws MessageException{
 		Session session = null;
 		try{
-			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
+//			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
 			String query = "select distinct course from Course course " + 
 			"left join fetch course.lecturers lecturer " + 
 			"left join fetch course.tutors tutor " + 
@@ -578,7 +605,8 @@ public class AssignmentDao {
 			"join fetch writingActivity.reviewingActivities reviewingActivity " + 
 			"join fetch reviewingActivity.entries entry " + 
 			"where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) " +
-			"AND entry.owner=:user AND entry.review.id=:reviewId";
+			"AND entry.owner=:user AND entry.review.id=:reviewId "
+			+ " and course.deleted = false AND writingActivity.deleted = false";
 			session = this.getSession();
 			session.beginTransaction();
 			Course course = (Course) session.createQuery(query).setParameter("user", user).setParameter("reviewId", reviewId).uniqueResult();
@@ -600,7 +628,7 @@ public class AssignmentDao {
 		Session session = null;
 		List<Course> resultList = new ArrayList<Course>();
 		try{
-			logger.debug("Loading user reviews: user.username=" + user.getUsername());
+//			logger.debug("Loading user reviews: user.username=" + user.getUsername());
 			String query = "select distinct course from Course course " 
 				+ "left join fetch course.lecturers lecturer " 
 				+ "left join fetch course.tutors tutor " 
@@ -613,7 +641,8 @@ public class AssignmentDao {
 				+ "join fetch reviewingAcitvity.entries reviewEntry "
 				+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) "
 				+ "AND (reviewEntry.owner=:user)"
-				+ "AND (course.semester=:semester AND course.year=:year)";
+				+ "AND (course.semester=:semester AND course.year=:year) "
+				+ " and course.deleted = false and writingActivity.deleted=false ";
 			
 			if (!includeFinishedReviews){
 				query = query + "AND (reviewingAcitvity.status = 1)";	
@@ -644,7 +673,7 @@ public class AssignmentDao {
 		Session session = null;
 		List<Course> resultList = new ArrayList<Course>();
 		try{
-			logger.debug("Loading user reviews: user.username=" + user.getUsername());
+//			logger.debug("Loading user reviews: user.username=" + user.getUsername());
 			String query = "select distinct course from Course course " 
 				+ "left join fetch course.lecturers lecturer " 
 				+ "left join fetch course.tutors tutor " 
@@ -657,7 +686,8 @@ public class AssignmentDao {
 				+ "left join fetch ownerGroup.users owner "
 				+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user) "
 				+ "AND (docEntry.owner=:user OR owner=:user)"
-				+ "AND (course.semester=:semester AND course.year=:year)";
+				+ "AND (course.semester=:semester AND course.year=:year) "
+				+ " and course.deleted = false and writingActivity.deleted=false";
 			session = this.getSession();
 			session.beginTransaction();
 			List<Course> courses = session.createQuery(query).setParameter("user", user).setParameter("semester", semester).setParameter("year", year).list();
@@ -683,7 +713,10 @@ public class AssignmentDao {
 		try{
 			session = this.getSession();
 			session.beginTransaction();
-			WritingActivity writingActivity = (WritingActivity) session.createCriteria(WritingActivity.class).add(Property.forName("id").eq(writingActivityId)).uniqueResult();
+			WritingActivity writingActivity = (WritingActivity) session.createCriteria(WritingActivity.class)
+																		.add(Property.forName("id").eq(writingActivityId))
+																		.add(Property.forName("deleted").eq(false))
+																		.uniqueResult();
 			session.getTransaction().commit();
 			if (writingActivity != null){
 				writingActivity = writingActivity.clone();
@@ -703,7 +736,7 @@ public class AssignmentDao {
 		try{
 			String query = "select distinct writingActivity from WritingActivity writingActivity " 
 				+ "join fetch writingActivity.deadlines deadline " 
-				+ "where deadline=:deadline ";
+				+ "where deadline=:deadline and writingActivity.deleted=false";
 			session = this.getSession();
 			session.beginTransaction();
 			WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
@@ -727,7 +760,7 @@ public class AssignmentDao {
 		try{
 			String query = "from WritingActivity writingActivity " + 
 			"join fetch writingActivity.entries docEntry " + 
-			"where docEntry=:docEntry";
+			"where docEntry=:docEntry and writingActivity.deleted=false";
 			session = this.getSession();
 			session.beginTransaction();
 			WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("docEntry", docEntry).uniqueResult();
@@ -766,7 +799,7 @@ public class AssignmentDao {
 		Session session = null;
 		try{
 			if ( organization != null){
-				String query = "from ReviewTemplate review " + "where review.organization=:organization";
+				String query = "from ReviewTemplate review " + "where review.organization=:organization and review.deleted=false";
 		        session = this.getSession();
 		        session.beginTransaction();
 		        List<ReviewTemplate> reviewTemplates = session.createQuery(query).setParameter("organization", organization).list();
@@ -794,7 +827,10 @@ public class AssignmentDao {
 		try{
 			session = this.getSession();
 			session.beginTransaction();
-			reviewTemplate = (ReviewTemplate) session.createCriteria(ReviewTemplate.class).add(Property.forName("id").eq(reviewTemplateId)).uniqueResult();
+			reviewTemplate = (ReviewTemplate) session.createCriteria(ReviewTemplate.class)
+													 .add(Property.forName("id").eq(reviewTemplateId))
+													 .add(Property.forName("deleted").eq(false))
+													 .uniqueResult();
 			session.getTransaction().commit();
 			if (reviewTemplate != null){
 				reviewTemplate = reviewTemplate.clone();
@@ -814,7 +850,7 @@ public class AssignmentDao {
 		boolean result = false;
 		try{
 			String query = "from TemplateReply templateReply " + 
-			"where reviewTemplate=:template";
+			"where reviewTemplate=:template and";
 			session = this.getSession();
 			session.beginTransaction();		 
 			List<TemplateReply> templateReplies = session.createQuery(query).setParameter("template", reviewTemplate).list();
@@ -860,7 +896,7 @@ public class AssignmentDao {
 		Session session = null;
 		try{
 			String query = "select distinct questionReview from QuestionReview questionReview " +  
-			"where id=:id";
+							"where id=:id";
 
 			session = this.getSession();
 			session.beginTransaction();
@@ -974,7 +1010,7 @@ public class AssignmentDao {
 		Session session = null;
 		try{
 			if ( organization != null){
-				String sQuery = "from ReviewTemplate review " + "where review.organization=:organization";
+				String sQuery = "from ReviewTemplate review " + "where review.organization=:organization and review.deleted=false";
 		        session = this.getSession();
 		        session.beginTransaction();
 		        Query query = session.createQuery(sQuery);
@@ -1031,5 +1067,89 @@ public class AssignmentDao {
 			}
 			throw new MessageException(Constants.EXCEPTION_GET_SECTION);
 		}
+	}
+	
+	public List<ReviewTemplate> loadDeletedReviewTemplates(Organization organization, Integer page, Integer limit) throws MessageException{
+		List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
+		Session session = null;
+		try{
+			if ( organization != null){
+				String sQuery = "from ReviewTemplate review " + "where review.organization=:organization and review.deleted=true";
+		        session = this.getSession();
+		        session.beginTransaction();
+		        Query query = session.createQuery(sQuery);
+		        if (organization != null){
+		        	query.setParameter("organization", organization);
+		        }
+		        
+		        if (limit == null || (limit != null && limit < 1)){
+					limit = 10;
+				}
+				if (page == null || (page!=null && page < 1)){
+					page = 1;
+				}
+				
+				query.setMaxResults(limit);
+				query.setFirstResult(limit * (page - 1));
+		        List<ReviewTemplate> reviewTemplates = query.list();
+		        session.getTransaction().commit();
+		        for (ReviewTemplate template:reviewTemplates){
+		        	if (template != null){
+		        		result.add(template.clone());
+		        	}
+		        }
+			}
+	 		return result;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_DELETED_REVIEW_TEMPLATES);
+		}
+	}
+	
+	public List<ReviewTemplate> loadDeletedWritingActivities(Course course, Integer page, Integer limit) throws MessageException{
+		List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
+		Session session = null;
+		try{
+			if ( course != null){
+				String sQuery = "from Course course " + 
+								"join fetch course.writingActivities writingActivity " + 
+								"where writingActivity=:writingActivity "+
+								" and writingActivity.deleted = true and course=:course";
+		        session = this.getSession();
+		        session.beginTransaction();
+		        Query query = session.createQuery(sQuery);
+		        if (course != null){
+		        	query.setParameter("course", course);
+		        }
+		        
+		        if (limit == null || (limit != null && limit < 1)){
+					limit = 10;
+				}
+				if (page == null || (page!=null && page < 1)){
+					page = 1;
+				}
+				
+				query.setMaxResults(limit);
+				query.setFirstResult(limit * (page - 1));
+		        List<ReviewTemplate> reviewTemplates = query.list();
+		        session.getTransaction().commit();
+		        for (ReviewTemplate template:reviewTemplates){
+		        	if (template != null){
+		        		result.add(template.clone());
+		        	}
+		        }
+			}
+	 		return result;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_DELETED_WRITING_ACTIVITIES);
+		}
+
 	}
 }

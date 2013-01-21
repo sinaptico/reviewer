@@ -49,7 +49,7 @@ public class LoginServlet extends HttpServlet {
 			String password = request.getParameter("password");
 			if (password != null && password.equals(user.getPassword())){
 				request.getSession().setAttribute("user", user);
-				logger.debug("Logging in user: " + user.getEmail());
+//				logger.debug("Logging in user: " + user.getEmail());
 				if (user.isAdmin() || user.isSuperAdmin()){
 					response.sendRedirect(request.getRequestURL().toString().replace("/Admin.html", ""));
 				} else {

@@ -68,7 +68,7 @@ public class GoogleSpreadsheetServiceImpl {
 	}	
 
 	public List<WorksheetEntry> getSpreadsheetWorksheets(SpreadsheetEntry spreadsheetEntry) throws IOException, ServiceException {
-		logger.info("Getting spreadsheet worksheets: " + spreadsheetEntry.getResourceId());
+//		logger.info("Getting spreadsheet worksheets: " + spreadsheetEntry.getResourceId());
 		WorksheetFeed worksheetFeed = spreadsheetService.getFeed(spreadsheetEntry.getWorksheetFeedUrl(), WorksheetFeed.class);
 		return worksheetFeed.getEntries();
 	}

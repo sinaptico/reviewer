@@ -28,20 +28,21 @@ public class QuestionUtil {
 
 	// index the document to lucence
 	public void downloadDoc(String dirpath, WritingActivity writingActivity) throws Exception, MalformedURLException {
-		logger.info("Download document!");
+//		logger.info("Download document!");
 		for (DocEntry docEntry : writingActivity.getEntries()) {
 			try {
 				DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
 				String filePath = dirpath + "/" + FileUtil.escapeFilename(docEntry.getDocumentId() + ".html");
 				googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
 			} catch (Exception e) {
+				e.printStackTrace();
 				logger.info("document " + docEntry.getId() + " is not found");
 			}
 		}
 	}
 
 	public void insertScoretoExcel(String filepath, WritingActivity writingActivity) {
-		logger.info("Retrieve score from DB and then insert into Excel!");
+//		logger.info("Retrieve score from DB and then insert into Excel!");
 		ArrayList<String> docidlist = new ArrayList<String>();
 		ArrayList<String> scorelist = new ArrayList<String>();
 		ArrayList<String> QMlist = new ArrayList<String>();
@@ -92,11 +93,12 @@ public class QuestionUtil {
 	}
 
 	public void readExcelInsertDB(String filepath, Organization organization) throws MessageException {
-		logger.info("Read Excel and then insert into DB!");
+//		logger.info("Read Excel and then insert into DB!");
 		ExcelEditor excelEditor = new ExcelEditor();
 		try {
 			excelEditor.read(filepath);
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.info("Excel file not found:" + filepath);
 		}
 		ArrayList<String> questionlist = excelEditor.getColumn1data();

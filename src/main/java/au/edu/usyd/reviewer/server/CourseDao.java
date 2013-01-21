@@ -3,6 +3,8 @@ package au.edu.usyd.reviewer.server;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import java.util.List;
 
@@ -67,7 +69,10 @@ public class CourseDao extends ObjectDao{
 		Course course = null;
 		try{
 			session.beginTransaction();
-			course = (Course) session.createCriteria(Course.class).add(Property.forName(COURSE_ID).eq(objectId)).uniqueResult();
+			course = (Course) session.createCriteria(Course.class)
+									 .add(Property.forName(COURSE_ID).eq(objectId))
+									 .add(Property.forName("deleted").eq(false))
+									 .uniqueResult();
 			session.getTransaction().commit();
 		} catch(HibernateException he){
 			if ( session != null && session.getTransaction() != null){
@@ -108,7 +113,14 @@ public class CourseDao extends ObjectDao{
 		Course course = null;
 		try{
 			course = (Course) super.load(courseId);
-			if (course != null){
+			if (course != null && !course.isDeleted()){
+				Set<WritingActivity> activities = new HashSet<WritingActivity>();
+				for(WritingActivity activity : course.getWritingActivities()){
+					if (!activity.isDeleted()){
+						activities.add(activity);	
+					}
+				}
+				course.setWritingActivities(activities);
 				course = course.clone();
 			}
 		} catch (Exception e) {
@@ -128,7 +140,14 @@ public class CourseDao extends ObjectDao{
 			List<Object> objects = super.loadObjects(courseName);
 			for(Object obj: objects){
 				Course course = (Course) obj;
-				if (course != null){
+				if (course != null && !course.isDeleted()){
+					Set<WritingActivity> activities = new HashSet<WritingActivity>();
+					for(WritingActivity activity : course.getWritingActivities()){
+						if (!activity.isDeleted()){
+							activities.add(activity);	
+						}
+					}
+					course.setWritingActivities(activities);
 					course = course.clone();
 					courses.add(course);
 				}
@@ -152,6 +171,7 @@ public class CourseDao extends ObjectDao{
 			session.beginTransaction();
 			Criteria criteria = session.createCriteria(Course.class);
 			criteria.add(Restrictions.like(COURSE_NAME, courseName +"%"));
+			criteria.add(Restrictions.eq("deleted", false));
 			criteria.addOrder( Order.asc(COURSE_NAME) );
 			courses = criteria.list();
 			session.getTransaction().commit();
@@ -178,7 +198,14 @@ public class CourseDao extends ObjectDao{
 		Course course = null;
 		try {
 			course = (Course) super.load(name);
-			if (course != null){
+			if (course != null && !course.isDeleted()){
+				Set<WritingActivity> activities = new HashSet<WritingActivity>();
+				for(WritingActivity activity : course.getWritingActivities()){
+					if (!activity.isDeleted()){
+						activities.add(activity);	
+					}
+				}
+				course.setWritingActivities(activities);
 				course = course.clone();
 			}
 		} catch (Exception e) {
@@ -200,10 +227,12 @@ public class CourseDao extends ObjectDao{
 		boolean hasCourses = false;
 		try{
 			session = getSession();
-			String query = "from Course course where organizationId=:organizationId";
+			String query = "from Course course where organizationId=:organizationId and course.deleted=false";
 			session.beginTransaction();
-			List<Course> courses = session.createQuery(query).setParameter("organizationId", organization.getId()).list();
+			List<Course> courses = session.createQuery(query)
+										  .setParameter("organizationId", organization.getId()).list();
 			session.getTransaction().commit();
+			
 			hasCourses =  courses.size() > 0;
 		} catch(HibernateException he){
 			if ( session != null && session.getTransaction() != null){
@@ -227,9 +256,19 @@ public class CourseDao extends ObjectDao{
 		try{
 			session = getSession();
 			session.beginTransaction();
-			course = (Course) session.createCriteria(Course.class).add(Property.forName(COURSE_ID).eq(courseId)).uniqueResult();
+			course = (Course) session.createCriteria(Course.class)
+									 .add(Property.forName(COURSE_ID).eq(courseId))
+									 .add(Property.forName("deleted").eq(false))
+									 .uniqueResult();
 			session.getTransaction().commit();
 			if (course != null){
+				Set<WritingActivity> activities = new HashSet<WritingActivity>();
+				for(WritingActivity activity : course.getWritingActivities()){
+					if (!activity.isDeleted()){
+						activities.add(activity);	
+					}
+				}
+				course.setWritingActivities(activities);
 				return course.clone();
 			}
 		} catch(HibernateException he){
@@ -252,14 +291,23 @@ public class CourseDao extends ObjectDao{
 		List<Course> result = new ArrayList<Course>();
 		Session session = null;
 		try{
-			String query = "from Course course " + "where course.organization=:organization";
+			String query = "from Course course " + "where course.organization=:organization and course.deleted=false";
 	        session = getSession();
 	        session.beginTransaction();
 	        List<Course> courses = session.createQuery(query).setParameter("organization", organization).list();
 	        session.getTransaction().commit();
 	        
 	        for(Course course: courses){
-	        	result.add(course.clone());
+	        	if (course != null){
+	        		Set<WritingActivity> activities = new HashSet<WritingActivity>();
+					for(WritingActivity activity : course.getWritingActivities()){
+						if (!activity.isDeleted()){
+							activities.add(activity);	
+						}
+					}
+					course.setWritingActivities(activities);
+	        		result.add(course.clone());
+	        	}
 	        }
 		} catch(HibernateException he){
 			if ( session != null && session.getTransaction() != null){
@@ -286,7 +334,9 @@ public class CourseDao extends ObjectDao{
 		try{
 			session = getSession();
 			session.beginTransaction();
-			String query = "from Course course " + "where course.semester=:semester AND course.year=:year and course.organization=:organization";
+			String query = "from Course course " + 
+						   "where course.semester=:semester AND course.year=:year and course.organization=:organization " + 
+						   " and course.deleted = false";
 			
 			List<Course> courses = session.createQuery(query).setParameter("semester", semester)
 															 .setParameter("year", year)
@@ -296,6 +346,13 @@ public class CourseDao extends ObjectDao{
 				
 			for(Course course: courses){
 				if (course != null){
+					Set<WritingActivity> activities = new HashSet<WritingActivity>();
+					for(WritingActivity activity : course.getWritingActivities()){
+						if (!activity.isDeleted()){
+							activities.add(activity);	
+						}
+					}
+					course.setWritingActivities(activities);
 					result.add(course.clone());
 				}
 			}
@@ -388,7 +445,11 @@ public class CourseDao extends ObjectDao{
 					where += "course.organization=:organization";
 				} 
 			}
-					
+			if (!StringUtil.isBlank(where)){
+				where += " course.deleted = false";
+			} else {
+				where += " and course.deleted = false";
+			}
 			session = this.getSession();
 			session.beginTransaction();
 			
@@ -423,6 +484,13 @@ public class CourseDao extends ObjectDao{
 			List<Course> resultList = new ArrayList<Course>();
 			for(Course course : courses){
 				if (course != null){
+					Set<WritingActivity> activities = new HashSet<WritingActivity>();
+					for(WritingActivity activity : course.getWritingActivities()){
+						if (!activity.isDeleted()){
+							activities.add(activity);	
+						}
+					}
+					course.setWritingActivities(activities);
 					resultList.add(course.clone());
 				}
 			}
@@ -432,18 +500,27 @@ public class CourseDao extends ObjectDao{
 			if ( session != null && session.getTransaction() != null){
 				session.getTransaction().rollback();
 			}
-			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
 		}
 	}
 	
 	@Override
 	protected Object getObject(String name) throws MessageException{
 		Session session = getSession();
-		User user = (User) session.createCriteria(User.class).add(Property.forName(COURSE_NAME).eq(name)).uniqueResult();
-		if (user != null){
-			user = user.clone();
+		Course course = (Course) session.createCriteria(Course.class)
+										.add(Property.forName(COURSE_NAME).eq(name))
+										.add(Property.forName("deleted").eq(false)).uniqueResult();
+		if (course != null){
+			Set<WritingActivity> activities = new HashSet<WritingActivity>();
+			for(WritingActivity activity : course.getWritingActivities()){
+				if (!activity.isDeleted()){
+					activities.add(activity);	
+				}
+			}
+			course.setWritingActivities(activities);
+			course = course.clone();
 		}
-		return user;
+		return course;
 	}
 	
 	public Course loadCourseWhereWritingActivity(WritingActivity writingActivity) throws MessageException{
@@ -451,7 +528,8 @@ public class CourseDao extends ObjectDao{
 		try{
 			String query = "from Course course " + 
 			"join fetch course.writingActivities writingActivity " + 
-			"where writingActivity=:writingActivity";
+			"where writingActivity=:writingActivity "
+			+ " and course.deleted = false  and writingActivity.deleted = false";
 			session = this.getSession();
 			session.beginTransaction();
 			Course course = (Course) session.createQuery(query).setParameter("writingActivity", writingActivity).uniqueResult();
@@ -468,5 +546,98 @@ public class CourseDao extends ObjectDao{
 			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
 		}
 	}
-	
+
+	/**
+	 * Return all the deleted courses of the organization corresponding to the semester and year received as parameters.
+	 * @param semester semester of the courses
+	 * @param year year of the courses
+	 * @param organization organization owner of the courses
+	 * @param limit quantity of courses per page
+	 * @param page page to show
+	 * @return List of courses
+	 * @throws MessageException message to the logged user
+	 */
+	public List<Course> loadDeletedCourses(Integer semester, Integer year, Organization organization, 
+            Integer limit, Integer page) throws MessageException{
+		Session session = null;
+		try{
+			 
+			String sQuery = "SELECT DISTINCT course FROM Course course " + 
+							"LEFT JOIN course.lecturers lecturer " +
+							"LEFT JOIN course.tutors tutor " +
+							"LEFT JOIN course.studentGroups studentGroup " + 
+							"LEFT JOIN studentGroup.users student " ;;
+			String where = "";
+				
+			if (semester != null){
+				if (!StringUtil.isBlank(where)){
+					where += " AND course.semester=:semester";
+				} else {
+					where += "course.semester=:semester";
+				}
+			}
+			
+			if (year != null){
+				if (!StringUtil.isBlank(where)){
+					where += " AND course.year=:year";
+				} else {
+					where += "course.year=:year";
+				}
+			}
+			
+			if (organization != null){
+				if (!StringUtil.isBlank(where)){
+					where += " AND course.organization=:organization";
+				} else {
+					where += "course.organization=:organization";
+				} 
+			}
+			if (!StringUtil.isBlank(where)){
+				where += " course.deleted = true";
+			} else {
+				where += " and course.deleted = true";
+			}
+			session = this.getSession();
+			session.beginTransaction();
+			
+			sQuery += " WHERE " + where;
+			sQuery += " ORDER BY course.name";
+			
+			Query query= session.createQuery(sQuery);
+			if (semester!=null){
+				query.setParameter("semester", semester);
+			}
+			if (year != null){		 
+				query.setParameter("year", year);
+			}
+			if (organization!= null){
+				query.setParameter("organization", organization);
+			}
+			if (limit == null || (limit != null && limit < 1)){
+				limit = 10;
+			}
+			if (page == null || (page!=null && page < 1)){
+				page = 1;
+			}
+			
+			query.setMaxResults(limit);
+			query.setFirstResult(limit * (page - 1));
+			List<Course> courses = query.list();
+			session.getTransaction().commit();
+			List<Course> resultList = new ArrayList<Course>();
+			for(Course course : courses){
+				if (course != null){
+					resultList.add(course.clone());
+				}
+			}
+			return resultList;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_DELETED_COURSES);
+		}
+		
 	}
+}

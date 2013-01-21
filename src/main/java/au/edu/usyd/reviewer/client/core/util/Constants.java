@@ -72,6 +72,7 @@ public class Constants {
 	public static String EXCEPTION_INITIALIZE_CONTROLLER="Failed to initialize the controller";
 	public static String EXCEPTION_SAVE_COURSE="Failed to save the course";
 	public static String EXCEPTION_GET_COURSES="Failed to load the courses";
+	public static String EXCEPTION_GET_DELETED_COURSES ="Failed to load the deleted courses";
 	public static String EXCEPTION_GET_COURSE="Failed to load the course";
 	public static String EXCEPTION_DELETE_COURSE="Failed to delete the courses";
 	public static String EXCEPTION_MOCKING_USER="Failed to mock the user";
@@ -82,6 +83,7 @@ public class Constants {
 	public static String EXCEPTION_GET_REVIEW_TEMPLATE ="Failed to load the review template";
 	public static String EXCEPTION_DELETE_REVIEW_TEMPLATE ="Failed to delete the review template";
 	public static String EXCEPTION_GET_REVIEW_TEMPLATES="Failed to load the review templates";
+	public static String EXCEPTION_GET_DELETED_REVIEW_TEMPLATES="Failed to load the deleted review templates";
 	public static String EXCEPTION_REVIEW_TEMPLATE_NOT_FOUND = "Review template not found";
 	public static String EXCEPTION_GET_YEARS ="Falied to load the years";
 	public static String EXCEPTION_GET_REVIEW="Failed to get the review";
@@ -140,6 +142,7 @@ public class Constants {
 	public static String MESSAGE_LOGOUT_OK ="You are logged out";
 	public static String EXCEPTION_GOOGLE_USER_HAS_ACCESS = "This user already has access to the document.";
 	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";
+	public static String EXCEPTION_GET_DELETED_WRITING_ACTIVITIES="Failed to get the deleted writing activities";
 	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";

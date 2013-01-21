@@ -41,8 +41,6 @@ import au.edu.usyd.reviewer.server.util.ObjectConverter;
 @RequestMapping("/")
 public class ActivityController extends ReviewerController {
 	
-	private final Logger logger = LoggerFactory.getLogger(getClass());
-
 	/**
 	 * Delete the writing activity with id equals to {id}
 	 * @param request HttpServletRequest to initialize the controller

@@ -94,6 +94,7 @@ public class UserStatsAnalyser {
 				}
 
 			} catch (Exception e) {
+				e.printStackTrace();
 				logger.error("Error calculating revision stats: document=" + entry.getResourceId(), e);
 			}
 		}

@@ -139,7 +139,7 @@ public class FileServlet extends HttpServlet {
 					response.setContentType("application/octet-stream");
 					response.setHeader("Content-Disposition", "attachment; filename=\"" + FileUtil.escapeFilename("Empty.pdf") + "\"");			
 					response.setContentLength((int) file.length());
-					logger.info("Serving empty file: " + file.getAbsolutePath());
+//					logger.info("Serving empty file: " + file.getAbsolutePath());
 					int length = 0;
 					byte[] bbuf = new byte[1024];
 					DataInputStream in = new DataInputStream(new FileInputStream(file));
@@ -170,10 +170,10 @@ public class FileServlet extends HttpServlet {
 		String docId = null;
 		String csv = null;
 		
-		logger.info("User uploading file: " + user.getEmail());      			
+//		logger.info("User uploading file: " + user.getEmail());      			
         // process only multipart requests
         if (ServletFileUpload.isMultipartContent(req)) {
-        	logger.info("Multipart Content ");
+//        	logger.info("Multipart Content ");
 
             // Create a factory for disk-based file items
             FileItemFactory factory = new DiskFileItemFactory();
@@ -183,14 +183,14 @@ public class FileServlet extends HttpServlet {
             
             // Parse the request
             try {            	
-            	logger.info("Starting to parse request. " + req.toString());
+//            	logger.info("Starting to parse request. " + req.toString());
                 @SuppressWarnings("rawtypes")
 				Iterator items = upload.parseRequest(req).iterator();
-                logger.info("Parsing request... "+items.toString());
+//                logger.info("Parsing request... "+items.toString());
                   while (items.hasNext()) {            	
                 	  FileItem item = (FileItem) items.next();
                 	  if (item.isFormField()) {
-                		  logger.info("item.getFieldName: " +item.getFieldName());
+//                		  logger.info("item.getFieldName: " +item.getFieldName());
                           if (item.getFieldName().equals("docId")) {
                               docId = item.getString();
                           }
@@ -200,7 +200,7 @@ public class FileServlet extends HttpServlet {
                           continue;
                       }            
                 	
-                	logger.info("Attempting to upload file into docId: " + docId);
+//                	logger.info("Attempting to upload file into docId: " + docId);
                 	
           			if (docId != null) {
       				// get document course and activity
@@ -208,7 +208,7 @@ public class FileServlet extends HttpServlet {
       				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
       				Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
       
-      				    logger.info("Owner: " + docEntry.getOwner());      				    	  
+//      				    logger.info("Owner: " + docEntry.getOwner());      				    	  
 	      				// check if user owns the document or is a lecturer or tutor
 	      				if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
 
@@ -233,14 +233,14 @@ public class FileServlet extends HttpServlet {
 	                            
 	                            docEntry.setUploaded(true);
 	                            docEntry.setFileName(fileName+"."+extension);
-	                            logger.info("fileName+Extension " + fileName+"."+extension);
+//	                            logger.info("fileName+Extension " + fileName+"."+extension);
 	                            assignmentDao.save(docEntry);
 	      				}       
       			    }     
                 }
                   
                   if (csv != null){
-                	  logger.info("Serving csv file");
+//                	  logger.info("Serving csv file");
                 	  resp.setContentType("application/octet-stream");
                 	  resp.setHeader("Content-Disposition", "attachment; filename=\"" + FileUtil.escapeFilename("results.csv") + "\"");			
                 	  resp.getOutputStream().write(csv.getBytes());

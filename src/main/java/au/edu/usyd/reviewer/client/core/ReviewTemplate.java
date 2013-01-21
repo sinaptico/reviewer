@@ -50,6 +50,8 @@ public class ReviewTemplate implements Serializable {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Organization organization;
 	
+	private boolean deleted = false;
+	
 	public ReviewTemplate(){
 		
 	}
@@ -165,6 +167,13 @@ public class ReviewTemplate implements Serializable {
 		this.organization = organization;
 	}
 
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
 
 	public ReviewTemplate clone(){
 		ReviewTemplate template = new ReviewTemplate();
