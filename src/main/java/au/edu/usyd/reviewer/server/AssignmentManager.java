@@ -98,20 +98,21 @@ public class AssignmentManager {
 		}
 	}
 	
+	/**
+	 * This method sets the activity as deleted but it doesn't remove it from the database or Google
+	 * @param writingActivity Writing activity to set as deleted
+	 * @throws Exception
+	 */
 	public void deleteActivity(WritingActivity writingActivity) throws Exception {
 		writingActivity.setDeleted(true);
 		assignmentDao.save(writingActivity);
-//		Timer timer = activityTimers.get(writingActivity.getId());
-//		if (timer != null) {
-//			timer.cancel();
-//		}
-//		Course course = courseDao.loadCourse(assignmentDao.loadCourseWhereWritingActivity(writingActivity).getId());
-//		course.getWritingActivities().remove(writingActivity);
-//		courseDao.save(course);
-//		assignmentDao.delete(writingActivity);
-//		assignmentRepository.deleteActivity(writingActivity);
 	}
 
+	/**
+	 * This method sets course as deleted in the database. It doesn't remove it from the database or Google
+	 * @param course Course to set as deleted
+	 * @throws Exception
+	 */
 	public void deleteCourse(Course course) throws Exception {
 		
 		// writing activities
@@ -121,57 +122,6 @@ public class AssignmentManager {
 		
 		course.setDeleted(true);
 		courseDao.save(course);
-//		// lecturers
-//		Set<User> lecturerToDelete = new HashSet<User>();
-//		Set<User> lecturerToAdd = new HashSet<User>();
-//		for(User lecturer : course.getLecturers()){
-//			if (lecturer != null){
-//				if  (lecturer.getId() == null){
-//					User newLecturer = userDao.getUserByEmail(lecturer.getEmail());
-//					if (newLecturer == null){
-//						lecturerToDelete.add(lecturer);
-//					} else{
-//						lecturerToAdd.add(newLecturer);
-//						lecturerToDelete.add(lecturer);
-//					}
-//				} 
-//			}  
-//		}
-//		course.getLecturers().removeAll(lecturerToDelete);
-//		course.getLecturers().addAll(lecturerToAdd);
-//		
-//		// tutors
-//		Set<User> tutorToDelete = new HashSet<User>();
-//		Set<User> tutorToAdd = new HashSet<User>();
-//		for(User tutor : course.getTutors()){
-//			if (tutor != null){
-//				if  (tutor.getId() == null){
-//					User newTutor= userDao.getUserByEmail(tutor.getEmail());
-//					if (newTutor == null){
-//						tutorToDelete.add(tutor);
-//					} else{
-//						tutorToAdd.add(newTutor);
-//						tutorToDelete.add(tutor);
-//					}
-//				} 
-//			}  
-//		}
-//		course.getLecturers().removeAll(lecturerToDelete);
-//		course.getLecturers().addAll(lecturerToAdd);
-//		
-//		// writing activities
-//		for (WritingActivity writingActivity : course.getWritingActivities()) {
-//			Timer timer = activityTimers.get(writingActivity.getId());
-//			if (timer != null) {
-//				timer.cancel();
-//			}
-//			course.getWritingActivities().remove(writingActivity);
-//			courseDao.save(course);
-//			assignmentDao.delete(writingActivity);
-//			assignmentRepository.deleteActivity(writingActivity);
-//		}	
-//		assignmentDao.delete(course);
-//		assignmentRepository.deleteCourse(course);
 	}
 
 	private void downloadDocuments(Course course, WritingActivity writingActivity, Deadline deadline) {
@@ -1297,10 +1247,21 @@ public class AssignmentManager {
 		return reviewTemplate;		
 	}
 	
+	/**
+	 * This method set the review templates as deleted. It doesn't revove it from the database or Google.
+	 * @param reviewTemplate review template to set as deleted
+	 * @throws Exception
+	 */
 	public void deleteReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
-
+		// Load the review template with all its relationships
+		reviewTemplate = loadReviewTemplateRelationships(reviewTemplate,reviewTemplate.getOrganization());
 		reviewTemplate.setDeleted(true);
-		assignmentDao.save(reviewTemplate);
+		if (assignmentDao.isReviewTemplateInUse(reviewTemplate))
+		{
+			throw new MessageException(Constants.EXIST_REVIEW_WITH_REVIEW_TEMPLATE);
+		} else {
+			assignmentDao.save(reviewTemplate);
+		}
 	}
 	
 	public String updateReviewDocEntry(String reviewEntryId, String newDocEntry) throws Exception {

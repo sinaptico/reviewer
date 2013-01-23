@@ -314,7 +314,11 @@ public class AdminEntryPoint implements EntryPoint {
 						adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								Window.alert("Failed to create activity: " + caught.getMessage());
+								if (caught instanceof MessageException){
+									Window.alert(caught.getMessage());
+								} else {
+									Window.alert("Failed to create activity: " + caught.getMessage());
+								}
 								createButton.updateStateSubmit();
 							}
 
@@ -361,9 +365,11 @@ public class AdminEntryPoint implements EntryPoint {
 						adminService.saveReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								
-								Window.alert("Failed to create Review Template: " + caught.getMessage());
-								
+								if (caught instanceof MessageException){
+									Window.alert(caught.getMessage());
+								} else {
+									Window.alert("Failed to create Review Template: " + caught.getMessage());
+								}
 								createButton.updateStateSubmit();
 							}
 
@@ -502,7 +508,11 @@ public class AdminEntryPoint implements EntryPoint {
 							adminService.saveCourse(courseForm.getCourse(), new AsyncCallback<Course>() {
 								@Override
 								public void onFailure(Throwable caught) {
-									Window.alert("Failed to save course: " + caught.getMessage());
+									if (caught instanceof MessageException){
+										Window.alert(caught.getMessage());
+									} else {
+										Window.alert("Failed to save course: " + caught.getMessage());
+									}
 									saveButton.updateStateSubmit();
 								}
 
@@ -525,7 +535,11 @@ public class AdminEntryPoint implements EntryPoint {
 								adminService.deleteCourse(courseForm.getCourse(), new AsyncCallback<Course>() {
 									@Override
 									public void onFailure(Throwable caught) {
-										Window.alert("Failed to delete course: " + caught.getMessage());
+										if (caught instanceof MessageException){
+											Window.alert(caught.getMessage());
+										} else {
+											Window.alert("Failed to delete course: " + caught.getMessage());
+										}
 										deleteButton.setEnabled(true);
 									}
 
@@ -567,7 +581,11 @@ public class AdminEntryPoint implements EntryPoint {
 							adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
 								@Override
 								public void onFailure(Throwable caught) {
-									Window.alert("Failed to save activity: " + caught.getMessage());
+									if (caught instanceof MessageException){
+										Window.alert(caught.getMessage());
+									} else {
+										Window.alert("Failed to save activity: " + caught.getMessage());
+									}
 									saveButton.updateStateSubmit();
 								}
 
@@ -589,7 +607,11 @@ public class AdminEntryPoint implements EntryPoint {
 								adminService.deleteWritingActivity(activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
 									@Override
 									public void onFailure(Throwable caught) {
-										Window.alert("Failed to delete activity: " + caught.getMessage());
+										if (caught instanceof MessageException){
+											Window.alert(caught.getMessage());
+										} else {
+											Window.alert("Failed to delete activity: " + caught.getMessage());
+										}
 										deleteButton.setEnabled(true);
 									}
 
@@ -650,7 +672,11 @@ public class AdminEntryPoint implements EntryPoint {
 							adminService.saveReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
 								@Override
 								public void onFailure(Throwable caught) {
-									Window.alert("Failed to save Review Template: " + caught.getMessage());
+									if (caught instanceof MessageException){
+										Window.alert(caught.getMessage());
+									} else {
+										Window.alert("Failed to save Review Template: " + caught.getMessage());
+									}
 									saveButton.updateStateSubmit();
 								}
 
@@ -675,7 +701,11 @@ public class AdminEntryPoint implements EntryPoint {
 								adminService.deleteReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
 									@Override
 									public void onFailure(Throwable caught) {
-										Window.alert("Failed to delete Review Template: " + caught.getMessage());
+										if (caught instanceof MessageException){
+											Window.alert(caught.getMessage());
+										} else {
+											Window.alert("Failed to delete Review Template: " + caught.getMessage());
+										}
 										deleteButton.setEnabled(true);
 									}
 
@@ -845,7 +875,11 @@ public class AdminEntryPoint implements EntryPoint {
 		adminService.getReviewTemplates (organizationId, new AsyncCallback<Collection<ReviewTemplate>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failed get courses: " + caught.getMessage());
+				if (caught instanceof MessageException){
+					Window.alert(caught.getMessage());
+				} else {
+					Window.alert("Failed get courses: " + caught.getMessage());
+				}
 			}
 
 			@Override
@@ -896,7 +930,11 @@ public class AdminEntryPoint implements EntryPoint {
 		adminService.getCourses(semester, year,organizationId, new AsyncCallback<Collection<Course>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failed get courses. " + caught.getMessage());
+				if (caught instanceof MessageException){
+					Window.alert(caught.getMessage());
+				} else {
+					Window.alert("Failed get courses. " + caught.getMessage());
+				}
 				refreshCourseTreeButton.updateStateSubmit();
 			}
 	
@@ -936,7 +974,11 @@ public class AdminEntryPoint implements EntryPoint {
 		adminService.getOrganizations(new AsyncCallback<Collection<Organization>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failed get organizations: " + caught.getMessage());
+				if (caught instanceof MessageException){
+					Window.alert(caught.getMessage());
+				} else {
+					Window.alert("Failed get organizations: " + caught.getMessage());
+				}
 			}
 
 			@Override

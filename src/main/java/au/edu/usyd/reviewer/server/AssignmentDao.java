@@ -849,13 +849,20 @@ public class AssignmentDao {
 		Session session = null;
 		boolean result = false;
 		try{
-			String query = "from TemplateReply templateReply " + 
-			"where reviewTemplate=:template and";
+			String query = "from Activity " +
+						   "where reviewTemplateId=:id";
 			session = this.getSession();
-			session.beginTransaction();		 
-			List<TemplateReply> templateReplies = session.createQuery(query).setParameter("template", reviewTemplate).list();
+			session.beginTransaction();
+			List<ReviewingActivity> reviewingActivities = session.createQuery(query).setParameter("id", reviewTemplate.getId()).list();
 			session.getTransaction().commit();
-			return templateReplies.size() > 0;
+			return (reviewingActivities.size() > 0);
+//			String query = "from TemplateReply templateReply " + 
+//			"where reviewTemplate=:template and";
+//			session = this.getSession();
+//			session.beginTransaction();		 
+//			List<TemplateReply> templateReplies = session.createQuery(query).setParameter("template", reviewTemplate).list();
+//			session.getTransaction().commit();
+//			return templateReplies.size() > 0;
 		} catch (Exception e){
 			e.printStackTrace();
 			if ( session != null && session.getTransaction() != null){

@@ -38,6 +38,7 @@ import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.CourseDao;
+import au.edu.usyd.reviewer.server.CourseManager;
 import au.edu.usyd.reviewer.server.OrganizationDao;
 import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
@@ -53,6 +54,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class AdminServiceImpl extends RemoteServiceServlet implements AdminService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
+	private CourseManager courseManager = CourseManager.getInstance();
 	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 	private UserDao userDao = UserDao.getInstance();
 	private CourseDao courseDao = CourseDao.getInstance();
@@ -68,7 +70,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		if (isAdminOrSuperAdmin()) {
 			try {
 				if (course != null){
-					assignmentManager.deleteCourse(course);
+					if (course.getOrganization() == null){
+						course.setOrganization(organization);
+					}
+					courseManager.setAssignmentManager(assignmentManager);
+					courseManager.deleteCourse(course);
 					course = course.clone();
 				} else {
 					throw new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
@@ -322,6 +328,9 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		if (isAdminOrSuperAdmin()) {
 			try {
 				if ( reviewTemplate != null){
+					if (reviewTemplate.getOrganization() == null){
+						reviewTemplate.setOrganization(organization);
+					}
 					assignmentManager.deleteReviewTemplate(reviewTemplate);
 					reviewTemplate = reviewTemplate.clone();
 				} else {

@@ -143,6 +143,8 @@ public class Constants {
 	public static String EXCEPTION_GOOGLE_USER_HAS_ACCESS = "This user already has access to the document.";
 	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";
 	public static String EXCEPTION_GET_DELETED_WRITING_ACTIVITIES="Failed to get the deleted writing activities";
+	public static String EXIST_REVIEW_WITH_REVIEW_TEMPLATE="The review template can not be deleted because it's in use";
+	
 	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
