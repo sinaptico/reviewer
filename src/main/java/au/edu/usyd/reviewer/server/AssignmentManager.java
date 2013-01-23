@@ -1281,16 +1281,8 @@ public class AssignmentManager {
 	}
 
 	public ReviewTemplate saveReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
-		ReviewTemplate reviewTemplateToSave = new ReviewTemplate();
-		reviewTemplateToSave.setName(reviewTemplate.getName());
-		reviewTemplateToSave.setDescription(reviewTemplate.getDescription());
-		reviewTemplateToSave.setSections(reviewTemplate.getSections());		
 
-		if (reviewTemplate.getId() !=null){
-				deleteReviewTemplate(reviewTemplate);
-		}
-
-		for (Section section : reviewTemplateToSave.getSections()) {
+		for (Section section : reviewTemplate.getSections()) {
 			if (section.getType() != Section.OPEN_QUESTION) {
 				for (Choice choice : section.getChoices()) {
 					assignmentDao.save(choice);
@@ -1298,24 +1290,17 @@ public class AssignmentManager {
 			}
 			assignmentDao.save(section);
 		}
-		reviewTemplateToSave.setOrganization(reviewTemplate.getOrganization());
-		assignmentDao.save(reviewTemplateToSave);
-		if (reviewTemplateToSave != null){
-			reviewTemplateToSave = reviewTemplateToSave.clone();
+		assignmentDao.save(reviewTemplate);
+		if (reviewTemplate != null){
+			reviewTemplate = reviewTemplate.clone();
 		}
-		return reviewTemplateToSave;		
+		return reviewTemplate;		
 	}
 	
 	public void deleteReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 
 		reviewTemplate.setDeleted(true);
 		assignmentDao.save(reviewTemplate);
-//		if (!assignmentDao.isReviewTemplateInUse(reviewTemplate)){		
-//			reviewTemplate = assignmentDao.loadReviewTemplate(reviewTemplate.getId());
-//			assignmentDao.delete(reviewTemplate);
-//		}else{
-//			throw new Exception("Review template already in use.");
-//		}
 	}
 	
 	public String updateReviewDocEntry(String reviewEntryId, String newDocEntry) throws Exception {
