@@ -305,15 +305,4 @@ public class Organization implements Serializable {
 		return image;
 	}
 	
-	@JsonIgnore
-	public String getDecryptedGooglePassword() throws Exception {
-		String encryptedValue = this.getGooglePassword();
-		return encryptedValue;
-	}
-	
-	@JsonIgnore
-	public String getDecryptedEmailPassword() throws Exception {
-		String encryptedValue = this.getEmailPassword();
-		return encryptedValue;
-	}
 }

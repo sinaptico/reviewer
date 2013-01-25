@@ -55,9 +55,7 @@ public class PDFWidget extends Composite {
 
 		Anchor link = new Anchor();
 		link.setHref(UrlLib.pdfDownloadUrl(filename + ".pdf", docId, docVersion));
-		//link.setHTML("<div style='padding-top: 4.5px;'><img src='images/icon-pdf.gif'></img><span>" + title + "</span></div>");
 		link.setHTML("<div style='padding-top: 4.5px;'><img src='images/icon-pdf.gif'></img><span>" + title + "</span></div>");
-		//link.setHTML("<div style='padding-top: 4.5px;'>" + title + "</div>");
 		link.setTitle("Download");
 		link.setTarget(docId);
 

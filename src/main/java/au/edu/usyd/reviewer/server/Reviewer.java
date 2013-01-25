@@ -1,10 +1,12 @@
 package au.edu.usyd.reviewer.server;
 
+import java.security.Security;
 import java.util.Iterator;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
@@ -15,6 +17,7 @@ import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.OrganizationProperty;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+import au.edu.usyd.reviewer.server.util.AESCipher;
 import au.edu.usyd.reviewer.server.util.DigitalSigner;
 
 public class Reviewer {
@@ -30,6 +33,7 @@ public class Reviewer {
     
 	static {
 		try {
+			installBouncyCastle();
 			config = new PropertiesConfiguration("reviewer.properties");
 			for (Iterator<String> keys = config.getKeys(); keys.hasNext();) {
 				String property = keys.next();
@@ -60,9 +64,9 @@ public class Reviewer {
 			try {
 	 			String domain = organization.getGoogleDomain();
 				String username = organization.getGoogleUsername();
-				String password = organization.getDecryptedGooglePassword();			
+				String password = AESCipher.decrypt(organization.getGooglePassword());			
 				String emailUsername = organization.getEmailUsername();
-				String emailPassword = organization.getDecryptedEmailPassword();
+				String emailPassword = AESCipher.decrypt(organization.getEmailPassword());
 				String smtpHost = organization.getSMTPHost();
 				String smtpPort = organization.getSMTPPort();
 				
@@ -169,6 +173,11 @@ public class Reviewer {
 	public static String getReviewerLogosHome(){
 		return config.getString(Constants.REVIEWER_LOGOS_HOME);
 	}
-	
+
+	private static BouncyCastleProvider installBouncyCastle() {
+		  BouncyCastleProvider provider = new BouncyCastleProvider();
+		  Security.addProvider(provider);
+		  return provider;
+	}
 	
 }

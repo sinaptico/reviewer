@@ -175,7 +175,11 @@ public class AdminEntryPoint implements EntryPoint {
 		glosserService.getAllSites(new AsyncCallback<List<SiteForm>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failed to get Glosser sites: " + caught.getMessage());
+				if (caught instanceof MessageException){
+					Window.alert(caught.getMessage());
+				} else {
+					Window.alert("Failed to get Glosser sites: " + caught.getMessage());
+				}
 			}
 
 			@Override
@@ -184,7 +188,11 @@ public class AdminEntryPoint implements EntryPoint {
 				glosserService.getToolList(new AsyncCallback<List<String>>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
+						if (caught instanceof MessageException){
+							Window.alert(caught.getMessage());
+						} else {
+							Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
+						}
 					}
 
 					@Override
@@ -212,7 +220,11 @@ public class AdminEntryPoint implements EntryPoint {
 			adminService.getLoggedUser(new AsyncCallback<User>(){
 				@Override
 				public void onFailure(Throwable caught) {
-					Window.alert("Failed get the logged user" + caught.getMessage());
+					if (caught instanceof MessageException){
+						Window.alert(caught.getMessage());
+					} else {
+						Window.alert("Failed get the logged user" + caught.getMessage());
+					}
 				}
 	
 				@Override
@@ -810,7 +822,11 @@ public class AdminEntryPoint implements EntryPoint {
 		adminService.getYears(new AsyncCallback<Collection<Integer>>(){
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failed get the years" + caught.getMessage());
+				if (caught instanceof MessageException){
+					Window.alert(caught.getMessage());
+				} else {
+					Window.alert("Failed get the years" + caught.getMessage());
+				}
 			}
 
 			@Override
@@ -825,7 +841,11 @@ public class AdminEntryPoint implements EntryPoint {
 				adminService.logout(new AsyncCallback<Void>(){
 					@Override
 					public void onFailure(Throwable caught) {
-						Window.alert("Logout failed" + caught.getMessage());
+						if (caught instanceof MessageException){
+							Window.alert(caught.getMessage());
+						} else {
+							Window.alert("Logout failed" + caught.getMessage());
+						}
 					}
 
 					@Override

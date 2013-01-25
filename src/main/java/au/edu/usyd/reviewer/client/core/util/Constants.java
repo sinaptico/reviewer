@@ -60,6 +60,8 @@ public class Constants {
 	public static String EXCEPTION_GOOGLE_AUTHENTICATION_ ="You are not authorized to work with this document in Google Docs";
 	public static String EXCEPTION_GET_LOGGED_USER="There was an error obtaining the logged user information";
 	public static String EXCEPTION_ACTIVITY_NOT_FINISHED ="The activity wasn't finished because the file doesn't exist.";
+	public static String EXCEPTION_ENCRYPT="Failed to encrypt the value";
+	public static String EXCEPTION_DECRYPT="Failed to decrypt the value";
 	
 		
 	// Dao Exceptions

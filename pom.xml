@@ -85,7 +85,6 @@
 		        <version>2.8.1</version>
 		        <configuration>
 				  <doclet>org.umlgraph.doclet.UmlGraphDoc</doclet>
-		          <!-- <docletPath>/path/to/UmlGraph.jar</docletPath> -->
 		          <docletArtifact>
 		            <groupId>org.umlgraph</groupId>
 		            <artifactId>doclet</artifactId>
@@ -113,17 +112,6 @@
 				  <docfilessubdirs>true</docfilessubdirs>   
 				  
           		  <useStandardDocletOptions>true</useStandardDocletOptions>
-		          <!-- 
-		          <additionalparam>-all -constructors</additionalparam>
-		          <additionalparam>-views -attributes -operations 
-					-types -postfixpackage -nodefontpackagesize 6 -nodefontclasssize 8 
-					-nodefontsize 7 -edgefontsize 7 -nodesep 0.05 -ranksep 0.1 -visibility 
-					-inferdep -inferrel -inferdepinpackage -hide 
-					java.*|javax.*
-				  </additionalparam>
-		          <additionalparam>-views</additionalparam>
-		          <useStandardDocletOptions>true</useStandardDocletOptions>
-		          	 -->
 		          <show>private</show>
 		          <noHelp>true</noHelp>		          	        
 		        </configuration>
@@ -131,25 +119,8 @@
 		</plugins>
 	</build>
 	<distributionManagement>
-<!--
-		<repository>
-			<id>whale.ee.usyd.edu.au</id>
-			<name>LATTE Repository</name>
-			<url>scpexe://maven@whale.ee.usyd.edu.au/home/maven/.m2/repository</url>
-		</repository>
--->
 	</distributionManagement>	
 	<repositories>
-<!--
-		<repository>
-			<id>www.smartclient.com</id>
-			<url>http://www.smartclient.com/maven2</url>
-		</repository>
-		<repository>
-			<id>eie-web-dev-1-web.ucc.usyd.edu.au</id>
-			<url>http://eie-web-dev-1-web.ucc.usyd.edu.au:81/maven</url>
-		</repository>
--->
 	</repositories>
 	<properties>
 		<spring.version>3.0.5.RELEASE</spring.version>
@@ -201,7 +172,6 @@
 			<version>5.1.12</version>
 		</dependency>
 		<dependency>
-			<!-- <groupId>au.edu.usyd.glosser</groupId>  -->
 			<groupId>glosser</groupId>
 			<artifactId>glosser-app</artifactId>
 			<version>4.0-SNAPSHOT</version>
@@ -274,7 +244,6 @@
 			<artifactId>spring-core</artifactId>
 			<version>3.0.3.RELEASE</version>
 		</dependency>
-		<!-- MARIELA -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
@@ -290,7 +259,6 @@
 			<artifactId>jackson-mapper-asl</artifactId>
 			<version>1.9.10</version>
 		</dependency>
-		<!-- MARIELA -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
@@ -318,7 +286,6 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>1.3.2</version>
-			<!-- <optional>true</optional>  -->
 		</dependency>
 		<dependency>		
 			<groupId>au.edu.usyd.feedback</groupId>
@@ -335,7 +302,12 @@
              <artifactId>tomcat-catalina</artifactId>
              <version>7.0.0</version>
              <scope>provided</scope>
-        </dependency>     		
+        </dependency>
+        <dependency>
+  			<groupId>org.bouncycastle</groupId>
+  			<artifactId>bcprov-jdk16</artifactId>
+  			<version>1.46</version>
+		</dependency>     		
 	</dependencies>	
 		
 	<reporting>
