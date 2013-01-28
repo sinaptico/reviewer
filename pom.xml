@@ -30,6 +30,7 @@
 					<copyWebapp>true</copyWebapp>
   					<runTarget>Admin.html</runTarget>
   					<webXml>${basedir}/src/main/webapp/WEB-INF/web.xml</webXml>
+  					<extraJvmArgs>-Xmx2048M -Xms1024M -Xss1024k -XX:MaxPermSize=256M -XX:PermSize=128M</extraJvmArgs>
 				</configuration>
 				<executions>
 					<execution>

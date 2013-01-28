@@ -100,16 +100,22 @@ public class AssignmentManager {
 	
 	/**
 	 * This method sets the activity as deleted but it doesn't remove it from the database or Google
+	 * The activity will be deleted if its status is FINISH
 	 * @param writingActivity Writing activity to set as deleted
 	 * @throws Exception
 	 */
 	public void deleteActivity(WritingActivity writingActivity) throws Exception {
-		writingActivity.setDeleted(true);
-		assignmentDao.save(writingActivity);
+		if (writingActivity.getStatus() == WritingActivity.STATUS_FINISH){
+			writingActivity.setDeleted(true);
+			assignmentDao.save(writingActivity);
+		} else {
+			new MessageException(Constants.EXCEPTION_DELETE_WRITING_ACTIVITY_NOT_FINISHED);
+		}
 	}
 
 	/**
 	 * This method sets course as deleted in the database. It doesn't remove it from the database or Google
+	 * The course will be deleted if all its activities are finished
 	 * @param course Course to set as deleted
 	 * @throws Exception
 	 */
@@ -117,9 +123,12 @@ public class AssignmentManager {
 		
 		// writing activities
 		for (WritingActivity writingActivity : course.getWritingActivities()) {
-			deleteActivity(writingActivity);
+			if (writingActivity.getStatus() == WritingActivity.STATUS_FINISH){
+				deleteActivity(writingActivity);
+			} else {
+				throw new MessageException(Constants.EXCEPTION_DELETE_COURSE_NOT_FINISHED);
+			}
 		}	
-		
 		course.setDeleted(true);
 		courseDao.save(course);
 	}
@@ -266,63 +275,62 @@ public class AssignmentManager {
 		// download HTML reviews
 		UserGroup studentGroup = null;
 		for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
-			DocEntry docEntry = reviewEntry.getDocEntry();
+			if (!reviewEntry.isDeleted()){
+				DocEntry docEntry = reviewEntry.getDocEntry();
+						
+				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry); 
+				
+				if (writingActivity.getTutorial().equalsIgnoreCase(WritingActivity.TUTORIAL_ALL)){
+					//Load Group from Reviewer User
+					studentGroup = assignmentDao.loadUserGroupWhereUser(course, reviewEntry.getOwner());
 					
-			WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry); 
-			
-			if (writingActivity.getTutorial().equalsIgnoreCase(WritingActivity.TUTORIAL_ALL)){
-				//Load Group from Reviewer User
-				studentGroup = assignmentDao.loadUserGroupWhereUser(course, reviewEntry.getOwner());
-				
-				//If null, the reviewer is a Tutor, Lecturer or Automatic reviewer with no studentGroup			
-				if (studentGroup == null) {
-					//Load student group from student to review
-					studentGroup = assignmentDao.loadUserGroupWhereUser(course, reviewEntry.getDocEntry().getOwner());
-				}
-				
-				//If null, the document is owned by a group
-				User firstStudentFromGroup=null;
-				if (studentGroup == null) {
-					Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
-					for (User user : students) {
-						firstStudentFromGroup = user;
+					//If null, the reviewer is a Tutor, Lecturer or Automatic reviewer with no studentGroup			
+					if (studentGroup == null) {
+						//Load student group from student to review
+						studentGroup = assignmentDao.loadUserGroupWhereUser(course, reviewEntry.getDocEntry().getOwner());
+					}
+					
+					//If null, the document is owned by a group
+					User firstStudentFromGroup=null;
+					if (studentGroup == null) {
+						Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
+						for (User user : students) {
+							firstStudentFromGroup = user;
+						}				
+						studentGroup = assignmentDao.loadUserGroupWhereUser(course, firstStudentFromGroup);
+					}			
+					
+					if (studentGroup == null) {
+						continue;
 					}				
-					studentGroup = assignmentDao.loadUserGroupWhereUser(course, firstStudentFromGroup);
-				}			
-				
-				if (studentGroup == null) {
-					continue;
-				}				
-			}else{
-				 
-				studentGroup = new UserGroup();
-				studentGroup.setTutorial(writingActivity.getTutorial());				
-			}
-			
-
-			
-			String filename = reviewEntry.getOwner().getLastname() + ", " + reviewEntry.getOwner().getFirstname() + " (" + reviewEntry.getOwner().getUsername() + ") - reviewed - " + (docEntry.getOwnerGroup() != null ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getId() + ")") + ".html";
-//			logger.info("Review File: "+getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), studentGroup.getTutorial(), organization) + "/" + FileUtil.escapeFilename(filename));
-			File reviewFile = new File(getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), studentGroup.getTutorial(), organization) + "/" + FileUtil.escapeFilename(filename));
-			reviewFile.getParentFile().mkdirs();
-			PrintWriter out = null;
-			try {
-				out = new PrintWriter(new FileWriter(reviewFile));
-				out.print(reviewEntry.getReview().getContent());
-				if (reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_TEMPLATE)) {
-					List<TemplateReply> templateReplies = ((ReviewReply) reviewEntry.getReview()).getTemplateReplies();
-					for (TemplateReply tempReply: templateReplies){
-						out.print(tempReply.getSection().getText());						
-						out.print(tempReply.getText());
-					}						
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				logger.error("Failed to save review HTML", e);
-			} finally {
-				if (out != null) {
-					out.flush();
-					out.close();
+				}else{
+					 
+					studentGroup = new UserGroup();
+					studentGroup.setTutorial(writingActivity.getTutorial());				
+				}	
+				String filename = reviewEntry.getOwner().getLastname() + ", " + reviewEntry.getOwner().getFirstname() + " (" + reviewEntry.getOwner().getUsername() + ") - reviewed - " + (docEntry.getOwnerGroup() != null ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getId() + ")") + ".html";
+	//			logger.info("Review File: "+getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), studentGroup.getTutorial(), organization) + "/" + FileUtil.escapeFilename(filename));
+				File reviewFile = new File(getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), studentGroup.getTutorial(), organization) + "/" + FileUtil.escapeFilename(filename));
+				reviewFile.getParentFile().mkdirs();
+				PrintWriter out = null;
+				try {
+					out = new PrintWriter(new FileWriter(reviewFile));
+					out.print(reviewEntry.getReview().getContent());
+					if (reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_TEMPLATE)) {
+						List<TemplateReply> templateReplies = ((ReviewReply) reviewEntry.getReview()).getTemplateReplies();
+						for (TemplateReply tempReply: templateReplies){
+							out.print(tempReply.getSection().getText());						
+							out.print(tempReply.getText());
+						}						
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+					logger.error("Failed to save review HTML", e);
+				} finally {
+					if (out != null) {
+						out.flush();
+						out.close();
+					}
 				}
 			}
 		}
@@ -351,11 +359,13 @@ public class AssignmentManager {
 		
 		// release reviews 
 		for(ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
-			DocEntry docEntry = reviewEntry.getDocEntry();
-			//Check if the review hasn't been released early
-			if (!docEntry.getReviews().contains(reviewEntry.getReview())){
-				docEntry.getReviews().add(reviewEntry.getReview());
-				assignmentDao.save(docEntry);
+			if (!reviewEntry.isDeleted()){
+				DocEntry docEntry = reviewEntry.getDocEntry();
+				//Check if the review hasn't been released early
+				if (!docEntry.getReviews().contains(reviewEntry.getReview())){
+					docEntry.getReviews().add(reviewEntry.getReview());
+					assignmentDao.save(docEntry);
+				}
 			}
 		}
 
@@ -373,25 +383,27 @@ public class AssignmentManager {
 		WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
 		if(writingActivity != null && writingActivity.getEmailStudents()){
 			List<DocEntry> notifiedDocEntries = new ArrayList<DocEntry>();
-			for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {					
-				//Reviewed User
-				User user = reviewEntry.getDocEntry().getOwner();
-				if (!notifiedDocEntries.contains(reviewEntry.getDocEntry())){
-					try {
-						if (user != null){
-							emailNotifier.sendReviewFinishNotification(user, course, writingActivity, deadline.getName());
-							notifiedDocEntries.add(reviewEntry.getDocEntry());
-						}else{ 
-							//it's a document owned by a group
-							Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
-							for (User userToNotify : students) {
-								emailNotifier.sendReviewFinishNotification(userToNotify, course, writingActivity, deadline.getName());								
+			for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
+				if (!reviewEntry.isDeleted()){
+					//Reviewed User
+					User user = reviewEntry.getDocEntry().getOwner();
+					if (!notifiedDocEntries.contains(reviewEntry.getDocEntry())){
+						try {
+							if (user != null){
+								emailNotifier.sendReviewFinishNotification(user, course, writingActivity, deadline.getName());
+								notifiedDocEntries.add(reviewEntry.getDocEntry());
+							}else{ 
+								//it's a document owned by a group
+								Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
+								for (User userToNotify : students) {
+									emailNotifier.sendReviewFinishNotification(userToNotify, course, writingActivity, deadline.getName());								
+								}
+								notifiedDocEntries.add(reviewEntry.getDocEntry());
 							}
-							notifiedDocEntries.add(reviewEntry.getDocEntry());
+						} catch (Exception e) {
+							e.printStackTrace();
+							logger.error("Failed to send review finish notification.", e);
 						}
-					} catch (Exception e) {
-						e.printStackTrace();
-						logger.error("Failed to send review finish notification.", e);
 					}
 				}
 			}
@@ -1020,7 +1032,7 @@ public class AssignmentManager {
 				}	
 			} else {
 				for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
-					if(reviewEntry.getDocEntry() != null) {
+					if(!reviewEntry.isDeleted() && reviewEntry.getDocEntry() != null) {
 						docEntries.add(reviewEntry.getDocEntry());
 					}
 				}
@@ -1173,6 +1185,7 @@ public class AssignmentManager {
 					reviewEntry.setOwner(user);
 					reviewEntry.setTitle(user.getLastname() + "," + user.getFirstname());
 					reviewEntry.setReview(review);
+					reviewEntry.setDeleted(false);
 					assignmentDao.save(reviewEntry);
 					reviewingActivity.getEntries().add(reviewEntry);
 					assignmentDao.save(reviewingActivity);
@@ -1249,17 +1262,18 @@ public class AssignmentManager {
 	
 	/**
 	 * This method set the review templates as deleted. It doesn't revove it from the database or Google.
+	 * The review template will be deleted if it's not being used
 	 * @param reviewTemplate review template to set as deleted
 	 * @throws Exception
 	 */
 	public void deleteReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
 		// Load the review template with all its relationships
 		reviewTemplate = loadReviewTemplateRelationships(reviewTemplate,reviewTemplate.getOrganization());
-		reviewTemplate.setDeleted(true);
 		if (assignmentDao.isReviewTemplateInUse(reviewTemplate))
 		{
-			throw new MessageException(Constants.EXIST_REVIEW_WITH_REVIEW_TEMPLATE);
+			throw new MessageException(Constants.EXCEPTION_DELETE_REVIEW_TEMPLATE_IN_USE);
 		} else {
+			reviewTemplate.setDeleted(true);
 			assignmentDao.save(reviewTemplate);
 		}
 	}
@@ -1280,7 +1294,11 @@ public class AssignmentManager {
 
 	public void deleteReviewEntry(String reviewEntryId) throws Exception {
 			ReviewEntry reviewEntry = assignmentDao.loadReviewEntry(Long.valueOf(reviewEntryId));
-			assignmentDao.delete(reviewEntry);		
+			if (reviewEntry == null){
+				throw new MessageException(Constants.EXCEPTION_REVIEW_ENTRY_NOT_FOUND);
+			}
+			reviewEntry.setDeleted(true);
+			assignmentDao.save(reviewEntry);	
 	}
 	
 	public ReviewEntry saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId, Organization organization) throws Exception{
@@ -1298,6 +1316,7 @@ public class AssignmentManager {
 			reviewEntry.setDocEntry(docEntry);
 			reviewEntry.setOwner(user);
 			reviewEntry.setTitle(user.getLastname()+","+user.getFirstname());
+			reviewEntry.setDeleted(false);
 			assignmentDao.save(reviewEntry);
 			
 			reviewingActivity.getEntries().add(reviewEntry);

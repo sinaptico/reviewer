@@ -44,20 +44,20 @@ public class AssignmentDao {
 		this.sessionFactory = sessionFactory;
 	}
 
-	public void delete(Object object) throws MessageException{
-		Session session = this.getSession();
-		try{
-			session.beginTransaction();
-			session.delete(object);
-			session.getTransaction().commit();
-		} catch(HibernateException he){
-			if ( session != null && session.getTransaction() != null){
-				session.getTransaction().rollback();
-			}
-			he.printStackTrace();
-			throw new MessageException(Constants.EXCEPTION_DELETE);
-		}
-	}
+//	public void delete(Object object) throws MessageException{
+//		Session session = this.getSession();
+//		try{
+//			session.beginTransaction();
+//			session.delete(object);
+//			session.getTransaction().commit();
+//		} catch(HibernateException he){
+//			if ( session != null && session.getTransaction() != null){
+//				session.getTransaction().rollback();
+//			}
+//			he.printStackTrace();
+//			throw new MessageException(Constants.EXCEPTION_DELETE);
+//		}
+//	}
 
 	private Session getSession() {
 		return sessionFactory.getCurrentSession();

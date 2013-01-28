@@ -26,7 +26,7 @@ public class ReviewEntry extends Entry {
 	/** The owner. */
 	@ManyToOne
 	protected User owner;
-
+	
 	/**
 	 * Gets the doc entry.
 	 *
@@ -105,4 +105,7 @@ public class ReviewEntry extends Entry {
 		
 		return entry;
 	}
+	
+	
+	
 }

@@ -381,8 +381,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public String deleteReviewEntry(String reviewEntryId) throws Exception {
 		initialize();
 		try {
-			assignmentManager.deleteReviewEntry(reviewEntryId);		
-			return reviewEntryId;
+			if (isAdminOrSuperAdmin()) {
+				assignmentManager.deleteReviewEntry(reviewEntryId);
+				return reviewEntryId;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;

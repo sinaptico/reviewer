@@ -63,6 +63,7 @@ public class Constants {
 	public static String EXCEPTION_ENCRYPT="Failed to encrypt the value";
 	public static String EXCEPTION_DECRYPT="Failed to decrypt the value";
 	
+	
 		
 	// Dao Exceptions
 	public static String EXCEPTION_HIBERNATE_SESSION_MESSAGE="Failed to create a session to database";
@@ -76,14 +77,17 @@ public class Constants {
 	public static String EXCEPTION_GET_COURSES="Failed to load the courses";
 	public static String EXCEPTION_GET_DELETED_COURSES ="Failed to load the deleted courses";
 	public static String EXCEPTION_GET_COURSE="Failed to load the course";
-	public static String EXCEPTION_DELETE_COURSE="Failed to delete the courses";
+	public static String EXCEPTION_DELETE_COURSE="Failed to delete the course";
+	public static String EXCEPTION_DELETE_COURSE_NOT_FINISHED="The course can no be deleted because it has not finished";
 	public static String EXCEPTION_MOCKING_USER="Failed to mock the user";
 	public static String EXCEPTION_DELETE_WRITING_ACTIVITY ="Failed to delete the writing activity";
+	public static String EXCEPTION_DELETE_WRITING_ACTIVITY_NOT_FINISHED="The activity can not be deleted because it has not finished";
 	public static String EXCEPTION_GET_USER_STATS ="Failed to get the user stats";
 	public static String EXCEPTION_COURSE_NOT_FOUND = "Course not found";
 	public static String EXCEPTION_SAVE_REVIEW_TEMPLATE ="Failed to save the review template";
 	public static String EXCEPTION_GET_REVIEW_TEMPLATE ="Failed to load the review template";
 	public static String EXCEPTION_DELETE_REVIEW_TEMPLATE ="Failed to delete the review template";
+	public static String EXCEPTION_DELETE_REVIEW_TEMPLATE_IN_USE ="The review template can not be deleted because it's in use";
 	public static String EXCEPTION_GET_REVIEW_TEMPLATES="Failed to load the review templates";
 	public static String EXCEPTION_GET_DELETED_REVIEW_TEMPLATES="Failed to load the deleted review templates";
 	public static String EXCEPTION_REVIEW_TEMPLATE_NOT_FOUND = "Review template not found";
@@ -122,7 +126,6 @@ public class Constants {
 	public static String EXCEPTION_SAVE_LECTURERS ="Failed to save the list of lecturers";
 	public static String EXCEPTION_SAVE_TUTORS ="Failed to save ths list of tutors";
 	public static String EXCEPTION_SAVE_USERS_GROUPS ="Failed to save the students groups";
-//	public static String EXCEPTION_SAVE_SUPERVISOR ="Failed to save the supervisor";
 	public static String EXCEPTION_SAVE_TEMPLATE ="Failed to save the template (doc entry)";
 	public static String EXCEPTION_INVALID_LECTURER="Invalid lecturer";
 	public static String EXCEPTION_EMPTY_LECTURERS_LIST="Empty list of lecturers";
@@ -141,11 +144,11 @@ public class Constants {
 	public static String EXCEPTION_GET_SECTION = "Failed to get the section";
 	public static String EXCEPTION_SAVE_STUDENTS = "Failed to save the students";
 	public static String EXCEPTION_LOGOUT = "Failed to logout the user";
-	public static String MESSAGE_LOGOUT_OK ="You are logged out";
+	
 	public static String EXCEPTION_GOOGLE_USER_HAS_ACCESS = "This user already has access to the document.";
 	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";
 	public static String EXCEPTION_GET_DELETED_WRITING_ACTIVITIES="Failed to get the deleted writing activities";
-	public static String EXIST_REVIEW_WITH_REVIEW_TEMPLATE="The review template can not be deleted because it's in use";
+	public static String EXCEPTION_REVIEW_ENTRY_NOT_FOUND = "Review entry not found";
 	
 	
 	// Roles
