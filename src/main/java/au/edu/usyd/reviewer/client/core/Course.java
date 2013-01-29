@@ -84,13 +84,13 @@ public class Course implements Serializable {
 	private Set<User> supervisors = new HashSet<User>();
 	
 	/** The student groups. */
-	@OneToMany(cascade = CascadeType.REMOVE)
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "Course_StudentGroups_UserGroup")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<UserGroup> studentGroups = new HashSet<UserGroup>();
 	
 	/** The writing activities. */
-	@OneToMany(cascade = CascadeType.REMOVE)
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "Course_Activities_Activity")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<WritingActivity> writingActivities = new HashSet<WritingActivity>();

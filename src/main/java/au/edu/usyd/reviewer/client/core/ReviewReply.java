@@ -35,7 +35,8 @@ public class ReviewReply extends Review implements Serializable {
 	/** The template replies/answers to the review template sections. */
 	@OneToMany
 	@IndexColumn(name = "replyIndex")
-	@Cascade(CascadeType.SAVE_UPDATE)
+//	@Cascade(CascadeType.SAVE_UPDATE)
+	@Cascade(CascadeType.ALL)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<TemplateReply> templateReplies = new ArrayList<TemplateReply>();
 	

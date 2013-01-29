@@ -41,7 +41,7 @@ public class DocEntry extends Entry {
 	protected String documentId;
 	
 	/** The reviews. */
-	@OneToMany(cascade = CascadeType.REMOVE)
+	@OneToMany(cascade = CascadeType.ALL)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@JoinTable(name = "DocEntry_Reviews_Review")
 	protected Set<Review> reviews = new HashSet<Review>();

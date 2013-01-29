@@ -553,6 +553,7 @@ public class AdminEntryPoint implements EntryPoint {
 											Window.alert("Failed to delete course: " + caught.getMessage());
 										}
 										deleteButton.setEnabled(true);
+										refreshCoursesTree();
 									}
 
 									@Override

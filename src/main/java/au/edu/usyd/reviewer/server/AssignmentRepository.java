@@ -288,25 +288,19 @@ public class AssignmentRepository {
 		}
 		
 		//check if lecturers are wasm users, (create passwords for non wasm users)
+		//if the user doesn't exist into the database then the password will be created in the AssignmentManager class
 		for (User lecturer : course.getLecturers()){
-//			if (lecturer.getEmail().contains("sydney.edu.au") || lecturer.getEmail().contains("usyd.edu.au") ){
-//				lecturer.setWasmuser(true);
-//			}else{
-				lecturer.setWasmuser(false);
-				lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-//			}
+			lecturer.setWasmuser(false);
+//			lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 			lecturer.addRole(Constants.ROLE_ADMIN);
 			lecturer.addRole(Constants.ROLE_GUEST);				
 		}
 		
 		//check if tutors are wasm users, (create passwords for non wasm users)
+		//if the user doesn't exist into the database then the password will be created in the AssignmentManager class
 		for (User tutor : course.getTutors()){
-//			if (tutor.getEmail().contains("sydney.edu.au") || tutor.getEmail().contains("usyd.edu.au") ){
-//				tutor.setWasmuser(true);
-//			}else{
-				tutor.setWasmuser(false);
-				tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-//			}
+			tutor.setWasmuser(false);
+//			tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 			tutor.addRole(Constants.ROLE_ADMIN);					
 			tutor.addRole(Constants.ROLE_GUEST);
 		}		
@@ -342,13 +336,11 @@ public class AssignmentRepository {
 			}
 			
 			//check if student is a wasm user, (create passwords for non wasm users)
-//			if (student.getEmail().contains("sydney.edu.au") || student.getEmail().contains("usyd.edu.au") ){
-//				student.setWasmuser(true);
-//			}else{
-				student.setWasmuser(false);
-				student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-				student.getRole_name().add("guest");
-//			}
+			student.setWasmuser(false);
+			//if the user doesn't exist into the database then the password will be created in the AssignmentManager class
+//			student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+			student.getRole_name().add("guest");
+	
 			// check if student group already exists
 			if (studentGroups.contains(studentGroup)) {
 				studentGroup = studentGroups.get(studentGroups.indexOf(studentGroup));

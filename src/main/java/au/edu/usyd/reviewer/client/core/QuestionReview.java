@@ -26,7 +26,8 @@ public class QuestionReview extends Review implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@OneToMany
 	@IndexColumn(name = "questionIndex")
-	@Cascade(CascadeType.SAVE_UPDATE)
+//	@Cascade(CascadeType.SAVE_UPDATE)
+	@Cascade(CascadeType.ALL)
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<Question> questions = new ArrayList<Question>();
 
