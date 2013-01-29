@@ -189,10 +189,10 @@ public class GoogleDocsServiceImpl {
 		return docsService.insert(url, spreadsheetEntry);
 	}
 
-	public void delete(DocumentListEntry documentListEntry) throws IOException, ServiceException {
+//	public void delete(DocumentListEntry documentListEntry) throws IOException, ServiceException {
 //		logger.info("Deleting document: " + documentListEntry.getResourceId());
-		docsService.delete(new URL(DOCUMENT_FEEDS_URL + documentListEntry.getResourceId()), "*");
-	}
+//		docsService.delete(new URL(DOCUMENT_FEEDS_URL + documentListEntry.getResourceId()), "*");
+//	}
 
 	public void deleteDocumentPermission(DocumentListEntry entry, String user) throws MalformedURLException, IOException, ServiceException {
 //		logger.info("Deleting document permission: " + entry.getResourceId() + ", user=" + user);

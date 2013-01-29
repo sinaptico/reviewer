@@ -185,15 +185,15 @@ public class AssignmentRepository {
 		return user;
 	}
 	
-	public void deleteActivity(WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException {
-		FolderEntry folderEntry = googleDocsServiceImpl.getFolder(writingActivity.getFolderId());
-		folderEntry.delete();
-	}
+//	public void deleteActivity(WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException {
+//		FolderEntry folderEntry = googleDocsServiceImpl.getFolder(writingActivity.getFolderId());
+//		folderEntry.delete();
+//	}
 
-	public void deleteCourse(Course course) throws MalformedURLException, IOException, ServiceException {
-		FolderEntry folderEntry = googleDocsServiceImpl.getFolder(course.getFolderId());
-		folderEntry.delete();
-	}
+//	public void deleteCourse(Course course) throws MalformedURLException, IOException, ServiceException {
+//		FolderEntry folderEntry = googleDocsServiceImpl.getFolder(course.getFolderId());
+//		folderEntry.delete();
+//	}
 
 	public void downloadDocumentFile(DocEntry docEntry, String filePath) throws IOException, ServiceException, MessageException {
 		try{

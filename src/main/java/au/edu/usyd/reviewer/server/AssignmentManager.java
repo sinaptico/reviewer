@@ -109,7 +109,7 @@ public class AssignmentManager {
 			writingActivity.setDeleted(true);
 			assignmentDao.save(writingActivity);
 		} else {
-			new MessageException(Constants.EXCEPTION_DELETE_WRITING_ACTIVITY_NOT_FINISHED);
+			throw new MessageException(Constants.EXCEPTION_DELETE_WRITING_ACTIVITY_NOT_FINISHED);
 		}
 	}
 

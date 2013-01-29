@@ -75,7 +75,7 @@ public class GoogleUserServiceImpl {
     }
 
     public void deleteUser(String username) throws AppsForYourDomainException, ServiceException, IOException {
-//        logger.info("Deleting user: id='" + username + "'");
+        logger.info("Deleting user: id='" + username + "'");
         URL deleteUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
         userService.delete(deleteUrl);
     }
