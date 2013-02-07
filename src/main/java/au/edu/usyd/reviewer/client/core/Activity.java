@@ -173,5 +173,4 @@ public abstract class Activity<E extends Entry> implements Serializable {
 		this.deleted = deleted;
 	}
 	
-	
 }

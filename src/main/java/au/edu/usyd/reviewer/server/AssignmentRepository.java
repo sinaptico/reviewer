@@ -289,21 +289,21 @@ public class AssignmentRepository {
 		
 		//check if lecturers are wasm users, (create passwords for non wasm users)
 		//if the user doesn't exist into the database then the password will be created in the AssignmentManager class
-		for (User lecturer : course.getLecturers()){
-			lecturer.setWasmuser(false);
+//		for (User lecturer : course.getLecturers()){
+//			lecturer.setWasmuser(false);
 //			lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-			lecturer.addRole(Constants.ROLE_ADMIN);
-			lecturer.addRole(Constants.ROLE_GUEST);				
-		}
+//			lecturer.addRole(Constants.ROLE_ADMIN);
+//			lecturer.addRole(Constants.ROLE_GUEST);				
+//		}
 		
 		//check if tutors are wasm users, (create passwords for non wasm users)
 		//if the user doesn't exist into the database then the password will be created in the AssignmentManager class
-		for (User tutor : course.getTutors()){
-			tutor.setWasmuser(false);
+//		for (User tutor : course.getTutors()){
+//			tutor.setWasmuser(false);
 //			tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-			tutor.addRole(Constants.ROLE_ADMIN);					
-			tutor.addRole(Constants.ROLE_GUEST);
-		}		
+//			tutor.addRole(Constants.ROLE_ADMIN);					
+//			tutor.addRole(Constants.ROLE_GUEST);
+//		}		
 
 		// clear student groups
 		List<UserGroup> studentGroups = new ArrayList<UserGroup>(course.getStudentGroups());
@@ -339,7 +339,7 @@ public class AssignmentRepository {
 			student.setWasmuser(false);
 			//if the user doesn't exist into the database then the password will be created in the AssignmentManager class
 //			student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-			student.getRole_name().add("guest");
+			student.getRole_name().add(Constants.ROLE_GUEST);
 	
 			// check if student group already exists
 			if (studentGroups.contains(studentGroup)) {
@@ -384,7 +384,7 @@ public class AssignmentRepository {
 		this.updateDocument(templatesFolder);
 	}
 	
-	public void updateDocument(DocEntry docEntry) throws MalformedURLException, IOException, ServiceException {
+	public DocEntry updateDocument(DocEntry docEntry) throws MalformedURLException, IOException, ServiceException {
 		// get document owners
 		Collection<User> owners = new LinkedList<User>();
 		if (docEntry.getOwner() != null) {
@@ -399,11 +399,9 @@ public class AssignmentRepository {
 		List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-//				String email = owner.getUsername() + "@" + googleUserServiceImpl.getDomain();
 				String email = owner.getEmail();
 				if (aclEntry.getScope().getValue().equals(email)) {
 					try{
-//						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, email);
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
@@ -416,7 +414,6 @@ public class AssignmentRepository {
 			}
 			try{
 				googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getEmail());
-				//googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 			} catch(com.google.gdata.util.VersionConflictException vce){
 				vce.printStackTrace();
 				if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
@@ -445,7 +442,8 @@ public class AssignmentRepository {
 					aclEntry.delete();
 				}
 			}
-		}	
+		}
+		return docEntry;
 	}
 	
 	private boolean isAnOwner(Collection<User> owners, User user) {

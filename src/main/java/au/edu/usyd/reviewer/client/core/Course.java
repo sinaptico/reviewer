@@ -84,13 +84,13 @@ public class Course implements Serializable {
 	private Set<User> supervisors = new HashSet<User>();
 	
 	/** The student groups. */
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.REMOVE)
 	@JoinTable(name = "Course_StudentGroups_UserGroup")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<UserGroup> studentGroups = new HashSet<UserGroup>();
 	
 	/** The writing activities. */
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.REMOVE)
 	@JoinTable(name = "Course_Activities_Activity")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<WritingActivity> writingActivities = new HashSet<WritingActivity>();
@@ -463,8 +463,9 @@ public class Course implements Serializable {
 				reviewers.add(user.clone());
 			}
 		}
-		
 		course.setAutomaticReviewers(reviewers);
+		
+		course.setDeleted(this.isDeleted());
 		course.setDomainName(this.getDomainName());
 		course.setFolderId(this.getFolderId());
 		course.setId(this.getId());
@@ -478,9 +479,11 @@ public class Course implements Serializable {
 		course.setLecturers(lecturers);
 		
 		course.setName(this.getName());
+		
 		if (this.getOrganization() != null){
 			course.setOrganization(this.getOrganization().clone());
 		}
+
 		course.setSemester(this.getSemester());
 		course.setSpreadsheetId(this.getSpreadsheetId());
 		
@@ -491,7 +494,7 @@ public class Course implements Serializable {
 			}
 		}
 		course.setStudentGroups(studentGroups);
-		
+
 		Set<User> supervisors = new HashSet<User>();
 		for(User user: this.getSupervisors()){
 			if (user != null){
@@ -532,7 +535,6 @@ public class Course implements Serializable {
 		course.setWritingActivities(activities);
 		
 		course.setYear(this.getYear());
-
 		return course;
 	}
 }

@@ -146,7 +146,7 @@ public class AssignmentServiceImpl extends RemoteServiceServlet implements Assig
 		
 		if (storedUser.getPassword().equalsIgnoreCase(typedPasswordDigested)){
 			storedUser.setPassword(RealmBase.Digest(newPassword, "MD5",null));
-			assignmentDao.save(storedUser);
+			storedUser = userDao.save(storedUser);
 		}else{
 			throw new Exception("Wrong password, please try again");
 		}

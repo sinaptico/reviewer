@@ -78,7 +78,7 @@ public class Constants {
 	public static String EXCEPTION_GET_DELETED_COURSES ="Failed to load the deleted courses";
 	public static String EXCEPTION_GET_COURSE="Failed to load the course";
 	public static String EXCEPTION_DELETE_COURSE="Failed to delete the course";
-	public static String EXCEPTION_DELETE_COURSE_NOT_FINISHED="The course can no be deleted because it has not finished";
+	public static String EXCEPTION_DELETE_COURSE_NOT_FINISHED="The course can not be deleted because it has not finished";
 	public static String EXCEPTION_MOCKING_USER="Failed to mock the user";
 	public static String EXCEPTION_DELETE_WRITING_ACTIVITY ="Failed to delete the writing activity";
 	public static String EXCEPTION_DELETE_WRITING_ACTIVITY_NOT_FINISHED="The activity can not be deleted because it has not finished";
@@ -144,6 +144,7 @@ public class Constants {
 	public static String EXCEPTION_GET_SECTION = "Failed to get the section";
 	public static String EXCEPTION_SAVE_STUDENTS = "Failed to save the students";
 	public static String EXCEPTION_LOGOUT = "Failed to logout the user";
+	public static String EXCEPTION_DELETE_REVIEWING_ACTIVITY_NOT_FINISHED ="The writing activity can not be deleted because there is a reviewing activity whose status is not finished";
 	
 	public static String EXCEPTION_GOOGLE_USER_HAS_ACCESS = "This user already has access to the document.";
 	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";

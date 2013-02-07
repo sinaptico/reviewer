@@ -211,4 +211,5 @@ public abstract class Entry implements Serializable {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
+	
 }

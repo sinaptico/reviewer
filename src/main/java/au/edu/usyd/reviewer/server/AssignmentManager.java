@@ -1,10 +1,5 @@
 package au.edu.usyd.reviewer.server;
 
-//import glosser.app.doc.Doc;
-
-
-import java.io.BufferedReader;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,7 +28,6 @@ import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.util.PDFMergerUtility;
-import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,9 +99,17 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public void deleteActivity(WritingActivity writingActivity) throws Exception {
+		boolean allReviewing = true;
 		if (writingActivity.getStatus() == WritingActivity.STATUS_FINISH){
-			writingActivity.setDeleted(true);
-			assignmentDao.save(writingActivity);
+			for(ReviewingActivity reviewing:writingActivity.getReviewingActivities()){
+				allReviewing = allReviewing && (reviewing.getStatus() == WritingActivity.STATUS_FINISH);
+			}
+			if (allReviewing){
+				writingActivity.setDeleted(true);
+				writingActivity = assignmentDao.save(writingActivity);
+			} else {
+				throw new MessageException(Constants.EXCEPTION_DELETE_REVIEWING_ACTIVITY_NOT_FINISHED);
+			}	 
 		} else {
 			throw new MessageException(Constants.EXCEPTION_DELETE_WRITING_ACTIVITY_NOT_FINISHED);
 		}
@@ -173,7 +175,7 @@ public class AssignmentManager {
 				}
 				
 				docEntry.setDownloaded(true);
-				assignmentDao.save(docEntry);
+				docEntry = assignmentDao.save(docEntry);
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.error("Failed to download document PDF. ", e);
@@ -203,12 +205,12 @@ public class AssignmentManager {
 			// lock documents
 			for (DocEntry docEntry : writingActivity.getEntries()) {
 				docEntry.setLocked(true);
-				assignmentDao.save(docEntry);
+				docEntry = assignmentDao.save(docEntry);
 			}
 	
 			// update activity status
 			writingActivity.setStatus(Activity.STATUS_FINISH);
-			assignmentDao.save(writingActivity);
+			writingActivity = assignmentDao.save(writingActivity);
 		}
 
 		// download PDF documents
@@ -219,13 +221,13 @@ public class AssignmentManager {
 			if (deadline.equals(reviewingActivity.getStartDate())) {
 				updateActivityReviews(course, writingActivity, reviewingActivity);
 				reviewingActivity.setStatus(Activity.STATUS_START);
-				assignmentDao.save(reviewingActivity);
+				reviewingActivity = assignmentDao.save(reviewingActivity);
 			}
 		}
 
 		// update activity deadline status
 		deadline.setStatus(Deadline.STATUS_DEADLINE_FINISH);
-		assignmentDao.save(deadline);
+		deadline = assignmentDao.save(deadline);
 		
 		// schedule next activity deadline
 		scheduleActivityDeadline(course, writingActivity);
@@ -355,7 +357,7 @@ public class AssignmentManager {
 
 		// update activity status
 		reviewingActivity.setStatus(Activity.STATUS_FINISH);
-		assignmentDao.save(reviewingActivity);
+		reviewingActivity = assignmentDao.save(reviewingActivity);
 		
 		// release reviews 
 		for(ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
@@ -364,7 +366,7 @@ public class AssignmentManager {
 				//Check if the review hasn't been released early
 				if (!docEntry.getReviews().contains(reviewEntry.getReview())){
 					docEntry.getReviews().add(reviewEntry.getReview());
-					assignmentDao.save(docEntry);
+					docEntry = assignmentDao.save(docEntry);
 				}
 			}
 		}
@@ -463,7 +465,7 @@ public class AssignmentManager {
 			assignmentRepository.createActivity(course, writingActivity);
 		}
 
-		assignmentDao.save(writingActivity);
+		writingActivity = assignmentDao.save(writingActivity);
 		
 		course.getWritingActivities().add(writingActivity);
 		courseDao.save(course);
@@ -532,6 +534,9 @@ public class AssignmentManager {
 				if ( lecturer.getOrganization() == null){
 					lecturer.setOrganization(course.getOrganization());
 				}
+				lecturer.addRole(Constants.ROLE_ADMIN);
+				lecturer.addRole(Constants.ROLE_GUEST);	
+				lecturer.setWasmuser(false);
 				if (lecturer.getDomain() != null &&  lecturer.getOrganization() != null && 
 						lecturer.getOrganization().getGoogleDomain() != null &&
 						lecturer.getDomain().toLowerCase().equals(lecturer.getOrganization().getGoogleDomain().toLowerCase())){	
@@ -553,6 +558,9 @@ public class AssignmentManager {
 				if ( tutor.getOrganization() == null){
 					tutor.setOrganization(course.getOrganization());
 				}
+				tutor.addRole(Constants.ROLE_ADMIN);					
+				tutor.addRole(Constants.ROLE_GUEST);
+				tutor.setWasmuser(false);
 				if (tutor.getDomain() != null && tutor.getOrganization() != null && 
 						tutor.getOrganization().getGoogleDomain()!= null &&
 						tutor.getDomain().toLowerCase().equals(tutor.getOrganization().getGoogleDomain().toLowerCase())){
@@ -622,7 +630,7 @@ public class AssignmentManager {
 					student.setId(user.getId());
 				}
 			}
-			assignmentDao.save(studentGroup);
+			studentGroup = assignmentDao.save(studentGroup);
 		}
 	}
 	
@@ -643,6 +651,7 @@ public class AssignmentManager {
 	}
 	
 	public Course saveCourse(Course course, User user) throws Exception {
+		
 		//Set up folders and templates
 		setUpFoldersAndTemplates(course);
 		
@@ -767,7 +776,7 @@ public class AssignmentManager {
 		for (DocEntry docEntry : docEntries) {
 			docEntry.setDomainName(domainName);
 		}		
-		assignmentDao.save(writingActivity);
+		writingActivity = assignmentDao.save(writingActivity);
 
 		// schedule next activity deadline
 		scheduleActivityDeadline(course, writingActivity);
@@ -818,7 +827,7 @@ public class AssignmentManager {
 						newLogpageEntry.setTitle("Entry " + (logbookDocEntry.getPages().size() + 1));
 						logbookDocEntry.getPages().add(newLogpageEntry);
 						assignmentRepository.createDocument(writingActivity, logbookDocEntry, course);
-						assignmentDao.save(newLogpageEntry);
+						newLogpageEntry = assignmentDao.save(newLogpageEntry);
 					} catch (Exception e) {
 						// unlock document
 						logpageDocEntry.setLocked(false);
@@ -827,8 +836,8 @@ public class AssignmentManager {
 					}
 
 					// submit entry
-					assignmentDao.save(logpageDocEntry);
-					assignmentDao.save(logbookDocEntry);
+					logpageDocEntry = assignmentDao.save(logpageDocEntry);
+					logbookDocEntry = assignmentDao.save(logbookDocEntry);
 
 					// merge document pdf
 					try {
@@ -899,7 +908,7 @@ public class AssignmentManager {
 			} else {
 				if (writingActivity.getEarlySubmit()){
 					docEntry.setEarlySubmitDate(new Date());
-					assignmentDao.save(docEntry);
+					docEntry = assignmentDao.save(docEntry);
 				}
 				
 				if (docEntry.isLocalFile()){
@@ -937,19 +946,23 @@ public class AssignmentManager {
 						students.add(student);
 					}
 				}
+				Set<DocEntry> savedDocEntries = new HashSet<DocEntry>();
 				for (Iterator<DocEntry> docEntries = writingActivity.getEntries().iterator(); docEntries.hasNext();) {
 					DocEntry docEntry = docEntries.next();
 					try{
 						//update permission if any user has changed groups
-						updateDocument(docEntry);
+						docEntry = updateDocument(docEntry);
+						savedDocEntries.add(docEntry);
 					} catch (Exception e) {
 						logger.error("Failed to update document : " + docEntry.getTitle(), e);
 					}
 					if (writingActivity.getGroups() && !course.getStudentGroups().contains(docEntry.getOwnerGroup()) || !writingActivity.getGroups() && !students.contains(docEntry.getOwner())) {
+						savedDocEntries.remove(docEntry);
 						docEntries.remove();
-						assignmentDao.save(writingActivity);
+						writingActivity = assignmentDao.save(writingActivity);
 					}
 				}
+				writingActivity.setEntries(savedDocEntries);
 			}			
 				
 
@@ -1006,9 +1019,9 @@ public class AssignmentManager {
 			for (DocEntry newDocEntry : newDocEntries) {
 				try {
 					assignmentRepository.createDocument(writingActivity, newDocEntry, course);
-					assignmentDao.save(newDocEntry);
+					newDocEntry = assignmentDao.save(newDocEntry);
 					writingActivity.getEntries().add(newDocEntry);
-					assignmentDao.save(writingActivity);
+					writingActivity = assignmentDao.save(writingActivity);
 				} catch (Exception e) {
 					logger.error("Failed to create document: " + newDocEntry.getTitle(), e);
 				}
@@ -1171,7 +1184,7 @@ public class AssignmentManager {
 						}
 					}
 					review.setFeedbackTemplateType(reviewingActivity.getFeedbackTemplateType());
-					assignmentDao.save(review);
+					review = assignmentDao.save(review);
 					
 					// Tracking monitor for study
 					if (writingActivity.getTrackReviews()){
@@ -1186,9 +1199,9 @@ public class AssignmentManager {
 					reviewEntry.setTitle(user.getLastname() + "," + user.getFirstname());
 					reviewEntry.setReview(review);
 					reviewEntry.setDeleted(false);
-					assignmentDao.save(reviewEntry);
+					reviewEntry = assignmentDao.save(reviewEntry);
 					reviewingActivity.getEntries().add(reviewEntry);
-					assignmentDao.save(reviewingActivity);
+					reviewingActivity = assignmentDao.save(reviewingActivity);
 				}
 			}
 		}
@@ -1221,24 +1234,21 @@ public class AssignmentManager {
 	public DocEntry  updateDocument(DocEntry docEntry) throws Exception {
 		synchronized (docEntry.getDocumentId().intern()) {
 			try {
-				assignmentRepository.updateDocument(docEntry);
+				docEntry = assignmentRepository.updateDocument(docEntry);
 			} catch (Exception e) {
 				logger.error("Error updating document permission.", e);
 				throw e;
 			}
-			assignmentDao.save(docEntry);
+			docEntry = assignmentDao.save(docEntry);
 		}
 
 		// resubmit document if activity has finished
 		if (docEntry.getDownloaded() && docEntry.getLocked() && !(docEntry instanceof LogbookDocEntry)) {
 			try {
-				this.submitDocument(docEntry);
+				docEntry = submitDocument(docEntry);
 			} catch (Exception e) {
 				logger.error("Error submitting document.", e);
 			}
-		}
-		if (docEntry != null){
-			docEntry = docEntry.clone();
 		}
 		return docEntry;
 	}
@@ -1248,12 +1258,12 @@ public class AssignmentManager {
 		for (Section section : reviewTemplate.getSections()) {
 			if (section.getType() != Section.OPEN_QUESTION) {
 				for (Choice choice : section.getChoices()) {
-					assignmentDao.save(choice);
+					choice = assignmentDao.save(choice);
 				}
 			}
-			assignmentDao.save(section);
+			section = assignmentDao.save(section);
 		}
-		assignmentDao.save(reviewTemplate);
+		reviewTemplate = assignmentDao.save(reviewTemplate);
 		if (reviewTemplate != null){
 			reviewTemplate = reviewTemplate.clone();
 		}
@@ -1274,12 +1284,15 @@ public class AssignmentManager {
 			throw new MessageException(Constants.EXCEPTION_DELETE_REVIEW_TEMPLATE_IN_USE);
 		} else {
 			reviewTemplate.setDeleted(true);
-			assignmentDao.save(reviewTemplate);
+			reviewTemplate = assignmentDao.save(reviewTemplate);
 		}
 	}
 	
 	public String updateReviewDocEntry(String reviewEntryId, String newDocEntry) throws Exception {
 		ReviewEntry reviewEntry =  assignmentDao.loadReviewEntry(Long.valueOf(reviewEntryId));
+		if (reviewEntry == null){
+			throw new MessageException(Constants.EXCEPTION_REVIEW_ENTRY_NOT_FOUND);
+		}
 		DocEntry docEntry = assignmentDao.loadDocEntryWhereId(Long.valueOf(newDocEntry));
 		
 		if ( (docEntry.getOwner()!=null && reviewEntry.getOwner() == docEntry.getOwner()) 
@@ -1287,7 +1300,7 @@ public class AssignmentManager {
 			throw new Exception("Reviewer can't be owner of the document.");
 		}else{ 
 			reviewEntry.setDocEntry(docEntry);
-			assignmentDao.save(reviewEntry);			
+			reviewEntry = assignmentDao.save(reviewEntry);			
 		}
 		return docEntry.getTitle();
 	}
@@ -1298,7 +1311,7 @@ public class AssignmentManager {
 				throw new MessageException(Constants.EXCEPTION_REVIEW_ENTRY_NOT_FOUND);
 			}
 			reviewEntry.setDeleted(true);
-			assignmentDao.save(reviewEntry);	
+			reviewEntry = assignmentDao.save(reviewEntry);	
 	}
 	
 	public ReviewEntry saveNewReviewEntry(String reviewingActivityId, String userId, String docEntryId, Organization organization) throws Exception{
@@ -1310,17 +1323,17 @@ public class AssignmentManager {
 		if (assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user) == null){
 			ReviewEntry reviewEntry = new ReviewEntry();
 			Review review = new Review();		
-			assignmentDao.save(review);
+			review = assignmentDao.save(review);
 			reviewEntry.setReview(review);
 			
 			reviewEntry.setDocEntry(docEntry);
 			reviewEntry.setOwner(user);
 			reviewEntry.setTitle(user.getLastname()+","+user.getFirstname());
 			reviewEntry.setDeleted(false);
-			assignmentDao.save(reviewEntry);
+			reviewEntry = assignmentDao.save(reviewEntry);
 			
 			reviewingActivity.getEntries().add(reviewEntry);
-			assignmentDao.save(reviewingActivity);
+			reviewingActivity = assignmentDao.save(reviewingActivity);
 			
 			return reviewEntry;			
 		}else{
@@ -1641,7 +1654,7 @@ public class AssignmentManager {
 		studentGroup.setName(group);
 		
 		//save the user group
-		assignmentDao.save(studentGroup);
+		studentGroup = assignmentDao.save(studentGroup);
 		
 		//add the user group to the course
 		course.getStudentGroups().add(studentGroup);
@@ -1659,15 +1672,15 @@ public class AssignmentManager {
 		return assignmentDao.loadGrade(deadline, user);
 	}
 	
-	public void saveGrade(Grade grade) throws Exception {
-		assignmentDao.save(grade);
+	public Grade saveGrade(Grade grade) throws Exception {
+		return grade = assignmentDao.save(grade);
 	}
 	
 	public  WritingActivity loadWritingActivityWhereDeadline(Deadline deadline) throws Exception {
 		return assignmentDao.loadWritingActivityWhereDeadline(deadline);
 	}
 	
-	public void saveWritingActivity(WritingActivity activity) throws Exception{
-			assignmentDao.save(activity);
+	public WritingActivity saveWritingActivity(WritingActivity activity) throws Exception{
+		return activity = assignmentDao.save(activity);
 	}
 }

@@ -22,6 +22,7 @@
 package au.edu.usyd.reviewer.gdata;
 
 import com.google.gdata.data.BaseEntry;
+
 import com.google.gdata.data.MediaContent;
 import com.google.gdata.data.OutOfLineContent;
 import com.google.gdata.data.PlainTextConstruct;
@@ -35,6 +36,7 @@ import com.google.gdata.data.media.MediaFileSource;
 import com.google.gdata.data.media.MediaSource;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
+import com.google.gdata.util.VersionConflictException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,8 +76,8 @@ public class GoogleDocsServiceImpl {
 
 	public AclEntry addDocumentPermission(DocumentListEntry entry, AclRole aclRole, String user) throws IOException, ServiceException {
 //		logger.info("Adding document permission: " + entry.getResourceId() + ", role=" + aclRole.getValue() + ", user=" + user);
-		AclScope aclScope = new AclScope(AclScope.Type.USER, user);
 		AclEntry aclEntry = new AclEntry();
+		AclScope aclScope = new AclScope(AclScope.Type.USER, user);
 		aclEntry.setRole(aclRole);
 		aclEntry.setScope(aclScope);
 		return docsService.insert(new URL(entry.getAclFeedLink().getHref()), aclEntry);

@@ -14,21 +14,28 @@ import org.hibernate.criterion.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.edu.usyd.reviewer.client.core.Activity;
+import au.edu.usyd.reviewer.client.core.Choice;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.DocumentType;
+import au.edu.usyd.reviewer.client.core.Entry;
+import au.edu.usyd.reviewer.client.core.GeneralRating;
 import au.edu.usyd.reviewer.client.core.Grade;
+import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
+import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.QuestionRating;
 import au.edu.usyd.reviewer.client.core.QuestionReview;
 import au.edu.usyd.reviewer.client.core.Rating;
 import au.edu.usyd.reviewer.client.core.Review;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewReply;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
+import au.edu.usyd.reviewer.client.core.ReviewTemplateEntry;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.Section;
-import au.edu.usyd.reviewer.client.core.TemplateReply;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
@@ -43,21 +50,6 @@ public class AssignmentDao {
 	public AssignmentDao(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
-
-//	public void delete(Object object) throws MessageException{
-//		Session session = this.getSession();
-//		try{
-//			session.beginTransaction();
-//			session.delete(object);
-//			session.getTransaction().commit();
-//		} catch(HibernateException he){
-//			if ( session != null && session.getTransaction() != null){
-//				session.getTransaction().rollback();
-//			}
-//			he.printStackTrace();
-//			throw new MessageException(Constants.EXCEPTION_DELETE);
-//		}
-//	}
 
 	private Session getSession() {
 		return sessionFactory.getCurrentSession();
@@ -206,7 +198,9 @@ public class AssignmentDao {
 		try{
 			session = this.getSession();
 			session.beginTransaction();
-			ReviewEntry reviewEntry = (ReviewEntry) session.createCriteria(ReviewEntry.class).add(Property.forName("id").eq(reviewEntryId)).uniqueResult();
+			ReviewEntry reviewEntry = (ReviewEntry) session.createCriteria(ReviewEntry.class).add(Property.forName("id").eq(reviewEntryId))
+																							 .add(Property.forName("deleted").eq(false))
+																							 .uniqueResult();
 			session.getTransaction().commit();
 			if (reviewEntry != null){
 				reviewEntry = reviewEntry.clone();
@@ -313,7 +307,7 @@ public class AssignmentDao {
 				if (course != null){
 					Set<WritingActivity> activities = new HashSet<WritingActivity>();
 					for(WritingActivity activity : course.getWritingActivities()){
-						if (!activity.isDeleted()){
+						if (activity!=null && !activity.isDeleted()){
 							activities.add(activity);	
 						}
 					}
@@ -377,7 +371,7 @@ public class AssignmentDao {
 			String ownerQuery = "select distinct reviewEntry from ReviewEntry reviewEntry " + 
 			"join fetch reviewEntry.docEntry docEntry " + 
 			"join fetch reviewEntry.owner owner " + 
-			"where owner=:owner AND docEntry=:docEntry";
+			"where owner=:owner AND docEntry=:docEntry AND reviewEntry.deleted=false";
 	
 			session = this.getSession();
 			session.beginTransaction();
@@ -401,7 +395,7 @@ public class AssignmentDao {
 		try{
 			String ownerQuery = "select reviewEntry from ReviewEntry reviewEntry " + 
 			"join fetch reviewEntry.review review " + 
-			"where review=:review";
+			"where review=:review AND reviewEntry.deleted=false";
 	
 			session = this.getSession();
 			session.beginTransaction();
@@ -482,7 +476,7 @@ public class AssignmentDao {
 		try{
 			String query = "from ReviewingActivity reviewingActivity " + 
 			"join fetch reviewingActivity.entries reviewEntry " + 
-			"where reviewEntry.review=:review and reviewingActivity.deleted=false";
+			"where reviewEntry.review=:review and reviewingActivity.deleted=false AND reviewEntry.deleted=false";
 			session = this.getSession();
 			session.beginTransaction();
 			ReviewingActivity reviewingActivity = (ReviewingActivity) session.createQuery(query)
@@ -642,7 +636,7 @@ public class AssignmentDao {
 				+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) "
 				+ "AND (reviewEntry.owner=:user)"
 				+ "AND (course.semester=:semester AND course.year=:year) "
-				+ " and course.deleted = false and writingActivity.deleted=false ";
+				+ " and course.deleted = false and writingActivity.deleted=false AND reviewEntry.deleted=false ";
 			
 			if (!includeFinishedReviews){
 				query = query + "AND (reviewingAcitvity.status = 1)";	
@@ -779,7 +773,7 @@ public class AssignmentDao {
 
 	}
 
-	public void save(Object object) throws MessageException{
+	private void saveObject(Object object) throws MessageException{
 		Session session = this.getSession();
 		try{
 			session.beginTransaction();
@@ -794,6 +788,128 @@ public class AssignmentDao {
 		}
 	}
 
+	public Choice save(Choice object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			object = object.clone();
+		}
+		return object;
+	}
+	
+	public QuestionRating save(QuestionRating object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			object = object.clone();
+		}
+		return object;
+	}
+	
+	public <R extends Rating> R save(R  object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			if (object instanceof QuestionRating){
+				object = (R) ((QuestionRating) object).clone();
+			} else if (object instanceof Rating){
+				object =  (R) ((GeneralRating) object).clone();
+			}
+		}
+		return object;
+	}
+	
+	public Grade save(Grade object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			object = object.clone();
+		}
+		return object;
+	}
+	
+	
+	
+	public ReviewTemplate save(ReviewTemplate object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			object = object.clone();
+		}
+		return object;
+	}
+	
+	public Section save(Section object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			object = object.clone();
+		}
+		return object;
+	}
+	
+	public <E extends Entry> E save(E  object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			if (object instanceof DocEntry){
+				object = (E) ((DocEntry) object).clone();
+			} else if (object instanceof ReviewEntry){
+				object =  (E) ((ReviewEntry) object).clone();
+			} else if (object instanceof LogbookDocEntry){
+				object =  (E) ((LogbookDocEntry) object).clone();
+			} else if (object instanceof LogpageDocEntry){
+				object =  (E) ((LogpageDocEntry) object).clone();
+			}
+			
+		} else if (object instanceof ReviewTemplateEntry){
+			object =  (E) ((ReviewTemplateEntry) object).clone();
+		}
+		return object;
+	}
+	
+	public <R extends Review> R save(R  object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			if (object instanceof QuestionReview){
+				object = (R) ((QuestionReview) object).clone();
+			} else if (object instanceof ReviewReply){
+				object =  (R) ((ReviewReply) object).clone();
+			}
+		} 
+		return object;
+	}
+	
+	
+	public UserGroup save(UserGroup object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			object = object.clone();
+		}
+		return object;
+	}
+	
+	public ReviewingActivity save(ReviewingActivity object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			object = object.clone();
+		}
+		return object;
+	}
+	
+	public Deadline save(Deadline object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			object = object.clone();
+		}
+		return object;
+	}
+	
+	public <A extends Activity> A  save(A object) throws MessageException{
+		saveObject(object);
+		if(object != null){
+			if (object instanceof WritingActivity){
+				object = (A) ((WritingActivity) object).clone();
+			} else if (object instanceof ReviewingActivity){
+				object = (A) ((ReviewingActivity) object).clone();
+			}
+		}
+		return object;
+	}
+	
 	public List<ReviewTemplate> loadReviewTemplates(Organization organization) throws MessageException{
 		List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
 		Session session = null;
@@ -856,13 +972,6 @@ public class AssignmentDao {
 			List<ReviewingActivity> reviewingActivities = session.createQuery(query).setParameter("id", reviewTemplate.getId()).list();
 			session.getTransaction().commit();
 			return (reviewingActivities.size() > 0);
-//			String query = "from TemplateReply templateReply " + 
-//			"where reviewTemplate=:template and";
-//			session = this.getSession();
-//			session.beginTransaction();		 
-//			List<TemplateReply> templateReplies = session.createQuery(query).setParameter("template", reviewTemplate).list();
-//			session.getTransaction().commit();
-//			return templateReplies.size() > 0;
 		} catch (Exception e){
 			e.printStackTrace();
 			if ( session != null && session.getTransaction() != null){

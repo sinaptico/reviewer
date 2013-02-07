@@ -222,7 +222,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				if (course.getOrganization() == null){
 					course.setOrganization(organization);
 				}
-				return assignmentManager.saveCourse(course, user);
+				course = assignmentManager.saveCourse(course, user);
+				return course;
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw e;
@@ -262,11 +263,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				grade.setUser(user);
 			}
 			grade.setValue(gradeValue);
-			assignmentDao.save(grade);
+			grade = assignmentDao.save(grade);
 			
 			WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
 			writingActivity.getGrades().add(grade);
-			assignmentDao.save(writingActivity);
+			writingActivity = assignmentDao.save(writingActivity);
 			if (grade != null){
 				grade = grade.clone();
 			}

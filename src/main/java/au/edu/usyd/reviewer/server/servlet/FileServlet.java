@@ -234,7 +234,7 @@ public class FileServlet extends HttpServlet {
 	                            docEntry.setUploaded(true);
 	                            docEntry.setFileName(fileName+"."+extension);
 //	                            logger.info("fileName+Extension " + fileName+"."+extension);
-	                            assignmentDao.save(docEntry);
+	                            docEntry = assignmentDao.save(docEntry);
 	      				}       
       			    }     
                 }

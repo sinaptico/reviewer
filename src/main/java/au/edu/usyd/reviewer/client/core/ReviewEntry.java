@@ -102,7 +102,7 @@ public class ReviewEntry extends Entry {
 		
 		entry.setTitle(this.getTitle());
 		entry.setUploaded(this.isUploaded());
-		
+		entry.setDeleted(isDeleted());
 		return entry;
 	}
 	

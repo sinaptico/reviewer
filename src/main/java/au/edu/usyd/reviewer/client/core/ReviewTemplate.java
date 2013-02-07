@@ -192,7 +192,7 @@ public class ReviewTemplate implements Serializable {
 			}
 		}
 		template.setSections(sections);
-		
+		template.setDeleted(this.isDeleted());
 		return template;
 	}
 

@@ -266,6 +266,7 @@ public class User implements Serializable {
 
 	public User clone(){
 		User user = new User();
+		
 		user.setId(this.getId());
 		user.setEmail(this.getEmail());
 		user.setFirstname(this.getFirstname());

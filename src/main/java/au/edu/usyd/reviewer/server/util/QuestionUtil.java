@@ -18,6 +18,7 @@ import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.QuestionDao;
 import au.edu.usyd.reviewer.server.Reviewer;
+import au.edu.usyd.reviewer.server.UserDao;
 
 import com.google.gdata.data.docs.DocumentListEntry;
 
@@ -25,6 +26,7 @@ public class QuestionUtil {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private GoogleDocsServiceImpl googleDocsServiceImpl = null;
+	private UserDao userDao = UserDao.getInstance();
 
 	// index the document to lucence
 	public void downloadDoc(String dirpath, WritingActivity writingActivity) throws Exception, MalformedURLException {
@@ -112,7 +114,7 @@ public class QuestionUtil {
 			user.setOrganization(organization);
 //			user.setUsername(generatorlist.get(i));
 			user.setEmail(generatorlist.get(i));
-			assignment.save(user);
+			user = userDao.save(user);
 			Question questionObj = new Question();
 			questionObj.setOwner(user);
 			questionObj.setQuestion(questionlist.get(i));
