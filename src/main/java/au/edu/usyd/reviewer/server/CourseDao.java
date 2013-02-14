@@ -37,6 +37,7 @@ public class CourseDao extends ObjectDao{
 	
 	private static String COURSE_ID ="id";
 	private static String COURSE_NAME = "name";
+	private static String COURSE_DELETED = "deleted";
 	
 	
 	/**
@@ -71,7 +72,7 @@ public class CourseDao extends ObjectDao{
 			session.beginTransaction();
 			course = (Course) session.createCriteria(Course.class)
 									 .add(Property.forName(COURSE_ID).eq(objectId))
-									 .add(Property.forName("deleted").eq(false))
+									 .add(Property.forName(COURSE_DELETED).eq(false))
 									 .uniqueResult();
 			session.getTransaction().commit();
 		} catch(HibernateException he){
@@ -121,7 +122,6 @@ public class CourseDao extends ObjectDao{
 					}
 				}
 				course.setWritingActivities(activities);
-				course = course.clone();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -171,7 +171,7 @@ public class CourseDao extends ObjectDao{
 			session.beginTransaction();
 			Criteria criteria = session.createCriteria(Course.class);
 			criteria.add(Restrictions.like(COURSE_NAME, courseName +"%"));
-			criteria.add(Restrictions.eq("deleted", false));
+			criteria.add(Restrictions.eq(COURSE_DELETED, false));
 			criteria.addOrder( Order.asc(COURSE_NAME) );
 			courses = criteria.list();
 			session.getTransaction().commit();
@@ -206,7 +206,6 @@ public class CourseDao extends ObjectDao{
 					}
 				}
 				course.setWritingActivities(activities);
-				course = course.clone();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -258,7 +257,7 @@ public class CourseDao extends ObjectDao{
 			session.beginTransaction();
 			course = (Course) session.createCriteria(Course.class)
 									 .add(Property.forName(COURSE_ID).eq(courseId))
-									 .add(Property.forName("deleted").eq(false))
+									 .add(Property.forName(COURSE_DELETED).eq(false))
 									 .uniqueResult();
 			session.getTransaction().commit();
 			if (course != null){
@@ -509,7 +508,7 @@ public class CourseDao extends ObjectDao{
 		Session session = getSession();
 		Course course = (Course) session.createCriteria(Course.class)
 										.add(Property.forName(COURSE_NAME).eq(name))
-										.add(Property.forName("deleted").eq(false)).uniqueResult();
+										.add(Property.forName(COURSE_DELETED).eq(false)).uniqueResult();
 		if (course != null){
 			Set<WritingActivity> activities = new HashSet<WritingActivity>();
 			for(WritingActivity activity : course.getWritingActivities()){

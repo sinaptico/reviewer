@@ -303,12 +303,7 @@
              <artifactId>tomcat-catalina</artifactId>
              <version>7.0.0</version>
              <scope>provided</scope>
-        </dependency>
-        <dependency>
-  			<groupId>org.bouncycastle</groupId>
-  			<artifactId>bcprov-jdk16</artifactId>
-  			<version>1.46</version>
-		</dependency>     		
+        </dependency>     		
 	</dependencies>	
 		
 	<reporting>

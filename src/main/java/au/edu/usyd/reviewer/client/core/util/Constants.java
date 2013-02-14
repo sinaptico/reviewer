@@ -145,6 +145,11 @@ public class Constants {
 	public static String EXCEPTION_SAVE_STUDENTS = "Failed to save the students";
 	public static String EXCEPTION_LOGOUT = "Failed to logout the user";
 	public static String EXCEPTION_DELETE_REVIEWING_ACTIVITY_NOT_FINISHED ="The writing activity can not be deleted because there is a reviewing activity whose status is not finished";
+	public static String EXCEPTION_SAVE_EMAIL="Failed to save the email";
+	public static String EXCEPTION_GET_EMAILS="Failed to load the emails";
+	public static String EXCEPTION_GET_EMAIL="Failed to load the email";
+	
+
 	
 	public static String EXCEPTION_GOOGLE_USER_HAS_ACCESS = "This user already has access to the document.";
 	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";

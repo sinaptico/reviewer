@@ -926,9 +926,6 @@ public class AssignmentManager {
 				FileUtil.zipFolder(tutorialfolder, new File(tutorialfolder.getAbsolutePath() + ".zip"));
 				docEntry.setDownloaded(true);
 			}
-			if (docEntry !=null){
-				docEntry = docEntry.clone();
-			}
 			return docEntry;
 		}
 	}

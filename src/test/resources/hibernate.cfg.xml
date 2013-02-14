@@ -62,5 +62,6 @@
 		<mapping class="au.edu.usyd.reviewer.client.core.Organization" />
 		<mapping class="au.edu.usyd.reviewer.client.core.ReviewerProperty" />
 		<mapping class="au.edu.usyd.reviewer.client.core.OrganizationProperty" />
+		<mapping class="au.edu.usyd.reviewer.client.core.Email" />
 	</session-factory>
 </hibernate-configuration>

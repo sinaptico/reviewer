@@ -1,12 +1,11 @@
 package au.edu.usyd.reviewer.server;
 
-import java.security.Security;
+
 import java.util.Iterator;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.lang.StringUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
@@ -33,7 +32,6 @@ public class Reviewer {
     
 	static {
 		try {
-			installBouncyCastle();
 			config = new PropertiesConfiguration("reviewer.properties");
 			for (Iterator<String> keys = config.getKeys(); keys.hasNext();) {
 				String property = keys.next();
@@ -64,9 +62,10 @@ public class Reviewer {
 			try {
 	 			String domain = organization.getGoogleDomain();
 				String username = organization.getGoogleUsername();
-				String password = AESCipher.decrypt(organization.getGooglePassword());			
+				AESCipher aesCipher = AESCipher.getInstance();
+				String password = aesCipher.decrypt(organization.getGooglePassword());
 				String emailUsername = organization.getEmailUsername();
-				String emailPassword = AESCipher.decrypt(organization.getEmailPassword());
+				String emailPassword = aesCipher.decrypt(organization.getEmailPassword());
 				String smtpHost = organization.getSMTPHost();
 				String smtpPort = organization.getSMTPPort();
 				
@@ -172,12 +171,5 @@ public class Reviewer {
 	
 	public static String getReviewerLogosHome(){
 		return config.getString(Constants.REVIEWER_LOGOS_HOME);
-	}
-
-	private static BouncyCastleProvider installBouncyCastle() {
-		  BouncyCastleProvider provider = new BouncyCastleProvider();
-		  Security.addProvider(provider);
-		  return provider;
-	}
-	
+	}	
 }
