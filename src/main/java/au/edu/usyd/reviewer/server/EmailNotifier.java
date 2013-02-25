@@ -16,16 +16,15 @@ import javax.mail.internet.MimeMessage;
 import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
+import au.edu.usyd.reviewer.client.core.EmailCourse;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 public class EmailNotifier {
 
-	//private static final String SMTP_HOST = "smtp.gmail.com";
-	//private static final String SMTP_PORT = "465";
-//	private static final String SMTP_HOST = "smtp.usyd.edu.au";
-//	private static final String SMTP_PORT = "25";	//576 //993(ssl)
 	private String username;
 	private String password;
 	private String smtpHost;
@@ -37,13 +36,6 @@ public class EmailNotifier {
 	private String fromName = "iWrite Assignment Tracker";
 	private String fromAddress = "no-reply@"+domain;
 	private DateFormat dateFormat = new SimpleDateFormat("E d MMM h:mma");
-
-	private final String STUDENT_REVIEW_START_MESSAGE = "Dear %s," + "\n\nYou need to review the '%s' of one of your peers. Please visit %s to write and submit your review before the deadline on %s." + "\n\n" + fromName;
-	private final String STUDENT_ACTIVITY_START_MESSAGE = "Dear %s," + "\n\nA Google document has been created for you to write your '%s'. Please visit %s to write and submit your document before the deadline on %s. " + "\n\n" + fromName;
-	private final String LECTURER_DEADLINE_FINISH_MESSAGE = "Dear %s," + "\n\nThe '%s' %s assessment has finished " + "\nPlease go to %s to download the documents." + "\n\n" + fromName;
-	private final String PASSWORD_DETAILS = "Dear %s," + "\n\nThe iWrite application for the course '%s' is now available for you." + "\nTo login, please go to http://iwrite.sydney.edu.au/reviewer/iWrite.html." + "\n\nUsername: '%s' \nPassword: '%s' " +"\n\n iWrite Assignment Tracker";
-	private final String STUDENT_REVIEW_FINISH_MESSAGE = "Dear %s," + "\n\nThe '%s' %s assessment has finished " + "\nReviews are now available." + "\n\n" + fromName;
-	private final String STUDENT_RECEIVED_REVIEW_MESSAGE = "Dear %s," + "\n\nYou have received feedback from the activity '%s'. " + "\nYou can go to %s to read it." + "\n\n" + fromName;
  
 	public EmailNotifier(String username, String password, String smtpHost, String smtpPort, String domain) throws NoSuchProviderException {
 		this.username = username;
@@ -62,12 +54,6 @@ public class EmailNotifier {
 		properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 		properties.put("mail.smtp.socketFactory.fallback", "false");
 		
-		//properties.put("mail.smtp.host", SMTP_HOST);
-		//properties.put("mail.smtp.port", SMTP_PORT);
-		//properties.put("mail.smtp.auth", "false");
-		//properties.put("mail.smtp.socketFactory.port", SMTP_PORT);
-		//properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-		//properties.put("mail.smtp.socketFactory.fallback", "false");
 		mailSession = Session.getDefaultInstance(properties);
 		transport = mailSession.getTransport();
 	}
@@ -80,17 +66,31 @@ public class EmailNotifier {
 		return properties;
 	}
 
-	public void sendLecturerDeadlineFinishNotification(User lecturer, Course course, Activity activity, String deadlineName) throws MessagingException, UnsupportedEncodingException {
+	public void sendLecturerDeadlineFinishNotification(User lecturer, Course course, Activity activity, String deadlineName) throws MessagingException, UnsupportedEncodingException, MessageException {
 		String subject = "[" + course.getName().toUpperCase() + "] " + activity.getName();
 		String to = lecturer.getFirstname() + " " + lecturer.getLastname();
-		String content = String.format(LECTURER_DEADLINE_FINISH_MESSAGE, to, activity.getName(), deadlineName, getIwriteLinkForUser(lecturer));
+		EmailCourse email = course.getEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH);
+//		String content = String.format(email.getMessage() + fromName, to, activity.getName(), deadlineName, getIwriteLinkForUser(lecturer));
+		String content = email.getMessage();
+		content = content.replaceAll("@LecturerName@", to);
+		content = content.replaceAll("@ActivityName@", activity.getName());
+		content = content.replaceAll("@DeadlineName@", deadlineName);
+		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(lecturer));
+		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(lecturer, subject, content);
 	}
 	
-	public void sendReviewFinishNotification(User user, Course course, WritingActivity writingActivity, String deadlineName) throws MessagingException, UnsupportedEncodingException {
+	public void sendReviewFinishNotification(User user, Course course, WritingActivity writingActivity, String deadlineName) throws MessagingException, UnsupportedEncodingException, MessageException {
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
 		String to = user.getFirstname() + " " + user.getLastname();
-		String content = String.format(STUDENT_REVIEW_FINISH_MESSAGE, to, writingActivity.getName(), deadlineName, getIwriteLinkForUser(user));
+		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH); 
+//		String content = String.format(email.getMessage() + fromName, to, writingActivity.getName(), deadlineName, getIwriteLinkForUser(user));
+		String content = email.getMessage();
+		content = content.replaceAll("@StudentName@", to);
+		content = content.replaceAll("@ActivityName@", writingActivity.getName());
+		content = content.replaceAll("@DeadlineName@", deadlineName);
+		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(user));
+		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(user, subject, content);
 	}	
 
@@ -109,29 +109,56 @@ public class EmailNotifier {
 		transport.sendMessage(message, message.getRecipients(Message.RecipientType.TO));
 	}
 
-	public void sendStudentActivityStartNotification(User student, Course course, WritingActivity writingActivity, Deadline deadline) throws MessagingException, UnsupportedEncodingException {
+	public void sendStudentActivityStartNotification(User student, Course course, WritingActivity writingActivity, Deadline deadline) throws MessagingException, UnsupportedEncodingException, MessageException {
 		String deadlineDate = dateFormat.format(deadline.getFinishDate());
 		String to = student.getFirstname() + " " + student.getLastname();
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
-		String content = String.format(STUDENT_ACTIVITY_START_MESSAGE, to, writingActivity.getName(), getIwriteLinkForUser(student), deadlineDate);
+		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_ACTIVITY_START);
+//		String content = String.format(email.getMessage() + fromName, to, writingActivity.getName(), getIwriteLinkForUser(student), deadlineDate);
+		String content = email.getMessage();
+		content = content.replaceAll("@StudentName@", to);
+		content = content.replaceAll("@ActivityName@", writingActivity.getName());
+		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(student));
+		content = content.replaceAll("@DeadlineDate@", deadlineDate);
+		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(student, subject, content);
 	}
 
-	public void sendStudentReviewStartNotification(User student, Course course, WritingActivity writingActivity, Deadline deadline) throws MessagingException, UnsupportedEncodingException {		
+	public void sendStudentReviewStartNotification(User student, Course course, WritingActivity writingActivity, Deadline deadline) throws MessagingException, UnsupportedEncodingException, MessageException {		
 		String deadlineDate = dateFormat.format(writingActivity.getReviewingActivities().get(0).getFinishDate());
 		String to = student.getFirstname() + " " + student.getLastname();
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
-		String content = String.format(STUDENT_REVIEW_START_MESSAGE, to, writingActivity.getName(), getIwriteLinkForUser(student), deadlineDate);
+		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_REVIEW_START);
+//		String content = String.format(email.getMessage() + fromName, to, writingActivity.getName(), getIwriteLinkForUser(student), deadlineDate);
+		String content = email.getMessage();
+		content = content.replaceAll("@StudentName@", to);
+		content = content.replaceAll("@ActivityName@", writingActivity.getName());
+		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(student));
+		content = content.replaceAll("@DeadlineDate@", deadlineDate);
+		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(student, subject, content);
 	}
 
-	public void sendPasswordNotification(User user, String courseName) throws MessagingException, UnsupportedEncodingException {
-		String content = String.format(PASSWORD_DETAILS, user.getFirstname()+" "+user.getLastname(), courseName, user.getUsername(), user.getPassword());
+	public void sendPasswordNotification(User user, Course course) throws MessagingException, UnsupportedEncodingException, MessageException {
+		EmailCourse email = course.getEmail(Constants.EMAIL_PASSWORD_DETAILS);
+//		String content = String.format(email.getMessage(), user.getFirstname()+" "+user.getLastname(), course.getName(), user.getUsername(), user.getPassword());
+		String content = email.getMessage();
+		content = content.replaceAll("@UserName@", user.getFirstname()+" "+user.getLastname());
+		content = content.replaceAll("@CourseName@", course.getName());
+		content = content.replaceAll("@UserUsername@", user.getUsername());
+		content = content.replaceAll("@Password@", user.getPassword());
+		content = content.replaceAll("@iWriteLink@", getIwriteLink());
 		this.sendNotification(user, "iWrite user details", content);
 	}
 	
-	public void sendReviewEarlyFinishNotification(User user, Course course, ReviewingActivity reviewingActivity) throws MessagingException, UnsupportedEncodingException {
-		String content = String.format(STUDENT_RECEIVED_REVIEW_MESSAGE, user.getFirstname()+" "+user.getLastname(), reviewingActivity.getName(), getIwriteLinkForUser(user));
+	public void sendReviewEarlyFinishNotification(User user, Course course, ReviewingActivity reviewingActivity) throws MessagingException, UnsupportedEncodingException, MessageException {
+		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW);
+//		String content = String.format(email.getMessage() + fromName, user.getFirstname()+" "+user.getLastname(), reviewingActivity.getName(), getIwriteLinkForUser(user));
+		String content = email.getMessage();
+		content = content.replaceAll("@UserName@", user.getFirstname()+" "+user.getLastname());
+		content = content.replaceAll("@ActivityName@", reviewingActivity.getName());
+		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(user));
+		content = content.replaceAll("@FromName@", fromName);
 		String subject = "[" + course.getName().toUpperCase() + "] " + reviewingActivity.getName();
 		this.sendNotification(user, subject, content);
 	}	
@@ -142,5 +169,9 @@ public class EmailNotifier {
 	
 	public void setProperties(Properties properties) {
 		this.properties = properties;
-	}	
+	}
+	
+	private String getIwriteLink(){
+		return "http://iwrite.sydney.edu.au/reviewer/iWrite.html";
+	}
 }

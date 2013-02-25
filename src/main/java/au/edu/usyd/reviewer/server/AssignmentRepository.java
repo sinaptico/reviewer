@@ -23,6 +23,7 @@ import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleDownloadService;
 import au.edu.usyd.reviewer.gdata.GoogleSpreadsheetServiceImpl;
 import au.edu.usyd.reviewer.gdata.GoogleUserServiceImpl;
 
@@ -45,7 +46,10 @@ public class AssignmentRepository {
 	private GoogleDocsServiceImpl googleDocsServiceImpl;
 	private GoogleSpreadsheetServiceImpl googleSpreadsheetServiceImpl;
 	private GoogleUserServiceImpl googleUserServiceImpl;	
+	private GoogleDownloadService googleDownloadServiceImpl;
 	private String googleUserEmail = null;
+	private UserDao userDao = UserDao.getInstance();
+	
 	public AssignmentRepository(String username, String password, String domain) throws  MessageException{
 		try {
 			googleUserEmail = username;
@@ -55,6 +59,7 @@ public class AssignmentRepository {
 			this.googleSpreadsheetServiceImpl = new GoogleSpreadsheetServiceImpl(username, password);
 			this.googleSpreadsheetServiceImpl.setAuthSubToken(null);
 			this.googleSpreadsheetServiceImpl.setUserCredentials(username, password);
+			this.googleDownloadServiceImpl = new GoogleDownloadService(googleDocsServiceImpl.getDocsService(),googleSpreadsheetServiceImpl.getSpreadsheetService());
 		} catch (AuthenticationException e) {
 			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
@@ -89,7 +94,7 @@ public class AssignmentRepository {
 	public void createActivity(Course course, WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException,MessageException {
 		try{
 			String folderName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
-			logger.debug("FolderName " + folderName + " course folder Id " + course.getFolderId());
+//			logger.debug("FolderName " + folderName + " course folder Id " + course.getFolderId());
 			FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
 			writingActivity.setFolderId(folderEntry.getResourceId());
 		} catch(ResourceNotFoundException e){
@@ -149,10 +154,8 @@ public class AssignmentRepository {
 		  List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		  USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-//				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
 				if (aclEntry.getScope().getValue().equals(owner.getEmail())) {
 					try{
-						//googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getEmail());
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
@@ -163,41 +166,23 @@ public class AssignmentRepository {
 					continue USER_LOOP;
 				}
 			}
-//			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getEmail());
 		  }
 		}
 		return docEntry;
 	}
 
-	public User createUser(User user) throws ServiceException, IOException {
-		try {
-			googleUserServiceImpl.createUser(user.getUsername(), user.getFirstname(), user.getLastname(), "Changeme" + user.getUsername() + "!");
-		} catch (AppsForYourDomainException e) {
-			if (e.getErrorCode().equals(AppsForYourDomainErrorCode.EntityExists)) {
-				// continue
-			} else {
-				logger.error("Failed to save user", e);
-				throw e;
-			}
-		}
+	// ServiceException, IOException 
+	public User createUser(User user) throws MessageException{
+		googleUserServiceImpl.createUser(user.getUsername(), user.getFirstname(), user.getLastname(), "Changeme" + user.getUsername() + "!");
 		return user;
 	}
 	
-	public void deleteActivity(WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException {
-		FolderEntry folderEntry = googleDocsServiceImpl.getFolder(writingActivity.getFolderId());
-		folderEntry.delete();
-	}
-
-	public void deleteCourse(Course course) throws MalformedURLException, IOException, ServiceException {
-		FolderEntry folderEntry = googleDocsServiceImpl.getFolder(course.getFolderId());
-		folderEntry.delete();
-	}
-
 	public void downloadDocumentFile(DocEntry docEntry, String filePath) throws IOException, ServiceException, MessageException {
 		try{
 			DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
-			googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+//			googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+			googleDownloadServiceImpl.download(documentListEntry, filePath);
 		} catch(AuthenticationException ae){
 			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION_);
 		}
@@ -224,10 +209,12 @@ public class AssignmentRepository {
 						}
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					logger.error("Error updating document permission.", e);
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("Error getting folder documents.", e);
 		}
 	}
@@ -284,28 +271,24 @@ public class AssignmentRepository {
 			spreadsheetEntry = googleDocsServiceImpl.getSpreadsheet(course.getSpreadsheetId());
 		}
 		
-		//check if lecturers are wasm users, (create passwords for non wasm users)
+		//check if lecturers are wasm users and he doesn't exist(create passwords for non wasm users)
 		for (User lecturer : course.getLecturers()){
-			if (lecturer.getEmail().contains("sydney.edu.au") || lecturer.getEmail().contains("usyd.edu.au") ){
-				lecturer.setWasmuser(true);
-			}else{
+			if (!userDao.containsUser(lecturer)){
 				lecturer.setWasmuser(false);
 				lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+				lecturer.addRole(Constants.ROLE_ADMIN);
+				lecturer.addRole(Constants.ROLE_GUEST);
 			}
-			lecturer.addRole(Constants.ROLE_ADMIN);
-			lecturer.addRole(Constants.ROLE_GUEST);				
 		}
 		
 		//check if tutors are wasm users, (create passwords for non wasm users)
 		for (User tutor : course.getTutors()){
-			if (tutor.getEmail().contains("sydney.edu.au") || tutor.getEmail().contains("usyd.edu.au") ){
-				tutor.setWasmuser(true);
-			}else{
+			if (!userDao.containsUser(tutor)){
 				tutor.setWasmuser(false);
 				tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+				tutor.addRole(Constants.ROLE_ADMIN);					
+				tutor.addRole(Constants.ROLE_GUEST);
 			}
-			tutor.addRole(Constants.ROLE_ADMIN);					
-			tutor.addRole(Constants.ROLE_GUEST);
 		}		
 
 		// clear student groups
@@ -339,13 +322,12 @@ public class AssignmentRepository {
 			}
 			
 			//check if student is a wasm user, (create passwords for non wasm users)
-			if (student.getEmail().contains("sydney.edu.au") || student.getEmail().contains("usyd.edu.au") ){
-				student.setWasmuser(true);
-			}else{
+			if (!userDao.containsUser(student)){
 				student.setWasmuser(false);
 				student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-				student.getRole_name().add("guest");
+				student.getRole_name().add(Constants.ROLE_GUEST);
 			}
+	
 			// check if student group already exists
 			if (studentGroups.contains(studentGroup)) {
 				studentGroup = studentGroups.get(studentGroups.indexOf(studentGroup));
@@ -389,7 +371,7 @@ public class AssignmentRepository {
 		this.updateDocument(templatesFolder);
 	}
 	
-	public void updateDocument(DocEntry docEntry) throws MalformedURLException, IOException, ServiceException {
+	public DocEntry updateDocument(DocEntry docEntry) throws MalformedURLException, IOException, ServiceException {
 		// get document owners
 		Collection<User> owners = new LinkedList<User>();
 		if (docEntry.getOwner() != null) {
@@ -404,11 +386,9 @@ public class AssignmentRepository {
 		List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-//				String email = owner.getUsername() + "@" + googleUserServiceImpl.getDomain();
 				String email = owner.getEmail();
 				if (aclEntry.getScope().getValue().equals(email)) {
 					try{
-//						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, email);
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
@@ -421,7 +401,6 @@ public class AssignmentRepository {
 			}
 			try{
 				googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getEmail());
-				//googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 			} catch(com.google.gdata.util.VersionConflictException vce){
 				vce.printStackTrace();
 				if (!vce.getMessage().equals(Constants.EXCEPTION_GOOGLE_USER_HAS_ACCESS)){
@@ -434,11 +413,9 @@ public class AssignmentRepository {
 		for (AclEntry aclEntry : aclEntries) {
 			User user = new User();
 			user.setEmail(aclEntry.getScope().getValue());
-			//user.setUsername(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
 			if (!isAnOwner(owners, user) && aclEntry.getRole().equals(AclRole.WRITER)) {
 				if (docEntry instanceof LogpageDocEntry) {
 					try{
-						//googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());
 						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getEmail());
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
@@ -450,7 +427,8 @@ public class AssignmentRepository {
 					aclEntry.delete();
 				}
 			}
-		}	
+		}
+		return docEntry;
 	}
 	
 	private boolean isAnOwner(Collection<User> owners, User user) {

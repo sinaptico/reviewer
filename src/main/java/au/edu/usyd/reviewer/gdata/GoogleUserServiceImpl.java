@@ -21,8 +21,12 @@
  ******************************************************************************/
 package au.edu.usyd.reviewer.gdata;
 
+import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+
 import com.google.gdata.client.appsforyourdomain.UserService;
 
+import com.google.gdata.data.appsforyourdomain.AppsForYourDomainErrorCode;
 import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
 import com.google.gdata.data.appsforyourdomain.Login;
 import com.google.gdata.data.appsforyourdomain.Name;
@@ -57,36 +61,96 @@ public class GoogleUserServiceImpl {
         userService.setUserCredentials(adminUsername, adminPassword);
     }
 
-    public UserEntry createUser(String username, String firstname, String lastname, String password) throws AppsForYourDomainException, ServiceException, IOException {
-        logger.info("Creating user: id='" + username + "' firstname='" + firstname + "' lastname='" + lastname + "'");
-        UserEntry entry = new UserEntry();
-        Login login = new Login();
-        login.setAgreedToTerms(true);
-        login.setChangePasswordAtNextLogin(false);
-        login.setUserName(username);
-        login.setPassword(password);
-        entry.addExtension(login);
-        Name name = new Name();
-        name.setGivenName(firstname);
-        name.setFamilyName(lastname);
-        entry.addExtension(name);
-        URL insertUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION);
-        return userService.insert(insertUrl, entry);
+    public UserEntry createUser(String username, String firstname, String lastname, String password) throws MessageException { 
+    	UserEntry entry = new UserEntry();
+    	try{
+	        Login login = new Login();
+	        login.setAgreedToTerms(true);
+	        login.setChangePasswordAtNextLogin(false);
+	        login.setUserName(username);
+	        login.setPassword(password);
+	        entry.addExtension(login);
+	        Name name = new Name();
+	        name.setGivenName(firstname);
+	        name.setFamilyName(lastname);
+	        entry.addExtension(name);
+	        URL insertUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION);
+	       	entry = userService.insert(insertUrl, entry);
+    	} catch(Exception e){
+    		if (e instanceof AppsForYourDomainException){
+				AppsForYourDomainException afyde = (AppsForYourDomainException) e;
+				if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.EntityExists)) {
+					// continue
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserDeletedRecently)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_USER_DELETED_RECENTLY);
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserSuspended)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_USER_SUSPENDED);
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainUserLimitExceeded)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_DOMAIN_USER_LIMIT_EXCEEDED);
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainSuspended)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_DOMAIN_SUSPENDED);
+				} else {
+					throw new MessageException ("Username: " + username + " - " + Constants.EXCEPTION_FAILED_CREATE_USER);
+				}
+			} else {
+				e.printStackTrace();
+				throw new MessageException ("Username: " + username + " - " + Constants.EXCEPTION_FAILED_CREATE_USER);
+			}
+    	}
+        return entry;
     }
 
-    public void deleteUser(String username) throws AppsForYourDomainException, ServiceException, IOException {
-        logger.info("Deleting user: id='" + username + "'");
-        URL deleteUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
-        userService.delete(deleteUrl);
+    public void deleteUser(String username) throws MessageException {
+   	try{
+    		URL deleteUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
+    		userService.delete(deleteUrl);
+    	} catch(Exception e){
+    		if (e instanceof AppsForYourDomainException){
+				AppsForYourDomainException afyde = (AppsForYourDomainException) e;
+				if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.EntityDoesNotExist)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_ENTITY_NOT_EXIST);
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserDeletedRecently)) {
+					// continue
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserSuspended)) {
+					// continue
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainSuspended)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_DOMAIN_SUSPENDED);
+				} else {
+					throw new MessageException ("Username: " + username + " - " + Constants.EXCEPTION_FAILED_DELETE_USER);
+				}
+			} else {
+				e.printStackTrace();
+				throw new MessageException ("Username: " + username + " - " + Constants.EXCEPTION_FAILED_DELETE_USER);
+			}
+    	}
     }
 
     public String getDomain() {
         return domain;
     }
 
-    public UserEntry retrieveUser(String username) throws AppsForYourDomainException, ServiceException, IOException {
-        logger.info("Retrieving user: id='" + username + "'");
-        URL retrieveUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
-        return userService.getEntry(retrieveUrl, UserEntry.class);
+    public UserEntry retrieveUser(String username) throws MessageException {
+    	UserEntry userEntry = null;
+    	try{
+    		URL retrieveUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
+        	userEntry = userService.getEntry(retrieveUrl, UserEntry.class);
+    	} catch (Exception e){
+    		if (e instanceof AppsForYourDomainException){
+				AppsForYourDomainException afyde = (AppsForYourDomainException) e;
+				if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.EntityDoesNotExist)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_ENTITY_NOT_EXIST);
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserDeletedRecently)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_USER_DELETED_RECENTLY);
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserSuspended)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_USER_SUSPENDED);
+				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainSuspended)) {
+					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_DOMAIN_SUSPENDED);
+				} else {
+					e.printStackTrace();
+					throw new MessageException ("Username: " + username + " - " + Constants.EXCEPTION_FAILED_RETRIEVE_USER);
+				}
+			}
+    	}
+    	return userEntry;
     }
 }

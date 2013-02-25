@@ -43,6 +43,9 @@ public abstract class Entry implements Serializable {
 	
 	/** The file name. */
 	protected String fileName;
+	
+	protected boolean deleted;
+	
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
@@ -200,4 +203,13 @@ public abstract class Entry implements Serializable {
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+	
 }

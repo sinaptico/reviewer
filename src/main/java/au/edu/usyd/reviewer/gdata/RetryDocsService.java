@@ -104,7 +104,7 @@ public class RetryDocsService extends DocsService {
 
 	protected <E extends Exception> void handleException(int retryAttempts, E e) throws E, ServiceException {
 		if (retryAttempts >= maxRetryAttempts) {
-            logger.error("Service call aborted after failed attempt " + retryAttempts, e);
+//            logger.error("Service call aborted after failed attempt " + retryAttempts, e);
 			throw e;
 		} else if (e instanceof AuthenticationException) {	
 			if (e.getMessage() != null && e.getMessage().contains("Token expired")) {
@@ -112,7 +112,7 @@ public class RetryDocsService extends DocsService {
 				requestFactory.setAuthToken(getAuthTokenFactory().getAuthToken());
 			}
 		}
-        logger.info("Retrying service call after failed attempt " + retryAttempts, e);
+//        logger.info("Retrying service call after failed attempt " + retryAttempts, e);
 	}
 
 	@Override

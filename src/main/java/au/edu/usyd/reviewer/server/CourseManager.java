@@ -135,6 +135,8 @@ private static CourseManager courseManager = null;
 			for(User lecturer :course.getLecturers()){
 				if (lecturer != null && lecturer.getId() != null){
 					lecturer = userDao.load(lecturer.getId());
+				} else if (lecturer.getId() == null && lecturer.getEmail() != null){
+					lecturer = userDao.getUserByEmail(lecturer.getEmail());
 				}
 				lecturers.add(lecturer);
 			}
@@ -145,6 +147,8 @@ private static CourseManager courseManager = null;
 			for(User tutor :course.getTutors()){
 				if (tutor != null && tutor.getId() != null){
 					tutor = userDao.load(tutor.getId());
+				} else if ( tutor.getId() == null && tutor.getEmail() != null) {
+					tutor = userDao.getUserByEmail(tutor.getEmail());
 				}
 				tutors.add(tutor);
 			}
@@ -201,5 +205,10 @@ private static CourseManager courseManager = null;
 			throw me;
 		}
 	}
-	
+
+	public void deleteCourse(Course course) throws Exception {
+		course = loadCourseRelationships(course,course.getOrganization());
+		assignmentManager.deleteCourse(course);
+		
+	}
 }

@@ -180,7 +180,7 @@ public class Deadline implements Serializable {
 	public void setStatus(int status) {
 		this.status = status;
 	}
-	
+
 	public Deadline clone(){
 		Deadline deadline = new Deadline();
 		deadline.setFinishDate(this.getFinishDate());

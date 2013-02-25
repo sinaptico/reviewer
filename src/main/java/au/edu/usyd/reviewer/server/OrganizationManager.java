@@ -21,6 +21,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+import au.edu.usyd.reviewer.server.util.AESCipher;
 
 /**
  * This class admins the organizations.
@@ -230,6 +231,20 @@ public class OrganizationManager {
 	 * @throws MessageException message for the user
 	 */
 	public OrganizationProperty saveOrganizationProperty(OrganizationProperty organizationProperty) throws Exception{
+		if (organizationProperty != null){
+			ReviewerProperty property = organizationProperty.getProperty();
+			if (property != null && property.getName() != null && 
+					(property.getName().equals(Constants.REVIEWER_EMAIL_PASSWORD) || 
+					 property.getName().equals(Constants.REVIEWER_GOOGLE_PASSWORD))){
+				String value = organizationProperty.getValue();
+				try{
+					value = AESCipher.encrypt(value);
+					organizationProperty.setValue(value);
+				} catch(Exception e){
+					
+				}
+			}
+		}
 		return organizationPropertyDao.save(organizationProperty);
 	}
 	

@@ -60,6 +60,7 @@ public final class FileUtil {
 			out.flush();
 			out.close();
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("Error zipping folder contents: " + sourceFolder, e);
 		}
 	}

@@ -61,6 +61,7 @@ public abstract class Activity<E extends Entry> implements Serializable {
 	@JoinTable(name = "Activity_Entries_Entry")
 	protected Set<E> entries = new HashSet<E>();
 
+	protected boolean deleted = false;
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -163,4 +164,13 @@ public abstract class Activity<E extends Entry> implements Serializable {
 	public void setStatus(int status) {
 		this.status = status;
 	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+	
 }

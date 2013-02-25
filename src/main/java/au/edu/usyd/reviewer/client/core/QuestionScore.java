@@ -79,4 +79,19 @@ public class QuestionScore implements Serializable {
 		this.question = question;
 	}
 
+	public QuestionScore clone(){
+		QuestionScore qs = new QuestionScore();
+		qs.setComment(this.getComment());
+		qs.setGrade(this.getGrade());
+		qs.setId(this.getId());
+		qs.setProduced(this.getProduced());
+		qs.setQualityMeasure(this.getQualityMeasure());
+		
+		if(this.getQuestion()!=null){
+			qs.setQuestion(this.getQuestion().clone());
+		}
+		
+		return qs;
+		
+	}
 }

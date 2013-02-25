@@ -1,13 +1,15 @@
 package au.edu.usyd.reviewer.server.util;
 
 import java.net.MalformedURLException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.edu.usyd.glosser.gdata.GoogleDocsServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleDownloadService;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Question;
@@ -18,6 +20,7 @@ import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.QuestionDao;
 import au.edu.usyd.reviewer.server.Reviewer;
+import au.edu.usyd.reviewer.server.UserDao;
 
 import com.google.gdata.data.docs.DocumentListEntry;
 
@@ -25,23 +28,27 @@ public class QuestionUtil {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private GoogleDocsServiceImpl googleDocsServiceImpl = null;
+	private UserDao userDao = UserDao.getInstance();
+	private GoogleDownloadService googleDownloadServiceImpl = null;
 
 	// index the document to lucence
 	public void downloadDoc(String dirpath, WritingActivity writingActivity) throws Exception, MalformedURLException {
-		logger.info("Download document!");
+//		logger.info("Download document!");
 		for (DocEntry docEntry : writingActivity.getEntries()) {
 			try {
 				DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
 				String filePath = dirpath + "/" + FileUtil.escapeFilename(docEntry.getDocumentId() + ".html");
-				googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+				//googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+				googleDownloadServiceImpl.download(documentListEntry, filePath);
 			} catch (Exception e) {
+				e.printStackTrace();
 				logger.info("document " + docEntry.getId() + " is not found");
 			}
 		}
 	}
 
 	public void insertScoretoExcel(String filepath, WritingActivity writingActivity) {
-		logger.info("Retrieve score from DB and then insert into Excel!");
+//		logger.info("Retrieve score from DB and then insert into Excel!");
 		ArrayList<String> docidlist = new ArrayList<String>();
 		ArrayList<String> scorelist = new ArrayList<String>();
 		ArrayList<String> QMlist = new ArrayList<String>();
@@ -92,11 +99,12 @@ public class QuestionUtil {
 	}
 
 	public void readExcelInsertDB(String filepath, Organization organization) throws MessageException {
-		logger.info("Read Excel and then insert into DB!");
+//		logger.info("Read Excel and then insert into DB!");
 		ExcelEditor excelEditor = new ExcelEditor();
 		try {
 			excelEditor.read(filepath);
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.info("Excel file not found:" + filepath);
 		}
 		ArrayList<String> questionlist = excelEditor.getColumn1data();
@@ -110,7 +118,7 @@ public class QuestionUtil {
 			user.setOrganization(organization);
 //			user.setUsername(generatorlist.get(i));
 			user.setEmail(generatorlist.get(i));
-			assignment.save(user);
+			user = userDao.save(user);
 			Question questionObj = new Question();
 			questionObj.setOwner(user);
 			questionObj.setQuestion(questionlist.get(i));
@@ -124,6 +132,7 @@ public class QuestionUtil {
 
 	public void setGoogleDocsServiceImpl(GoogleDocsServiceImpl googleDocsServiceImpl) {
 		this.googleDocsServiceImpl = googleDocsServiceImpl;
+		this.googleDownloadServiceImpl = new GoogleDownloadService(googleDocsServiceImpl.getDocsService(),null);
 	}
 
 }

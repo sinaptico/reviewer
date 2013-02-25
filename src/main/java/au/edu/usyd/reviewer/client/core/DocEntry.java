@@ -199,6 +199,7 @@ public class DocEntry extends Entry {
 	
 	public DocEntry clone(){
 		DocEntry doc = new DocEntry();
+		
 		doc.setDocumentId(this.getDocumentId());
 		doc.setDomainName(this.getDomainName());
 		doc.setDownloaded(this.getDownloaded());
@@ -222,10 +223,12 @@ public class DocEntry extends Entry {
 				reviews.add(review.clone());
 			}
 		}
-		
 		doc.setReviews(reviews);
+		
 		doc.setTitle(this.getTitle());
 		doc.setUploaded(this.isUploaded());
+		doc.setDeleted(this.isDeleted());
+		
 		return doc;
 	}
 }

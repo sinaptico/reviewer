@@ -38,6 +38,7 @@ import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.CourseDao;
+import au.edu.usyd.reviewer.server.CourseManager;
 import au.edu.usyd.reviewer.server.OrganizationDao;
 import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
@@ -53,6 +54,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class AdminServiceImpl extends RemoteServiceServlet implements AdminService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
+	private CourseManager courseManager = CourseManager.getInstance();
 	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
 	private UserDao userDao = UserDao.getInstance();
 	private CourseDao courseDao = CourseDao.getInstance();
@@ -67,7 +69,16 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		initialize();
 		if (isAdminOrSuperAdmin()) {
 			try {
-				assignmentManager.deleteCourse(course);
+				if (course != null){
+					if (course.getOrganization() == null){
+						course.setOrganization(organization);
+					}
+					courseManager.setAssignmentManager(assignmentManager);
+					courseManager.deleteCourse(course);
+					course = course.clone();
+				} else {
+					throw new MessageException(Constants.EXCEPTION_COURSE_NOT_FOUND);
+				}
 				return course;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -83,7 +94,12 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		initialize();
 		if (isAdminOrSuperAdmin() || isCourseLecturer(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) {
 			try {
-				assignmentManager.deleteActivity(writingActivity);
+				if (writingActivity != null){
+					assignmentManager.deleteActivity(writingActivity);
+					writingActivity = writingActivity.clone();
+				} else {
+					throw new MessageException(Constants.EXCEPTION_WRITING_ACTIVITY_COURSE_NOT_FOUND);
+				}
 				return writingActivity;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -186,7 +202,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			}
 			User mockedUser = userDao.getUserByEmail(email);
 			if (mockedUser != null){
-				logger.info("Mocking user: " + mockedUser.getEmail());
+//				logger.info("Mocking user: " + mockedUser.getEmail());
 				this.getThreadLocalRequest().getSession().setAttribute("mockedUser", mockedUser);
 				return mockedUser;
 			} else{
@@ -206,7 +222,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				if (course.getOrganization() == null){
 					course.setOrganization(organization);
 				}
-				return assignmentManager.saveCourse(course, user);
+				course = assignmentManager.saveCourse(course, user);
+				return course;
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw e;
@@ -246,11 +263,11 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 				grade.setUser(user);
 			}
 			grade.setValue(gradeValue);
-			assignmentDao.save(grade);
+			grade = assignmentDao.save(grade);
 			
 			WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
 			writingActivity.getGrades().add(grade);
-			assignmentDao.save(writingActivity);
+			writingActivity = assignmentDao.save(writingActivity);
 			if (grade != null){
 				grade = grade.clone();
 			}
@@ -311,7 +328,15 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		initialize();
 		if (isAdminOrSuperAdmin()) {
 			try {
-				assignmentManager.deleteReviewTemplate(reviewTemplate);
+				if ( reviewTemplate != null){
+					if (reviewTemplate.getOrganization() == null){
+						reviewTemplate.setOrganization(organization);
+					}
+					assignmentManager.deleteReviewTemplate(reviewTemplate);
+					reviewTemplate = reviewTemplate.clone();
+				} else {
+					throw new MessageException(Constants.EXCEPTION_REVIEW_TEMPLATE_NOT_FOUND);
+				}
 				return reviewTemplate;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -357,8 +382,13 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 	public String deleteReviewEntry(String reviewEntryId) throws Exception {
 		initialize();
 		try {
-			assignmentManager.deleteReviewEntry(reviewEntryId);		
-			return reviewEntryId;
+			if (isAdminOrSuperAdmin()) {
+				assignmentManager.deleteReviewEntry(reviewEntryId);
+				return reviewEntryId;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;

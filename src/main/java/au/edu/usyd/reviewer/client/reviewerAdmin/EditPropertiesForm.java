@@ -154,8 +154,9 @@ public class EditPropertiesForm extends Composite {
 	    		// The user clicked on the button 
 	    		// there is not an organization with the same name
 	    		final String oldValue = property.getValue();
-	    		property.setValue(newPropertyValue);
+	    		
 	    		if (!StringUtil.isBlank(newPropertyValue) ){
+	    			property.setValue(newPropertyValue);
 	    			reviewerAdminService.saveOrganizationProperty(property, new AsyncCallback<OrganizationProperty>(){
 						@Override
 						public void onFailure(Throwable caught) {
@@ -165,19 +166,31 @@ public class EditPropertiesForm extends Composite {
 							} else {
 								message += caught.getMessage();
 							}
-							Window.setTitle(TAB_TITLE_PROPERTY);
+							String name = "";
+							if (property != null && property.getProperty() != null){
+								name = " " + property.getProperty().getName();
+							}
+							Window.setTitle(TAB_TITLE_PROPERTY + name);
 							Window.alert(message);
 							property.setValue(oldValue);
 						}
 		
 						@Override
 						public void onSuccess(OrganizationProperty property) {
-							Window.setTitle(TAB_TITLE_PROPERTY);
+							String name = "";
+							if (property != null && property.getProperty() != null){
+								name = " " + property.getProperty().getName();
+							}
+							Window.setTitle(TAB_TITLE_PROPERTY + name);
 							Window.alert(MESSAGE_SAVED);
 						}
 					});
 	    		} else {
-	    			Window.setTitle(TAB_TITLE_PROPERTY);
+	    			String name = "";
+	    			if (property != null && property.getProperty() != null){
+						name = " " + property.getProperty().getName();
+					}
+	    			Window.setTitle(TAB_TITLE_PROPERTY + name);
 	    			Window.alert(MESSAGE_NAME_EMPTY);
 	    		}
 	    	}
@@ -193,13 +206,13 @@ public class EditPropertiesForm extends Composite {
 	 */
 	private Column<OrganizationProperty,String> createDeleteButtonColumn(){
 		ButtonCell deleteButton = new ButtonCell();
-	    Column<OrganizationProperty,String> saveButtonColumn = new Column<OrganizationProperty,String>(deleteButton) {
+	    Column<OrganizationProperty,String> deleteButtonColumn = new Column<OrganizationProperty,String>(deleteButton) {
 	    	  public String getValue(OrganizationProperty propertyt) {
 	    	    return "Delete"; //button name
 	    	  }
 	    };
 	    	
-	    saveButtonColumn.setFieldUpdater(new FieldUpdater<OrganizationProperty, String>() {
+	    deleteButtonColumn.setFieldUpdater(new FieldUpdater<OrganizationProperty, String>() {
 	    	@Override
 	    	public void update(int index, final OrganizationProperty property, String value) {
 	    		reviewerAdminService.deleteOrganizationProperty(property, new AsyncCallback<OrganizationProperty>(){
@@ -223,6 +236,6 @@ public class EditPropertiesForm extends Composite {
 				});
 	    	}
 	    });
-	    return saveButtonColumn;
+	    return deleteButtonColumn;
 	}
 }
