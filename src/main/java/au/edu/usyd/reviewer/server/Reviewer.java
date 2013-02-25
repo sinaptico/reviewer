@@ -1,5 +1,6 @@
 package au.edu.usyd.reviewer.server;
 
+
 import java.util.Iterator;
 
 import org.apache.commons.configuration.Configuration;
@@ -15,6 +16,7 @@ import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.OrganizationProperty;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+import au.edu.usyd.reviewer.server.util.AESCipher;
 import au.edu.usyd.reviewer.server.util.DigitalSigner;
 
 public class Reviewer {
@@ -33,7 +35,7 @@ public class Reviewer {
 			config = new PropertiesConfiguration("reviewer.properties");
 			for (Iterator<String> keys = config.getKeys(); keys.hasNext();) {
 				String property = keys.next();
-				logger.debug("Setting property: " + property + "=" + config.getString(property));
+//				logger.debug("Setting property: " + property + "=" + config.getString(property));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -60,9 +62,10 @@ public class Reviewer {
 			try {
 	 			String domain = organization.getGoogleDomain();
 				String username = organization.getGoogleUsername();
-				String password = organization.getDecryptedGooglePassword();			
+				AESCipher aesCipher = AESCipher.getInstance();
+				String password = aesCipher.decrypt(organization.getGooglePassword());
 				String emailUsername = organization.getEmailUsername();
-				String emailPassword = organization.getDecryptedEmailPassword();
+				String emailPassword = aesCipher.decrypt(organization.getEmailPassword());
 				String smtpHost = organization.getSMTPHost();
 				String smtpPort = organization.getSMTPPort();
 				
@@ -87,6 +90,7 @@ public class Reviewer {
 			try {
 				digitalSigner = new DigitalSigner(organization.getPrivateKeyPath(), organization.getPublicKeyPath());
 			} catch (Throwable e) {
+				e.printStackTrace();
 				logger.error("Failed to initialise digital signer.", e);
 			}
 		}
@@ -100,6 +104,7 @@ public class Reviewer {
 			try {
 				sessionFactory = new AnnotationConfiguration().configure().buildSessionFactory();
 			} catch (Throwable e) {
+				e.printStackTrace();
 				logger.error("Failed to initialise hibernate session factory.", e);
 			}
 		}
@@ -129,7 +134,7 @@ public class Reviewer {
 		for (OrganizationProperty property : organization.getOrganizationProperties()){
 			String propertyName = property.getProperty().getName();
 			String value = property.getValue();
-			logger.debug("Setting property: " + property + "=" + value);
+//			logger.debug("Setting property: " + property + "=" + value);
 			if (String.valueOf(propertyName).startsWith("system.")) {
 				System.setProperty(StringUtils.substringAfter(propertyName, "system."), value);
 			}
@@ -166,7 +171,5 @@ public class Reviewer {
 	
 	public static String getReviewerLogosHome(){
 		return config.getString(Constants.REVIEWER_LOGOS_HOME);
-	}
-	
-	
+	}	
 }

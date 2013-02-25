@@ -23,7 +23,7 @@ public class ConnectionUtil {
 			HttpSession	 session = request.getSession();
 			User user = getLoggedUser(request);
 			if (user != null) {
-				logger.debug("Logging out user: " + user.getEmail());
+//				logger.debug("Logging out user: " + user.getEmail());
 			}
 			if (session != null)
 			{

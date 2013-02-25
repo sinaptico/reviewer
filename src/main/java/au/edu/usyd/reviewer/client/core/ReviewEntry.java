@@ -26,7 +26,7 @@ public class ReviewEntry extends Entry {
 	/** The owner. */
 	@ManyToOne
 	protected User owner;
-
+	
 	/**
 	 * Gets the doc entry.
 	 *
@@ -102,7 +102,10 @@ public class ReviewEntry extends Entry {
 		
 		entry.setTitle(this.getTitle());
 		entry.setUploaded(this.isUploaded());
-		
+		entry.setDeleted(isDeleted());
 		return entry;
 	}
+	
+	
+	
 }

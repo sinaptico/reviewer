@@ -9,11 +9,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.edu.usyd.iwrite.security.RandomMessageIDGenerator;
-import au.edu.usyd.iwrite.security.WasmAuthenticationProtocol;
-import au.edu.usyd.iwrite.security.WasmResponse;
-import au.edu.usyd.iwrite.security.WasmService;
-import au.edu.usyd.iwrite.security.WasmSocketFactory;
+//import au.edu.usyd.iwrite.security.RandomMessageIDGenerator;
+//import au.edu.usyd.iwrite.security.WasmAuthenticationProtocol;
+//import au.edu.usyd.iwrite.security.WasmResponse;
+//import au.edu.usyd.iwrite.security.WasmService;
+//import au.edu.usyd.iwrite.security.WasmSocketFactory;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
@@ -49,7 +49,7 @@ public class LoginServlet extends HttpServlet {
 			String password = request.getParameter("password");
 			if (password != null && password.equals(user.getPassword())){
 				request.getSession().setAttribute("user", user);
-				logger.debug("Logging in user: " + user.getEmail());
+//				logger.debug("Logging in user: " + user.getEmail());
 				if (user.isAdmin() || user.isSuperAdmin()){
 					response.sendRedirect(request.getRequestURL().toString().replace("/Admin.html", ""));
 				} else {

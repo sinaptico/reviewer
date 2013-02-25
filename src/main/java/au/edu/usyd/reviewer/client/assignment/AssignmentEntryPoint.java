@@ -11,6 +11,7 @@ import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
 import au.edu.usyd.reviewer.client.core.util.ReviewerUtilService;
 import au.edu.usyd.reviewer.client.core.util.ReviewerUtilServiceAsync;
 import au.edu.usyd.reviewer.client.core.util.exception.CustomUncaughtExceptionHandler;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.client.admin.UserForm;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -118,12 +119,16 @@ public class AssignmentEntryPoint implements EntryPoint {
 				assignmentService.logout(new AsyncCallback<Void>(){
 					@Override
 					public void onFailure(Throwable caught) {
-						Window.alert("Logout failed" + caught.getMessage());
+						if (caught instanceof MessageException){
+							Window.alert(caught.getMessage());
+						} else {
+							Window.alert("Logout failed" + caught.getMessage());
+						}
 					}
 
 					@Override
 					public void onSuccess(Void result) {
-						Window.Location.replace(GWT.getHostPageBaseURL()+"iWrite.html");
+						Window.Location.replace(GWT.getHostPageBaseURL()+"Assignments.html");
 					}
 				});
 			}
@@ -194,7 +199,11 @@ public class AssignmentEntryPoint implements EntryPoint {
 										assignmentService.updateUserPassword(userForm.getUser(), userForm.getNewPassword(), new AsyncCallback<User>() {
 											@Override
 											public void onFailure(Throwable caught) {
-												Window.alert("Failed to update password, please verify your current password.");
+												if (caught instanceof MessageException){
+													Window.alert(caught.getMessage());
+												} else {
+													Window.alert("Failed to update password, please verify your current password.");
+												}
 												//updateDetailsButton.setEnabled(true);
 											}
 	
@@ -258,7 +267,11 @@ public class AssignmentEntryPoint implements EntryPoint {
 		reviewerUtilService.getYears(new AsyncCallback<Collection<Integer>>(){
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failed get the years" + caught.getMessage());
+				if (caught instanceof MessageException){
+					Window.alert(caught.getMessage());
+				} else {
+					Window.alert("Failed get the years" + caught.getMessage());
+				}
 			}
 
 			@Override
@@ -400,7 +413,11 @@ public class AssignmentEntryPoint implements EntryPoint {
 		assignmentService.getOrganizations(new AsyncCallback<Collection<Organization>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failed get organizations: " + caught.getMessage());
+				if (caught instanceof MessageException){
+					Window.alert(caught.getMessage());
+				} else {
+					Window.alert("Failed get organizations: " + caught.getMessage());
+				}
 			}
 
 			@Override

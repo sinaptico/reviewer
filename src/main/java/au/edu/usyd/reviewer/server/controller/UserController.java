@@ -51,7 +51,7 @@ public class UserController extends ReviewerController{
 					String email = username + "@" + organization.getGoogleDomain();
 					User mockedUser = organizationManager.getUserByEmail(email);
 					if (mockedUser != null){
-						logger.info("Mocking user: " + mockedUser.getEmail());
+//						logger.info("Mocking user: " + mockedUser.getEmail());
 						request.getSession().setAttribute("mockedUser", mockedUser);
 						Organization anOrganization = mockedUser.getOrganization();
 						anOrganization.setOrganizationProperties(new HashSet<OrganizationProperty>());

@@ -340,7 +340,7 @@ public class ReviewingActivity extends Activity<ReviewEntry> {
 		activity.setReviewTemplateId(this.getReviewTemplateId());
 		activity.setStartDate(this.getStartDate());
 		activity.setStatus(this.getStatus());
-		
+		activity.setDeleted(this.isDeleted());
 		return activity;
 	}
 	

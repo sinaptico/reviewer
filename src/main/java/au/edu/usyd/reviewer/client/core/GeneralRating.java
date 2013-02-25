@@ -121,4 +121,37 @@ public class GeneralRating extends Rating implements Serializable {
 	public void setUsefulnessScore(Integer score) {
 		this.usefulnessScore = score;
 	}
+	
+	public GeneralRating clone(){
+		GeneralRating gr = new GeneralRating();
+		gr.setComment(this.getComment());
+		gr.setContentScore(this.getContentScore());
+		
+		Entry entry = gr.getEntry();
+		if (entry != null){
+			if (entry instanceof DocEntry){
+				gr.setEntry( ((DocEntry) entry).clone());
+			} else if(entry instanceof LogbookDocEntry){
+				gr.setEntry( ((LogbookDocEntry) entry).clone());
+			} else if(entry instanceof LogpageDocEntry){
+				gr.setEntry( ((LogpageDocEntry) entry).clone());
+			} else if(entry instanceof ReviewEntry){
+				gr.setEntry( ((ReviewEntry) entry).clone());
+			} else if(entry instanceof ReviewTemplateEntry){
+				gr.setEntry( ((ReviewTemplateEntry) entry).clone());
+			}
+		}
+			
+		gr.setEvidenceScore(this.getEvidenceScore());
+		gr.setId(this.getId());
+		gr.setOverallScore(this.getOverallScore());
+		
+		if(this.getOwner()!=null){
+			gr.setOwner(this.getOwner().clone());
+		}
+		
+		gr.setUsefulnessScore(this.getUsefulnessScore());
+		
+		return gr;
+	}
 }

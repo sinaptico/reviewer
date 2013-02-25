@@ -512,7 +512,7 @@ public class WritingActivity extends Activity<DocEntry> {
 		activity.setStatus(this.getStatus());
 		activity.setTrackReviews(this.getTrackReviews());
 		activity.setTutorial(this.getTutorial());
-		
+		activity.setDeleted(this.isDeleted());
 		return activity;
 		
 	}

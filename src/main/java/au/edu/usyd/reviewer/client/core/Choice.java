@@ -27,7 +27,6 @@ public class Choice implements Serializable {
 	/** The text. */
 	private String text;
 
-	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */

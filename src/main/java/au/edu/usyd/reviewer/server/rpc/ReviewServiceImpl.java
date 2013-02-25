@@ -134,10 +134,10 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 				} else {
 					currentGrade = grade;
 				}
-				assignmentDao.save(currentGrade);
+				currentGrade = assignmentDao.save(currentGrade);
 				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
 				writingActivity.getGrades().add(currentGrade);
-				assignmentDao.save(writingActivity);
+				writingActivity = assignmentDao.save(writingActivity);
 			} else {
 				throw new Exception("Permission denied");
 			}
@@ -174,7 +174,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 			ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereReview(review);
 			rating.setEntry(reviewEntry);
 			rating.setOwner(user);
-			assignmentDao.save(rating);
+			rating = assignmentDao.save(rating);
 		}
 
 		return rating;
@@ -191,7 +191,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 			ReviewEntry reviewEntry =  assignmentDao.loadReviewEntryWhereReview(review);
 			if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
 				review.setSaved(new Date());
-				assignmentDao.save(review);
+				review = assignmentDao.save(review);
 			} else {
 				throw new Exception("Your session has expired. Please login again to save your review.");
 			}
@@ -222,10 +222,10 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 				//Check if the review hasn't been released early
 				if (!docEntry.getReviews().contains(reviewEntry.getReview())){
 					docEntry.getReviews().add(reviewEntry.getReview());
-					assignmentDao.save(docEntry);
+					docEntry = assignmentDao.save(docEntry);
 					
 				}
-				assignmentDao.save(review);
+				review = assignmentDao.save(review);
 				try{
 					emailNotifier = Reviewer.getEmailNotifier();
 					if (docEntry.getOwner()!=null){
@@ -238,6 +238,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 						}
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					logger.error("Error Sending email notification. Error: "+e.getMessage()+" - ReviewingActivity: "+reviewingActivity.getName());
 				}
 				

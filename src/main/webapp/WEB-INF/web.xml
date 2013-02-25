@@ -110,18 +110,6 @@
 	</welcome-file-list>
 
 	<!-- tomcat security -->
-<!-- 	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>iWrite.html</web-resource-name>
-			<description>login for iWrite</description>
-			<url-pattern>/iWrite.html</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>Guest</role-name>
-			<role-name>SuperAdmin</role-name>
-			<role-name>Admin</role-name>
-		</auth-constraint>
-	</security-constraint> -->
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>Assignments.html</web-resource-name>
@@ -177,7 +165,7 @@
 		</auth-constraint>
 	</security-constraint> 
 	<login-config>
-		<!--  auth-method>BASIC</auth-method-->     
+		<!--auth-method>BASIC</auth-method-->     
 		<auth-method>FORM</auth-method>
 		<realm-name>iWrite</realm-name>        
 		<form-login-config>
@@ -201,11 +189,11 @@
 			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
 		</user-data-constraint>
 	</security-constraint>
-	<!-- <security-role>
+	<security-role>
     	<role-name>SuperAdmin</role-name>
 		<role-name>Admin</role-name>
 		<role-name>Guest</role-name>	
-	</security-role> -->
+	</security-role>>
 	<!-- session config -->
 	<session-config>
 		<session-timeout>300</session-timeout>

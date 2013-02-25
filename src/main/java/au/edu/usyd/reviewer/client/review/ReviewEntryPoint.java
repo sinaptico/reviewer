@@ -30,6 +30,7 @@ import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
 import au.edu.usyd.reviewer.client.core.util.StyleLib;
 import au.edu.usyd.reviewer.client.core.util.UrlLib;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.client.review.form.CommentsReviewForm;
 import au.edu.usyd.reviewer.client.review.form.GeneralRatingForm;
 import au.edu.usyd.reviewer.client.review.form.GradesForm;
@@ -137,7 +138,11 @@ public class ReviewEntryPoint implements EntryPoint {
 			reviewService.getUserReviewForViewing(Long.valueOf(view), new AsyncCallback<Course>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					Window.alert("Failed to get review: " + caught.getMessage());
+					if (caught instanceof MessageException){
+						Window.alert(caught.getMessage());
+					} else {
+						Window.alert("Failed to get review: " + caught.getMessage());
+					}
 				}
 
 				@Override
@@ -191,7 +196,11 @@ public class ReviewEntryPoint implements EntryPoint {
 								reviewService.submitRating(rating, review, new AsyncCallback<Rating>() {
 									@Override
 									public void onFailure(Throwable caught) {
-										Window.alert("Failed to save review: " + caught.getMessage());
+										if (caught instanceof MessageException){
+											Window.alert(caught.getMessage());
+										} else {
+											Window.alert("Failed to save review: " + caught.getMessage());
+										}
 										rateButton.updateStateSubmit();
 									}
 
@@ -217,7 +226,11 @@ public class ReviewEntryPoint implements EntryPoint {
 			reviewService.getUserReviewForEditing(Long.valueOf(edit), new AsyncCallback<Course>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					Window.alert("Failed to get review: " + caught.getMessage());
+					if (caught instanceof MessageException){
+						Window.alert(caught.getMessage());
+					} else {
+						Window.alert("Failed to get review: " + caught.getMessage());
+					}
 				}
 
 				@Override
@@ -286,7 +299,11 @@ public class ReviewEntryPoint implements EntryPoint {
 //						UrlLib.glosserUrl(glosserLink,writingActivity.getGlosserSite(), docEntry.getDocumentId());
 						reviewService.getGlosserUrl(writingActivity.getGlosserSite(), docEntry.getDocumentId(), new AsyncCallback<String>() {
 							public void onFailure(Throwable caught) {
-							    Window.alert("Failed to get Glosser's Host: " + caught.getMessage());
+								if (caught instanceof MessageException){
+									Window.alert(caught.getMessage());
+								} else {
+									Window.alert("Failed to get Glosser's Host: " + caught.getMessage());
+								}
 							}
 							public void onSuccess(String result) {
 								glosserLink.setHref(result);
@@ -360,7 +377,11 @@ public class ReviewEntryPoint implements EntryPoint {
 									reviewService.submitGrades(grades, new AsyncCallback<Collection<Grade>>(){
 										@Override
 										public void onFailure(Throwable caught) {
-											Window.alert("Failed to save marks: " + caught.getMessage());
+											if (caught instanceof MessageException){
+												Window.alert(caught.getMessage());
+											} else {
+												Window.alert("Failed to save marks: " + caught.getMessage());
+											}
 										}
 
 										@Override
@@ -371,7 +392,11 @@ public class ReviewEntryPoint implements EntryPoint {
 								reviewService.saveReview(reviewForm.getReview(), new AsyncCallback<Review>() {
 									@Override
 									public void onFailure(Throwable caught) {
-										Window.alert("Failed to save review: " + caught.getMessage());
+										if (caught instanceof MessageException){
+											Window.alert(caught.getMessage());
+										} else {
+											Window.alert("Failed to save review: " + caught.getMessage());
+										}
 										saveButton.updateStateSubmit();
 									}
 
@@ -414,7 +439,11 @@ public class ReviewEntryPoint implements EntryPoint {
 										reviewService.submitGrades(grades, new AsyncCallback<Collection<Grade>>(){
 											@Override
 											public void onFailure(Throwable caught) {
-												Window.alert("Failed to submit marks: " + caught.getMessage());
+												if (caught instanceof MessageException){
+													Window.alert(caught.getMessage());
+												} else {
+													Window.alert("Failed to submit marks: " + caught.getMessage());
+												}
 											}
 
 											@Override
@@ -425,7 +454,11 @@ public class ReviewEntryPoint implements EntryPoint {
 									reviewService.submitReview(reviewForm.getReview(), new AsyncCallback<Review>() {
 										@Override
 										public void onFailure(Throwable caught) {
-											Window.alert("Failed to submit review: " + caught.getMessage());
+											if (caught instanceof MessageException){
+												Window.alert(caught.getMessage());
+											} else {
+												Window.alert("Failed to submit review: " + caught.getMessage());
+											}
 											submitButton.updateStateSubmit();
 										}
 
@@ -653,7 +686,11 @@ public class ReviewEntryPoint implements EntryPoint {
 			reviewService.getQuestionRating(docId, new AsyncCallback<QuestionRating>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					Window.alert("Failed to get question rating: " + caught.getMessage());
+					if (caught instanceof MessageException){
+						Window.alert(caught.getMessage());
+					} else {
+						Window.alert("Failed to get question rating: " + caught.getMessage());
+					}
 				}
 
 				@Override

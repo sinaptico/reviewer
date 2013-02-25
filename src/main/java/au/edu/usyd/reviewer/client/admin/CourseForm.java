@@ -53,7 +53,7 @@ public class CourseForm extends Composite {
 	private final TextBox courseName = WidgetFactory.createNewTextBoxWithId("courseFormName");
 	
 	/** ValueSpinner with the course year. */
-	private final ValueSpinner courseYear = WidgetFactory.createNewValueSpinnerWithId(2010, 2009, 3000, "courseFormYear");
+	private final ValueSpinner courseYear = WidgetFactory.createNewValueSpinnerWithId(2013, 2009, 3000, "courseFormYear");
 	
 	/** ListBox with the  course semester. */
 	private final ListBox courseSemester = WidgetFactory.createNewListBoxWithId("courseFormSemester");
