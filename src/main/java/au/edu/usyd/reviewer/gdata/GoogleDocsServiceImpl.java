@@ -36,7 +36,7 @@ import com.google.gdata.data.media.MediaFileSource;
 import com.google.gdata.data.media.MediaSource;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
-import com.google.gdata.util.VersionConflictException;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -208,39 +208,39 @@ public class GoogleDocsServiceImpl {
 		}
 	}
 
-	public void downloadDocumentFile(DocumentListEntry entry, String filepath) throws IOException, ServiceException {
-//		logger.info("downloading document " + entry.getResourceId());
-		String fileExtension = filepath.substring(filepath.lastIndexOf(".") + 1);
-		String exportUrl = ((MediaContent) entry.getContent()).getUri() + "&format=" + fileExtension;
-
-		MediaContent mc = new MediaContent();
-		mc.setUri(exportUrl);
-		MediaSource ms = docsService.getMedia(mc);
-
-		File file = new File(filepath);
-		file.createNewFile();
-
-		InputStream inStream = null;
-		FileOutputStream outStream = null;
-
-		try {
-			inStream = ms.getInputStream();
-			outStream = new FileOutputStream(file);
-
-			int c;
-			while ((c = inStream.read()) != -1) {
-				outStream.write(c);
-			}
-		} finally {
-			if (inStream != null) {
-				inStream.close();
-			}
-			if (outStream != null) {
-				outStream.flush();
-				outStream.close();
-			}
-		}
-	}
+//	public void downloadDocumentFile(DocumentListEntry entry, String filepath) throws IOException, ServiceException {
+////		logger.info("downloading document " + entry.getResourceId());
+//		String fileExtension = filepath.substring(filepath.lastIndexOf(".") + 1);
+//		String exportUrl = ((MediaContent) entry.getContent()).getUri() + "&format=" + fileExtension;
+//
+//		MediaContent mc = new MediaContent();
+//		mc.setUri(exportUrl);
+//		MediaSource ms = docsService.getMedia(mc);
+//
+//		File file = new File(filepath);
+//		file.createNewFile();
+//
+//		InputStream inStream = null;
+//		FileOutputStream outStream = null;
+//
+//		try {
+//			inStream = ms.getInputStream();
+//			outStream = new FileOutputStream(file);
+//
+//			int c;
+//			while ((c = inStream.read()) != -1) {
+//				outStream.write(c);
+//			}
+//		} finally {
+//			if (inStream != null) {
+//				inStream.close();
+//			}
+//			if (outStream != null) {
+//				outStream.flush();
+//				outStream.close();
+//			}
+//		}
+//	}
 
 	public String downloadDocumentHtml(BaseEntry<?> entry) throws IOException, ServiceException {
 		MediaContent mc = new MediaContent();
@@ -411,4 +411,7 @@ public class GoogleDocsServiceImpl {
 		return uploadDocumentContent(spreadsheetEntry, csv, "text/csv");
 	}
 
+	public RetryDocsService getDocsService(){ 
+		return docsService;
+	}
 }

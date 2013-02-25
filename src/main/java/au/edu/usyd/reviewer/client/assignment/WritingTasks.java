@@ -161,7 +161,7 @@ public class WritingTasks extends Composite {
 							
 							public void onSubmitComplete(FormSubmitCompleteEvent event) {
 								Window.alert("File successfully uploaded");
-//								Window.Location.reload();							
+								Window.Location.reload();							
 							}
 						});
 						documentLinks.add(form);
@@ -193,7 +193,7 @@ public class WritingTasks extends Composite {
 										Window.alert("'" + localDocEntry.getTitle() + "' has been successfully submitted.");
 										localDocEntry = submittedDocEntry;
 										earlySubmitButton.updateStateSubmit();
-//										Window.Location.reload();
+										Window.Location.reload();
 									}
 								});
 							}

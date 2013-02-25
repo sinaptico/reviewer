@@ -21,9 +21,14 @@
  ******************************************************************************/
 package au.edu.usyd.reviewer.gdata;
 
+import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 
 import com.google.gdata.data.PlainTextConstruct;
+import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gdata.data.spreadsheet.ListFeed;
@@ -87,5 +92,9 @@ public class GoogleSpreadsheetServiceImpl {
 		spreadsheetService = new SpreadsheetService("Client - Spreadsheet Service");
 		spreadsheetService.setAuthSubToken(null);
 		spreadsheetService.setUserCredentials(username, password);
+	}
+	
+	public SpreadsheetService getSpreadsheetService(){
+		return spreadsheetService;
 	}
 }

@@ -1,13 +1,15 @@
 package au.edu.usyd.reviewer.server.util;
 
 import java.net.MalformedURLException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.edu.usyd.glosser.gdata.GoogleDocsServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleDownloadService;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Question;
@@ -27,6 +29,7 @@ public class QuestionUtil {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private GoogleDocsServiceImpl googleDocsServiceImpl = null;
 	private UserDao userDao = UserDao.getInstance();
+	private GoogleDownloadService googleDownloadServiceImpl = null;
 
 	// index the document to lucence
 	public void downloadDoc(String dirpath, WritingActivity writingActivity) throws Exception, MalformedURLException {
@@ -35,7 +38,8 @@ public class QuestionUtil {
 			try {
 				DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
 				String filePath = dirpath + "/" + FileUtil.escapeFilename(docEntry.getDocumentId() + ".html");
-				googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+				//googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+				googleDownloadServiceImpl.download(documentListEntry, filePath);
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.info("document " + docEntry.getId() + " is not found");
@@ -128,6 +132,7 @@ public class QuestionUtil {
 
 	public void setGoogleDocsServiceImpl(GoogleDocsServiceImpl googleDocsServiceImpl) {
 		this.googleDocsServiceImpl = googleDocsServiceImpl;
+		this.googleDownloadServiceImpl = new GoogleDownloadService(googleDocsServiceImpl.getDocsService(),null);
 	}
 
 }

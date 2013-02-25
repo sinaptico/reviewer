@@ -12,6 +12,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -46,9 +48,17 @@ public class Organization implements Serializable {
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Set<OrganizationProperty> organizationProperties= new HashSet<OrganizationProperty>();
 	
+
+	/// collection emails of the organization 
+	@OneToMany(mappedBy = "organization")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private Set<EmailOrganization> emails= new HashSet<EmailOrganization>();
+
+	private boolean deleted = false;
+	
 	public Organization(){
-		
 	}
+	
 	/** Begin Getters and Setters **/
 	public Long getId() {
 		return id;
@@ -74,6 +84,24 @@ public class Organization implements Serializable {
 		this.organizationProperties = properties;
 	}
 		
+	
+	public Set<EmailOrganization> getEmails() {
+		return emails;
+	}
+
+
+	public void setEmails(Set<EmailOrganization> emails) {
+		this.emails = emails;
+	}
+	
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deteled) {
+		this.deleted = deteled;
+	}
+
 	/** End Getters and Setters **/
 
 	/**
@@ -159,12 +187,21 @@ public class Organization implements Serializable {
 		Organization organization = new Organization();
 		organization.setId(this.getId());
 		organization.setName(this.getName());
+		
 		for(OrganizationProperty property : this.getOrganizationProperties()){
 			if (property != null && property.getProperty() != null){
 				property.setOrganization(organization);
 				organization.addProperty(property.getProperty().clone(), property.getValue());
 			}
 		}
+		
+		Set<EmailOrganization> emailsOrganization = new HashSet<EmailOrganization>();
+		for(EmailOrganization email: this.getEmails()){
+			if(email != null){
+				emailsOrganization.add(email.clone());
+			}
+		}
+		organization.setEmails(emailsOrganization);
 		return organization;
 	}
 	
@@ -304,5 +341,31 @@ public class Organization implements Serializable {
 		}
 		return image;
 	}
+
+	public EmailOrganization getEmail(String name){
+		EmailOrganization result = null;
+		for(EmailOrganization email : getEmails()){
+			if  (email != null && email.getName().equals(name)){
+				result = email;
+				break;
+			}
+		}
+		return result;
+	}
 	
+	public boolean hasEmails(){
+		return getEmails().size() > 0;
+	}
+	
+	public void addEmail(EmailOrganization email){
+		EmailOrganization emailExist = null;
+		
+		if ( email != null && email.getName() != null){
+			emailExist = getEmail(email.getName());
+		}
+		
+		if (emailExist == null){
+			getEmails().add(email);
+		}
+	}
 }

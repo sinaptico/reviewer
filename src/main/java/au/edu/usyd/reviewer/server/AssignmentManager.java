@@ -41,6 +41,8 @@ import au.edu.usyd.reviewer.client.core.Choice;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.EmailCourse;
+import au.edu.usyd.reviewer.client.core.EmailOrganization;
 import au.edu.usyd.reviewer.client.core.Grade;
 import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
 import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
@@ -77,6 +79,7 @@ public class AssignmentManager {
 	private FeedbackTrackingDao feedBackTrackingService = new FeedbackTrackingDao() ;		
 	private CourseDao courseDao = CourseDao.getInstance();
 	private OrganizationManager organizationManager = OrganizationManager.getInstance();
+	private EmailDao emailDao = EmailDao.getInstance();
 	
 	public AssignmentManager() {
 	}
@@ -580,7 +583,7 @@ public class AssignmentManager {
 			if(user == null){
 				//send password notification if not a wasm user
 				if (!lecturer.getWasmuser()){
-					emailNotifier.sendPasswordNotification(lecturer, course.getName()); 
+					emailNotifier.sendPasswordNotification(lecturer, course); 
 					lecturer.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
 				}
 				if (lecturer.getOrganization() == null){
@@ -599,7 +602,7 @@ public class AssignmentManager {
 			if(user == null){
 				//send password notification if not a wasm user
 				if (!tutor.getWasmuser()){					
-					emailNotifier.sendPasswordNotification(tutor, course.getName());
+					emailNotifier.sendPasswordNotification(tutor, course);
 					tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
 				}				
 				if (tutor.getOrganization() == null){
@@ -619,7 +622,7 @@ public class AssignmentManager {
 				if(user == null){
 					//send password notification if not a wasm user
 					if (!student.getWasmuser()){
-						emailNotifier.sendPasswordNotification(student, course.getName());
+						emailNotifier.sendPasswordNotification(student, course);
 						student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
 					}	
 					if (student.getOrganization() == null){
@@ -651,7 +654,8 @@ public class AssignmentManager {
 	}
 	
 	public Course saveCourse(Course course, User user) throws Exception {
-		
+		// Add emails to the course
+		course = addEmails(course);
 		//Set up folders and templates
 		setUpFoldersAndTemplates(course);
 		
@@ -683,7 +687,11 @@ public class AssignmentManager {
 		course.setDomainName(course.getOrganization().getGoogleDomain());
 		
 		// save course in DB
-		course = courseDao.save(course);		
+		course = courseDao.save(course);
+
+		// update emails
+		course = updateEmails(course);
+		
 		///Local DataBase//////////////////////////////////////////////////////
 		
 		// for each activity create documents and reviewers for new users
@@ -1367,7 +1375,7 @@ public class AssignmentManager {
 				
 				//send password notification if not a wasm user
 				if (!lecturer.getWasmuser()){
-					emailNotifier.sendPasswordNotification(lecturer, course.getName());
+					emailNotifier.sendPasswordNotification(lecturer, course);
 					user.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
 				}
 				
@@ -1419,7 +1427,7 @@ public class AssignmentManager {
 				
 				//send password notification if not a wasm user
 				if (!tutor.getWasmuser()){					
-					emailNotifier.sendPasswordNotification(tutor, course.getName());
+					emailNotifier.sendPasswordNotification(tutor, course);
 					tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
 				}
 				// save tutor into the database
@@ -1511,7 +1519,7 @@ public class AssignmentManager {
 			}
 			activity.setReviewingActivities(reviewingActivities);
 			
-			return activity;
+			return activity.clone();
 		} catch(Exception e){
 			e.printStackTrace();
 			if (e instanceof MessageException){
@@ -1632,7 +1640,7 @@ public class AssignmentManager {
 				student.getRole_name().add(Constants.ROLE_GUEST);
 				
 				// send email notivication with password
-				emailNotifier.sendPasswordNotification(student, course.getName());
+				emailNotifier.sendPasswordNotification(student, course);
 				
 				// encrypt the password with MD5
 				student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
@@ -1679,5 +1687,54 @@ public class AssignmentManager {
 	
 	public WritingActivity saveWritingActivity(WritingActivity activity) throws Exception{
 		return activity = assignmentDao.save(activity);
+	}
+	
+	/**
+	 * This method generates the emails for the course and adds them to it
+	 * @param course course owner of the emails
+	 * @return course with emails
+	 */
+	private Course addEmails(Course course) throws MessageException{
+		
+		try{
+			Organization org = course.getOrganization();
+			if ( org != null && course != null && !course.hasEmails()){
+				createEmail(org.getEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH),course);
+				createEmail(org.getEmail(Constants.EMAIL_PASSWORD_DETAILS), course);
+				createEmail(org.getEmail(Constants.EMAIL_STUDENT_ACTIVITY_START),course);
+				createEmail(org.getEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW),course);
+				createEmail(org.getEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH),course);
+				createEmail(org.getEmail(Constants.EMAIL_STUDENT_REVIEW_START),course);
+			}
+				
+		} catch(Exception e){
+			if (e instanceof MessageException){
+				throw (MessageException) e;
+			} else {
+				e.printStackTrace();
+				throw new MessageException(Constants.EXCEPTION_GENERATE_COURSE_EMAILS);
+			}
+		}		
+		return course;
+	}
+	
+	private void createEmail(EmailOrganization emailOrganization, Course course) throws MessageException{
+		EmailCourse emailCourse = new EmailCourse();
+		emailCourse.setName(emailOrganization.getName());
+		emailCourse.setMessage(emailOrganization.getMessage());
+		emailCourse = emailDao.saveEmailCourse(emailCourse, course);
+		course.addEmail(emailCourse);
+	}
+	
+	private Course updateEmails(Course course) throws MessageException{
+		Set<EmailCourse> emails = new HashSet<EmailCourse>();
+		for(EmailCourse email: course.getEmails()){
+			email.setCourse(course);
+			email = emailDao.saveEmailCourse(email, course);
+			emails.add(email);
+		}
+		course.setEmails(emails);
+		return course;
+		
 	}
 }

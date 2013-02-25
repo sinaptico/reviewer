@@ -128,7 +128,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 
 					@Override
 					public void onSuccess(Void result) {
-						Window.Location.replace(GWT.getHostPageBaseURL()+"iWrite.html");
+						Window.Location.replace(GWT.getHostPageBaseURL()+"Assignments.html");
 					}
 				});
 			}

@@ -23,6 +23,7 @@ import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleDownloadService;
 import au.edu.usyd.reviewer.gdata.GoogleSpreadsheetServiceImpl;
 import au.edu.usyd.reviewer.gdata.GoogleUserServiceImpl;
 
@@ -45,7 +46,10 @@ public class AssignmentRepository {
 	private GoogleDocsServiceImpl googleDocsServiceImpl;
 	private GoogleSpreadsheetServiceImpl googleSpreadsheetServiceImpl;
 	private GoogleUserServiceImpl googleUserServiceImpl;	
+	private GoogleDownloadService googleDownloadServiceImpl;
 	private String googleUserEmail = null;
+	private UserDao userDao = UserDao.getInstance();
+	
 	public AssignmentRepository(String username, String password, String domain) throws  MessageException{
 		try {
 			googleUserEmail = username;
@@ -55,6 +59,7 @@ public class AssignmentRepository {
 			this.googleSpreadsheetServiceImpl = new GoogleSpreadsheetServiceImpl(username, password);
 			this.googleSpreadsheetServiceImpl.setAuthSubToken(null);
 			this.googleSpreadsheetServiceImpl.setUserCredentials(username, password);
+			this.googleDownloadServiceImpl = new GoogleDownloadService(googleDocsServiceImpl.getDocsService(),googleSpreadsheetServiceImpl.getSpreadsheetService());
 		} catch (AuthenticationException e) {
 			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
@@ -149,10 +154,8 @@ public class AssignmentRepository {
 		  List<AclEntry> aclEntries = googleDocsServiceImpl.getDocumentPermissions(documentListEntry);
 		  USER_LOOP: for (User owner : owners) {
 			for (AclEntry aclEntry : aclEntries) {
-//				if (aclEntry.getScope().getValue().equals(owner.getUsername() + "@" + googleUserServiceImpl.getDomain())) {
 				if (aclEntry.getScope().getValue().equals(owner.getEmail())) {
 					try{
-						//googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getEmail());
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
@@ -163,42 +166,23 @@ public class AssignmentRepository {
 					continue USER_LOOP;
 				}
 			}
-//			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getUsername() + "@" + googleUserServiceImpl.getDomain());
 			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getEmail());
 		  }
 		}
 		return docEntry;
 	}
 
-	public User createUser(User user) throws ServiceException, IOException {
-		try {
-			googleUserServiceImpl.createUser(user.getUsername(), user.getFirstname(), user.getLastname(), "Changeme" + user.getUsername() + "!");
-		} catch (AppsForYourDomainException e) {
-			if (e.getErrorCode().equals(AppsForYourDomainErrorCode.EntityExists)) {
-				// continue
-			} else {
-				e.printStackTrace();
-				logger.error("Failed to save user", e);
-				throw e;
-			}
-		}
+	// ServiceException, IOException 
+	public User createUser(User user) throws MessageException{
+		googleUserServiceImpl.createUser(user.getUsername(), user.getFirstname(), user.getLastname(), "Changeme" + user.getUsername() + "!");
 		return user;
 	}
 	
-//	public void deleteActivity(WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException {
-//		FolderEntry folderEntry = googleDocsServiceImpl.getFolder(writingActivity.getFolderId());
-//		folderEntry.delete();
-//	}
-
-//	public void deleteCourse(Course course) throws MalformedURLException, IOException, ServiceException {
-//		FolderEntry folderEntry = googleDocsServiceImpl.getFolder(course.getFolderId());
-//		folderEntry.delete();
-//	}
-
 	public void downloadDocumentFile(DocEntry docEntry, String filePath) throws IOException, ServiceException, MessageException {
 		try{
 			DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
-			googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+//			googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
+			googleDownloadServiceImpl.download(documentListEntry, filePath);
 		} catch(AuthenticationException ae){
 			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION_);
 		}
@@ -287,23 +271,25 @@ public class AssignmentRepository {
 			spreadsheetEntry = googleDocsServiceImpl.getSpreadsheet(course.getSpreadsheetId());
 		}
 		
-		//check if lecturers are wasm users, (create passwords for non wasm users)
-		//if the user doesn't exist into the database then the password will be created in the AssignmentManager class
-//		for (User lecturer : course.getLecturers()){
-//			lecturer.setWasmuser(false);
-//			lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-//			lecturer.addRole(Constants.ROLE_ADMIN);
-//			lecturer.addRole(Constants.ROLE_GUEST);				
-//		}
+		//check if lecturers are wasm users and he doesn't exist(create passwords for non wasm users)
+		for (User lecturer : course.getLecturers()){
+			if (!userDao.containsUser(lecturer)){
+				lecturer.setWasmuser(false);
+				lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+				lecturer.addRole(Constants.ROLE_ADMIN);
+				lecturer.addRole(Constants.ROLE_GUEST);
+			}
+		}
 		
 		//check if tutors are wasm users, (create passwords for non wasm users)
-		//if the user doesn't exist into the database then the password will be created in the AssignmentManager class
-//		for (User tutor : course.getTutors()){
-//			tutor.setWasmuser(false);
-//			tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-//			tutor.addRole(Constants.ROLE_ADMIN);					
-//			tutor.addRole(Constants.ROLE_GUEST);
-//		}		
+		for (User tutor : course.getTutors()){
+			if (!userDao.containsUser(tutor)){
+				tutor.setWasmuser(false);
+				tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+				tutor.addRole(Constants.ROLE_ADMIN);					
+				tutor.addRole(Constants.ROLE_GUEST);
+			}
+		}		
 
 		// clear student groups
 		List<UserGroup> studentGroups = new ArrayList<UserGroup>(course.getStudentGroups());
@@ -336,10 +322,11 @@ public class AssignmentRepository {
 			}
 			
 			//check if student is a wasm user, (create passwords for non wasm users)
-			student.setWasmuser(false);
-			//if the user doesn't exist into the database then the password will be created in the AssignmentManager class
-//			student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-			student.getRole_name().add(Constants.ROLE_GUEST);
+			if (!userDao.containsUser(student)){
+				student.setWasmuser(false);
+				student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+				student.getRole_name().add(Constants.ROLE_GUEST);
+			}
 	
 			// check if student group already exists
 			if (studentGroups.contains(studentGroup)) {
@@ -426,11 +413,9 @@ public class AssignmentRepository {
 		for (AclEntry aclEntry : aclEntries) {
 			User user = new User();
 			user.setEmail(aclEntry.getScope().getValue());
-			//user.setUsername(StringUtils.substringBefore(aclEntry.getScope().getValue(), "@" + googleUserServiceImpl.getDomain()));
 			if (!isAnOwner(owners, user) && aclEntry.getRole().equals(AclRole.WRITER)) {
 				if (docEntry instanceof LogpageDocEntry) {
 					try{
-						//googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getId() + "@" + googleUserServiceImpl.getDomain());
 						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getEmail());
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();

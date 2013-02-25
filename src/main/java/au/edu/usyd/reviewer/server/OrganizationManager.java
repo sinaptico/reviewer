@@ -238,8 +238,7 @@ public class OrganizationManager {
 					 property.getName().equals(Constants.REVIEWER_GOOGLE_PASSWORD))){
 				String value = organizationProperty.getValue();
 				try{
-					AESCipher aesCipher = AESCipher.getInstance();
-					value = aesCipher.encrypt(value);
+					value = AESCipher.encrypt(value);
 					organizationProperty.setValue(value);
 				} catch(Exception e){
 					

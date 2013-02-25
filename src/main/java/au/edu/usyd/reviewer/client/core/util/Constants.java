@@ -62,9 +62,9 @@ public class Constants {
 	public static String EXCEPTION_ACTIVITY_NOT_FINISHED ="The activity wasn't finished because the file doesn't exist.";
 	public static String EXCEPTION_ENCRYPT="Failed to encrypt the value";
 	public static String EXCEPTION_DECRYPT="Failed to decrypt the value";
+	public static String EXCEPTION_SAVE_EMAIL_ORGANIZATION="Failed to save the email of the organization";
+	public static String EXCEPTION_SAVE_EMAIL_COURSE="Failed to save the email of the course";
 	
-	
-		
 	// Dao Exceptions
 	public static String EXCEPTION_HIBERNATE_SESSION_MESSAGE="Failed to create a session to database";
 	public static String EXCEPTION_DELETE="Object could not be deleted";
@@ -148,15 +148,14 @@ public class Constants {
 	public static String EXCEPTION_SAVE_EMAIL="Failed to save the email";
 	public static String EXCEPTION_GET_EMAILS="Failed to load the emails";
 	public static String EXCEPTION_GET_EMAIL="Failed to load the email";
-	
-
-	
+	public static String EXCEPTION_GENERATE_ORGANIZATION_EMAILS="Failed to generate the emails for the organization";
+	public static String EXCEPTION_GENERATE_COURSE_EMAILS="Failed to generate the emails for the course";
+		
 	public static String EXCEPTION_GOOGLE_USER_HAS_ACCESS = "This user already has access to the document.";
 	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";
 	public static String EXCEPTION_GET_DELETED_WRITING_ACTIVITIES="Failed to get the deleted writing activities";
 	public static String EXCEPTION_REVIEW_ENTRY_NOT_FOUND = "Review entry not found";
-	
-	
+
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
 	public static String ROLE_ADMIN = "Admin";
@@ -185,7 +184,67 @@ public class Constants {
 	public static int HTTP_CODE_MESSAGE = 600;
 	public static int HTTP_CODE_NOT_FOUND = 404;
 	
+	// Emails names
+	public static String EMAIL_STUDENT_REVIEW_START = "Student review start";
+	public static String EMAIL_STUDENT_ACTIVITY_START = "Student activity start";
+	public static String EMAIL_LECTURER_DEADLINE_FINISH = "Lecturer deadline finish";
+	public static String EMAIL_PASSWORD_DETAILS = "Password details";
+	public static String EMAIL_STUDENT_REVIEW_FINISH = "Student review finish";
+	public static String EMAIL_STUDENT_RECEIVED_REVIEW = "Student received review";
 	
+	// Emails messages
+	public static String EMAIL_STUDENT_REVIEW_START_MESSAGE = "Dear @StudentName@, " + "\n\n" +
+															  "You need to review the @ActivityName@ of one of your peers. " + 
+															  "Please visit @ReviewerLink@ to write and submit your review before the deadline on @DeadlineDate@." + 
+															  "\n\n" + "@FromName@";
+			
+	public static String EMAIL_STUDENT_ACTIVITY_START_MESSAGE ="Dear @StudentName@, " + "\n\n" + 
+	   														   "A Google document has been created for you to write your @ActivityName@. " +
+	   														   "Please visit @ReviewerLink@ to write and submit your document before the deadline on @DeadlineDate@." +
+	   														   	"\n\n " + "@FromName@"; 
+		
+	public static String EMAIL_LECTURER_DEADLINE_FINISH_MESSAGE ="Dear @LecturerName@, " +
+																 "\n\n " + "The @ActivityName@ @DeadlineName@ assessment has finished. " + "\n" + 
+																 "Please go to @ReviewerLink@ to download the documents. " + "\n\n"; 
+		
+		
+	public static String EMAIL_PASSWORD_DETAILS_MESSAGE = "Dear @UserName@, " +
+														  "\n\n " + "The iWrite application for the course @CourseName@ is now available for you. " + 
+														  "\n " + " To login, please go to @iWriteLink@ " +
+														  "\n\n " + " Username: @UserUsername@ " + "\n " + " Password: @Password@" + "\n\n " + "@FromName@";
 	
+	public static String EMAIL_STUDENT_REVIEW_FINISH_MESSAGE = "Dear @LecturerName@, " + "\n\n " +
+															   "The @ActivityName@ @DeadlineName@ assessment has finished. " + 
+															   "\n " + "Reviews are now available in @ReviewerLink@." + "\n\n" + "@FromName@";
+	
+	public static String EMAIL_STUDENT_RECEIVED_REVIEW_MESSAGE = "Dear @UserName@, " + 
+																 "\n\n " + "You have received feedback from the activity @ActivityName@. " +
+																 "\n " + "You can go to @ReviewerLink@ to read it." + "\n\n " + "@FromName@";
+
+	// Google user service messages
+	public static String EXCEPTION_GOOGLE_USER_DELETED_RECENTLY="The request instructs Google to create a new user but uses the username of an account that was deleted in the previous five days";
+	public static String EXCEPTION_GOOGLE_USER_SUSPENDED="The user identified in the request is suspended";
+	public static String EXCEPTION_GOOGLE_DOMAIN_USER_LIMIT_EXCEEDED = "The domain has already reached its quota of user accounts";
+	public static String EXCEPTION_GOOGLE_DOMAIN_SUSPENDED="Google has suspended the specified domain's access to Google Apps";
+	public static String EXCEPTION_GOOGLE_ENTITY_NOT_EXIST="The request asks Google to retrieve an entity that does not exist.";
+	public static String EXCEPTION_FAILED_CREATE_USER="Failed to create user";
+	public static String EXCEPTION_FAILED_DELETE_USER="Failed to delete user";
+	public static String EXCEPTION_FAILED_RETRIEVE_USER="Failed to retrieve user";
+	public static String EXCEPTION_GOOGLE_DOWNLOAD_FILE="Could not download file %s of type: %s";
+	
+	// Google Document Types
+	public static String GOOGLE_DOCUMENT_TYPE_PDF = "pdf";
+	public static String GOOGLE_DOCUMENT_TYPE_DOCUMENT="document";
+	public static String GOOGLE_DOCUMENT_TYPE_PRESENTATION="presentation";
+	public static String GOOGLE_DOCUMENT_TYPE_SPREADSHEET="spreadsheet";
+	public static String GOOGLE_DOCUMENT_TYPE_DRAWING="drawing";
+	
+	// Google Export Types
+	public static String GOOGLE_EXPORT_TYPE_DOC="doc";
+	public static String GOOGLE_EXPORT_TYPE_XLS="xls";
+	public static String GOOGLE_EXPORT_TYPE_PPT="ppt";
+	public static String GOOGLE_EXPORT_TYPE_PNG="png";
+	public static String GOOGLE_EXPORT_TYPE_PDF="pdf";
+	public static String GOOGLE_EXPORT_TYPE_HTML="html";
 	
 }

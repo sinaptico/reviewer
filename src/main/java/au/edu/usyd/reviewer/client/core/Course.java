@@ -115,6 +115,12 @@ public class Course implements Serializable {
 	
 	private boolean deleted = false;
 	
+	/// collection emails of the organization 
+	@OneToMany(mappedBy = "course")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private Set<EmailCourse> emails= new HashSet<EmailCourse>();
+	
+	
 	public Course(){}
 	
 	/* (non-Javadoc)
@@ -445,13 +451,21 @@ public class Course implements Serializable {
 	}
 	
 	
-
 	public boolean isDeleted() {
 		return deleted;
 	}
 
 	public void setDeleted(boolean deteled) {
 		this.deleted = deteled;
+	}
+	
+
+	public Set<EmailCourse> getEmails() {
+		return emails;
+	}
+
+	public void setEmails(Set<EmailCourse> emails) {
+		this.emails = emails;
 	}
 
 	public Course clone(){
@@ -534,7 +548,42 @@ public class Course implements Serializable {
 		}
 		course.setWritingActivities(activities);
 		
+		Set<EmailCourse> emailsCourse = new HashSet<EmailCourse>();
+		for(EmailCourse email: this.getEmails()){
+			if (email != null){
+				emailsCourse.add(email.clone());
+			}
+		}
+		course.setEmails(emailsCourse);
+		
 		course.setYear(this.getYear());
 		return course;
+	}
+	
+	public EmailCourse getEmail(String name){
+		EmailCourse result = null;
+		for(EmailCourse email : getEmails()){
+			if  (email != null && email.getName().equals(name)){
+				result = email;
+				break;
+			}
+		}
+		return result;
+	}
+	
+	public void addEmail(EmailCourse email){
+		EmailCourse emailExist = null;
+		
+		if ( email != null && email.getName() != null){
+			emailExist = getEmail(email.getName());
+		}
+		
+		if (emailExist == null){
+			getEmails().add(email);
+		}
+	}
+	
+	public boolean hasEmails(){
+		return getEmails().size() > 0;
 	}
 }

@@ -282,7 +282,7 @@ public class AdminEntryPoint implements EntryPoint {
 								}
 							});
 						} else {
-							Window.alert("The name of the course is empty, this field is mandatory.");
+							Window.alert("Please, enter the name of the course, this field is mandatory.");
 						}
 					}
 				});
@@ -323,24 +323,28 @@ public class AdminEntryPoint implements EntryPoint {
 					@Override
 					public void onClick(ClickEvent event) {
 						createButton.updateStateSubmitting();
-						adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								if (caught instanceof MessageException){
-									Window.alert(caught.getMessage());
-								} else {
-									Window.alert("Failed to create activity: " + caught.getMessage());
+						if (!StringUtil.isBlank(activityForm.getWritingActivity().getName())){
+							adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									if (caught instanceof MessageException){
+										Window.alert(caught.getMessage());
+									} else {
+										Window.alert("Failed to create activity: " + caught.getMessage());
+									}
+									createButton.updateStateSubmit();
 								}
-								createButton.updateStateSubmit();
-							}
-
-							@Override
-							public void onSuccess(WritingActivity writingActivity) {
-								dialogBox.hide();
-								refreshCoursesTree();
-								createButton.updateStateSubmit();
-							}
-						});
+	
+								@Override
+								public void onSuccess(WritingActivity writingActivity) {
+									dialogBox.hide();
+									refreshCoursesTree();
+									createButton.updateStateSubmit();
+								}
+							});
+						} else {
+							Window.alert("Please, enter the name of the activity, this field is mandatory.");
+						}
 					}
 				});
 
@@ -851,7 +855,7 @@ public class AdminEntryPoint implements EntryPoint {
 
 					@Override
 					public void onSuccess(Void result) {
-						Window.Location.replace(GWT.getHostPageBaseURL()+"iWrite.html");
+						Window.Location.replace(GWT.getHostPageBaseURL()+"Admin.html");
 					}
 				});
 			}
