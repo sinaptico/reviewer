@@ -450,6 +450,38 @@ public class AssignmentManager {
 	public WritingActivity saveActivity(Course course, WritingActivity writingActivity) throws Exception {
 		// check if status is valid
 		MessageException me = null;
+		if (writingActivity.getId() != null && writingActivity.getStatus() == writingActivity.STATUS_FINISH){
+			boolean allFinished = true;
+			for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()){
+				allFinished = allFinished && (reviewingActivity.getStatus() == reviewingActivity.STATUS_FINISH);
+			}
+			// if all the reviews of the activity finished then the activity can not be modified
+			if (allFinished){
+				me = new MessageException(Constants.EXCEPTION_ACTIVITY_FINISHED);
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+				throw me;
+			}
+		}
+		
+		int index = 0;
+		// All the reviewing finish date must be greater than the corresponding writing activity deadline finish date
+		for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()){
+			if (reviewingActivity.getFinishDate().before(reviewingActivity.getStartDate().getFinishDate())){
+					me = new MessageException(Constants.EXCEPTION_WRONG_REVIEWING_ACTIVITY_FINISH_DATE + " Reviewing task with wrong finish date: " + reviewingActivity.getName());
+					me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+					throw me;
+			}
+		}
+		
+		// verify if activity start date is before to all the deadlines finish dates 
+		for(Deadline deadline : writingActivity.getDeadlines()){
+			if (writingActivity.getStartDate() != null && deadline != null && writingActivity.getStartDate().after(deadline.getFinishDate())){
+				me = new MessageException(Constants.EXCEPTION_ACTIVITY_START_AFTER_DEADLINE + " Deadeline with wrong finish date: " + deadline.getName());
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+				throw me;
+			}
+		}
+		
 		if (writingActivity.getId() != null && writingActivity.getStatus() != assignmentDao.loadWritingActivity(writingActivity.getId()).getStatus()) {
 			me = new MessageException(Constants.EXCEPTION_INVALID_STATUS);
 			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
@@ -466,6 +498,8 @@ public class AssignmentManager {
 		// create activity folder
 		if (writingActivity.getFolderId() == null) {
 			assignmentRepository.createActivity(course, writingActivity);
+		} else {
+			assignmentRepository.updateActivityFolderName(writingActivity);
 		}
 
 		writingActivity = assignmentDao.save(writingActivity);
@@ -1718,7 +1752,7 @@ public class AssignmentManager {
 		return course;
 	}
 	
-	private void createEmail(EmailOrganization emailOrganization, Course course) throws MessageException{
+	private void createEmail(EmailOrganization emailOrganization, Course course) throws Exception{
 		EmailCourse emailCourse = new EmailCourse();
 		emailCourse.setName(emailOrganization.getName());
 		emailCourse.setMessage(emailOrganization.getMessage());

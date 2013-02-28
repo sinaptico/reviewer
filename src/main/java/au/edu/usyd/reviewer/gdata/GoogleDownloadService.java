@@ -1,15 +1,12 @@
 package au.edu.usyd.reviewer.gdata;
 
 import java.io.File;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
@@ -22,16 +19,20 @@ import com.google.gdata.util.ServiceException;
 
 
 import com.google.gdata.data.MediaContent;
-
+/**
+ * This class is used to download files from Google
+ *
+ */
 public class GoogleDownloadService {
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
 	// Google Doc Service						
     private RetryDocsService docsService;
     // Google Spreadsheet Service
     private SpreadsheetService spreadsheetsService;
     
+    private String GOOGLE_EXPORT_URL="https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=";
     
+
     /**
      * Constructor
      * @param docsService the service used to download documents
@@ -43,7 +44,7 @@ public class GoogleDownloadService {
     }
     
     /**
-     * Downloads document on google docs to the file system.
+     * It downloads a document on google to the file system.
      * 
      * @param entry
      *            The document entry who needs to be downloaded.
@@ -61,14 +62,11 @@ public class GoogleDownloadService {
     	try {
 	        
 	        if (Constants.GOOGLE_DOCUMENT_TYPE_DOCUMENT.equals(entry.getType())) {
-	            downloadDocument(entry, destination
-	                    + documentTitle
-	                    + "." + Constants.GOOGLE_EXPORT_TYPE_DOC, Constants.GOOGLE_EXPORT_TYPE_DOC);
+	            downloadDocument(entry, destination + documentTitle + "." + Constants.GOOGLE_EXPORT_TYPE_DOC, Constants.GOOGLE_EXPORT_TYPE_DOC);
 	            return;
 	        }
 	        if (Constants.GOOGLE_DOCUMENT_TYPE_SPREADSHEET.toString().equals(entry.getType())) {
-	            downloadSpreadSheet(entry, destination + documentTitle
-	                    + "." + Constants.GOOGLE_EXPORT_TYPE_XLS , Constants.GOOGLE_EXPORT_TYPE_XLS);
+	            downloadSpreadSheet(entry, destination + documentTitle + "." + Constants.GOOGLE_EXPORT_TYPE_XLS , Constants.GOOGLE_EXPORT_TYPE_XLS);
 	            return;
 	        }
 	        if (Constants.GOOGLE_DOCUMENT_TYPE_PRESENTATION.toString().equals(entry.getType())) {
@@ -121,19 +119,15 @@ public class GoogleDownloadService {
 
        // For spreadsheets we need a different authorization token
        // We need to set the token from the spreadSheet service to the doc service
-       UserToken docsToken = (UserToken) docsService.getAuthTokenFactory()
-               .getAuthToken();
-       UserToken spreadsheetsToken = (UserToken) spreadsheetsService
-               .getAuthTokenFactory().getAuthToken();
+       UserToken docsToken = (UserToken) docsService.getAuthTokenFactory().getAuthToken();
+       UserToken spreadsheetsToken = (UserToken) spreadsheetsService.getAuthTokenFactory().getAuthToken();
        docsService.setUserToken(spreadsheetsToken.getValue());
 
-       String exportUrl = "https://spreadsheets.google.com/feeds/download/spreadsheets" +
-               "/Export?key=" + entry.getDocId() + "&exportFormat=" + exportType.toString();
+       String exportUrl = this.GOOGLE_EXPORT_URL + entry.getDocId() + "&exportFormat=" + exportType.toString();
        downloadFile(new URL(exportUrl), filepath);
 
        // Restore docs token
        docsService.setUserToken(docsToken.getValue());
-       logger.trace("Restored the document autorization token.");
    }
 
    /**

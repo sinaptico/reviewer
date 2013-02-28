@@ -20,6 +20,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -401,6 +402,62 @@ public class ActivityForm extends Composite {
 		mainPanel.add(new HTML("<br/><b>Reviewing Tasks</b>"));
 		mainPanel.add(reviewPanel);
 		mainPanel.add(new HTML("<br/>"));
+		
+		/*
+		 * If status == START then set all the fieds to disabled except notifications, early submit option, track reviews and automatic feedback.
+		 */
+		if (writingActivity != null && writingActivity.getId() != null) {
+			switch (writingActivity.getStatus()) {
+				case WritingActivity.STATUS_START:
+					name.setEnabled(false);
+					documentType.setEnabled(false);
+					genre.setEnabled(false);
+					documentTemplate.setEnabled(false);
+					groups.setEnabled(false);
+					startDate.setEnabled(false);
+					
+//					for(int row=1; row<deadlineTable.getRowCount(); row++) {
+//						for(int col=0;col<4;col++){
+//							FocusWidget focusWidget = (FocusWidget) deadlineTable.getWidget(row, col);
+//							focusWidget.setEnabled(false);
+//						}
+//					}
+					break;
+				case WritingActivity.STATUS_FINISH:
+					name.setEnabled(false);
+					documentType.setEnabled(false);
+					genre.setEnabled(false);
+					documentTemplate.setEnabled(false);
+					groups.setEnabled(false);
+					startDate.setEnabled(false);
+					tutorialList.setEnabled(false);
+					emailStudents.setEnabled(false);
+					showStats.setEnabled(false);
+					allowSubmit.setEnabled(false);
+					trackReviews.setEnabled(false);
+					
+//					for(int row=1; row<deadlineTable.getRowCount(); row++) {
+//						for(int col=0;col<4;col++){
+//							FocusWidget focusWidget = (FocusWidget) deadlineTable.getWidget(row, col);
+//							focusWidget.setEnabled(false);
+//						}
+//					}
+					break;
+				default:
+					name.setEnabled(true);
+					documentType.setEnabled(true);
+					genre.setEnabled(true);
+					documentTemplate.setEnabled(true);
+					groups.setEnabled(true);
+					startDate.setEnabled(true);
+					tutorialList.setEnabled(true);
+					emailStudents.setEnabled(true);
+					showStats.setEnabled(true);
+					allowSubmit.setEnabled(true);
+					trackReviews.setEnabled(true);
+					break;
+			}
+		}
 	}
 
 	/**

@@ -414,4 +414,10 @@ public class GoogleDocsServiceImpl {
 	public RetryDocsService getDocsService(){ 
 		return docsService;
 	}
+	
+	public void updateCourseFolderName(FolderEntry folderEntry, String newTitle) throws MalformedURLException, IOException, ServiceException {
+		  DocumentListEntry entry =  this.getDocumentListEntry(folderEntry.getDocId());
+		  entry.setTitle(new PlainTextConstruct(newTitle));
+		  DocumentListEntry updatedEntry =  docsService.update(new URL(entry.getEditLink().getHref()), entry);
+	}
 }

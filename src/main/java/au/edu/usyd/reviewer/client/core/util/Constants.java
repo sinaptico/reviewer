@@ -133,6 +133,8 @@ public class Constants {
 	public static String EXCEPTION_EMPTY_TUTORS_LIST="Empty list of tutors";
 	public static String EXCEPTION_EMPTY_USERS_GROUPS_LIST="Empty list of students groups";
 	public static String EXCEPTION_INVALID_STATUS="Invalid status";
+	public static String EXCEPTION_ACTIVITY_FINISHED="The activity finished, It can't be modified.";
+	public static String EXCEPTION_ACTIVITY_START_AFTER_DEADLINE="The start date of the activity must be before to all the deadlines finish dates.";
 	public static String EXCEPTION_SAVE_REVIEWING_ACTIVITIES="Failed to save the reviewing activities";
 	public static String EXCEPTION_SAVE_ORGANIZATION ="Failed to save ths organization";
 	public static String EXCEPTION_USERNAME_NO_EXIST="The user doesn't exist. Please enter other username";
@@ -150,11 +152,11 @@ public class Constants {
 	public static String EXCEPTION_GET_EMAIL="Failed to load the email";
 	public static String EXCEPTION_GENERATE_ORGANIZATION_EMAILS="Failed to generate the emails for the organization";
 	public static String EXCEPTION_GENERATE_COURSE_EMAILS="Failed to generate the emails for the course";
-		
 	public static String EXCEPTION_GOOGLE_USER_HAS_ACCESS = "This user already has access to the document.";
 	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";
 	public static String EXCEPTION_GET_DELETED_WRITING_ACTIVITIES="Failed to get the deleted writing activities";
 	public static String EXCEPTION_REVIEW_ENTRY_NOT_FOUND = "Review entry not found";
+	public static String EXCEPTION_WRONG_REVIEWING_ACTIVITY_FINISH_DATE="The reviewing task start date is greater than the finish date of one of the activity deadlines.";
 
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";

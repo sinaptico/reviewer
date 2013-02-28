@@ -14,6 +14,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gdata.util.AuthenticationException;
+
+import au.edu.usyd.reviewer.client.core.EmailOrganization;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.OrganizationProperty;
 import au.edu.usyd.reviewer.client.core.ReviewerProperty;
@@ -21,6 +24,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
 import au.edu.usyd.reviewer.server.util.AESCipher;
 
 /**
@@ -39,6 +43,7 @@ public class OrganizationManager {
 	private ReviewerPropertyDao propertyDao;
 	private UserDao userDao;
 	private CourseDao courseDao;
+	private EmailDao emailDao;
 	
 	private static OrganizationManager organizationManager = null;
 	
@@ -53,6 +58,7 @@ public class OrganizationManager {
 			propertyDao =  ReviewerPropertyDao.getInstance();
 			userDao = UserDao.getInstance();
 			courseDao = CourseDao.getInstance();
+			emailDao = EmailDao.getInstance();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -78,14 +84,14 @@ public class OrganizationManager {
 		Organization organizationSaved = null;
 		Organization otherOrganization = getOrganization(organization.getName());
 		if ( otherOrganization == null || (otherOrganization != null && organization.getId() != null && otherOrganization.getId().equals(organization.getId()))){
+			if (!organization.hasEmails()){
+				organization = addEmails(organization);
+			}
 			organizationSaved = organizationDao.save(organization);;
 			if (!organizationSaved.hasProperties()){
 				organization = addProperties(organization);
-				saveOrganizationProperties(organization.getOrganizationProperties());
-			} else {
-				saveOrganizationProperties(organization.getOrganizationProperties());
-			}
-				
+			} 
+			saveOrganizationProperties(organization.getOrganizationProperties());	
 		} else {
 			// there is an organization with the same name
 			throw new MessageException(Constants.EXCEPTION_ORGANIZATION_EXISTS);
@@ -233,15 +239,31 @@ public class OrganizationManager {
 	public OrganizationProperty saveOrganizationProperty(OrganizationProperty organizationProperty) throws Exception{
 		if (organizationProperty != null){
 			ReviewerProperty property = organizationProperty.getProperty();
-			if (property != null && property.getName() != null && 
-					(property.getName().equals(Constants.REVIEWER_EMAIL_PASSWORD) || 
-					 property.getName().equals(Constants.REVIEWER_GOOGLE_PASSWORD))){
+			if (property != null && property.getName() != null){
 				String value = organizationProperty.getValue();
 				try{
-					value = AESCipher.encrypt(value);
-					organizationProperty.setValue(value);
-				} catch(Exception e){
+					Organization organization = organizationProperty.getOrganization();
+					String username = null;
 					
+					if (property.getName().equals(Constants.REVIEWER_EMAIL_PASSWORD)){
+						username =  organization.getPropertyValue(Constants.REVIEWER_EMAIL_USERNAME);
+					} else if (property.getName().equals(Constants.REVIEWER_GOOGLE_PASSWORD)){
+						username =  organization.getPropertyValue(Constants.REVIEWER_GOOGLE_USERNAME);
+					}
+					
+					if (username != null){
+						AESCipher aesCipher = AESCipher.getInstance();
+						String decryptedValue = aesCipher.decrypt(value);
+						GoogleDocsServiceImpl google = new GoogleDocsServiceImpl(username, decryptedValue);
+					}
+				} catch (Exception e) {
+					try{
+						AESCipher aescipher = AESCipher.getInstance();
+						value = aescipher.encrypt(value);
+						organizationProperty.setValue(value);
+					} catch(Exception ex){
+							
+					}
 				}
 			}
 		}
@@ -344,5 +366,30 @@ public class OrganizationManager {
 
 	public List<User> getUsers(Organization organization,Integer page, Integer limit, String roles, boolean assigned) throws MessageException{
 		return userDao.getUsers(organization,page,limit,roles, assigned);
+	}
+	
+	
+	public Organization addEmails(Organization organization) throws MessageException {
+		try{
+			organization = createEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH,Constants.EMAIL_LECTURER_DEADLINE_FINISH_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_PASSWORD_DETAILS,Constants.EMAIL_PASSWORD_DETAILS_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_STUDENT_ACTIVITY_START,Constants.EMAIL_STUDENT_ACTIVITY_START_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW,Constants.EMAIL_STUDENT_RECEIVED_REVIEW_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH,Constants.EMAIL_STUDENT_REVIEW_FINISH_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_START,Constants.EMAIL_STUDENT_REVIEW_START_MESSAGE, organization);
+		} catch(Exception e){
+			throw new MessageException(Constants.EXCEPTION_GENERATE_ORGANIZATION_EMAILS);
+		}
+		return organization;
+	}
+	
+	private Organization createEmail(String emailName, String emailMessage, Organization organization) throws Exception {
+		EmailOrganization email = new EmailOrganization();
+		email.setName(emailName);
+		email.setMessage(emailMessage);
+		email.setOrganization(organization);
+		email = emailDao.saveEmailOrganization(email, organization);
+		organization.addEmail(email);
+		return organization;
 	}
 }

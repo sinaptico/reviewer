@@ -283,6 +283,7 @@ public class AdminEntryPoint implements EntryPoint {
 							});
 						} else {
 							Window.alert("Please, enter the name of the course, this field is mandatory.");
+							createButton.updateStateSubmit();
 						}
 					}
 				});
@@ -344,6 +345,7 @@ public class AdminEntryPoint implements EntryPoint {
 							});
 						} else {
 							Window.alert("Please, enter the name of the activity, this field is mandatory.");
+							createButton.updateStateSubmit();
 						}
 					}
 				});

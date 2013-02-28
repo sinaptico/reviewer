@@ -184,7 +184,7 @@ public class AssignmentRepository {
 //			googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
 			googleDownloadServiceImpl.download(documentListEntry, filePath);
 		} catch(AuthenticationException ae){
-			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION_);
+			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
 		}
 	}
 
@@ -257,6 +257,7 @@ public class AssignmentRepository {
 		List<DocumentListEntry> templates = googleDocsServiceImpl.getFolderDocuments(templatesFolderEntry);
 		return templates;
 	}
+	
 
 	public void updateCourse(Course course) throws Exception {
 
@@ -441,5 +442,20 @@ public class AssignmentRepository {
 			}
 		}
 		return result;
+	}
+	
+
+	public void updateActivityFolderName(WritingActivity writingActivity) throws Exception{
+		//if the folder name of the activity is not equals to the folder name of the activity in Google then rename it in Google
+		String newTitle = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
+		FolderEntry folderEntry = googleDocsServiceImpl.getFolder(writingActivity.getFolderId());
+		updateFolderName(folderEntry, newTitle);
+	}
+	
+	public void updateFolderName(FolderEntry folderEntry, String newTitle) throws Exception {
+		if (folderEntry != null && folderEntry.getTitle() != null && folderEntry.getTitle().getPlainText() != null && 
+				!folderEntry.getTitle().getPlainText().equals(newTitle)){
+			googleDocsServiceImpl.updateCourseFolderName(folderEntry, newTitle);
+		}
 	}
 }
