@@ -28,6 +28,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 //TODO Documentation - link to Template form
@@ -404,60 +405,9 @@ public class ActivityForm extends Composite {
 		mainPanel.add(new HTML("<br/>"));
 		
 		/*
-		 * If status == START then set all the fieds to disabled except notifications, early submit option, track reviews and automatic feedback.
+		 * If status == START then set all the fields to disabled except notifications, early submit option, track reviews and automatic feedback.
 		 */
-		if (writingActivity != null && writingActivity.getId() != null) {
-			switch (writingActivity.getStatus()) {
-				case WritingActivity.STATUS_START:
-					name.setEnabled(false);
-					documentType.setEnabled(false);
-					genre.setEnabled(false);
-					documentTemplate.setEnabled(false);
-					groups.setEnabled(false);
-					startDate.setEnabled(false);
-					
-//					for(int row=1; row<deadlineTable.getRowCount(); row++) {
-//						for(int col=0;col<4;col++){
-//							FocusWidget focusWidget = (FocusWidget) deadlineTable.getWidget(row, col);
-//							focusWidget.setEnabled(false);
-//						}
-//					}
-					break;
-				case WritingActivity.STATUS_FINISH:
-					name.setEnabled(false);
-					documentType.setEnabled(false);
-					genre.setEnabled(false);
-					documentTemplate.setEnabled(false);
-					groups.setEnabled(false);
-					startDate.setEnabled(false);
-					tutorialList.setEnabled(false);
-					emailStudents.setEnabled(false);
-					showStats.setEnabled(false);
-					allowSubmit.setEnabled(false);
-					trackReviews.setEnabled(false);
-					
-//					for(int row=1; row<deadlineTable.getRowCount(); row++) {
-//						for(int col=0;col<4;col++){
-//							FocusWidget focusWidget = (FocusWidget) deadlineTable.getWidget(row, col);
-//							focusWidget.setEnabled(false);
-//						}
-//					}
-					break;
-				default:
-					name.setEnabled(true);
-					documentType.setEnabled(true);
-					genre.setEnabled(true);
-					documentTemplate.setEnabled(true);
-					groups.setEnabled(true);
-					startDate.setEnabled(true);
-					tutorialList.setEnabled(true);
-					emailStudents.setEnabled(true);
-					showStats.setEnabled(true);
-					allowSubmit.setEnabled(true);
-					trackReviews.setEnabled(true);
-					break;
-			}
-		}
+		disabledFields();
 	}
 
 	/**
@@ -622,5 +572,87 @@ public class ActivityForm extends Composite {
 	
 	public void setOrganizationId(Long organization){
 		this.organizationId = organizationId;
+	}
+	
+	private void disabledFields(){
+		if (writingActivity != null && writingActivity.getId() != null) {
+			switch (writingActivity.getStatus()) {
+				case WritingActivity.STATUS_START:
+					disabledStatusStart();
+					break;
+				case WritingActivity.STATUS_FINISH:
+					disabledStatusFinish();
+					break;
+				default:
+					disabledStatusDefault();
+					break;
+			}
+		}
+	}
+	
+	private void disabledStatusStart(){
+		name.setEnabled(false);
+		documentType.setEnabled(false);
+		genre.setEnabled(false);
+		documentTemplate.setEnabled(false);
+		groups.setEnabled(false);
+		startDate.setEnabled(false);
+		
+		// disabled deadlines but allow add new ones				
+		for(int row=1; row<deadlineTable.getRowCount(); row++) {
+			for(int col=0;col<5;col++){
+				Widget widget = deadlineTable.getWidget(row, col);
+				if (widget instanceof FocusWidget){
+					FocusWidget focusWidget = (FocusWidget) widget;
+					focusWidget.setEnabled(false);
+				} else if ( widget instanceof DateBox){
+					DateBox dateBox = (DateBox)widget;
+					dateBox.setEnabled(false);
+				}
+			}
+		}
+	}
+	
+	private void disabledStatusFinish(){
+		name.setEnabled(false);
+		documentType.setEnabled(false);
+		genre.setEnabled(false);
+		documentTemplate.setEnabled(false);
+		groups.setEnabled(false);
+		startDate.setEnabled(false);
+		tutorialList.setEnabled(false);
+		emailStudents.setEnabled(false);
+		showStats.setEnabled(false);
+		allowSubmit.setEnabled(false);
+		trackReviews.setEnabled(false);
+		for(int row=1; row<deadlineTable.getRowCount(); row++) {
+			for(int col=0;col<5;col++){
+				Widget widget = deadlineTable.getWidget(row, col);
+				if (widget instanceof FocusWidget){
+					FocusWidget focusWidget = (FocusWidget) widget;
+					focusWidget.setEnabled(false);
+				} else if ( widget instanceof DateBox){
+					DateBox dateBox = (DateBox)widget;
+					dateBox.setEnabled(false);
+				} else if (widget instanceof Button){
+					Button button = (Button) widget;
+					button.setEnabled(false);
+				}
+			}
+		}
+	}
+	
+	private void disabledStatusDefault(){
+		name.setEnabled(true);
+		documentType.setEnabled(true);
+		genre.setEnabled(true);
+		documentTemplate.setEnabled(true);
+		groups.setEnabled(true);
+		startDate.setEnabled(true);
+		tutorialList.setEnabled(true);
+		emailStudents.setEnabled(true);
+		showStats.setEnabled(true);
+		allowSubmit.setEnabled(true);
+		trackReviews.setEnabled(true);
 	}
 }

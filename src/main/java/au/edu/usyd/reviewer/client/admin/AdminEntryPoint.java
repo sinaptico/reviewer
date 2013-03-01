@@ -261,7 +261,7 @@ public class AdminEntryPoint implements EntryPoint {
 					@Override
 					public void onClick(ClickEvent event) {
 						Course course = courseForm.getCourse();
-						if (!StringUtil.isBlank(course.getName())){
+						if (validCourse(course)){
 							createButton.updateStateSubmitting();
 							adminService.saveCourse(course, new AsyncCallback<Course>() {
 								@Override
@@ -282,7 +282,6 @@ public class AdminEntryPoint implements EntryPoint {
 								}
 							});
 						} else {
-							Window.alert("Please, enter the name of the course, this field is mandatory.");
 							createButton.updateStateSubmit();
 						}
 					}
@@ -1061,9 +1060,6 @@ public class AdminEntryPoint implements EntryPoint {
 		  return 0;
 	}
 	
-	class ListChangeEvent extends ChangeEvent {}
-	
-	
 	private void setYearsPanel(Collection<Integer> years){
 		for (Integer year: years){
 			if (year != null){
@@ -1071,7 +1067,22 @@ public class AdminEntryPoint implements EntryPoint {
 			}
 		}
 	}
-	
+
+	private boolean validCourse(Course course){
+		boolean valid = true;
+		if (!StringUtil.isBlank(course.getName())){
+			valid = false;
+			Window.alert("Please, enter the name of the course, this field is mandatory.");
+		} else if (course.getTutorials().size() == 0){
+			valid = false;
+			Window.alert("Please, enter the tutorial of the course, this field is mandatory.");
+		}
+		return valid;
+		
+		
 	}
+	
+	class ListChangeEvent extends ChangeEvent {}
+}
  
  

@@ -48,7 +48,7 @@ public class Constants {
 	public static String EXCEPTION_ORGANIZATION_EMPTY="The organization name can not be empty. This field is mandatory";
 	public static String EXCEPTION_FIELD_EMPTIES="Please, enter some of the search fields";
 	public static String EXCEPTION_PERMISSION_DENIED ="Permission denied. You don't have permission to execute this action.";
-	public static String EXCEPTION_INVALID_TUTORIAL="Invalid tutorial";
+	public static String EXCEPTION_INVALID_TUTORIAL="Invalid tutorial." + "\nPlease, reload the courses";
 	public static String EXCEPTION_GOOGLE_AUTHENTICATION="User could not be authenticated in Google Docs";
 	public static String EXCEPTION_GOOGLE_URL_MALFORMED="The Google Docs URL is malformed";
 	public static String EXCEPTION_USER_NOT_MOCKED = "The user could not be mocked";
@@ -64,6 +64,7 @@ public class Constants {
 	public static String EXCEPTION_DECRYPT="Failed to decrypt the value";
 	public static String EXCEPTION_SAVE_EMAIL_ORGANIZATION="Failed to save the email of the organization";
 	public static String EXCEPTION_SAVE_EMAIL_COURSE="Failed to save the email of the course";
+	public static String EXCEPTION_WRONG_SEMESTER="The semester must correspond with the semester of the year.";
 	
 	// Dao Exceptions
 	public static String EXCEPTION_HIBERNATE_SESSION_MESSAGE="Failed to create a session to database";
@@ -134,7 +135,8 @@ public class Constants {
 	public static String EXCEPTION_EMPTY_USERS_GROUPS_LIST="Empty list of students groups";
 	public static String EXCEPTION_INVALID_STATUS="Invalid status";
 	public static String EXCEPTION_ACTIVITY_FINISHED="The activity finished, It can't be modified.";
-	public static String EXCEPTION_ACTIVITY_START_AFTER_DEADLINE="The start date of the activity must be before to all the deadlines finish dates.";
+	public static String EXCEPTION_ACTIVITY_START_AFTER_DEADLINE="The start date of the activity must be before to all the deadlines finish dates." +
+																 "\n" + "Deadeline with wrong finish date: ";
 	public static String EXCEPTION_SAVE_REVIEWING_ACTIVITIES="Failed to save the reviewing activities";
 	public static String EXCEPTION_SAVE_ORGANIZATION ="Failed to save ths organization";
 	public static String EXCEPTION_USERNAME_NO_EXIST="The user doesn't exist. Please enter other username";
@@ -156,7 +158,8 @@ public class Constants {
 	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";
 	public static String EXCEPTION_GET_DELETED_WRITING_ACTIVITIES="Failed to get the deleted writing activities";
 	public static String EXCEPTION_REVIEW_ENTRY_NOT_FOUND = "Review entry not found";
-	public static String EXCEPTION_WRONG_REVIEWING_ACTIVITY_FINISH_DATE="The reviewing task start date is greater than the finish date of one of the activity deadlines.";
+	public static String EXCEPTION_WRONG_REVIEWING_ACTIVITY_FINISH_DATE="The reviewing task start date is greater than the finish date of one of the activity deadlines." +
+																		"\n" + "Reviewing task with wrong finish date: ";
 
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";

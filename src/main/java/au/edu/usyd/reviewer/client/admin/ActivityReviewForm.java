@@ -303,23 +303,15 @@ public class ActivityReviewForm extends Composite {
 				allocationStrategy.setEnabled(false);
 				
 				// disabled reviewers
-//				for(int i=0;i<reviewersPanel.getWidgetCount();i++){
-//					Widget widget =  reviewersPanel.getWidget(i);
-//					if (!(widget instanceof Label)){
-//						FocusWidget focusWidget = (FocusWidget) widget;
-//						focusWidget.setEnabled(false);
-//					}
-//				}
+				for(int i=0;i<reviewersPanel.getWidgetCount();i++){
+					Widget widget =  reviewersPanel.getWidget(i);
+					if (widget instanceof FocusWidget){
+						FocusWidget focusWidget = (FocusWidget) widget;
+						focusWidget.setEnabled(false);
+					} 
+				}
 				
-				// disabled ratings
-//				for(int i=0;i<ratingsPanel.getWidgetCount();i++){
-//					Widget widget =  ratingsPanel.getWidget(i);
-//					if (!(widget instanceof Label)){
-//						FocusWidget focusWidget = (FocusWidget) widget;
-//						focusWidget.setEnabled(false);
-//					}
-//				}
-				
+				ratings.setEnabled(false);				
 				earlySubmit.setEnabled(false);
 				feedbackTemplateType.setEnabled(false);
 				break;

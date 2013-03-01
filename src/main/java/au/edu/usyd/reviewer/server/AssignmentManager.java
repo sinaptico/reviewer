@@ -466,8 +466,9 @@ public class AssignmentManager {
 		int index = 0;
 		// All the reviewing finish date must be greater than the corresponding writing activity deadline finish date
 		for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()){
-			if (reviewingActivity.getFinishDate().before(reviewingActivity.getStartDate().getFinishDate())){
-					me = new MessageException(Constants.EXCEPTION_WRONG_REVIEWING_ACTIVITY_FINISH_DATE + " Reviewing task with wrong finish date: " + reviewingActivity.getName());
+			if (reviewingActivity.getFinishDate() != null && reviewingActivity.getStartDate()!= null && 
+				reviewingActivity.getFinishDate().before(reviewingActivity.getStartDate().getFinishDate())){
+					me = new MessageException(Constants.EXCEPTION_WRONG_REVIEWING_ACTIVITY_FINISH_DATE  + reviewingActivity.getName());
 					me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
 					throw me;
 			}
@@ -476,7 +477,7 @@ public class AssignmentManager {
 		// verify if activity start date is before to all the deadlines finish dates 
 		for(Deadline deadline : writingActivity.getDeadlines()){
 			if (writingActivity.getStartDate() != null && deadline != null && writingActivity.getStartDate().after(deadline.getFinishDate())){
-				me = new MessageException(Constants.EXCEPTION_ACTIVITY_START_AFTER_DEADLINE + " Deadeline with wrong finish date: " + deadline.getName());
+				me = new MessageException(Constants.EXCEPTION_ACTIVITY_START_AFTER_DEADLINE  + deadline.getName());
 				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
 				throw me;
 			}
@@ -688,6 +689,12 @@ public class AssignmentManager {
 	}
 	
 	public Course saveCourse(Course course, User user) throws Exception {
+		Date today = new Date();
+		int month = today.getMonth();
+		if ((month < 7 && course.getSemester() == 2) || (month > 6 && course.getSemester() == 1)){
+			throw new MessageException(Constants.EXCEPTION_WRONG_SEMESTER);
+		}
+		
 		// Add emails to the course
 		course = addEmails(course);
 		//Set up folders and templates
