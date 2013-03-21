@@ -239,7 +239,6 @@ public class ActivityReviewForm extends Composite {
 				dialogBox.setWidget(panel);
 				dialogBox.center();
 				dialogBox.show();
-				//reviewersTable.setReviewingActivity(reviewingActivity);
 			}});		
 
 		Button reportFeedbackTrackButton = new Button("Report");
@@ -322,7 +321,7 @@ public class ActivityReviewForm extends Composite {
 				reviewType.setEnabled(false);
 				reviewTemplateLst.setEnabled(false);
 				allocationStrategy.setEnabled(false);
-				earlySubmit.setEnabled(false);
+				earlySubmit.setEnabled(true);
 				feedbackTemplateType.setEnabled(false);
 				break;
 			default:

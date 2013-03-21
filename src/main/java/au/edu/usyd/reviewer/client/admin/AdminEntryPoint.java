@@ -2,6 +2,7 @@ package au.edu.usyd.reviewer.client.admin;
 
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import au.edu.usyd.reviewer.client.admin.glosser.GlosserService;
@@ -16,6 +17,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.CustomUncaughtExceptionHandler;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
@@ -160,6 +162,8 @@ public class AdminEntryPoint implements EntryPoint {
 	private VerticalPanel headerPanel = new VerticalPanel();
 		
 	private boolean toolsLoaded = false;
+	
+	private Command logoutCommand;
 	/** 
 	 * <p>Main method of the entry point that loads the "Glosser sites" and menus for user impersonation, courses, activities and review 
 	 * templates creation. It also loads the panels and trees with the course and review templates lists according to the defined filter (Year - Semester).</p>
@@ -176,7 +180,7 @@ public class AdminEntryPoint implements EntryPoint {
 			@Override
 			public void onFailure(Throwable caught) {
 				if (caught instanceof MessageException){
-					Window.alert(caught.getMessage());
+					processMessageException((MessageException) caught);
 				} else {
 					Window.alert("Failed to get Glosser sites: " + caught.getMessage());
 				}
@@ -189,7 +193,7 @@ public class AdminEntryPoint implements EntryPoint {
 					@Override
 					public void onFailure(Throwable caught) {
 						if (caught instanceof MessageException){
-							Window.alert(caught.getMessage());
+							processMessageException((MessageException) caught);
 						} else {
 							Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
 						}
@@ -213,6 +217,13 @@ public class AdminEntryPoint implements EntryPoint {
 		// semesters 
 		courseSemester.addItem("1", "1");
 		courseSemester.addItem("2", "2");
+		Date today = new Date();
+		int month = today.getMonth();
+		if (month < 7) {
+			courseSemester.setSelectedIndex(0);
+		} else if (month > 6){
+			courseSemester.setSelectedIndex(1);
+		}	
 			
 		// get logged user to show his/her name and organization in the page
 		if (loggedUser == null){
@@ -221,7 +232,7 @@ public class AdminEntryPoint implements EntryPoint {
 				@Override
 				public void onFailure(Throwable caught) {
 					if (caught instanceof MessageException){
-						Window.alert(caught.getMessage());
+						processMessageException((MessageException) caught);
 					} else {
 						Window.alert("Failed get the logged user" + caught.getMessage());
 					}
@@ -243,7 +254,7 @@ public class AdminEntryPoint implements EntryPoint {
 						    yearSemesterPanel.add(organizationsPanel);
 						    yearSemesterPanel.add(refreshCourseTreeButton);
 						}
-						refreshCoursesTree();
+						refreshCoursesTree(tabs);
 					} 
 				}
 			});
@@ -261,13 +272,13 @@ public class AdminEntryPoint implements EntryPoint {
 					@Override
 					public void onClick(ClickEvent event) {
 						Course course = courseForm.getCourse();
-						if (validCourse(course)){
+						if (isValidCourse(course)){
 							createButton.updateStateSubmitting();
 							adminService.saveCourse(course, new AsyncCallback<Course>() {
 								@Override
 								public void onFailure(Throwable caught) {
 									if (caught instanceof MessageException){
-										Window.alert(caught.getMessage());
+										processMessageException((MessageException) caught);
 									} else {
 										Window.alert("Failed to create course: " + caught.getMessage());
 									}
@@ -277,7 +288,7 @@ public class AdminEntryPoint implements EntryPoint {
 								@Override
 								public void onSuccess(Course course) {
 									dialogBox.hide();
-									refreshCoursesTree();
+									refreshCoursesTree(tabs);
 									createButton.updateStateSubmit();
 								}
 							});
@@ -313,59 +324,62 @@ public class AdminEntryPoint implements EntryPoint {
 			public void execute() {
 				WritingActivity writingActivity = new WritingActivity();
 				writingActivity.getDeadlines().add(new Deadline("Final"));
-				
-				activityForm.setCourses(courses);		
-				activityForm.setGlosserSites(glosserSites);
-				activityForm.setWritingActivity(writingActivity);
-				final DialogBox dialogBox = new DialogBox();
-				final SubmitButton createButton = new SubmitButton("Create", "Creating...", "Created");
-				createButton.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						createButton.updateStateSubmitting();
-						if (!StringUtil.isBlank(activityForm.getWritingActivity().getName())){
-							adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									if (caught instanceof MessageException){
-										Window.alert(caught.getMessage());
-									} else {
-										Window.alert("Failed to create activity: " + caught.getMessage());
+				if (courses.isEmpty()){
+					Window.alert(Constants.EXCEPTION_NOT_COURSES_FOR_ACTIVITY);
+				} else {
+					
+					activityForm.setCourses(courses);		
+					activityForm.setGlosserSites(glosserSites);
+					activityForm.setWritingActivity(writingActivity);
+					final DialogBox dialogBox = new DialogBox();
+					final SubmitButton createButton = new SubmitButton("Create", "Creating...", "Created");
+					createButton.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							createButton.updateStateSubmitting();
+							if (isValidActivity(activityForm.getWritingActivity())){
+								adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										if (caught instanceof MessageException){
+											processMessageException((MessageException) caught);
+										} else {
+											Window.alert("Failed to create activity: " + caught.getMessage());
+										}
+										createButton.updateStateSubmit();
 									}
-									createButton.updateStateSubmit();
-								}
-	
-								@Override
-								public void onSuccess(WritingActivity writingActivity) {
-									dialogBox.hide();
-									refreshCoursesTree();
-									createButton.updateStateSubmit();
-								}
-							});
-						} else {
-							Window.alert("Please, enter the name of the activity, this field is mandatory.");
-							createButton.updateStateSubmit();
+		
+									@Override
+									public void onSuccess(WritingActivity writingActivity) {
+										dialogBox.hide();
+										refreshCoursesTree(tabs);
+										createButton.updateStateSubmit();
+									}
+								});
+							} else {
+								createButton.updateStateSubmit();
+							}
 						}
-					}
-				});
+					});
+					HorizontalPanel buttonsPanel = new HorizontalPanel();
+					buttonsPanel.setWidth("100%");
+					buttonsPanel.add(createButton);
+					buttonsPanel.add(new Button("Close", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							dialogBox.hide();
+						}
+					}));
+					
+					VerticalPanel panel = new VerticalPanel();
+					panel.add(activityForm);
+					panel.add(buttonsPanel);
+					dialogBox.setHTML("<b>Activity</b>");
+					dialogBox.setWidget(panel);
+					dialogBox.center();
+					dialogBox.show();
 
-				HorizontalPanel buttonsPanel = new HorizontalPanel();
-				buttonsPanel.setWidth("100%");
-				buttonsPanel.add(createButton);
-				buttonsPanel.add(new Button("Close", new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						dialogBox.hide();
-					}
-				}));
-
-				VerticalPanel panel = new VerticalPanel();
-				panel.add(activityForm);
-				panel.add(buttonsPanel);
-				dialogBox.setHTML("<b>Activity</b>");
-				dialogBox.setWidget(panel);
-				dialogBox.center();
-				dialogBox.show();
+				}
 			}
 		};
 		// Save Review template
@@ -383,7 +397,7 @@ public class AdminEntryPoint implements EntryPoint {
 							@Override
 							public void onFailure(Throwable caught) {
 								if (caught instanceof MessageException){
-									Window.alert(caught.getMessage());
+									processMessageException((MessageException) caught);
 								} else {
 									Window.alert("Failed to create Review Template: " + caught.getMessage());
 								}
@@ -449,11 +463,11 @@ public class AdminEntryPoint implements EntryPoint {
 								public void onFailure(Throwable caught) {
 									String message =  "Failed to mock user: ";
 									if (caught instanceof MessageException){
-										message = caught.getMessage();
+										processMessageException((MessageException) caught);
 									} else {
 										message = message + caught.getMessage();
+										Window.alert(message);
 									}
-									Window.alert(message);
 									mockUserButton.setEnabled(true);
 								}
 	
@@ -526,7 +540,7 @@ public class AdminEntryPoint implements EntryPoint {
 								@Override
 								public void onFailure(Throwable caught) {
 									if (caught instanceof MessageException){
-										Window.alert(caught.getMessage());
+										processMessageException((MessageException) caught);
 									} else {
 										Window.alert("Failed to save course: " + caught.getMessage());
 									}
@@ -553,18 +567,18 @@ public class AdminEntryPoint implements EntryPoint {
 									@Override
 									public void onFailure(Throwable caught) {
 										if (caught instanceof MessageException){
-											Window.alert(caught.getMessage());
+											processMessageException((MessageException) caught);
 										} else {
 											Window.alert("Failed to delete course: " + caught.getMessage());
 										}
 										deleteButton.setEnabled(true);
-										refreshCoursesTree();
+										refreshCoursesTree(tabs);
 									}
 
 									@Override
 									public void onSuccess(Course course) {
 										Window.alert("Course deleted.");
-										refreshCoursesTree();
+										refreshCoursesTree(tabs);
 										panel.removeFromParent();
 									}
 								});
@@ -600,7 +614,7 @@ public class AdminEntryPoint implements EntryPoint {
 								@Override
 								public void onFailure(Throwable caught) {
 									if (caught instanceof MessageException){
-										Window.alert(caught.getMessage());
+										processMessageException((MessageException) caught);
 									} else {
 										Window.alert("Failed to save activity: " + caught.getMessage());
 									}
@@ -626,7 +640,7 @@ public class AdminEntryPoint implements EntryPoint {
 									@Override
 									public void onFailure(Throwable caught) {
 										if (caught instanceof MessageException){
-											Window.alert(caught.getMessage());
+											processMessageException((MessageException) caught);
 										} else {
 											Window.alert("Failed to delete activity: " + caught.getMessage());
 										}
@@ -636,7 +650,7 @@ public class AdminEntryPoint implements EntryPoint {
 									@Override
 									public void onSuccess(WritingActivity writingActivity) {
 										Window.alert("Activity deleted.");
-										refreshCoursesTree();
+										refreshCoursesTree(tabs);
 										panel.removeFromParent();
 									}
 								});
@@ -670,8 +684,6 @@ public class AdminEntryPoint implements EntryPoint {
 		nodePanel.setWidget(info);
 		assignmentsPanel.add(nodePanel);
 		
-//		refreshTemplateTree();
-
 		// Add handler for templates tree
     	reviewTemplateTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
 			@Override
@@ -691,7 +703,7 @@ public class AdminEntryPoint implements EntryPoint {
 								@Override
 								public void onFailure(Throwable caught) {
 									if (caught instanceof MessageException){
-										Window.alert(caught.getMessage());
+										processMessageException((MessageException) caught);
 									} else {
 										Window.alert("Failed to save Review Template: " + caught.getMessage());
 									}
@@ -720,7 +732,7 @@ public class AdminEntryPoint implements EntryPoint {
 									@Override
 									public void onFailure(Throwable caught) {
 										if (caught instanceof MessageException){
-											Window.alert(caught.getMessage());
+											processMessageException((MessageException) caught);
 										} else {
 											Window.alert("Failed to delete Review Template: " + caught.getMessage());
 										}
@@ -773,12 +785,6 @@ public class AdminEntryPoint implements EntryPoint {
     	});
     	
     	
-//		TabLayoutPanel tabs = new TabLayoutPanel(25, Unit.PX);
-//		tabs.add(new ScrollPanel(assignmentsPanel), "Assignments");
-//		tabs.add(new ScrollPanel(gradeBookPanel), "GradeBook");
-//		tabs.add(new ScrollPanel(reportsPanel), "Reports");
-//		tabs.add(new ScrollPanel(glosserPanel), "Glosser");
-//		tabs.add(new ScrollPanel(reviewTemplatesContentPanel), "Review Templates");
 		tabs.setPixelSize(690, 650);
 		tabs.selectTab(0);
 
@@ -811,14 +817,12 @@ public class AdminEntryPoint implements EntryPoint {
 		VerticalPanel adminPanel = new VerticalPanel();
 		adminPanel.setSize("75%", "75%");
 		adminPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		adminPanel.add(mainPanel);
-	
-	
+		adminPanel.add(mainPanel);	
 			
 		refreshCourseTreeButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {				
-				refreshCoursesTree();				
+				refreshCoursesTree(tabs);				
 			}
 	    	
 	    });
@@ -829,7 +833,7 @@ public class AdminEntryPoint implements EntryPoint {
 			@Override
 			public void onFailure(Throwable caught) {
 				if (caught instanceof MessageException){
-					Window.alert(caught.getMessage());
+					processMessageException((MessageException) caught);
 				} else {
 					Window.alert("Failed get the years" + caught.getMessage());
 				}
@@ -842,13 +846,13 @@ public class AdminEntryPoint implements EntryPoint {
 		});
 				
 		// Add Logout command
-		Command logoutCommand = new Command(){
+		logoutCommand = new Command(){
 			public void execute() {
 				adminService.logout(new AsyncCallback<Void>(){
 					@Override
 					public void onFailure(Throwable caught) {
 						if (caught instanceof MessageException){
-							Window.alert(caught.getMessage());
+							processMessageException((MessageException) caught);
 						} else {
 							Window.alert("Logout failed" + caught.getMessage());
 						}
@@ -868,7 +872,7 @@ public class AdminEntryPoint implements EntryPoint {
 		
 		FlexTable headerTable = new FlexTable();
 		headerTable.setSize("100%", "5%");
-		headerTable.setWidget(0, 0, new HTML ("<div "+cssDivStyle +" align='center'><h1 "+cssH1Style +">IWRITE ADMIN PAGE </h1>"));
+		headerTable.setWidget(0, 0, new HTML ("<div "+cssDivStyle +" align='center'><h1 "+cssH1Style +">ADMIN PAGE </h1>"));
 		headerTable.setWidget(0, 1, logoutMenu);
 		headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT, HasVerticalAlignment.ALIGN_MIDDLE);
 		headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -880,7 +884,7 @@ public class AdminEntryPoint implements EntryPoint {
 	    RootPanel.get("adminPanel").add(new HTML("</br>"));
 		RootPanel.get("adminPanel").add(adminPanel);
 		
-//		this.refreshCoursesTree();
+		refreshCoursesTree(tabs);
 	}
 
 	
@@ -902,7 +906,7 @@ public class AdminEntryPoint implements EntryPoint {
 			@Override
 			public void onFailure(Throwable caught) {
 				if (caught instanceof MessageException){
-					Window.alert(caught.getMessage());
+					processMessageException((MessageException) caught);
 				} else {
 					Window.alert("Failed get courses: " + caught.getMessage());
 				}
@@ -927,7 +931,7 @@ public class AdminEntryPoint implements EntryPoint {
 	/**
 	 * Gets the courses recorded in the system according to the defined filter year - semester and populates the Courses Tree.
 	 */
-	private void refreshCoursesTree() {
+	private void refreshCoursesTree(TabLayoutPanel tabs) {
 		refreshCourseTreeButton.updateStateSubmitting();
 		
 		Long organizationId = null;
@@ -957,7 +961,7 @@ public class AdminEntryPoint implements EntryPoint {
 			@Override
 			public void onFailure(Throwable caught) {
 				if (caught instanceof MessageException){
-					Window.alert(caught.getMessage());
+					processMessageException((MessageException) caught);
 				} else {
 					Window.alert("Failed get courses. " + caught.getMessage());
 				}
@@ -969,6 +973,7 @@ public class AdminEntryPoint implements EntryPoint {
 				refreshCourseTreeButton.updateStateSubmit();
 				courses = courseList;
 				// courses tree
+				coursesTree.clear();
 				for (Course course : courses) {
 					TreeItem courseItem = new TreeItem(new HTML("<img src='images/google/icon_6_folder.gif'></img> <span><b>" + course.getName()+"-"+course.getYear()+"S"+course.getSemester() + "</b></span>"));
 					courseItem.setUserObject(course);
@@ -985,6 +990,7 @@ public class AdminEntryPoint implements EntryPoint {
 				refreshCourseTreeButton.updateStateSubmit();
 			}
 		});
+		tabs.selectTab(0);
 	}
 	
 	// verify if the logged user enters an email or a username
@@ -1001,7 +1007,7 @@ public class AdminEntryPoint implements EntryPoint {
 			@Override
 			public void onFailure(Throwable caught) {
 				if (caught instanceof MessageException){
-					Window.alert(caught.getMessage());
+					processMessageException((MessageException) caught);
 				} else {
 					Window.alert("Failed get organizations: " + caught.getMessage());
 				}
@@ -1036,7 +1042,6 @@ public class AdminEntryPoint implements EntryPoint {
 	private void setLoggedUser(User user){
 		loggedUser = user;
 		Organization organization = user.getOrganization();
-//		headerPanel.add(new HTML ("<div "+cssDivStyle +" align='center'><h1 "+cssH1Style +">IWRITE ADMIN PAGE </h1>" ));
 		VerticalPanel userPanel = new VerticalPanel();
 		userPanel.add(new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName()));
 		userPanel.setStyleName("contentDeco");
@@ -1068,20 +1073,45 @@ public class AdminEntryPoint implements EntryPoint {
 		}
 	}
 
-	private boolean validCourse(Course course){
+	private boolean isValidCourse(Course course){
 		boolean valid = true;
-		if (!StringUtil.isBlank(course.getName())){
+		if (StringUtil.isBlank(course.getName())){
 			valid = false;
-			Window.alert("Please, enter the name of the course, this field is mandatory.");
-		} else if (course.getTutorials().size() == 0){
+			Window.alert(Constants.EXCEPTION_EMPTY_COURSE_NAME);
+		} else if (course.getTutorials().isEmpty()){
 			valid = false;
-			Window.alert("Please, enter the tutorial of the course, this field is mandatory.");
+			Window.alert(Constants.EXCEPTION_EMPTY_COURSE_TUTORIALS);
+		} else {
+			Date today = new Date();
+			int month = today.getMonth();
+			if ((month < 7 && course.getSemester() == 2) || (month > 6 && course.getSemester() == 1)){
+				valid = false;
+				Window.alert(Constants.EXCEPTION_WRONG_SEMESTER);
+			}
 		}
 		return valid;
 		
 		
 	}
+
+	private boolean isValidActivity(WritingActivity activity){
+		boolean valid = true;
+		if (courses.isEmpty()){
+			valid = false;
+			Window.alert(Constants.EXCEPTION_NOT_COURSES_FOR_ACTIVITY);
+		} else if (StringUtil.isBlank(activity.getName())){
+			Window.alert("Please, enter the name of the activity, this field is mandatory.");
+			valid = false;
+		}
+		return valid;
+	}
 	
+	private void processMessageException(MessageException me){
+		Window.alert(me.getMessage());
+		if (me.getStatusCode() == Constants.HTTP_CODE_LOGOUT){
+			logoutCommand.execute();
+		}
+	}
 	class ListChangeEvent extends ChangeEvent {}
 }
  

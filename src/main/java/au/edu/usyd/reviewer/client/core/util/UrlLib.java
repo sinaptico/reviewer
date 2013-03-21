@@ -10,8 +10,6 @@ public class UrlLib {
 	// Service to get Glosser url
 	private static ReviewerUtilServiceAsync reviewerUtilService = (ReviewerUtilServiceAsync) GWT.create(ReviewerUtilService.class);
 	
-	//protected static String domain = "iwrite.eng.usyd.edu.au";
-	
 	/**
 	 * Document url.
 	 *
@@ -22,20 +20,6 @@ public class UrlLib {
 	public static String documentUrl(String id, String domain) {
 		return "http://docs.google.com/a/" + domain + "/document/edit?id=" + id.replace("document:", "");
 	}
-
-//	public static String entryUrl(String id) {		
-//		if (id.startsWith("document:")) {
-//			return UrlLib.documentUrl(id);
-//		} else if (id.startsWith("presentation:")) {
-//			return UrlLib.presentationUrl(id);
-//		} else if (id.startsWith("spreadsheet:")) {
-//			return UrlLib.spreadsheetUrl(id);
-//		} else if (id.startsWith("folder:")) {
-//			return UrlLib.folderUrl(id);
-//		} else {
-//			return null;
-//		}
-//	}
 
 /**
  * Folder url.

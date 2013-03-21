@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -153,9 +154,9 @@ public class AssignmentManager {
 					// download PDF document
 					if (docEntry.isLocalFile()){
 							 if (docEntry.isUploaded()){
-								 filePath = organization.getUploadsHome()+"/"+docEntry.getFileName(); 
+								 filePath = Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getUploadsHome() + docEntry.getFileName();
 							 }else {
-								 filePath = organization.getEmptyFile();
+								 filePath = Reviewer.getOrganizationsHome() + organization.getName() + Reviewer.getUploadsHome() + Reviewer.getEmptyDocument();
 								 
 							 }						   
 						}else{
@@ -163,7 +164,7 @@ public class AssignmentManager {
 						}					
 				}
 				// copy document PDF to zip folder
-				String filename = FileUtil.escapeFilename((writingActivity.getGroups() ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getUsername() + ")") + " - " + deadline.getName() + ".pdf");	
+				String filename = FileUtil.escapeFilename((writingActivity.getGroups() ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getUsername() + ")") + " - " + deadline.getName() + ".pdf");
 				String filePathZip = getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), studentGroup.getTutorial(), organization) + "/" + filename;
 				FileUtil.copyFile(filePath, filePathZip);
 				
@@ -314,7 +315,6 @@ public class AssignmentManager {
 					studentGroup.setTutorial(writingActivity.getTutorial());				
 				}	
 				String filename = reviewEntry.getOwner().getLastname() + ", " + reviewEntry.getOwner().getFirstname() + " (" + reviewEntry.getOwner().getUsername() + ") - reviewed - " + (docEntry.getOwnerGroup() != null ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getId() + ")") + ".html";
-	//			logger.info("Review File: "+getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), studentGroup.getTutorial(), organization) + "/" + FileUtil.escapeFilename(filename));
 				File reviewFile = new File(getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), studentGroup.getTutorial(), organization) + "/" + FileUtil.escapeFilename(filename));
 				reviewFile.getParentFile().mkdirs();
 				PrintWriter out = null;
@@ -417,7 +417,7 @@ public class AssignmentManager {
 		// read excel file and insert questions into DB
 		if (reviewingActivity.getFormType() != null && reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_QUESTION)) {
 			String path = getDocumentsFolder(course.getId(), reviewingActivity.getId(), "aqg", "", organization);
-			String filepath = path + organization.getProperty(Constants.AGG_LOAD_EXCEL_PATH);
+			String filepath = path + Reviewer.getAggLoadExcelPath(); 
 			QuestionUtil questionUtil = new QuestionUtil();
 			try {
 				questionUtil.readExcelInsertDB(filepath, course.getOrganization());
@@ -440,11 +440,11 @@ public class AssignmentManager {
 	}
 
 	public String getDocumentsFolder(long courseId, long activityId, long activityDeadlineId, String tutorial, Organization organization) {
-		return String.format(organization.getDocumentsHome() + "/%s/%s/%s/%s",courseId, activityId, activityDeadlineId, tutorial);
+		return String.format(Reviewer.getOrganizationsHome() + organization.getName()+ "/" + Reviewer.getDocumentsHome() + "/%s/%s/%s/%s",courseId, activityId, activityDeadlineId, tutorial);
 	}
 
 	public String getDocumentsFolder(long courseId, long activityId, String activityDeadlineId, String tutorial, Organization organization) {
-		return String.format(organization.getDocumentsHome() + "/%s/%s/%s/%s", courseId, activityId, activityDeadlineId, tutorial);
+		return String.format(Reviewer.getOrganizationsHome() + organization.getName()+ "/" + Reviewer.getDocumentsHome() + "/%s/%s/%s/%s", courseId, activityId, activityDeadlineId, tutorial);
 	}
 
 	public WritingActivity saveActivity(Course course, WritingActivity writingActivity) throws Exception {
@@ -466,6 +466,11 @@ public class AssignmentManager {
 		int index = 0;
 		// All the reviewing finish date must be greater than the corresponding writing activity deadline finish date
 		for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()){
+			if (reviewingActivity.getStartDate().getFinishDate() == null){
+				me = new MessageException(Constants.EXCEPTION_NOT_ACTIVITY_FINISH_DATE);
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+				throw me;
+			}
 			if (reviewingActivity.getFinishDate() != null && reviewingActivity.getStartDate()!= null && 
 				reviewingActivity.getFinishDate().before(reviewingActivity.getStartDate().getFinishDate())){
 					me = new MessageException(Constants.EXCEPTION_WRONG_REVIEWING_ACTIVITY_FINISH_DATE  + reviewingActivity.getName());
@@ -476,13 +481,14 @@ public class AssignmentManager {
 		
 		// verify if activity start date is before to all the deadlines finish dates 
 		for(Deadline deadline : writingActivity.getDeadlines()){
-			if (writingActivity.getStartDate() != null && deadline != null && writingActivity.getStartDate().after(deadline.getFinishDate())){
+			if (writingActivity.getStartDate() != null && deadline != null && 
+				deadline.getFinishDate() != null && writingActivity.getStartDate().after(deadline.getFinishDate())){
 				me = new MessageException(Constants.EXCEPTION_ACTIVITY_START_AFTER_DEADLINE  + deadline.getName());
 				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
 				throw me;
 			}
 		}
-		
+		// It happens when the activity is updated by the schedule and the logged used is showing an old version on the screen
 		if (writingActivity.getId() != null && writingActivity.getStatus() != assignmentDao.loadWritingActivity(writingActivity.getId()).getStatus()) {
 			me = new MessageException(Constants.EXCEPTION_INVALID_STATUS);
 			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
@@ -491,7 +497,7 @@ public class AssignmentManager {
 
 		// check if tutorial is valid
 		if (!course.getTutorials().contains(writingActivity.getTutorial()) && !writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL)) {
-			me = new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL);
+			me = new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL + Constants.MESSAGE_RELOAD_COURSES);
 			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
 			throw me;
 		}
@@ -554,7 +560,7 @@ public class AssignmentManager {
 							student.getDomain().toLowerCase().equals(student.getOrganization().getGoogleDomain().toLowerCase())){	
 						assignmentRepository.createUser(student);
 					} else {
-						throw new Exception(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN);
+						throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN);
 					}
 				} else{
 					student.setId(user.getId());
@@ -580,7 +586,7 @@ public class AssignmentManager {
 						lecturer.getDomain().toLowerCase().equals(lecturer.getOrganization().getGoogleDomain().toLowerCase())){	
 					assignmentRepository.createUser(lecturer);
 				} else {
-					throw new Exception(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
+					throw new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
 				}
 			} else {
 				lecturer.setId(user.getId());
@@ -604,7 +610,7 @@ public class AssignmentManager {
 						tutor.getDomain().toLowerCase().equals(tutor.getOrganization().getGoogleDomain().toLowerCase())){
 					assignmentRepository.createUser(tutor);
 				} else {
-					throw new Exception(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
+					throw new MessageException(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
 				}	
 			} else {
 				tutor.setId(user.getId());
@@ -624,6 +630,8 @@ public class AssignmentManager {
 				if (lecturer.getOrganization() == null){
 					lecturer.setOrganization(course.getOrganization());
 				}
+				lecturer.addRole(Constants.ROLE_ADMIN);
+				lecturer.addRole(Constants.ROLE_GUEST);
 				userDao.save(lecturer);
 			} else {
 				lecturer.setId(user.getId());
@@ -643,6 +651,8 @@ public class AssignmentManager {
 				if (tutor.getOrganization() == null){
 					tutor.setOrganization(course.getOrganization());
 				}
+				tutor.addRole(Constants.ROLE_ADMIN);
+				tutor.addRole(Constants.ROLE_GUEST);
 				userDao.save(tutor);	
 			} else {
 				tutor.setId(user.getId());
@@ -689,55 +699,81 @@ public class AssignmentManager {
 	}
 	
 	public Course saveCourse(Course course, User user) throws Exception {
-		Date today = new Date();
-		int month = today.getMonth();
+		// Validate the course
+		Calendar cal = Calendar.getInstance();
+		int month = cal.get(Calendar.MONTH);
+		
 		if ((month < 7 && course.getSemester() == 2) || (month > 6 && course.getSemester() == 1)){
 			throw new MessageException(Constants.EXCEPTION_WRONG_SEMESTER);
 		}
+		if (StringUtil.isBlank(course.getName())){
+			throw new MessageException(Constants.EXCEPTION_EMPTY_COURSE_NAME);
+		}
+		boolean hasTutorials = false;
+		for (String tutorial: course.getTutorials()){
+			hasTutorials |= !StringUtil.isBlank(tutorial);
+		}
+		if (!hasTutorials){
+			throw new MessageException(Constants.EXCEPTION_EMPTY_COURSE_TUTORIALS);
+		}
 		
-		// Add emails to the course
-		course = addEmails(course);
-		//Set up folders and templates
-		setUpFoldersAndTemplates(course);
-		
-		///Google Users//////////////////////////////////////////////////////
-		// save student users
-		saveStudentUsers(course);
-		
-		// save lecturer users
-		saveLecturerUsers(course);
-		
-		// save tutor users
-		saveTutorUsers(course);
-		
-		///////////////////////////////////////////////////////////////////////		
-		
-		///Local DataBase//////////////////////////////////////////////////////
-		// save lecture in DB
-		saveLecturerDB(course);
-		
-		// save tutor in DB
-		saveTutorDB(course);
-		
-		// save user group in DB
-		saveUserGroupDB(course);
-		
-		// update course document permissions
-		assignmentRepository.updateCourseDocumentPermissions(course, user);
-		
-		course.setDomainName(course.getOrganization().getGoogleDomain());
-		
-		// save course in DB
-		course = courseDao.save(course);
-
-		// update emails
-		course = updateEmails(course);
-		
-		///Local DataBase//////////////////////////////////////////////////////
-		
-		// for each activity create documents and reviewers for new users
-		processActivitiesForNewUsers(course);
+		try{
+			// Add emails to the course
+			course = addEmails(course);
+			
+			//Set up folders and templates
+			setUpFoldersAndTemplates(course);
+			
+			///Google Users//////////////////////////////////////////////////////
+			// save student users
+			saveStudentUsers(course);
+			
+			// save lecturer users
+			saveLecturerUsers(course);
+			
+			// save tutor users
+			saveTutorUsers(course);
+			
+			///////////////////////////////////////////////////////////////////////		
+			
+			///Local DataBase//////////////////////////////////////////////////////
+			// save lecture in DB
+			saveLecturerDB(course);
+			
+			// save tutor in DB
+			saveTutorDB(course);
+			
+			// save user group in DB
+			saveUserGroupDB(course);
+			
+			// update course document permissions
+			assignmentRepository.updateCourseDocumentPermissions(course, user);
+			
+			course.setDomainName(course.getOrganization().getGoogleDomain());
+			
+			// save course in DB
+			course = courseDao.save(course);
 	
+			// update emails
+			course = updateEmails(course);
+			
+			///Local DataBase//////////////////////////////////////////////////////
+			
+			// for each activity create documents and reviewers for new users
+			processActivitiesForNewUsers(course);
+			
+		} catch(Exception e){
+			// rollback TODO COMPLETE ROLLBACK
+			if (course != null && course.getId() == null){
+				// delete orphans emails, whose organizationId and courseId are equals to null
+				emailDao.deleteOrphanEmails();
+			}
+			if (e instanceof MessageException){
+				throw (MessageException)e;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_SAVE_COURSE);
+			}
+		}
 		return course;
 	}
 
@@ -854,6 +890,7 @@ public class AssignmentManager {
 			Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
 			Organization organization = course.getOrganization();
 			File activityFolder = new File(this.getDocumentsFolder(course.getId(), writingActivity.getId(), writingActivity.getDeadlines().get(writingActivity.getDeadlines().size() - 1).getId(), WritingActivity.TUTORIAL_ALL, organization));
+			
 			activityFolder.mkdirs();
 			String filePath = activityFolder.getAbsolutePath() + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf";
 				
@@ -952,7 +989,7 @@ public class AssignmentManager {
 					}
 
 				} else {
-					throw new Exception("Document has already been submitted.");
+					throw new MessageException(Constants.EXCEPTION_DOCUMENT_ALREADY_SUBMITTED);
 				}
 			} else {
 				if (writingActivity.getEarlySubmit()){
@@ -961,7 +998,7 @@ public class AssignmentManager {
 				}
 				
 				if (docEntry.isLocalFile()){
-					FileUtil.copyFile(organization.getUploadsHome()+"/"+docEntry.getFileName(), filePath);
+					FileUtil.copyFile(Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getUploadsHome() + docEntry.getFileName(), filePath);
 				}else{
 					assignmentRepository.downloadDocumentFile(docEntry, filePath);
 				}
@@ -970,7 +1007,8 @@ public class AssignmentManager {
 				// copy document PDF to zip folder
 				UserGroup studentGroup = writingActivity.getGroups() ? docEntry.getOwnerGroup() : assignmentDao.loadUserGroupWhereUser(course, docEntry.getOwner());
 				File tutorialfolder = new File(this.getDocumentsFolder(course.getId(), writingActivity.getId(), writingActivity.getDeadlines().get(writingActivity.getDeadlines().size() - 1).getId(), studentGroup.getTutorial(), organization));
-				String filePathZip = tutorialfolder.getAbsolutePath() + "/" + FileUtil.escapeFilename((writingActivity.getGroups() ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getUsername() + ")") + " - Final.pdf");
+				String filename = FileUtil.escapeFilename((writingActivity.getGroups() ? "Group " + docEntry.getOwnerGroup().getName() : docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() + " (" + docEntry.getOwner().getUsername() + ")" + " - Final.pdf"));
+				String filePathZip = tutorialfolder.getAbsolutePath() + "/" + filename;
 				FileUtil.copyFile(filePath, filePathZip);
 				FileUtil.zipFolder(tutorialfolder, new File(tutorialfolder.getAbsolutePath() + ".zip"));
 				docEntry.setDownloaded(true);
@@ -1107,7 +1145,7 @@ public class AssignmentManager {
 				}
 			}
 
-			logger.info("Assigning student reviewers: course=" + course.getName() + ", activity=" + writingActivity.getName());
+//			logger.info("Assigning student reviewers: course=" + course.getName() + ", activity=" + writingActivity.getName());
 			ReviewStratergy reviewStratergy = null;
 			if (reviewingActivity.getAllocationStrategy().equals(ReviewingActivity.REVIEW_STRATEGY_RANDOM)) {
 				reviewStratergy = new RandomReviewStratergy(reviewingActivity, docEntries, students);
@@ -1171,7 +1209,7 @@ public class AssignmentManager {
 			// create user reviews
 			for (DocEntry docEntry : reviewSetup.keySet()) {
 				for (User user : reviewSetup.get(docEntry)) {
-					logger.info("Assigning reviewer: reviewer=" + user.getUsername() + ", docid=" + docEntry.getId());
+//					logger.info("Assigning reviewer: reviewer=" + user.getUsername() + ", docid=" + docEntry.getId());
 					Review review;
 					if (reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_QUESTION)) {
 						QuestionReview questionReview = new QuestionReview();
@@ -1259,16 +1297,14 @@ public class AssignmentManager {
 		for (DocEntry entry : writingActivity.getEntries()) {
 			Course course = courseDao.loadCourse(assignmentDao.loadCourseWhereWritingActivity(writingActivity).getId());
 			Organization organization = course.getOrganization();
-			File file = new File(getDocumentsFolder(course.getId(), writingActivity.getId(), writingActivity.getCurrentDeadline().getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(entry.getDocumentId()) + ".pdf");
+			String filename = FileUtil.escapeFilename(entry.getDocumentId()) + ".pdf";
+			File file = new File(getDocumentsFolder(course.getId(), writingActivity.getId(), writingActivity.getCurrentDeadline().getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + filename);
 			
 			try{
-				File empty = new File(organization.getEmptyDocument());
-				
-				//Only add non empty entries
+				File empty = new File(Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getDocumentsHome() + Reviewer.getEmptyDocument());
 				if (empty.length() != file.length()){
-					entries.add(entry);
+					entries.add(entry);	
 				}
-				
 			} catch (Exception e) {
 				logger.error("Error reading empty document.", e);					
 			}										
@@ -1343,7 +1379,7 @@ public class AssignmentManager {
 		
 		if ( (docEntry.getOwner()!=null && reviewEntry.getOwner() == docEntry.getOwner()) 
 				|| (docEntry.getOwner()==null && docEntry.getOwnerGroup().getUsers().contains(reviewEntry.getOwner()) )) {
-			throw new Exception("Reviewer can't be owner of the document.");
+			throw new MessageException(Constants.EXCEPTION_REVIEWER_NOT_DOCUMENT_OWNER);
 		}else{ 
 			reviewEntry.setDocEntry(docEntry);
 			reviewEntry = assignmentDao.save(reviewEntry);			
@@ -1383,7 +1419,7 @@ public class AssignmentManager {
 			
 			return reviewEntry;			
 		}else{
-			throw new Exception("Review already assigned to user.");
+			throw new MessageException(Constants.EXCEPTION_REVIEW_ALREADY_ASSIGNED);
 		}
 	}
 
@@ -1463,7 +1499,7 @@ public class AssignmentManager {
 						tutor.getDomain().toLowerCase().equals(tutor.getOrganization().getGoogleDomain().toLowerCase())){
 					assignmentRepository.createUser(tutor);
 				} else {
-					throw new Exception(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
+					throw new MessageException(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
 				}
 				
 				//send password notification if not a wasm user
@@ -1651,7 +1687,7 @@ public class AssignmentManager {
 	public void saveStudentsGroup(Course course, Set<User> students, String group, String tutorial) throws Exception {
 				
 		if (!course.getTutorials().contains(tutorial)) {
-			throw new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL);
+			throw new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL + Constants.MESSAGE_STUDENTS_TUTORIAL);
 		}
 	
 		for(User student: students){
@@ -1770,8 +1806,10 @@ public class AssignmentManager {
 	private Course updateEmails(Course course) throws MessageException{
 		Set<EmailCourse> emails = new HashSet<EmailCourse>();
 		for(EmailCourse email: course.getEmails()){
-			email.setCourse(course);
-			email = emailDao.saveEmailCourse(email, course);
+			if (email.getCourse() == null || (email.getCourse() != null && email.getCourse().getId() == null)){
+				email.setCourse(course);
+				email = emailDao.saveEmailCourse(email, course);
+			}
 			emails.add(email);
 		}
 		course.setEmails(emails);

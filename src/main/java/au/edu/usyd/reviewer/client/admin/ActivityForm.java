@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import au.edu.usyd.reviewer.client.admin.glosser.SiteForm;
+import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
@@ -250,7 +251,13 @@ public class ActivityForm extends Composite {
 			}});	
 		int row = reviewTable.getRowCount();
 		reviewTable.setWidget(row, 0, reviewForm);
-		reviewTable.setWidget(row, 1, remove);	
+		reviewTable.setWidget(row, 1, remove);
+		if (reviewingActivity.getStatus() >= Activity.STATUS_START){
+			remove.setEnabled(false);
+		} else{
+			remove.setEnabled(true);
+		}
+			
 	}
 
 	/**

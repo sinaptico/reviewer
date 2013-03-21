@@ -58,34 +58,35 @@ public class GoogleDownloadService {
      *             When an error occurred in the google service.
      */
     public void download(DocumentListEntry entry, String destination) throws MessageException {
-    	String documentTitle = entry.getTitle().getPlainText();
+//    	String documentTitle = entry.getTitle().getPlainText();
     	try {
 	        
 	        if (Constants.GOOGLE_DOCUMENT_TYPE_DOCUMENT.equals(entry.getType())) {
-	            downloadDocument(entry, destination + documentTitle + "." + Constants.GOOGLE_EXPORT_TYPE_DOC, Constants.GOOGLE_EXPORT_TYPE_DOC);
+//	            downloadDocument(entry, destination + documentTitle + "." + Constants.GOOGLE_EXPORT_TYPE_DOC, Constants.GOOGLE_EXPORT_TYPE_DOC);
+	        	downloadDocument(entry, destination, Constants.GOOGLE_EXPORT_TYPE_DOC);
 	            return;
 	        }
 	        if (Constants.GOOGLE_DOCUMENT_TYPE_SPREADSHEET.toString().equals(entry.getType())) {
-	            downloadSpreadSheet(entry, destination + documentTitle + "." + Constants.GOOGLE_EXPORT_TYPE_XLS , Constants.GOOGLE_EXPORT_TYPE_XLS);
+	            downloadSpreadSheet(entry, destination, Constants.GOOGLE_EXPORT_TYPE_XLS);
 	            return;
 	        }
 	        if (Constants.GOOGLE_DOCUMENT_TYPE_PRESENTATION.toString().equals(entry.getType())) {
-	            downloadDocument(entry, destination + documentTitle + "." + Constants.GOOGLE_EXPORT_TYPE_PPT , Constants.GOOGLE_EXPORT_TYPE_PPT);
+	            downloadDocument(entry, destination, Constants.GOOGLE_EXPORT_TYPE_PPT);
 	            return;
 	        }
 	        if (Constants.GOOGLE_DOCUMENT_TYPE_DRAWING.toString().equals(entry.getType())) {
-	            downloadDocument(entry, destination + documentTitle + "." + Constants.GOOGLE_EXPORT_TYPE_PNG , Constants.GOOGLE_EXPORT_TYPE_PNG);
+	            downloadDocument(entry, destination, Constants.GOOGLE_EXPORT_TYPE_PNG);
 	            return;
 	        }
 	        if (Constants.GOOGLE_DOCUMENT_TYPE_PDF.toString().equals(entry.getType())) {
-	            downloadNativeFile(entry, destination + documentTitle);
+	            downloadNativeFile(entry, destination);
 	            return;
 	        }
-	        downloadNativeFile(entry, destination + documentTitle);
+	        downloadNativeFile(entry, destination);
         }
         catch (Exception e) {
         	e.printStackTrace();
-        	String error = String.format(Constants.EXCEPTION_GOOGLE_DOWNLOAD_FILE, documentTitle, entry.getType());
+        	String error = String.format(Constants.EXCEPTION_GOOGLE_DOWNLOAD_FILE, destination, entry.getType());
         	throw new MessageException(error);
         }
     }

@@ -2,6 +2,9 @@ package au.edu.usyd.reviewer.server;
 
 import java.util.List;
 
+import org.hibernate.Query;
+import org.hibernate.Session;
+
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Email;
 import au.edu.usyd.reviewer.client.core.EmailCourse;
@@ -69,5 +72,25 @@ public class EmailDao extends ObjectDao {
 			throw new MessageException(Constants.EXCEPTION_SAVE_EMAIL_COURSE);
 		}
 		return email;
+	}
+	
+	public void deleteOrphanEmails() throws Exception {
+		Session session = null;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			String stringQuery = "Delete from Email " +
+						   		 "where organization_id is null and course_id is null";
+			
+			Query query = session.createQuery(stringQuery);
+			query.executeUpdate();
+			session.getTransaction().commit();
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_DELETE_ORPHAN_EMAILS);
+		}
 	}
 }

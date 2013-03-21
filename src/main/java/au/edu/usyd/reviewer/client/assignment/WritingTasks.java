@@ -275,9 +275,9 @@ public class WritingTasks extends Composite {
 												LogpageDocEntry newEntry = logbookDocEntry.getPages().get(logbookDocEntry.getPages().size() - 1);
 												LogpageDocEntry submittedEntry = logbookDocEntry.getPages().get(logbookDocEntry.getPages().size() - 2);
 
-												documentFolder.addItem(new DocEntryWidget(submittedEntry.getDocumentId(), submittedEntry.getTitle(),"iwrite.sydney.edu.au", true));
+												documentFolder.addItem(new DocEntryWidget(submittedEntry.getDocumentId(), submittedEntry.getTitle(),course.getDomainName(), true));
 												documentsTree.removeItem(documentsTree.getItem(documentsTree.getItemCount() - 1));
-												documentsTree.addItem(new DocEntryWidget(newEntry.getDocumentId(), newEntry.getTitle(),"iwrite.sydney.edu.au", false));
+												documentsTree.addItem(new DocEntryWidget(newEntry.getDocumentId(), newEntry.getTitle(),course.getDomainName(), false));
 												HTML entryHtml = new HTML("<div style='height:19px'>" + StyleLib.dateFormat(submittedEntry.getSubmitted()) + "</div>");
 												entryHtml.setTitle(submittedEntry.getTitle());
 												downloadFolder.addItem(entryHtml);

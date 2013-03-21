@@ -79,9 +79,9 @@ public class CourseForm extends Composite {
 		Date today = new Date();
 		int month = today.getMonth();
 		if (month < 7) {
-			courseSemester.setItemSelected(1,true);
+			courseSemester.setSelectedIndex(0);
 		} else {
-			courseSemester.setItemSelected(2,true);
+			courseSemester.setSelectedIndex(1);
 		}
 		
 	}

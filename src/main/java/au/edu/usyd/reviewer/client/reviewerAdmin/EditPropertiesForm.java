@@ -50,7 +50,6 @@ public class EditPropertiesForm extends Composite {
 	private String TAB_TITLE_PROPERTY ="Property";
 	private String MESSAGE_PROPERTIES_NOT_EXIST="There is not properties for this organization";
 	private String MESSAGE_SAVED = "Property saved.";
-	private String MESSAGE_DELETED = "Property deleted";
 	
 	/**
 	 * Constructor
@@ -106,9 +105,6 @@ public class EditPropertiesForm extends Composite {
 	    Column<OrganizationProperty,String> saveButtonColumn = createSaveButtonColumn();
 	    propertiesTable.addColumn(saveButtonColumn);
 	    
-	    // Add column with delete button to save the value of the property
-	    Column<OrganizationProperty,String> deleteButtonColumn = createDeleteButtonColumn();
-	    propertiesTable.addColumn(deleteButtonColumn);
 	    	
 	    // Get properties
 	    final List<OrganizationProperty> properties = new ArrayList<OrganizationProperty>(organization.getOrganizationProperties());
@@ -198,44 +194,4 @@ public class EditPropertiesForm extends Composite {
 	    return saveButtonColumn;
 	}
 
-	
-	
-	/**
-	 * Create a column with the delete button and its click handler
-	 * @return column delete button
-	 */
-	private Column<OrganizationProperty,String> createDeleteButtonColumn(){
-		ButtonCell deleteButton = new ButtonCell();
-	    Column<OrganizationProperty,String> deleteButtonColumn = new Column<OrganizationProperty,String>(deleteButton) {
-	    	  public String getValue(OrganizationProperty propertyt) {
-	    	    return "Delete"; //button name
-	    	  }
-	    };
-	    	
-	    deleteButtonColumn.setFieldUpdater(new FieldUpdater<OrganizationProperty, String>() {
-	    	@Override
-	    	public void update(int index, final OrganizationProperty property, String value) {
-	    		reviewerAdminService.deleteOrganizationProperty(property, new AsyncCallback<OrganizationProperty>(){
-					@Override
-					public void onFailure(Throwable caught) {
-						String message = EXCEPTION_ERROR_MESSSAGE;
-						if (caught instanceof MessageException){
-							message = caught.getMessage();
-						} else {
-							message += caught.getMessage();
-						}
-						Window.setTitle(TAB_TITLE_PROPERTY);
-						Window.alert(message);
-					}
-		
-					@Override
-					public void onSuccess(OrganizationProperty property) {
-						Window.setTitle(TAB_TITLE_PROPERTY);
-						Window.alert(MESSAGE_DELETED);
-					}
-				});
-	    	}
-	    });
-	    return deleteButtonColumn;
-	}
 }

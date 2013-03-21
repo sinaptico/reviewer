@@ -29,14 +29,13 @@ public interface ReviewerAdminService extends RemoteService {
 	
 	public Organization deleteOrganization(Organization organization) throws Exception;
 	
-	public Organization deleteOrganizationProperties(Organization organization) throws Exception;
-
-	public OrganizationProperty deleteOrganizationProperty(OrganizationProperty property) throws Exception;
-
 	public Collection<User> getUsers(User user) throws Exception;
 	
 	public User saveUser(User user) throws Exception;
 	
 	public User getLoggedUser() throws Exception;
+
+	public Organization checkOrganizationProperties(Organization organization) throws Exception;
 	
+	public void logout() throws Exception;
 }

@@ -51,19 +51,11 @@ import au.edu.usyd.reviewer.server.util.ConnectionUtil;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-public class AdminServiceImpl extends RemoteServiceServlet implements AdminService {
+public class AdminServiceImpl extends ReviewerServiceImpl implements AdminService {
+	
+	private static final long serialVersionUID = 1L;
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
-	private CourseManager courseManager = CourseManager.getInstance();
-	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
-	private UserDao userDao = UserDao.getInstance();
-	private CourseDao courseDao = CourseDao.getInstance();
-	// logged user
-	private User user = null;
-	// logged user organization
-	private Organization organization = null;
-
-		
+	
 	@Override
 	public Course deleteCourse(Course course) throws Exception {
 		initialize();
@@ -135,29 +127,7 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return courses;
 	}
 
-	public User getLoggedUser() {
-		try {
-			HttpServletRequest request = this.getThreadLocalRequest();
-			Object obj = request.getSession().getAttribute("user");
-			
-			if (obj != null)
-			{
-				user = (User) obj;
-			}
-			Principal principal = request.getUserPrincipal();
-			UserDao userDao = UserDao.getInstance();
-			if  (user == null){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-		}
-		} catch (MessageException e) {
-			e.printStackTrace();
-		}
-		return user;
-	}
+	
 
 	@Override
 	public Collection<UserStats> getWritingActivityStats(Long writingActivityId) throws Exception {
@@ -172,47 +142,8 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return userStatsAnalyser.calculateStats(writingActivity, users);
 	}
 
-	private boolean isAdmin() {
-		return user == null ? false : user.isAdmin();
-	}
 	
-	private boolean isSuperAdmin(){
-		return user == null? false : user.isSuperAdmin();
-	}
 	
-	private boolean isAdminOrSuperAdmin(){
-		return this.isAdmin() || this.isSuperAdmin();
-	}
-	
-	private boolean isCourseLecturer(Course course) {
-		return user == null ? false : course.getLecturers().contains(user);
-	}
-
-	@Override
-	public User mockUser(User aUser) throws Exception {
-		initialize();
-		if (isAdminOrSuperAdmin()) {
-			String email = null;
-			if ( aUser.getEmail() != null && !StringUtil.isBlank(aUser.getEmail())){
-				email = aUser.getEmail();
-			} else if (aUser.getUsername() != null && !StringUtil.isBlank(aUser.getUsername())){
-				email = aUser.getUsername() + "@" + organization.getGoogleDomain();
-			} else {
-				throw new MessageException(Constants.EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST);
-			}
-			User mockedUser = userDao.getUserByEmail(email);
-			if (mockedUser != null){
-//				logger.info("Mocking user: " + mockedUser.getEmail());
-				this.getThreadLocalRequest().getSession().setAttribute("mockedUser", mockedUser);
-				return mockedUser;
-			} else{
-				throw new MessageException(Constants.EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST);
-			}	
-		} else {
-			throw new MessageException( Constants.EXCEPTION_PERMISSION_DENIED);
-		}
-	}
-
 	@Override
 	public Course saveCourse(Course course) throws Exception {
 		initialize();
@@ -410,16 +341,10 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 			throw e;
 		}
 	}	
-
+	
 	/**
-	 * Get logger user, its organization an initialize Reviewer with it
+	 * Returns a collection of all the organizations
 	 */
-	private void initialize() throws Exception{
-		user = getLoggedUser();
-		organization = user.getOrganization();	
-		Reviewer.initializeAssignmentManager(organization);	
-	}
-
 	public Collection<Organization> getOrganizations() throws Exception{
 
 		initialize();
@@ -436,7 +361,30 @@ public class AdminServiceImpl extends RemoteServiceServlet implements AdminServi
 		return CalendarUtil.getYears();
 	}
 	
-	public void logout() throws Exception{
-		ConnectionUtil.logout(this.getThreadLocalRequest());
+
+	public User mockUser(User aUser) throws Exception {
+		initialize();
+		if (isAdminOrSuperAdmin()) {
+			String email = null;
+			if ( aUser.getEmail() != null && !StringUtil.isBlank(aUser.getEmail())){
+				email = aUser.getEmail();
+			} else if (aUser.getUsername() != null && !StringUtil.isBlank(aUser.getUsername())){
+				email = aUser.getUsername() + "@" + organization.getGoogleDomain();
+			} else {
+				throw new MessageException(Constants.EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST);
+			}
+			User mockedUser = userDao.getUserByEmail(email);
+			if (mockedUser != null){
+//				logger.info("Mocking user: " + mockedUser.getEmail());
+				this.getThreadLocalRequest().getSession().setAttribute("mockedUser", mockedUser);
+				return mockedUser;
+			} else{
+				throw new MessageException(Constants.EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST);
+			}	
+		} else {
+			throw new MessageException( Constants.EXCEPTION_PERMISSION_DENIED);
+		}
 	}
+	
+	
 }

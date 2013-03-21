@@ -319,7 +319,7 @@ public class AssignmentRepository {
 
 			// check if tutorial is valid
 			if (!course.getTutorials().contains(studentGroup.getTutorial())) {
-				throw new Exception(Constants.EXCEPTION_INVALID_TUTORIAL);
+				throw new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL + Constants.MESSAGE_RELOAD_COURSES);
 			}
 			
 			//check if student is a wasm user, (create passwords for non wasm users)

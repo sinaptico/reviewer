@@ -747,7 +747,7 @@ public class ReviewEntryPoint implements EntryPoint {
 		            setBodyStyleName("normal");
 		            setShowHeader(false);
 		            setLeaveScrollbarGap(false);
-		            setEmptyMessage("<br>There's no rubrics uploaded into iWrite");
+		            setEmptyMessage("<br>There's no rubrics uploaded into the application");
 		            setSelectionAppearance(SelectionAppearance.CHECKBOX);		            
 		            setAttribute("selectionProperty", "isSelected", false);
 		            setAttribute("Link", "", true);
