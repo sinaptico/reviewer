@@ -8,38 +8,28 @@ package au.edu.usyd.reviewer.client.core.util;
  */
 public class Constants {
 
-	
 	/** Reviewer properties **/
+	public static String REVIEWER_ORGANIZATIONS_HOME="reviewer.organizations.home";
+	public static String REVIEWER_ORGANIZATIONS_DOCUMENTS="reviewer.organizations.documents";
+	public static String REVIEWER_ORGANIZATIONS_UPLOADS="reviewer.organizations.uploads";
+	public static String REVIEWER_EMPTY_DOCUMENT ="reviewer.empty.document";
+	public static String AGG_LOAD_EXCEL_PATH="aqg.loadExcelPath";
+	public static String AGG_INSERT_TO_EXCEL_PATH="aqg.insertToExcelPath";
+
+	/** Organizations properties **/
 	public static String REVIEWER_EMAIL_USERNAME="reviewer_email_username";
 	public static String REVIEWER_EMAIL_PASSWORD="reviewer_email_password";
 	public static String REVIEWER_GOOGLE_USERNAME="revierwer_google_username";
 	public static String REVIEWER_GOOGLE_PASSWORD ="reviewer_google_password";
 	public static String REVIEWER_GOOGLE_DOMAIN ="reviewer_google_domain";
-	public static String REVIEWER_PRIVATE_KEY = "reviewer.privatekey";
-	public static String REVIEWER_PUBLIC_KEY = "reviewer.publickey";
-	public static String REVIEWER_DOCUMENTS_HOME="reviewer.documents.home";
-	public static String REVIEWER_EMPTY_DOCUMENT ="reviewer.empty.document";
-	public static String REVIEWER_EMPTY_DOCUMENT_FILENAME="empty.pdf";
-	public static String REVIEWER_UPLOADS_HOME ="reviewer.uploads.home";
-	public static String REVIEWER_EMPTY_FILE="reviewer.empty.file";
-	public static String REVIEWER_ADMIN_USERS ="reviewer.admin.users";
 	public static String REVIEWER_SMTP_HOST ="reviewer.smtp.host";
 	public static String REVIEWER_SMTP_PORT = "reviewer.smtp.port";
 	public static String REVIEWER_GLOSSER_HOST = "reviewer.glosser.host";
 	public static String REVIEWER_GLOSSER_PORT ="reviewer.glosser.port";
-	public static String SYSTEM_HTTP_PROXY_SET ="system.http.proxySet";
-	public static String SYSTEM_HTTP_PROXY_HOST="system.http.proxyHost";
-	public static String SYSTEM_HTTP_PROXY_PORT ="system.http.proxyPort";
-	public static String SYSTEM_HTTPS_PROXY_SET="system.https.proxySet";
-	public static String SYSTEM_HTTPS_PROXY_HOST="system.https.proxyHost";
-	public static String SYSTEM_HTTPS_PROXY_PORT="system.https.proxyPort";
-	public static String AGG_LOAD_EXCEL_PATH="aqg.loadExcelPath";
-	public static String AGG_INSERT_TO_EXCEL_PATH="aqg.insertToExcelPath";
-	public static String AGG_INSERT_TO_EXCEL_PATH_VALUE="Questions.xls";
-	public static String REVIEWER_LOGOS_HOME = "reviewer.logos.home";
-	public static String ORGANIZATION_LOGO_HOME = "organization.logo.home";
 	public static String ORGANIZATION_LOGO_FILE = "organization.logo.file";
+	public static String REVIEWER_DOMAIN="reviewer.domain";
 	
+		
 	/** Exception messages to the user  **/
 	public static String EXCEPTION_USER_EXISTS="Exists a user in the database with the same email.";
 	public static String EXCEPTION_ORGANIZATION_EXISTS="Exists an organization in the database with the same name.";
@@ -48,9 +38,15 @@ public class Constants {
 	public static String EXCEPTION_ORGANIZATION_EMPTY="The organization name can not be empty. This field is mandatory";
 	public static String EXCEPTION_FIELD_EMPTIES="Please, enter some of the search fields";
 	public static String EXCEPTION_PERMISSION_DENIED ="Permission denied. You don't have permission to execute this action.";
-	public static String EXCEPTION_INVALID_TUTORIAL="Invalid tutorial";
+	public static String EXCEPTION_INVALID_TUTORIAL="Invalid tutorial.";
+	public static String MESSAGE_RELOAD_COURSES = "\nPlease, reload the courses";
+	public static String MESSAGE_STUDENTS_TUTORIAL = "\nThe tutorials of the course must be equals to the tutorials of the student in the students spreadsheets.";
 	public static String EXCEPTION_GOOGLE_AUTHENTICATION="User could not be authenticated in Google Docs";
 	public static String EXCEPTION_GOOGLE_URL_MALFORMED="The Google Docs URL is malformed";
+	public static String EXCEPTION_GOOGLE_CONNECTION="Failed to connect to Google" + 
+													 "\n" + "The admin of the organization must check the required properties to connect to Google";
+	public static String EXCEPTION_SMTP_CONNECTION="Failed to connect to the SMTP server." + "\n" +
+													"The admin of the organization must check the required properties to connect to the SMTP server";
 	public static String EXCEPTION_USER_NOT_MOCKED = "The user could not be mocked";
 	public static String EXCEPTION_LECTURER_INVALID_DOMAIN = "The email of the lecturers must belong to the organization domain";
 	public static String EXCEPTION_STUDENTS_INVALID_DOMAIN = "The email of the students must belong to the organization domain";
@@ -64,6 +60,30 @@ public class Constants {
 	public static String EXCEPTION_DECRYPT="Failed to decrypt the value";
 	public static String EXCEPTION_SAVE_EMAIL_ORGANIZATION="Failed to save the email of the organization";
 	public static String EXCEPTION_SAVE_EMAIL_COURSE="Failed to save the email of the course";
+	public static String EXCEPTION_WRONG_SEMESTER="The semester must correspond with the semester of the year.";
+	public static String EXCEPTION_EMPTY_COURSE_NAME = "Please, enter the name of the course; this field is mandatary.";
+	public static String EXCEPTION_EMPTY_COURSE_TUTORIALS ="Please, enter the tutorial of the course; this field is mandatory.";
+	public static String EXCEPTION_ORGANIZATION_UNACTIVATED="The organization is not activated." + 
+															"\n" + "The admin of the organization must complete the required properties to activate it.";
+	public static String EXCEPTION_ORGANIZATION_DELETED ="The organization has been deleted.";
+	public static String EXCEPTION_ORGANIZATION_PROPERTIES ="Properties to complete: ";
+	public static String EXCEPTION_NOT_COURSES_FOR_ACTIVITY="There are no courses to add a new activity." + 
+															"\n" + "Please, create a course first.";
+	public static String EXCEPTION_DOCUMENT_ALREADY_SUBMITTED="Document has already been submitted.";
+	public static String EXCEPTION_REVIEWER_NOT_DOCUMENT_OWNER="Reviewer can't be owner of the document.";
+	public static String EXCEPTION_REVIEW_ALREADY_ASSIGNED="Review already assigned to user.";
+	public static String EXCEPTION_GRADE_MARK_NUMERIC="Marks must be numeric values greater than zero (0).";
+	public static String EXCEPTION_GRADE_MAX_MARK ="The maximum mark for this review is: ";
+	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_DOCUMENT="Your session has expired. Please login again to submit your document.";
+	public static String EXCEPTION_DEADLINE_ALREADY_PASSED="The deadline has already passed.";
+	public static String EXCEPTION_WRONG_PASSWORD="Wrong password, please try again";
+	public static String EXCEPTION_DOCUMENT_NOT_FOUND="Document not found";
+	public static String EXCEPTION_RATING_NOT_FOUND="Rating not found";
+	public static String EXCEPTION_REVIEW_NOT_FOUND="Review not found";
+	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_RATING="Your session has expired. Please login again to submit your rating.";
+	public static String EXCEPTION_SESSION_EXPIRED_SAVE_REVIEW="Your session has expired. Please login again to save your review.";
+	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_REVIEW="Your session has expired. Please login again to submit your review.";	
+	
 	
 	// Dao Exceptions
 	public static String EXCEPTION_HIBERNATE_SESSION_MESSAGE="Failed to create a session to database";
@@ -132,7 +152,11 @@ public class Constants {
 	public static String EXCEPTION_EMPTY_STUDENTS_LIST="Empgy list of students";
 	public static String EXCEPTION_EMPTY_TUTORS_LIST="Empty list of tutors";
 	public static String EXCEPTION_EMPTY_USERS_GROUPS_LIST="Empty list of students groups";
-	public static String EXCEPTION_INVALID_STATUS="Invalid status";
+	public static String EXCEPTION_INVALID_STATUS="Invalid status. The course status has changed." + 
+												  "\n" + "Please, reload the course.";
+	public static String EXCEPTION_ACTIVITY_FINISHED="The activity finished, It can't be modified.";
+	public static String EXCEPTION_ACTIVITY_START_AFTER_DEADLINE="The start date of the activity must be before to all the deadlines finish dates." +
+																 "\n" + "Deadeline with wrong finish date: ";
 	public static String EXCEPTION_SAVE_REVIEWING_ACTIVITIES="Failed to save the reviewing activities";
 	public static String EXCEPTION_SAVE_ORGANIZATION ="Failed to save ths organization";
 	public static String EXCEPTION_USERNAME_NO_EXIST="The user doesn't exist. Please enter other username";
@@ -150,12 +174,15 @@ public class Constants {
 	public static String EXCEPTION_GET_EMAIL="Failed to load the email";
 	public static String EXCEPTION_GENERATE_ORGANIZATION_EMAILS="Failed to generate the emails for the organization";
 	public static String EXCEPTION_GENERATE_COURSE_EMAILS="Failed to generate the emails for the course";
-		
 	public static String EXCEPTION_GOOGLE_USER_HAS_ACCESS = "This user already has access to the document.";
 	public static String EXCEPTION_INVALID_LOGIN = "Invalid username or password";
 	public static String EXCEPTION_GET_DELETED_WRITING_ACTIVITIES="Failed to get the deleted writing activities";
 	public static String EXCEPTION_REVIEW_ENTRY_NOT_FOUND = "Review entry not found";
-
+	public static String EXCEPTION_WRONG_REVIEWING_ACTIVITY_FINISH_DATE="The reviewing task start date is greater than the finish date of one of the activity deadlines." +
+																		"\n" + "Reviewing task with wrong finish date: ";
+	public static String EXCEPTION_DELETE_ORPHAN_EMAILS="Failed to delete the orphan emails.";
+	public static String EXCEPTION_NOT_ACTIVITY_FINISH_DATE = "The activity doesn't have a finish date. Please, set it";
+	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
 	public static String ROLE_ADMIN = "Admin";
@@ -183,6 +210,7 @@ public class Constants {
 	public static int HTTP_CODE_FORBIDDEN = 403;
 	public static int HTTP_CODE_MESSAGE = 600;
 	public static int HTTP_CODE_NOT_FOUND = 404;
+	public static int HTTP_CODE_LOGOUT= 601;
 	
 	// Emails names
 	public static String EMAIL_STUDENT_REVIEW_START = "Student review start";
@@ -209,7 +237,7 @@ public class Constants {
 		
 		
 	public static String EMAIL_PASSWORD_DETAILS_MESSAGE = "Dear @UserName@, " +
-														  "\n\n " + "The iWrite application for the course @CourseName@ is now available for you. " + 
+														  "\n\n " + "The application for the course @CourseName@ is now available for you. " + 
 														  "\n " + " To login, please go to @iWriteLink@ " +
 														  "\n\n " + " Username: @UserUsername@ " + "\n " + " Password: @Password@" + "\n\n " + "@FromName@";
 	

@@ -32,17 +32,20 @@ public class EmailNotifier {
 	private Properties properties;
 	private Session mailSession;
 	private Transport transport;
+	// google organization domain
 	private String domain = null;
-	private String fromName = "iWrite Assignment Tracker";
+	private String fromName = "Reviewer Assignment Tracker";
 	private String fromAddress = "no-reply@"+domain;
 	private DateFormat dateFormat = new SimpleDateFormat("E d MMM h:mma");
+	private String reviewerDomain = null;
  
-	public EmailNotifier(String username, String password, String smtpHost, String smtpPort, String domain) throws NoSuchProviderException {
+	public EmailNotifier(String username, String password, String smtpHost, String smtpPort, String domain,String reviewerDomain) throws NoSuchProviderException {
 		this.username = username;
 		this.password = password;
 		this.smtpHost = smtpHost;
 		this.smtpPort = smtpPort;
 		this.domain = domain;
+		this.reviewerDomain = reviewerDomain;
 		
 		properties = new Properties();
 		properties.put("mail.transport.protocol", "smtp");
@@ -70,12 +73,11 @@ public class EmailNotifier {
 		String subject = "[" + course.getName().toUpperCase() + "] " + activity.getName();
 		String to = lecturer.getFirstname() + " " + lecturer.getLastname();
 		EmailCourse email = course.getEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH);
-//		String content = String.format(email.getMessage() + fromName, to, activity.getName(), deadlineName, getIwriteLinkForUser(lecturer));
 		String content = email.getMessage();
 		content = content.replaceAll("@LecturerName@", to);
 		content = content.replaceAll("@ActivityName@", activity.getName());
 		content = content.replaceAll("@DeadlineName@", deadlineName);
-		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(lecturer));
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
 		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(lecturer, subject, content);
 	}
@@ -84,12 +86,11 @@ public class EmailNotifier {
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
 		String to = user.getFirstname() + " " + user.getLastname();
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH); 
-//		String content = String.format(email.getMessage() + fromName, to, writingActivity.getName(), deadlineName, getIwriteLinkForUser(user));
 		String content = email.getMessage();
 		content = content.replaceAll("@StudentName@", to);
 		content = content.replaceAll("@ActivityName@", writingActivity.getName());
 		content = content.replaceAll("@DeadlineName@", deadlineName);
-		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(user));
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
 		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(user, subject, content);
 	}	
@@ -114,11 +115,10 @@ public class EmailNotifier {
 		String to = student.getFirstname() + " " + student.getLastname();
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_ACTIVITY_START);
-//		String content = String.format(email.getMessage() + fromName, to, writingActivity.getName(), getIwriteLinkForUser(student), deadlineDate);
 		String content = email.getMessage();
 		content = content.replaceAll("@StudentName@", to);
 		content = content.replaceAll("@ActivityName@", writingActivity.getName());
-		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(student));
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
 		content = content.replaceAll("@DeadlineDate@", deadlineDate);
 		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(student, subject, content);
@@ -129,11 +129,10 @@ public class EmailNotifier {
 		String to = student.getFirstname() + " " + student.getLastname();
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_REVIEW_START);
-//		String content = String.format(email.getMessage() + fromName, to, writingActivity.getName(), getIwriteLinkForUser(student), deadlineDate);
 		String content = email.getMessage();
 		content = content.replaceAll("@StudentName@", to);
 		content = content.replaceAll("@ActivityName@", writingActivity.getName());
-		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(student));
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
 		content = content.replaceAll("@DeadlineDate@", deadlineDate);
 		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(student, subject, content);
@@ -141,37 +140,32 @@ public class EmailNotifier {
 
 	public void sendPasswordNotification(User user, Course course) throws MessagingException, UnsupportedEncodingException, MessageException {
 		EmailCourse email = course.getEmail(Constants.EMAIL_PASSWORD_DETAILS);
-//		String content = String.format(email.getMessage(), user.getFirstname()+" "+user.getLastname(), course.getName(), user.getUsername(), user.getPassword());
 		String content = email.getMessage();
 		content = content.replaceAll("@UserName@", user.getFirstname()+" "+user.getLastname());
 		content = content.replaceAll("@CourseName@", course.getName());
 		content = content.replaceAll("@UserUsername@", user.getUsername());
 		content = content.replaceAll("@Password@", user.getPassword());
-		content = content.replaceAll("@iWriteLink@", getIwriteLink());
+		content = content.replaceAll("@iWriteLink@", getReviewerLinkForUser());
 		this.sendNotification(user, "iWrite user details", content);
 	}
 	
 	public void sendReviewEarlyFinishNotification(User user, Course course, ReviewingActivity reviewingActivity) throws MessagingException, UnsupportedEncodingException, MessageException {
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW);
-//		String content = String.format(email.getMessage() + fromName, user.getFirstname()+" "+user.getLastname(), reviewingActivity.getName(), getIwriteLinkForUser(user));
 		String content = email.getMessage();
 		content = content.replaceAll("@UserName@", user.getFirstname()+" "+user.getLastname());
 		content = content.replaceAll("@ActivityName@", reviewingActivity.getName());
-		content = content.replaceAll("@ReviewerLink@", getIwriteLinkForUser(user));
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
 		content = content.replaceAll("@FromName@", fromName);
 		String subject = "[" + course.getName().toUpperCase() + "] " + reviewingActivity.getName();
 		this.sendNotification(user, subject, content);
 	}	
-
-	private String getIwriteLinkForUser(User user) {	
-		return user.getWasmuser()?"http://"+domain+"/reviewer/Assignments.html":"http://"+domain+"/reviewer/iWrite.html";
+	
+	private String getReviewerLinkForUser() {	
+		return "http://"+reviewerDomain+"/reviewer/Assignments.html";
 	}
 	
 	public void setProperties(Properties properties) {
 		this.properties = properties;
 	}
 	
-	private String getIwriteLink(){
-		return "http://iwrite.sydney.edu.au/reviewer/iWrite.html";
-	}
 }

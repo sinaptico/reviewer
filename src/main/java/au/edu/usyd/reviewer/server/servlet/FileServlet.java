@@ -114,7 +114,7 @@ public class FileServlet extends HttpServlet {
 					   // check if user is a lecturer or tutor of the course
 					if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
 							filename = docEntry.getFileName();
-							file = new File(UPLOAD_DIRECTORY +"/"+filename);					
+							file = new File(UPLOAD_DIRECTORY +"/"+filename);
 						}		
 				}
 			}
@@ -186,8 +186,8 @@ public class FileServlet extends HttpServlet {
 //            	logger.info("Starting to parse request. " + req.toString());
                 @SuppressWarnings("rawtypes")
 				Iterator items = upload.parseRequest(req).iterator();
-//                logger.info("Parsing request... "+items.toString());
-                  while (items.hasNext()) {            	
+//              logger.info("Parsing request... "+items.toString());
+                while (items.hasNext()) {            	
                 	  FileItem item = (FileItem) items.next();
                 	  if (item.isFormField()) {
 //                		  logger.info("item.getFieldName: " +item.getFieldName());
@@ -200,43 +200,43 @@ public class FileServlet extends HttpServlet {
                           continue;
                       }            
                 	
-//                	logger.info("Attempting to upload file into docId: " + docId);
+//                		logger.info("Attempting to upload file into docId: " + docId);
                 	
-          			if (docId != null) {
-      				// get document course and activity
-      				DocEntry docEntry = assignmentDao.loadDocEntry(docId);
-      				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
-      				Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
-      
-//      				    logger.info("Owner: " + docEntry.getOwner());      				    	  
-	      				// check if user owns the document or is a lecturer or tutor
-	      				if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
-
-	                        // get only the file name not whole path
-	                        String fileName = item.getName();
-	                        String extension = "";
-
-	                        if (fileName != null) {
-	                        	extension = FilenameUtils.getExtension(fileName);
-	                        }
-	                        fileName = course.getName()+" - Sem- "+Integer.toString(course.getSemester())+" - "+Integer.toString(course.getYear())+" - "+docEntry.getTitle();
-	                        File uploadedFile = new File(UPLOAD_DIRECTORY, fileName+"."+extension);
-	                        
-	                        //if (uploadedFile.createNewFile()) {
-	                            item.write(uploadedFile);	                            
-
-	                            resp.setStatus(HttpServletResponse.SC_CREATED);
-	                            resp.getWriter().print("The file was created successfully.");                        
-	                            resp.flushBuffer();
-	                        //} else
-	                          //  throw new IOException("The file already exists in repository.");
-	                            
-	                            docEntry.setUploaded(true);
-	                            docEntry.setFileName(fileName+"."+extension);
-//	                            logger.info("fileName+Extension " + fileName+"."+extension);
-	                            docEntry = assignmentDao.save(docEntry);
-	      				}       
-      			    }     
+	          			if (docId != null) {
+		      				// get document course and activity
+		      				DocEntry docEntry = assignmentDao.loadDocEntry(docId);
+		      				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
+		      				Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
+	      
+	//      				    logger.info("Owner: " + docEntry.getOwner());      				    	  
+		      				// check if user owns the document or is a lecturer or tutor
+		      				if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
+	
+		                        // get only the file name not whole path
+		                        String fileName = item.getName();
+		                        String extension = "";
+	
+		                        if (fileName != null) {
+		                        	extension = FilenameUtils.getExtension(fileName);
+		                        }
+		                        fileName = course.getName()+" - Sem- "+Integer.toString(course.getSemester())+" - "+Integer.toString(course.getYear())+" - "+docEntry.getTitle();
+		                        File uploadedFile = new File(UPLOAD_DIRECTORY, fileName+"."+extension);
+		                        File filePath = new File(UPLOAD_DIRECTORY);
+		                        if (!filePath.exists()){
+		                        	filePath.mkdirs();
+		                        }
+		                        
+		                        item.write(uploadedFile);	                            
+		                        resp.setStatus(HttpServletResponse.SC_CREATED);
+		                        resp.getWriter().print("The file was created successfully.");                        
+		                        resp.flushBuffer();
+		                            
+		                        docEntry.setUploaded(true);
+		                        docEntry.setFileName(fileName+"."+extension);
+	//	                            logger.info("fileName+Extension " + fileName+"."+extension);
+		                        docEntry = assignmentDao.save(docEntry);
+		      				}       
+	      			    }     
                 }
                   
                   if (csv != null){
@@ -251,13 +251,16 @@ public class FileServlet extends HttpServlet {
                   
             } catch (Exception e) {
             	logger.info("An error occurred while creating the file : " + e.getMessage());
-                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        "An error occurred while creating the file : " + e.getMessage());
+//                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+//                        "An error occurred while creating the file : " + e.getMessage());
+            	throw new ServletException("An error occurred while creating the file : " + e.getMessage());
             }
         } else {
-        	logger.info("Not a multipart request, User uploading file: " + user);      
-            resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
-                            "Request contents type is not supported by the servlet.");
+//        	logger.info("Not a multipart request, User uploading file: " + user);      
+//            resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+//                            "Request contents type is not supported by the servlet.");
+        	ServletException me = new ServletException("Request contents type is not supported by the servlet.");
+            throw me;
         }
     }
 	
@@ -269,9 +272,9 @@ public class FileServlet extends HttpServlet {
 		if (user == null){
 			user = getUser(request);
 			organization = user.getOrganization();
-			UPLOAD_DIRECTORY = organization.getUploadsHome();	
-			EMPTY_FILE = organization.getEmptyFile();	
-		}
+			UPLOAD_DIRECTORY = Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getUploadsHome();	
+			EMPTY_FILE = Reviewer.getOrganizationsHome() + organization.getName() + Reviewer.getUploadsHome() + Reviewer.getEmptyDocument();
+		} 
 		if (assignmentManager == null){
 			assignmentManager = Reviewer.getAssignmentManager();
 			assignmentDao = assignmentManager.getAssignmentDao();

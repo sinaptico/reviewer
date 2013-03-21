@@ -113,7 +113,7 @@ public class ReportsTable extends Composite {
 								grid.setWidget(0, 0, new HTML("<b>To:</b>"));
 								grid.setWidget(0, 1, new HTML("6 students [names hidden]"));
 								grid.setWidget(1, 0, new HTML("<b>Subject:</b>"));
-								grid.setWidget(1, 1, new HTML("iWrite - Progress Update"));
+								grid.setWidget(1, 1, new HTML("Progress Update"));
 								grid.setWidget(2, 0, new HTML("<b>Template:</b>"));
 								grid.setWidget(2, 1, template);
 								grid.setWidget(3, 1, emailMessage);

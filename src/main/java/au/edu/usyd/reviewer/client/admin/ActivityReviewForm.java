@@ -11,6 +11,7 @@ import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.StyleLib;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
@@ -20,12 +21,15 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.widgetideas.client.ValueSpinner;
 
@@ -235,7 +239,6 @@ public class ActivityReviewForm extends Composite {
 				dialogBox.setWidget(panel);
 				dialogBox.center();
 				dialogBox.show();
-				//reviewersTable.setReviewingActivity(reviewingActivity);
 			}});		
 
 		Button reportFeedbackTrackButton = new Button("Report");
@@ -289,6 +292,48 @@ public class ActivityReviewForm extends Composite {
 			reviewGrid.setWidget(11, 0, new Label("Track Feedback Report:"));
 			reviewGrid.setWidget(11, 1, reportFeedbackTrackButton);	
 		}
+		switch(reviewingActivity.getStatus()){ 
+			case ReviewingActivity.STATUS_FINISH:
+				name.setEnabled(false);
+				startDate.setEnabled(false);
+				finishDate.setEnabled(false);
+				reviewType.setEnabled(false);
+				reviewTemplateLst.setEnabled(false);
+				allocationStrategy.setEnabled(false);
+				
+				// disabled reviewers
+				for(int i=0;i<reviewersPanel.getWidgetCount();i++){
+					Widget widget =  reviewersPanel.getWidget(i);
+					if (widget instanceof FocusWidget){
+						FocusWidget focusWidget = (FocusWidget) widget;
+						focusWidget.setEnabled(false);
+					} 
+				}
+				
+				ratings.setEnabled(false);				
+				earlySubmit.setEnabled(false);
+				feedbackTemplateType.setEnabled(false);
+				break;
+			case ReviewingActivity.STATUS_START:
+				name.setEnabled(false);
+				startDate.setEnabled(false);
+				finishDate.setEnabled(false);
+				reviewType.setEnabled(false);
+				reviewTemplateLst.setEnabled(false);
+				allocationStrategy.setEnabled(false);
+				earlySubmit.setEnabled(true);
+				feedbackTemplateType.setEnabled(false);
+				break;
+			default:
+				name.setEnabled(true);
+				startDate.setEnabled(true);
+				finishDate.setEnabled(true);
+				reviewType.setEnabled(true);
+				reviewTemplateLst.setEnabled(true);
+				allocationStrategy.setEnabled(true);
+				earlySubmit.setEnabled(true);
+				feedbackTemplateType.setEnabled(true);
+		} 
 		
 		//reviewGrid.setWidget(11, 0, new Label("Allow peer marking:"));
 		//reviewGrid.setWidget(11, 1, marking);		

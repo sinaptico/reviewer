@@ -1,29 +1,23 @@
 package au.edu.usyd.reviewer.server.rpc;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.feedback.feedbacktracking.FeedbackTracking;
-import au.edu.usyd.feedback.feedbacktracking.FeedbackTrackingDao;
 import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.DocumentType;
-import au.edu.usyd.reviewer.client.core.FeedbackTemplate;
 import au.edu.usyd.reviewer.client.core.Grade;
-import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.Question;
 import au.edu.usyd.reviewer.client.core.QuestionRating;
 import au.edu.usyd.reviewer.client.core.QuestionScore;
@@ -36,35 +30,18 @@ import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.client.review.ReviewService;
-import au.edu.usyd.reviewer.server.AssignmentDao;
-import au.edu.usyd.reviewer.server.AssignmentManager;
-import au.edu.usyd.reviewer.server.EmailNotifier;
 import au.edu.usyd.reviewer.server.QuestionDao;
 import au.edu.usyd.reviewer.server.Reviewer;
-import au.edu.usyd.reviewer.server.UserDao;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-
-public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewService {
+public class ReviewServiceImpl extends ReviewerServiceImpl implements ReviewService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	private AssignmentManager assignmentManager = Reviewer.getAssignmentManager();
-	private EmailNotifier emailNotifier = null;
-	//private AssignmentDao assignmentDao = assignmentManager.getAssignmentDao();
-	private AssignmentDao assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
-	private FeedbackTrackingDao feedbackTrackingService = new FeedbackTrackingDao();
-	private UserDao userDao = UserDao.getInstance();
-
-	// logged user
-	private User user = null;
-	// logged user organization
-	private Organization organization = null;
 	
 	@Override
 	public Rating getUserRatingForEditing(Review review) throws Exception {
 		initialize();
-		Rating rating = assignmentDao.loadUserRatingForEditing(user, review);
+		Rating rating = assignmentDao.loadUserRatingForEditing(getMockedUser(), review);
 		if (rating == null) {
-			throw new Exception("Rating not found");
+			throw new MessageException(Constants.EXCEPTION_RATING_NOT_FOUND);
 		}
 		return rating;
 	}
@@ -72,10 +49,10 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	@Override
 	public Course getUserReviewForEditing(long reviewId) throws Exception {
 		initialize();
-		Course course = assignmentDao.loadUserReviewForEditing(user, reviewId);
+		Course course = assignmentDao.loadUserReviewForEditing(getMockedUser(), reviewId);
 		
 		if (course == null) {
-			throw new Exception("Review not found");
+			throw new MessageException(Constants.EXCEPTION_REVIEW_NOT_FOUND);
 		}
 		return course;
 	}
@@ -116,9 +93,6 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	}
 
 
-	private boolean isCourseInstructor(Course course) throws Exception {
-		return user == null ? false : course.getLecturers().contains(user) || course.getTutors().contains(user) || course.getSupervisors().contains(user);
-	}
 
 	@Override
 	public Collection<Grade> submitGrades(Collection<Grade> grades) throws Exception {
@@ -127,8 +101,8 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 			Deadline deadline = grade.getDeadline();
 			Course course = assignmentDao.loadCourseWhereDeadline(deadline);
 			if (isCourseInstructor(course)) {
-				User user = grade.getUser();
-				Grade currentGrade = assignmentDao.loadGrade(deadline, user);
+				User userGrade = grade.getUser();
+				Grade currentGrade = assignmentDao.loadGrade(deadline, userGrade);
 				if(currentGrade != null) {
 					currentGrade.setValue(grade.getValue());
 				} else {
@@ -139,7 +113,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 				writingActivity.getGrades().add(currentGrade);
 				writingActivity = assignmentDao.save(writingActivity);
 			} else {
-				throw new Exception("Permission denied");
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 			}
 		}
 		return grades;
@@ -148,32 +122,33 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	@Override
 	public <R extends Rating> R submitRating(R rating, Review review) throws Exception {
 		initialize();
+		User loggedUser = getMockedUser();
 		// check permission
 		Rating userRating = assignmentDao.loadRating(rating.getId());
 		if (userRating != null) {
-			if (userRating.getOwner().equals(user)) {
+			if (userRating.getOwner().equals(loggedUser)) {
 				rating.setId(userRating.getId());
 			} else {
-				throw new Exception("Your session has expired. Please login again to submit your rating.");
+				throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SUBMIT_RATING);
 			}
 		}
 
 		// save rating
 		if (rating instanceof QuestionRating) {
 			if (((QuestionRating) rating).getEvaluatorBackground().equals("Yes")) {
-				user.setNativeSpeaker("Yes");
+				loggedUser.setNativeSpeaker("Yes");
 			} else {
-				user.setNativeSpeaker("No");
+				loggedUser.setNativeSpeaker("No");
 			}
 
 			QuestionDao questionDao = new QuestionDao(Reviewer.getHibernateSessionFactory());
 			for (QuestionScore questionScore : ((QuestionRating) rating).getScores()) {
-				questionDao.saveScoreAndDocOwner(questionScore, user);
+				questionDao.saveScoreAndDocOwner(questionScore, loggedUser);
 			}
 		} else {
 			ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereReview(review);
 			rating.setEntry(reviewEntry);
-			rating.setOwner(user);
+			rating.setOwner(loggedUser);
 			rating = assignmentDao.save(rating);
 		}
 
@@ -189,14 +164,14 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course)) {
 			// check review owner
 			ReviewEntry reviewEntry =  assignmentDao.loadReviewEntryWhereReview(review);
-			if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
+			if (reviewEntry != null && reviewEntry.getOwner().equals(getMockedUser())) {
 				review.setSaved(new Date());
 				review = assignmentDao.save(review);
 			} else {
-				throw new Exception("Your session has expired. Please login again to save your review.");
+				throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SAVE_REVIEW);
 			}
 		} else {
-			throw new Exception("The deadline has already passed.");
+			throw new MessageException(Constants.EXCEPTION_DEADLINE_ALREADY_PASSED);
 		}
 		R newReview = (R) new Review();
 		if (review != null){
@@ -214,7 +189,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course)) {
 			// check review owner
 			ReviewEntry reviewEntry =  assignmentDao.loadReviewEntryWhereReview(review);
-			if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
+			if (reviewEntry != null && reviewEntry.getOwner().equals(getMockedUser())) {
 				review.setSaved(new Date());
 				review.setEarlySubmitted(true);
 				// release review
@@ -243,10 +218,10 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 				}
 				
 			} else {
-				throw new Exception("Your session has expired. Please login again to submit your review.");
+				throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SUBMIT_REVIEW);
 			}
 		} else {
-			throw new Exception("The deadline has already passed.");
+			throw new MessageException(Constants.EXCEPTION_DEADLINE_ALREADY_PASSED);
 		}
 		R newReview = (R) new Review();
 		if (review != null){
@@ -258,9 +233,9 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 	@Override
 	public Course getUserReviewForViewing(long reviewId) throws Exception {
 		initialize();
-		Course course = assignmentDao.loadReviewForViewing(user, reviewId);
+		Course course = assignmentDao.loadReviewForViewing(getMockedUser(), reviewId);
 		if (course == null) {
-			throw new Exception("Review not found");
+			throw new MessageException(Constants.EXCEPTION_REVIEW_NOT_FOUND);
 		}
 		
 		Review review = assignmentDao.loadReview(reviewId);
@@ -278,13 +253,13 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 			if(fedbackTrackingRecord !=null && fedbackTrackingRecord.getReadDate() == null){
 				
 				if (docEntry.getOwner()!=null){
-					if (docEntry.getOwner().equals(user)){
+					if (docEntry.getOwner().equals(getMockedUser())){
 						fedbackTrackingRecord.setReadDate(new Date());
 						feedbackTrackingService.save(fedbackTrackingRecord);
 					}
 				}else{
 					if (docEntry.getOwnerGroup() != null){
-						if (docEntry.getOwnerGroup().getUsers().contains(user)){
+						if (docEntry.getOwnerGroup().getUsers().contains(getMockedUser())){
 							fedbackTrackingRecord.setReadDate(new Date());
 							feedbackTrackingService.save(fedbackTrackingRecord);
 						}
@@ -306,48 +281,7 @@ public class ReviewServiceImpl extends RemoteServiceServlet implements ReviewSer
 		//}
 		return documentTypes;
 	}
-	
-	private void initialize() throws Exception{		
-		user = getUser();
-		Organization organization = user.getOrganization();	
-		Reviewer.initializeAssignmentManager(organization);
-	}
-	
-	private User getUser() {
 		
-		try {
-			
-			HttpServletRequest request = this.getThreadLocalRequest();
-			User mockedUser = (User) request.getSession().getAttribute("mockedUser");
-			
-			if ( mockedUser != null){
-				if ( mockedUser.getOrganization() == null){
-					user = userDao.getUserByEmail(mockedUser.getEmail());
-					request.getSession().setAttribute("mockedUser", mockedUser);
-				} else {
-					user = mockedUser;
-				}
-				
-			}
-			else { // get logged user 
-				user = (User) request.getSession().getAttribute("user");
-				Principal principal = request.getUserPrincipal();
-				UserDao userDao = UserDao.getInstance();
-				if  (user == null){
-					user = userDao.getUserByEmail(principal.getName());
-					request.getSession().setAttribute("user", user);
-					
-				} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
-					user = userDao.getUserByEmail(principal.getName());
-					request.getSession().setAttribute("user", user);
-				}
-			}
-		} catch (MessageException e) {
-			e.printStackTrace();
-		}
-		return user;
-	}
-	
 	public String getGlosserUrl(Long siteId, String docId) {
 		return Reviewer.getGlosserUrl(siteId, docId);
 	}

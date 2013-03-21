@@ -21,10 +21,6 @@ public class ConnectionUtil {
 	public static void logout(HttpServletRequest request) throws IOException {
 		try{
 			HttpSession	 session = request.getSession();
-			User user = getLoggedUser(request);
-			if (user != null) {
-//				logger.debug("Logging out user: " + user.getEmail());
-			}
 			if (session != null)
 			{
 				session.invalidate();
@@ -46,10 +42,10 @@ public class ConnectionUtil {
 			}
 			Principal principal = request.getUserPrincipal();
 			UserDao userDao = UserDao.getInstance();
-			if  (user == null){
+			if  (user == null && principal != null && principal.getName() != null){
 				user = userDao.getUserByEmail(principal.getName());
 				request.getSession().setAttribute("user", user);
-			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
+			} else if (principal != null && principal.getName() != null && !principal.getName().equals(user.getEmail())){
 				user = userDao.getUserByEmail(principal.getName());
 				request.getSession().setAttribute("user", user);
 			}

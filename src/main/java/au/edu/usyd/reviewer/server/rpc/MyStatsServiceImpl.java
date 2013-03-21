@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.client.mystats.MyStatsService;
 import au.edu.usyd.reviewer.server.AssignmentDao;
@@ -35,13 +36,13 @@ public class MyStatsServiceImpl extends RemoteServiceServlet implements MyStatsS
 		initialize();
 		DocEntry docEntry = assignmentDao.loadDocEntry(docId);
 		if (docEntry == null) {
-			throw new Exception("Document not found");
+			throw new MessageException(Constants.EXCEPTION_DOCUMENT_NOT_FOUND);
 		}
 		
 		if(docEntry.getOwner() != null && docEntry.getOwner().equals(getUser()) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(getUser())) {
 			return docEntry;
 		} else {
-			throw new Exception("Permission denied");
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 

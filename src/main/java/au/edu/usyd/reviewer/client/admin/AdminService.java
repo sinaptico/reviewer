@@ -168,7 +168,7 @@ public interface AdminService extends RemoteService {
 	 * Return logged user
 	 * @return User logged user
 	 */
-	public User getLoggedUser();
+	public User getLoggedUser() throws Exception;
 	
 	/** 
 	 * Return all the organization

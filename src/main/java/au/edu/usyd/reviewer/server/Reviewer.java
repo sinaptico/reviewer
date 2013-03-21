@@ -68,8 +68,8 @@ public class Reviewer {
 				String emailPassword = aesCipher.decrypt(organization.getEmailPassword());
 				String smtpHost = organization.getSMTPHost();
 				String smtpPort = organization.getSMTPPort();
-				
-				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain));
+				String reviewerDomain = getReviewerDomain();
+				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain,reviewerDomain));
 				
 				assignmentRepository = new AssignmentRepository(username, password, domain);
 				
@@ -80,25 +80,11 @@ public class Reviewer {
 					if ( e instanceof MessageException){
 						throw e;
 					}
-					throw new Exception(Constants.EXCEPTION_FAILED_INITIALIZE_ASSIGNMENT_MANAGER);
+					throw new MessageException(Constants.EXCEPTION_FAILED_INITIALIZE_ASSIGNMENT_MANAGER);
 			}
 		}
 	}
-
-	public static synchronized DigitalSigner getDigitalSigner() {
-		if (digitalSigner == null) {
-			try {
-				digitalSigner = new DigitalSigner(organization.getPrivateKeyPath(), organization.getPublicKeyPath());
-			} catch (Throwable e) {
-				e.printStackTrace();
-				logger.error("Failed to initialise digital signer.", e);
-			}
-		}
-		return digitalSigner;
-	}
-
-	
-	
+		
 	public static synchronized SessionFactory getHibernateSessionFactory() {
 		if (sessionFactory == null) {
 			try {
@@ -135,14 +121,14 @@ public class Reviewer {
 			String propertyName = property.getProperty().getName();
 			String value = property.getValue();
 //			logger.debug("Setting property: " + property + "=" + value);
-			if (String.valueOf(propertyName).startsWith("system.")) {
-				System.setProperty(StringUtils.substringAfter(propertyName, "system."), value);
-			}
+//			if (String.valueOf(propertyName).startsWith("system.")) {
+//				System.setProperty(StringUtils.substringAfter(propertyName, "system."), value);
+//			}
 		}
 	}
 	
-	public static String getDocumentsHome() {
-		return config.getString(Constants.REVIEWER_DOCUMENTS_HOME);
+	public static String getOrganizationsHome() {
+		return config.getString(Constants.REVIEWER_ORGANIZATIONS_HOME);
 	}
 	
 	public static String getGlosserHost() {
@@ -162,14 +148,31 @@ public class Reviewer {
 	}
 
 	public static String getUploadsHome() {
-		return config.getString(Constants.REVIEWER_UPLOADS_HOME);
+		return config.getString(Constants.REVIEWER_ORGANIZATIONS_UPLOADS);
+	}
+	
+	public static String getDocumentsHome() {
+		return config.getString(Constants.REVIEWER_ORGANIZATIONS_DOCUMENTS);
 	}
 	
 	public static AssignmentRepository getAssignmentRepository(){
 		return assignmentRepository;
 	}
 	
-	public static String getReviewerLogosHome(){
-		return config.getString(Constants.REVIEWER_LOGOS_HOME);
-	}	
+	public static String getEmptyDocument(){
+		return config.getString(Constants.REVIEWER_EMPTY_DOCUMENT);
+	}
+	
+	public static String getAggLoadExcelPath(){
+		return config.getString(Constants.AGG_LOAD_EXCEL_PATH);
+	}
+	
+	public static String getAggInsertToExcelPath(){
+		return config.getString(Constants.AGG_INSERT_TO_EXCEL_PATH);
+	}
+
+	public static String getReviewerDomain(){
+		return config.getString(Constants.REVIEWER_DOMAIN);
+	}
+	
 }

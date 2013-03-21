@@ -59,7 +59,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 	private String getDocumentsFolder( Course course, long activityId, long activityDeadlineId, String tutorial)  {
 		//String documentsHome = Reviewer.getDocumentsHome();
 		Organization organization = course.getOrganization();
-		String documentsHome = organization.getDocumentsHome();
+		String documentsHome = Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getDocumentsHome(); 
 		return String.format(documentsHome + "/%s/%s/%s/%s", course.getId(), activityId, activityDeadlineId, tutorial);
 	}
 
@@ -141,7 +141,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		
 		try{
 			Organization organization = course.getOrganization();
-			File empty = new File(organization.getEmptyDocument());
+			File empty = new File(Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getDocumentsHome() + Reviewer.getEmptyDocument());
 			if (empty.length() == file.length()){return true;}			
 		} catch (Exception e) {
 			e.printStackTrace();

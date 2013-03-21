@@ -1,5 +1,6 @@
 package au.edu.usyd.reviewer.server;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 
@@ -14,6 +15,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gdata.util.AuthenticationException;
+
+import au.edu.usyd.reviewer.client.core.EmailOrganization;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.OrganizationProperty;
 import au.edu.usyd.reviewer.client.core.ReviewerProperty;
@@ -21,6 +25,7 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
 import au.edu.usyd.reviewer.server.util.AESCipher;
 
 /**
@@ -39,6 +44,7 @@ public class OrganizationManager {
 	private ReviewerPropertyDao propertyDao;
 	private UserDao userDao;
 	private CourseDao courseDao;
+	private EmailDao emailDao;
 	
 	private static OrganizationManager organizationManager = null;
 	
@@ -53,6 +59,7 @@ public class OrganizationManager {
 			propertyDao =  ReviewerPropertyDao.getInstance();
 			userDao = UserDao.getInstance();
 			courseDao = CourseDao.getInstance();
+			emailDao = EmailDao.getInstance();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -75,25 +82,24 @@ public class OrganizationManager {
 	 * @param organization organization to save
 	 */
 	public Organization saveOrganization(Organization organization, boolean includeAll) throws Exception{
-		Organization organizationSaved = null;
 		Organization otherOrganization = getOrganization(organization.getName());
 		if ( otherOrganization == null || (otherOrganization != null && organization.getId() != null && otherOrganization.getId().equals(organization.getId()))){
-			organizationSaved = organizationDao.save(organization);;
-			if (!organizationSaved.hasProperties()){
+			organization = organizationDao.save(organization);;
+			if (!organization.hasProperties()){
 				organization = addProperties(organization);
-				saveOrganizationProperties(organization.getOrganizationProperties());
-			} else {
-				saveOrganizationProperties(organization.getOrganizationProperties());
 			}
-				
+			if (!organization.hasEmails()){
+				organization = addEmails(organization);
+			}
+			saveOrganizationProperties(organization.getOrganizationProperties());	
 		} else {
 			// there is an organization with the same name
 			throw new MessageException(Constants.EXCEPTION_ORGANIZATION_EXISTS);
 		}
 		if (!includeAll){
-			organizationSaved.setOrganizationProperties(new HashSet<OrganizationProperty>());
+			organization.setOrganizationProperties(new HashSet<OrganizationProperty>());
 		}
-		return organizationSaved; 
+		return organization; 
 	}
 	
 	/**
@@ -133,29 +139,11 @@ public class OrganizationManager {
 	 * @return organizaton with the reviewer properties
 	 */
 	private Organization addProperties(Organization organization)throws MessageException{
-		ReviewerProperty aagInsertToExcelPath = propertyDao.load(Constants.AGG_INSERT_TO_EXCEL_PATH);
-		organization.addProperty(aagInsertToExcelPath, null);
-		
-		ReviewerProperty aggLoadExcelPath = propertyDao.load(Constants.AGG_LOAD_EXCEL_PATH);
-		organization.addProperty(aggLoadExcelPath, Constants.AGG_INSERT_TO_EXCEL_PATH_VALUE);
-		
-		ReviewerProperty reviewerAdminUsers = propertyDao.load(Constants.REVIEWER_ADMIN_USERS);
-		organization.addProperty(reviewerAdminUsers,null);
-		
-		ReviewerProperty reviewerDocumentsHome = propertyDao.load(Constants.REVIEWER_DOCUMENTS_HOME);
-		organization.addProperty(reviewerDocumentsHome, Reviewer.getDocumentsHome() + organization.getName() );
-		
 		ReviewerProperty reviewerEmailPassword = propertyDao.load(Constants.REVIEWER_EMAIL_PASSWORD);
 		organization.addProperty(reviewerEmailPassword, null);
 		
 		ReviewerProperty reviewerEmailUsername = propertyDao.load(Constants.REVIEWER_EMAIL_USERNAME);
 		organization.addProperty(reviewerEmailUsername, null);
-		
-		ReviewerProperty reviewerEmptyDocument = propertyDao.load(Constants.REVIEWER_EMPTY_DOCUMENT);
-		organization.addProperty(reviewerEmptyDocument, Reviewer.getDocumentsHome() + organization.getName() + "/" + Constants.REVIEWER_EMPTY_DOCUMENT_FILENAME);
-		
-		ReviewerProperty reviewerEmptyFile = propertyDao.load(Constants.REVIEWER_EMPTY_FILE);
-		organization.addProperty(reviewerEmptyFile,Reviewer.getDocumentsHome() +  organization.getName() + "/" + Constants.REVIEWER_EMPTY_DOCUMENT_FILENAME);
 		
 		ReviewerProperty reviewerGlosserHost = propertyDao.load(Constants.REVIEWER_GLOSSER_HOST);
 		organization.addProperty(reviewerGlosserHost, Reviewer.getGlosserHost());
@@ -172,41 +160,11 @@ public class OrganizationManager {
 		ReviewerProperty reviewerGoogleUsername = propertyDao.load(Constants.REVIEWER_GOOGLE_USERNAME);
 		organization.addProperty(reviewerGoogleUsername, null);
 		
-		ReviewerProperty reviewerPrivateKey = propertyDao.load(Constants.REVIEWER_PRIVATE_KEY);
-		organization.addProperty(reviewerPrivateKey, null);
-		
-		ReviewerProperty reviewerPublicKey = propertyDao.load(Constants.REVIEWER_PUBLIC_KEY);
-		organization.addProperty(reviewerPublicKey,null);
-		
 		ReviewerProperty reviewerSmtpHost = propertyDao.load(Constants.REVIEWER_SMTP_HOST);
 		organization.addProperty(reviewerSmtpHost, Reviewer.getSMTPHost());
 		
 		ReviewerProperty reviewerSmtpPort = propertyDao.load(Constants.REVIEWER_SMTP_PORT);
 		organization.addProperty(reviewerSmtpPort, Reviewer.getSMTPPort());
-		
-		ReviewerProperty reviewerUploadsHome = propertyDao.load(Constants.REVIEWER_UPLOADS_HOME);
-		organization.addProperty(reviewerUploadsHome, Reviewer.getUploadsHome() + "/" + organization.getName());
-		
-		ReviewerProperty systemHttpProxyHost = propertyDao.load(Constants.SYSTEM_HTTP_PROXY_HOST);
-		organization.addProperty(systemHttpProxyHost,null);
-		
-		ReviewerProperty systemHttpProxyPort = propertyDao.load(Constants.SYSTEM_HTTP_PROXY_PORT);
-		organization.addProperty(systemHttpProxyPort,null);
-		
-		ReviewerProperty systemHttpProxySet = propertyDao.load(Constants.SYSTEM_HTTP_PROXY_SET);
-		organization.addProperty(systemHttpProxySet, null);
-		
-		ReviewerProperty systemHttpsProxyHost = propertyDao.load(Constants.SYSTEM_HTTPS_PROXY_HOST);
-		organization.addProperty(systemHttpsProxyHost, null);
-		
-		ReviewerProperty systemHttpsProxyPort = propertyDao.load(Constants.SYSTEM_HTTPS_PROXY_PORT);
-		organization.addProperty(systemHttpsProxyPort, null);
-		
-		ReviewerProperty systemHttpsProxySet = propertyDao.load(Constants.SYSTEM_HTTPS_PROXY_SET);
-		organization.addProperty(systemHttpsProxySet, null);
-		
-		ReviewerProperty reviewerLogosHome = propertyDao.load(Constants.ORGANIZATION_LOGO_HOME);
-		organization.addProperty(reviewerLogosHome, Reviewer.getReviewerLogosHome() + "/" + organization.getName() + "/");
 		
 		ReviewerProperty organizationLogoFile = propertyDao.load(Constants.ORGANIZATION_LOGO_FILE);
 		organization.addProperty(organizationLogoFile, null);
@@ -233,19 +191,37 @@ public class OrganizationManager {
 	public OrganizationProperty saveOrganizationProperty(OrganizationProperty organizationProperty) throws Exception{
 		if (organizationProperty != null){
 			ReviewerProperty property = organizationProperty.getProperty();
-			if (property != null && property.getName() != null && 
-					(property.getName().equals(Constants.REVIEWER_EMAIL_PASSWORD) || 
-					 property.getName().equals(Constants.REVIEWER_GOOGLE_PASSWORD))){
+			if (property != null && property.getName() != null){
 				String value = organizationProperty.getValue();
 				try{
-					value = AESCipher.encrypt(value);
-					organizationProperty.setValue(value);
-				} catch(Exception e){
+					Organization organization = organizationProperty.getOrganization();
+					String username = null;
 					
+					if (property.getName().equals(Constants.REVIEWER_EMAIL_PASSWORD)){
+						username =  organization.getPropertyValue(Constants.REVIEWER_EMAIL_USERNAME);
+					} else if (property.getName().equals(Constants.REVIEWER_GOOGLE_PASSWORD)){
+						username =  organization.getPropertyValue(Constants.REVIEWER_GOOGLE_USERNAME);
+					}
+					
+					if (username != null){
+						AESCipher aesCipher = AESCipher.getInstance();
+						String decryptedValue = aesCipher.decrypt(value);
+						GoogleDocsServiceImpl google = new GoogleDocsServiceImpl(username, decryptedValue);
+						
+					}
+				} catch (Exception e) {
+					try{
+						AESCipher aescipher = AESCipher.getInstance();
+						value = aescipher.encrypt(value);
+						organizationProperty.setValue(value);
+					} catch(Exception ex){
+							
+					}
 				}
 			}
+			organizationProperty = organizationPropertyDao.save(organizationProperty);
 		}
-		return organizationPropertyDao.save(organizationProperty);
+		return organizationProperty;
 	}
 	
 	
@@ -257,43 +233,10 @@ public class OrganizationManager {
 	 * @throws MessageException message for the user
 	 */
 	public Organization deleteOrganization(Organization organization) throws MessageException{
-		if (userDao.hasUsers(organization)){
-			throw new MessageException(Constants.EXCEPTION_ORGANIZATION_HAS_USERS);
-		} else if (courseDao.hasCourses(organization)){
-			throw new MessageException(Constants.EXCEPTION_ORGANIZATION_HAS_COURSES);
-		} else {
-			// delete the properties belong to the organization
-			deleteOrganizationProperties(organization);
-			// delete the organization
-			organizationDao.delete(organization);
-			return organization;
-		}
-	}
-	
-	/**
-	 * Delete all the organization properties belong to the organization received as parameter
-	 * @param organization organization owner of the properties
-	 * @return organization owner of the properties
-	 * @throws MessageException message to the user
-	 */
-	public Organization deleteOrganizationProperties(Organization organization) throws MessageException {
-		for(OrganizationProperty organizationProperty : organization.getOrganizationProperties()){
-			organizationProperty = deleteOrganizationProperty(organizationProperty);
-		}
+		organization.setDeleted(true);
+		organizationDao.save(organization);
 		return organization;
 	}
-	
-	/**
-	 * Delete the organization property received as parameter
-	 * @param property organization property to delete
-	 * @return organization property deleted
-	 * @throws MessageException message to the user
-	 */
-	public OrganizationProperty deleteOrganizationProperty(OrganizationProperty property) throws MessageException {
-		organizationPropertyDao.delete(property);
-		return property;
-	}
-	
 	
 	public Collection<User> getUsers(User user) throws Exception{
 		Collection<User> users = new ArrayList<User>();
@@ -344,5 +287,167 @@ public class OrganizationManager {
 
 	public List<User> getUsers(Organization organization,Integer page, Integer limit, String roles, boolean assigned) throws MessageException{
 		return userDao.getUsers(organization,page,limit,roles, assigned);
+	}
+	
+	
+	public Organization addEmails(Organization organization) throws MessageException {
+		try{
+			organization = createEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH,Constants.EMAIL_LECTURER_DEADLINE_FINISH_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_PASSWORD_DETAILS,Constants.EMAIL_PASSWORD_DETAILS_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_STUDENT_ACTIVITY_START,Constants.EMAIL_STUDENT_ACTIVITY_START_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW,Constants.EMAIL_STUDENT_RECEIVED_REVIEW_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH,Constants.EMAIL_STUDENT_REVIEW_FINISH_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_START,Constants.EMAIL_STUDENT_REVIEW_START_MESSAGE, organization);
+		} catch(Exception e){
+			throw new MessageException(Constants.EXCEPTION_GENERATE_ORGANIZATION_EMAILS);
+		}
+		return organization;
+	}
+	
+	private Organization createEmail(String emailName, String emailMessage, Organization organization) throws Exception {
+		EmailOrganization email = new EmailOrganization();
+		email.setName(emailName);
+		email.setMessage(emailMessage);
+		email.setOrganization(organization);
+		email = emailDao.saveEmailOrganization(email, organization);
+		organization.addEmail(email);
+		return organization;
+	}
+	
+	public boolean isOrganizationActivated(Organization organization) throws MessageException {
+		boolean isOrganizationActivated = true;
+		
+		//check if the properties are completed
+		isOrganizationActivated = checkOrganizationProperties(organization);
+		
+		//checkGoogle conection
+		isOrganizationActivated &=checkGoogleConnection(organization);
+		
+		//check SMTP connection
+		isOrganizationActivated &=checkSMTPConnection(organization);
+		
+		return isOrganizationActivated;
+
+	}
+	
+	private boolean  checkOrganizationProperties(Organization organization) throws MessageException {
+		boolean propertiesOK = true;
+		String message ="";
+		String value = organization.getEmailUsername();
+		if (StringUtil.isBlank(value)){
+			message = Constants.REVIEWER_EMAIL_USERNAME;
+		}
+		
+		value = organization.getEmailPassword();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_EMAIL_PASSWORD;
+			} else {
+				message = Constants.REVIEWER_EMAIL_PASSWORD;
+			}
+		}
+		
+		value = organization.getGoogleUsername();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_GOOGLE_USERNAME;
+			} else {
+				message = Constants.REVIEWER_GOOGLE_USERNAME;
+			}
+		}
+		
+		value = organization.getGooglePassword();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_GOOGLE_PASSWORD;
+			} else {
+				message = Constants.REVIEWER_GOOGLE_PASSWORD;
+			}
+		}
+		
+		value = organization.getGoogleDomain();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_GOOGLE_DOMAIN;
+			} else {
+				message = Constants.REVIEWER_GOOGLE_DOMAIN;
+			}
+		}
+		
+		value = organization.getSMTPHost();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_SMTP_HOST;
+			} else {
+				message = Constants.REVIEWER_SMTP_HOST;
+			}
+		}
+		
+		value = organization.getSMTPPort();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_GLOSSER_PORT;
+			} else {
+				message = Constants.REVIEWER_GLOSSER_PORT;
+			}
+		}
+		
+		if (!StringUtil.isBlank(message)){
+			propertiesOK = false;
+			throw new MessageException(Constants.EXCEPTION_ORGANIZATION_PROPERTIES + "\n" + message);
+		}
+		return propertiesOK;
+	}
+	
+	private boolean checkGoogleConnection(Organization organization) throws MessageException{
+		boolean connectionOK = true;
+		try{
+			String username = organization.getGoogleUsername();
+			String password = organization.getGooglePassword();
+			AESCipher aesCipher = AESCipher.getInstance();
+			String decryptedValue = aesCipher.decrypt(password);
+			GoogleDocsServiceImpl google = new GoogleDocsServiceImpl(username, decryptedValue);
+		} catch (Exception e) {
+			connectionOK = false;
+			e.printStackTrace();
+			if (e instanceof AuthenticationException) {
+				throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
+			} else if  (e instanceof MalformedURLException) {
+				throw new MessageException(Constants.EXCEPTION_GOOGLE_URL_MALFORMED);
+			} else {
+				throw new MessageException(Constants.EXCEPTION_GOOGLE_CONNECTION);
+			}
+		}
+		return connectionOK;
+	}
+	
+	private boolean checkSMTPConnection(Organization organization) throws MessageException {
+		boolean connectionOK = true;
+		try{
+			String username = organization.getEmailUsername();
+			String password = organization.getEmailPassword();
+			String domain = organization.getGoogleDomain();
+			String smtpHost = organization.getSMTPHost();
+			String smtpPort = organization.getSMTPPort();
+			String reviewerDomain = Reviewer.getReviewerDomain();
+			AESCipher aesCipher = AESCipher.getInstance();
+			String decryptedValue = aesCipher.decrypt(password);
+			EmailNotifier emailSender = new EmailNotifier(username, password, smtpHost, smtpPort, domain,reviewerDomain);
+		} catch (Exception e) {
+			connectionOK = false;
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_SMTP_CONNECTION);
+		}
+		return connectionOK;
+	}
+	
+	public Organization activateOrganization(Organization anOrganization) throws MessageException {
+		if (organizationManager.isOrganizationActivated(anOrganization)){
+			if (!anOrganization.isActivated()){
+				anOrganization.setActivated(true);
+				anOrganization = organizationDao.save(anOrganization);
+			}
+		}
+		return anOrganization;
 	}
 }

@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import au.edu.usyd.reviewer.client.core.Grade;
+import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
@@ -80,13 +82,13 @@ public class GradesForm extends Composite implements HasChangeHandlers {
 					if (gradeValueFromTextBox >= 0 ){
 						grades.get(i).setValue(gradeValueFromTextBox);
 					}else{
-						throw new Exception("Marks must be numeric values greater than zero (0).");
+						throw new MessageException(Constants.EXCEPTION_GRADE_MARK_NUMERIC);
 					}
 				}else{
-					throw new Exception("The maximum mark for this review is: " + grades.get(i).getDeadline().getMaxGrade());
+					throw new MessageException(Constants.EXCEPTION_GRADE_MAX_MARK + grades.get(i).getDeadline().getMaxGrade());
 				}
 			}else{
-				throw new Exception("Marks must be numeric values greater than zero (0).");
+				throw new MessageException(Constants.EXCEPTION_GRADE_MARK_NUMERIC);
 			}
 		}
 		return grades;
