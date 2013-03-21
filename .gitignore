@@ -28,3 +28,4 @@ log/*
 bin/
 lucene/*
 logos/*
+organizations/

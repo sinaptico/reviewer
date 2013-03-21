@@ -1,5 +1,7 @@
 package au.edu.usyd.reviewer.client.admin;
 
+import java.util.Date;
+
 import au.edu.usyd.reviewer.client.core.Course;
 
 import au.edu.usyd.reviewer.client.core.UserGroup;
@@ -53,7 +55,7 @@ public class CourseForm extends Composite {
 	private final TextBox courseName = WidgetFactory.createNewTextBoxWithId("courseFormName");
 	
 	/** ValueSpinner with the course year. */
-	private final ValueSpinner courseYear = WidgetFactory.createNewValueSpinnerWithId(2013, 2009, 3000, "courseFormYear");
+	private final ValueSpinner courseYear = WidgetFactory.createNewValueSpinnerWithId(2013, 2013, 3000, "courseFormYear");
 	
 	/** ListBox with the  course semester. */
 	private final ListBox courseSemester = WidgetFactory.createNewListBoxWithId("courseFormSemester");
@@ -74,6 +76,14 @@ public class CourseForm extends Composite {
 		initWidget(mainPanel);
 		courseSemester.addItem("1", "1");
 		courseSemester.addItem("2", "2");
+		Date today = new Date();
+		int month = today.getMonth();
+		if (month < 7) {
+			courseSemester.setSelectedIndex(0);
+		} else {
+			courseSemester.setSelectedIndex(1);
+		}
+		
 	}
 
 	/**

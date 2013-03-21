@@ -33,12 +33,10 @@ public class QuestionUtil {
 
 	// index the document to lucence
 	public void downloadDoc(String dirpath, WritingActivity writingActivity) throws Exception, MalformedURLException {
-//		logger.info("Download document!");
 		for (DocEntry docEntry : writingActivity.getEntries()) {
 			try {
 				DocumentListEntry documentListEntry = googleDocsServiceImpl.getDocument(docEntry.getDocumentId());
 				String filePath = dirpath + "/" + FileUtil.escapeFilename(docEntry.getDocumentId() + ".html");
-				//googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
 				googleDownloadServiceImpl.download(documentListEntry, filePath);
 			} catch (Exception e) {
 				e.printStackTrace();

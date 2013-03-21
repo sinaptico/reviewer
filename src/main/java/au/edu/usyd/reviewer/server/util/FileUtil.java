@@ -1,15 +1,17 @@
 package au.edu.usyd.reviewer.server.util;
 
 import java.io.BufferedInputStream;
+
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.apache.commons.io.FileUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,22 +25,15 @@ public final class FileUtil {
 	public static void copyFile(String sourceFilename, String targetFilename) throws IOException {
 		File sourceFile = new File(sourceFilename);
 		File targetFile = new File(targetFilename);
-		targetFile.getParentFile().mkdirs();
-		InputStream in = new FileInputStream(sourceFile);
-		OutputStream out = new FileOutputStream(targetFile);
-		byte[] buf = new byte[1024];
-		int len;
-		while ((len = in.read(buf)) > 0) {
-			out.write(buf, 0, len);
-		}
-		in.close();
-		out.close();
+
+		FileUtils fu = new FileUtils();
+		fu.copyFile(sourceFile, targetFile);		
 	}
 
 	public static String escapeFilename(String filename) {
 		return filename.replaceAll("[\\\\/:*?\"<>|]", "-");
 	}
-
+	
 	public static void zipFolder(File sourceFolder, File targetFolder) {
 
 		try {

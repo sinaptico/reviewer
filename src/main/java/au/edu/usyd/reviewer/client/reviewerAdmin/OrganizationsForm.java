@@ -11,6 +11,7 @@ import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 import com.google.gwt.cell.client.ButtonCell;
+import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -22,6 +23,7 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -71,7 +73,7 @@ public class OrganizationsForm extends Composite {
 	public  String MESSAGE_EMPTY_SEARCH_RESULT = "No results found for your search";
 	private String STYLE_TEXT="RichTextToolbar";
 	private String MESSAGE_DELETED ="Organization deleted.";
-
+	private String MESSAGE_PROPERTIES_OK ="Proproperties OK, Organization activated.";
 	
 	private User loggedUser = null;
 	/**
@@ -187,14 +189,47 @@ public class OrganizationsForm extends Composite {
 		    };  
 		    organizationsTable.addColumn(idColumn, "Id");
 		    
-		    // Add a text column to show the organization name. 
-		    TextInputCell nameInputCell = new TextInputCell();
-		    Column<Organization, String> nameColumn = new Column<Organization, String>(nameInputCell) {
-		      @Override
-		      public String getValue(Organization organization) {
-		        return organization.getName();
-		      }
-		    };
+		    // deleted field
+		    Column<Organization, Boolean> deletedColumn = new Column<Organization, Boolean>(new CheckboxCell()) {
+				 @Override
+				 public Boolean getValue(Organization organization) {
+					 return organization.isDeleted();
+				 }
+			 };  
+			 
+			 deletedColumn.setFieldUpdater(new FieldUpdater<Organization, Boolean>() {
+				 @Override
+				 public void update(int index, Organization organization, Boolean value) {
+					 organization.setDeleted(value);
+				 }
+			 });
+			 
+			 organizationsTable.addColumn(deletedColumn, "Deleted");
+			 
+			 Column<Organization, Boolean> activatedColumn = new Column<Organization, Boolean>(new CheckboxCell()) {
+				 @Override
+				 public Boolean getValue(Organization organization) {
+					 return organization.isActivated();
+				 }
+			 };
+			 
+			 activatedColumn.setFieldUpdater(new FieldUpdater<Organization, Boolean>() {
+				 @Override
+				 public void update(int index, Organization organization, Boolean value) {
+					 organization.setActivated(value);
+				 }
+			 });
+			 
+			 organizationsTable.addColumn(activatedColumn, "Activated");	
+		
+			 // Add a text column to show the organization name. 
+			 TextInputCell nameInputCell = new TextInputCell();
+			 Column<Organization, String> nameColumn = new Column<Organization, String>(nameInputCell) {
+				 @Override
+				 public String getValue(Organization organization) {
+					 return organization.getName();
+				 }
+			 };
 		    
 		    nameColumn.setFieldUpdater(new FieldUpdater() {
 				@Override
@@ -208,14 +243,20 @@ public class OrganizationsForm extends Composite {
 		    Column<Organization,String> saveButtonColumn = createSaveButtonColumn(nameColumn);
 		    organizationsTable.addColumn(saveButtonColumn);
 		    
-		    // Add column to delete the organization
-		    Column<Organization, String> deleteOrganization = deleteOrganizationColumn();
-		    organizationsTable.addColumn(deleteOrganization);
+//		    // Add column to delete the organization
+//		    Column<Organization, String> deleteOrganization = deleteOrganizationColumn();
+//		    organizationsTable.addColumn(deleteOrganization);
 		    
 		    // Add column with edit properties button to save the value of the property
 		    Column<Organization,String> editProperpetiesColumn = createEditPropertiesColumn();
 		    organizationsTable.addColumn(editProperpetiesColumn);
 		    organizationsTable.addColumnStyleName(3, "gridOrganizationPropertyLargButtonColumn");
+		    
+		    // Add column with check properties button
+		    Column<Organization,String> checkPropertiesColumn = checkPropertiesColumn();
+		    organizationsTable.addColumn(checkPropertiesColumn);
+		    organizationsTable.addColumnStyleName(3, "gridOrganizationPropertyLargButtonColumn");
+		    
 		    // Add column with edit users button to edit the users belong to the organization selected by the user
 		    Column<Organization, String> editUsersColumn = createEditUsersColumn();
 		    organizationsTable.addColumn(editUsersColumn);
@@ -341,7 +382,6 @@ public class OrganizationsForm extends Composite {
 			public void onSuccess(final Organization organization) {
 				Window.setTitle(TAB_TITLE_ORGANIZATION);
 				Window.alert(MESSAGE_SAVED);
-				loadButton.click();
 			}
 		});
 		
@@ -389,19 +429,58 @@ public class OrganizationsForm extends Composite {
 	}
 	
 	
-	private Column<Organization, String> deleteOrganizationColumn(){
-		ButtonCell deleteOrganizationButton = new ButtonCell();
-		Column<Organization, String> deleteOrganizationButtonColumn = new Column<Organization,String>(deleteOrganizationButton){
+//	private Column<Organization, String> deleteOrganizationColumn(){
+//		ButtonCell deleteOrganizationButton = new ButtonCell();
+//		Column<Organization, String> deleteOrganizationButtonColumn = new Column<Organization,String>(deleteOrganizationButton){
+//			public String getValue(Organization organization){
+//				return "Delete"; //button name
+//			}
+//		};
+//		
+//		deleteOrganizationButtonColumn.setFieldUpdater(new FieldUpdater<Organization, String>() {
+//			@Override
+//			public void update(int index, Organization organization, String value) {
+//				// the user clicked on the button
+//				reviewerAdminService.deleteOrganization(organization, new AsyncCallback<Organization>() {
+//					@Override
+//					public void onFailure(final Throwable caught) {
+//						String message = EXCEPTION_ERROR_MESSSAGE;
+//						if (caught instanceof MessageException){
+//							message =  caught.getMessage();
+//						} else {
+//							message += caught.getMessage();
+//						}
+//						Window.setTitle(TAB_TITLE_ORGANIZATION);
+//						Window.alert(message);
+//					}
+//		
+//					@Override
+//					public void onSuccess(Organization organization) {
+//						organizations.remove(organization);
+//						Window.setTitle(TAB_TITLE_ORGANIZATION);
+//						Window.alert(MESSAGE_DELETED); 
+//						loadButton.click();
+//					}
+//				});
+//			}
+//		});
+//		return deleteOrganizationButtonColumn;
+//	}
+	
+	private Column<Organization,String> checkPropertiesColumn() {
+		
+		ButtonCell checkPropertiesButton = new ButtonCell();
+		Column<Organization, String> checkPropertiesButtonColumn = new Column<Organization,String>(checkPropertiesButton){
 			public String getValue(Organization organization){
-				return "Delete"; //button name
+				return "Check Properties"; //button name
 			}
 		};
 		
-		deleteOrganizationButtonColumn.setFieldUpdater(new FieldUpdater<Organization, String>() {
+		checkPropertiesButtonColumn.setFieldUpdater(new FieldUpdater<Organization, String>() {
 			@Override
 			public void update(int index, Organization organization, String value) {
 				// the user clicked on the button
-				reviewerAdminService.deleteOrganization(organization, new AsyncCallback<Organization>() {
+				reviewerAdminService.checkOrganizationProperties(organization, new AsyncCallback<Organization>() {
 					@Override
 					public void onFailure(final Throwable caught) {
 						String message = EXCEPTION_ERROR_MESSSAGE;
@@ -416,14 +495,13 @@ public class OrganizationsForm extends Composite {
 		
 					@Override
 					public void onSuccess(Organization organization) {
-						organizations.remove(organization);
 						Window.setTitle(TAB_TITLE_ORGANIZATION);
-						Window.alert(MESSAGE_DELETED); 
+						Window.alert(MESSAGE_PROPERTIES_OK); 
 						loadButton.click();
 					}
 				});
 			}
 		});
-		return deleteOrganizationButtonColumn;
-	}	
+		return checkPropertiesButtonColumn;
+	}
 }

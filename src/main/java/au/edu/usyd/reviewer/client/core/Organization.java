@@ -22,6 +22,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.server.OrganizationDao;
+import au.edu.usyd.reviewer.server.Reviewer;
 
 
 /**
@@ -55,6 +56,7 @@ public class Organization implements Serializable {
 	private Set<EmailOrganization> emails= new HashSet<EmailOrganization>();
 
 	private boolean deleted = false;
+	private boolean activated = false;
 	
 	public Organization(){
 	}
@@ -101,7 +103,15 @@ public class Organization implements Serializable {
 	public void setDeleted(boolean deteled) {
 		this.deleted = deteled;
 	}
-
+	
+	public boolean isActivated() {
+		return activated;
+	}
+	
+	public void setActivated(boolean activated){
+		this.activated = activated;
+	}
+	
 	/** End Getters and Setters **/
 
 	/**
@@ -202,6 +212,8 @@ public class Organization implements Serializable {
 			}
 		}
 		organization.setEmails(emailsOrganization);
+		organization.setDeleted(this.isDeleted());
+		organization.setActivated(this.isActivated());
 		return organization;
 	}
 	
@@ -222,19 +234,7 @@ public class Organization implements Serializable {
 		}
 		return value;
 	}
-	
-	@JsonIgnore
-	public  String getDocumentsHome() {
-		String value = getPropertyValue(Constants.REVIEWER_DOCUMENTS_HOME);
-		return value;
-	}
-	
-	@JsonIgnore
-	public  String getUploadsHome() {
-		String value = getPropertyValue(Constants.REVIEWER_UPLOADS_HOME);
-		return value;
-	}
-	
+		
 	@JsonIgnore
 	public  String getGoogleDomain() {
 		String value = getPropertyValue(Constants.REVIEWER_GOOGLE_DOMAIN);
@@ -264,12 +264,6 @@ public class Organization implements Serializable {
 		String value = getPropertyValue(Constants.REVIEWER_EMAIL_USERNAME);
 		return value;
 	}
-	
-	@JsonIgnore
-	public String getPrivateKeyPath() {
-		String value = getPropertyValue(Constants.REVIEWER_PRIVATE_KEY);
-		return value;
-	}
 
 	@JsonIgnore
 	public String getProperty(String property) {
@@ -277,23 +271,12 @@ public class Organization implements Serializable {
 		return value;
 	}
 
-	@JsonIgnore
-	public String getPublicKeyPath() {
-		String value = getPropertyValue(Constants.REVIEWER_PUBLIC_KEY);
-		return value;
-	}
-
-	@JsonIgnore
-	public String getEmptyFile() {
-		String value = getPropertyValue(Constants.REVIEWER_EMPTY_FILE);
-		return value;
-	}
 	
-	@JsonIgnore
-	public String getEmptyDocument() {
-		String value = getPropertyValue(Constants.REVIEWER_EMPTY_DOCUMENT);
-		return value;
-	}
+//	@JsonIgnore
+//	public String getEmptyDocument() { 
+//			getPropertyValue(Constants.REVIEWER_EMPTY_DOCUMENT);
+//		return value;
+//	}
 
 	@JsonIgnore
 	public String getSMTPHost(){
@@ -325,23 +308,6 @@ public class Organization implements Serializable {
 		return value;
 	}
 	
-	@JsonIgnore
-	public String getOrganizationLogoHome(){
-		String value = getPropertyValue(Constants.ORGANIZATION_LOGO_HOME);
-		return value;
-	}
-
-	@JsonIgnore
-	public String getImageLogo(){
-		String image = "";
-		String imagePath = getPropertyValue(Constants.ORGANIZATION_LOGO_HOME);
-		String imageFile = getPropertyValue(Constants.ORGANIZATION_LOGO_FILE);
-		if (imagePath != null && imageFile != null){
-			image = imagePath + imageFile;
-		}
-		return image;
-	}
-
 	public EmailOrganization getEmail(String name){
 		EmailOrganization result = null;
 		for(EmailOrganization email : getEmails()){

@@ -33,6 +33,8 @@ import com.google.gdata.data.appsforyourdomain.Name;
 import com.google.gdata.data.appsforyourdomain.provisioning.UserEntry;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
+import com.google.gdata.util.ServiceForbiddenException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,19 +84,21 @@ public class GoogleUserServiceImpl {
 				if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.EntityExists)) {
 					// continue
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserDeletedRecently)) {
-					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_USER_DELETED_RECENTLY);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_DELETED_RECENTLY + "\n" +  "Username: " + username );
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserSuspended)) {
-					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_USER_SUSPENDED);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_SUSPENDED + "\n" +  "Username: " + username);
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainUserLimitExceeded)) {
-					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_DOMAIN_USER_LIMIT_EXCEEDED);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_USER_LIMIT_EXCEEDED + "\n" + "Username: " + username);
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainSuspended)) {
-					throw new MessageException("Username: " + username + " - " + Constants.EXCEPTION_GOOGLE_DOMAIN_SUSPENDED);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_SUSPENDED + "\n" + "Username: " + username);
 				} else {
-					throw new MessageException ("Username: " + username + " - " + Constants.EXCEPTION_FAILED_CREATE_USER);
+					throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username);
 				}
-			} else {
+			} else if (e instanceof ServiceForbiddenException){
+				throw new  MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + e.getMessage());
+			} else  {
 				e.printStackTrace();
-				throw new MessageException ("Username: " + username + " - " + Constants.EXCEPTION_FAILED_CREATE_USER);
+				throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username);
 			}
     	}
         return entry;
@@ -118,7 +122,7 @@ public class GoogleUserServiceImpl {
 				} else {
 					throw new MessageException ("Username: " + username + " - " + Constants.EXCEPTION_FAILED_DELETE_USER);
 				}
-			} else {
+			}  else {
 				e.printStackTrace();
 				throw new MessageException ("Username: " + username + " - " + Constants.EXCEPTION_FAILED_DELETE_USER);
 			}

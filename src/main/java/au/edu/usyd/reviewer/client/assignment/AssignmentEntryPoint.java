@@ -1,13 +1,15 @@
-package au.edu.usyd.reviewer.client.assignment;
+	package au.edu.usyd.reviewer.client.assignment;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.ReviewerUtilService;
 import au.edu.usyd.reviewer.client.core.util.ReviewerUtilServiceAsync;
 import au.edu.usyd.reviewer.client.core.util.exception.CustomUncaughtExceptionHandler;
@@ -33,6 +35,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.TabPanel;
@@ -102,6 +105,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 	private  TabPanel documentsPanel; 
 	private  TabPanel reviewsPanel;
 	private FlexTable filterActivitiesGrid = new FlexTable();
+	private Command logoutCommand;
 	/** 
 	 * <p>Main method of the entry point that loads the panels for writing and reviewing activities as well as the instructor panel for lecturers and tutors. 
 	 * It also loads Year-Semester filter for the activities.</p>
@@ -114,13 +118,13 @@ public class AssignmentEntryPoint implements EntryPoint {
 		
 		// logout
 		// Add Logout command
-		Command logoutCommand = new Command(){
+		logoutCommand = new Command(){
 			public void execute() {
 				assignmentService.logout(new AsyncCallback<Void>(){
 					@Override
 					public void onFailure(Throwable caught) {
 						if (caught instanceof MessageException){
-							Window.alert(caught.getMessage());
+							processMessageException((MessageException)caught);
 						} else {
 							Window.alert("Logout failed" + caught.getMessage());
 						}
@@ -142,11 +146,10 @@ public class AssignmentEntryPoint implements EntryPoint {
 		headerTable.setSize("100%", "5%");
 		headerTable.setWidget(0, 0, new HTML ("<h1 "+cssH1Style +">ASSIGNMENTS LIS </h1>"));
 		headerTable.setWidget(0, 1, logoutMenu);
-		headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT, HasVerticalAlignment.ALIGN_MIDDLE);
+		headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
 		headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
 
 		//Assignment pages header
-//		mainPanel.add(new HTML("<h1 "+cssH1Style +" >ASSIGNMENTS LIST</h1></br>"));
 		RootPanel.get("mainPanel").add(headerTable);
 		mainPanel.add(new HTML("</br>"));
 		mainPanel.add(new HTML("<p "+cssTextStyle +" >This section of the website provides an environment for students and academics to manage their written assignments, and reviews. The assignment</br> submission system is based on Google Docs. </p></br>"));
@@ -200,7 +203,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 											@Override
 											public void onFailure(Throwable caught) {
 												if (caught instanceof MessageException){
-													Window.alert(caught.getMessage());
+													processMessageException((MessageException)caught);
 												} else {
 													Window.alert("Failed to update password, please verify your current password.");
 												}
@@ -260,15 +263,23 @@ public class AssignmentEntryPoint implements EntryPoint {
 		
 		mainPanel.add(userPanel);
 	
-		courseSemester.addItem("2", "2");
 		courseSemester.addItem("1", "1");
+		courseSemester.addItem("2", "2");
+		
+		Date today = new Date();
+		int month = today.getMonth();
+		if (month < 7) {
+			courseSemester.setSelectedIndex(0);
+		} else if (month > 6){
+			courseSemester.setSelectedIndex(1);
+		}
 				
 		// get Current year and 5 years ago
 		reviewerUtilService.getYears(new AsyncCallback<Collection<Integer>>(){
 			@Override
 			public void onFailure(Throwable caught) {
 				if (caught instanceof MessageException){
-					Window.alert(caught.getMessage());
+					processMessageException((MessageException)caught);
 				} else {
 					Window.alert("Failed get the years" + caught.getMessage());
 				}
@@ -277,7 +288,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 			@Override
 			public void onSuccess(Collection<Integer> years) {
 				setYearsPanel(years); 
-				refreshPanelButton.click();
+				refreshPanelButton.fireEvent(new ButtonClickEvent ());
 			}
 		});
 
@@ -305,7 +316,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 		activitiesPanel.add(instructorPanel, "Instructor Panel");
 		activitiesPanel.setWidth(panelWidth);
 		activitiesPanel.selectTab(0);
-		final HTML htmlAdminLink = new HTML("<br/><p "+cssTextStyle +" >As an Teacher user of the iWrite application, you can go to the Admin page and set up Writing Activities and Reviews. <a href='Admin.html'>Admin Page</a> </p></br>");
+		final HTML htmlAdminLink = new HTML("<br/><p "+cssTextStyle +" >As an Teacher user of the  application, you can go to the Admin page and set up Writing Activities and Reviews. <a href='Admin.html'>Admin Page</a> </p></br>");
 		
 		refreshPanelButton = new SubmitButton("Load activities", "Loading activities, please wait...", "Load");
         
@@ -396,11 +407,19 @@ public class AssignmentEntryPoint implements EntryPoint {
 
 		// activities panel	
 		RootPanel.get("mainPanel").add(mainPanel);
-//		refreshPanelButton.click();
+		
+		// click on Search button to load the assignments
+//		refreshPanelButton.fireEvent(new ButtonClickEvent ());
+	
 	}
 	
+
+	private class ButtonClickEvent extends ClickEvent{
+	        /*To call click() function for Programmatic equivalent of the user clicking the button.*/
+	}
 	
 	private void setYearsPanel(Collection<Integer> years){
+		Date today = new Date();
 		for (Integer year: years){
 			if (year != null){
 				courseYear.addItem(year.toString(),year.toString());
@@ -414,7 +433,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 			@Override
 			public void onFailure(Throwable caught) {
 				if (caught instanceof MessageException){
-					Window.alert(caught.getMessage());
+					processMessageException((MessageException)caught);
 				} else {
 					Window.alert("Failed get organizations: " + caught.getMessage());
 				}
@@ -460,4 +479,11 @@ public class AssignmentEntryPoint implements EntryPoint {
 	}
 	
 	class ListChangeEvent extends ChangeEvent {}
+	
+	private void processMessageException(MessageException me){
+		Window.alert(me.getMessage());
+		if (me.getStatusCode() == Constants.HTTP_CODE_LOGOUT){
+			logoutCommand.execute();
+		}
+	}
 }

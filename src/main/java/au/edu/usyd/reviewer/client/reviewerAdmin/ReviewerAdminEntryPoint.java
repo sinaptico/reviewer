@@ -2,7 +2,9 @@ package au.edu.usyd.reviewer.client.reviewerAdmin;
 
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.CustomUncaughtExceptionHandler;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 import com.google.gwt.core.client.EntryPoint;
 
@@ -13,14 +15,18 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
@@ -69,6 +75,8 @@ public class ReviewerAdminEntryPoint implements EntryPoint {
 	private User loggedUser = null;
 	/** panel for the logged user information **/
 	private VerticalPanel headerPanel = new VerticalPanel();
+	
+	private Command logoutCommand;
 	
 	@Override
 	public void onModuleLoad() {
@@ -139,9 +147,33 @@ public class ReviewerAdminEntryPoint implements EntryPoint {
 				}
 		);
 		
+		// Add Logout command
+		logoutCommand = new Command(){
+			public void execute() {
+				reviewerAdminService.logout(new AsyncCallback<Void>(){
+					@Override
+					public void onFailure(Throwable caught) {
+						if (caught instanceof MessageException){
+							processMessageException((MessageException) caught);
+						} else {
+							Window.alert("Logout failed" + caught.getMessage());
+						}
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						Window.Location.replace(GWT.getHostPageBaseURL()+"Admin.html");
+					}
+				});
+			}
+		};
+		
+		MenuBar logoutMenu = new MenuBar(true);
+		logoutMenu.addItem("Logout",logoutCommand);
+		
 		// By default show create organization form
 		menuTree.setSelectedItem(createOrganizationItem);
-		tabs.setPixelSize(650, 600);
+		tabs.setPixelSize(750, 600);
 		tabs.selectTab(0);
 
 		VerticalPanel contentPanel = new VerticalPanel();
@@ -166,11 +198,23 @@ public class ReviewerAdminEntryPoint implements EntryPoint {
 		mainPanel.add(contentDeco);
 		mainPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 
+		FlexTable headerTable = new FlexTable();
+		headerTable.setSize("100%", "5%");
+		headerTable.setWidget(0, 0, new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">REVIEWER ADMIN PAGE </h1>"));
+		headerTable.setWidget(0, 1, logoutMenu);
+		headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
+		headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
+		headerTable.setWidget(0, 1, logoutMenu);
+	
+		
 		VerticalPanel reviewerAdminPanel = new VerticalPanel();
-		reviewerAdminPanel.setSize("90%", "70%");
+		reviewerAdminPanel.setSize("100%", "70%");
 		reviewerAdminPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+		
+		reviewerAdminPanel.add(headerTable);
 		reviewerAdminPanel.add(headerPanel);
 		reviewerAdminPanel.add(mainPanel);
+		
 		RootPanel.get("reviewerAdminPanel").add(reviewerAdminPanel);
 		
 	}
@@ -178,16 +222,19 @@ public class ReviewerAdminEntryPoint implements EntryPoint {
 	
 	private void setLoggedUser(User user){
 		loggedUser = user;
-		headerPanel.add(new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">REVIEWER ADMIN PAGE </h1>" ));
+//		headerPanel.add(new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">REVIEWER ADMIN PAGE </h1>" ));
 		Organization organization = user.getOrganization();
 		VerticalPanel userPanel = new VerticalPanel();
-//		if (organization != null){
-//			String image = organization.getImageLogo();
-//			userPanel.add(new HTML ("<img src='"+ image +  "'/>" ));
-//		}
 		userPanel.add(new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName()));
 		userPanel.setStyleName("contentDeco");
+		userPanel.setSize("100%", "10%");
 		headerPanel.add(userPanel);
 	}
 
+	private void processMessageException(MessageException me){
+		Window.alert(me.getMessage());
+		if (me.getStatusCode() == Constants.HTTP_CODE_LOGOUT){
+			logoutCommand.execute();
+		}
+	}
 }

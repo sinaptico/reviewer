@@ -8,6 +8,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 /**
  * This class is used to encrypt and decrypt strings.
@@ -75,7 +76,7 @@ public class AESCipher {
             
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new Exception(Constants.EXCEPTION_ENCRYPT);
+			throw new MessageException(Constants.EXCEPTION_ENCRYPT);
 		}
 		return encryptedValue;
 	}
@@ -105,7 +106,7 @@ public class AESCipher {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new Exception(Constants.EXCEPTION_DECRYPT);
+			throw new MessageException(Constants.EXCEPTION_DECRYPT);
 		} 
 		
 		return decryptedValue;
