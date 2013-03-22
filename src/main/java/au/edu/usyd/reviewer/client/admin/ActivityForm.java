@@ -2,6 +2,7 @@ package au.edu.usyd.reviewer.client.admin;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import au.edu.usyd.reviewer.client.admin.glosser.SiteForm;
@@ -605,10 +606,29 @@ public class ActivityForm extends Composite {
 		groups.setEnabled(false);
 		startDate.setEnabled(false);
 		
-		// disabled deadlines but allow add new ones				
+		// Get minimum deadline date
+		Date date = null;
+		int iRow = 0;
 		for(int row=1; row<deadlineTable.getRowCount(); row++) {
 			for(int col=0;col<5;col++){
 				Widget widget = deadlineTable.getWidget(row, col);
+				if  ( widget instanceof DateBox){
+					DateBox dateBox = (DateBox)widget;
+					Date deadlineDate = dateBox.getValue();
+					if (date == null){
+						date = deadlineDate;
+						iRow = row;
+					} else if (deadlineDate != null && deadlineDate.before(date)){
+						date = deadlineDate;
+						iRow = row;
+					}
+				}
+			}
+		}
+		// disable the minimum deadlines row  but allow add new ones or modify the others
+		if (date != null){
+			for(int col=0;col<5;col++){
+				Widget widget = deadlineTable.getWidget(iRow, col);
 				if (widget instanceof FocusWidget){
 					FocusWidget focusWidget = (FocusWidget) widget;
 					focusWidget.setEnabled(false);
