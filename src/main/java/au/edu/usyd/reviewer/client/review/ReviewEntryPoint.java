@@ -123,6 +123,7 @@ public class ReviewEntryPoint implements EntryPoint {
 		final String cssH1Style = "STYLE='color: #CE1126; margin: 0 0 0 0; font-weight: normal; clear: left; font-size: 1.3em;'";
 
 		final HTML titleHTML = new HTML();
+		final HTML backHTML = new HTML();
 		final HTML firstStepTitle = new HTML ("<ul> <li "+cssTextStyle+"><b> Read the document. </b></li> </ul>");
 		final HTML thirdStepTitle = new HTML ("<ul> <li "+cssTextStyle+"><b> Write and save feedback. </b></li> </ul>");
 		final DecoratorPanel contentPanel = new DecoratorPanel();
@@ -151,7 +152,8 @@ public class ReviewEntryPoint implements EntryPoint {
 					WritingActivity writingActivity = course.getWritingActivities().iterator().next();
 					DocEntry docEntry = writingActivity.getEntries().iterator().next();
 					final Review review = docEntry.getReviews().iterator().next();
-					titleHTML.setHTML("<h1>"+ course.getName() +" - Review of "+ writingActivity.getName() + "</h1>");
+					titleHTML.setHTML("<h1>"+ course.getName() +" - Review of "+ writingActivity.getName() + "</h1></br>");
+					backHTML.setHTML("<a href='Assignments.html'><< Back to the Assignments List</a></br>");
 					
 					if (review instanceof QuestionReview) {
 						reviewForm = new QuestionReviewForm();
@@ -259,8 +261,8 @@ public class ReviewEntryPoint implements EntryPoint {
 					Review review = reviewEntry.getReview();
 					final DocEntry docEntry = reviewEntry.getDocEntry();						
 					//StyleLib.longDateFormat(writingActivity.getReviewingActivities().get(0).getFinishDate())										
-					titleHTML.setHTML("<h1 "+cssH1Style+">YOU ARE NOW REVIEWING: " + writingActivity.getName().toUpperCase() + "</h1> <a href='Assignments.html'><< Back to the Assignments List</a></br></br> "+"Deadline: "+StyleLib.dueDateFormat(reviewingActivity.getFinishDate())+"</br></br>");
-					
+					titleHTML.setHTML("<h1 "+cssH1Style+">YOU ARE NOW REVIEWING: " + writingActivity.getName().toUpperCase() + "</h1>"); 
+					backHTML.setHTML("<a href='Assignments.html'><< Back to the Assignments List</a></br></br> "+"Deadline: "+StyleLib.dueDateFormat(reviewingActivity.getFinishDate())+"</br></br>");
 					//final ReviewForm<?> reviewForm;
 					if (review instanceof QuestionReview) {
 						reviewForm = new QuestionReviewForm();
@@ -704,7 +706,8 @@ public class ReviewEntryPoint implements EntryPoint {
 
 		VerticalPanel menuPanel = new VerticalPanel();
 		menuPanel.setWidth("100%");
-		menuPanel.add(titleHTML);		
+		menuPanel.add(titleHTML);
+		menuPanel.add(backHTML);
 		menuPanel.add(docLinkPanel);		
 		
 		VerticalPanel gradePanel = new VerticalPanel();
