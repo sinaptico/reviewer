@@ -50,6 +50,8 @@ public class FileServlet extends HttpServlet {
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		ServletOutputStream out = null;
+		DataInputStream in = null;
 		try {
 			initialize(request);
 		
@@ -121,7 +123,7 @@ public class FileServlet extends HttpServlet {
 			
 			// serve file
 			if ((file != null)) {
-				ServletOutputStream out = response.getOutputStream();
+				out = response.getOutputStream();
 				if (file.exists() && (filename != null)) {
 					response.setContentType("application/octet-stream");
 					response.setHeader("Content-Disposition", "attachment; filename=\"" + FileUtil.escapeFilename(filename) + "\"");			
@@ -129,7 +131,7 @@ public class FileServlet extends HttpServlet {
 					logger.info("Serving file: " + file.getAbsolutePath());
 					int length = 0;
 					byte[] bbuf = new byte[1024];
-					DataInputStream in = new DataInputStream(new FileInputStream(file));
+					in = new DataInputStream(new FileInputStream(file));
 					while ((in != null) && ((length = in.read(bbuf)) != -1)) {
 						out.write(bbuf, 0, length);
 					}
@@ -142,7 +144,7 @@ public class FileServlet extends HttpServlet {
 //					logger.info("Serving empty file: " + file.getAbsolutePath());
 					int length = 0;
 					byte[] bbuf = new byte[1024];
-					DataInputStream in = new DataInputStream(new FileInputStream(file));
+					in = new DataInputStream(new FileInputStream(file));
 					while ((in != null) && ((length = in.read(bbuf)) != -1)) {
 						out.write(bbuf, 0, length);
 					}
@@ -152,6 +154,16 @@ public class FileServlet extends HttpServlet {
 				out.close();
 			}
 		} catch (Exception e) {
+			try{
+				if (out != null){
+					out.close();
+				}
+				if (in != null){
+					in.close();
+				}
+			} catch(Exception closeException){
+				e.printStackTrace();
+			}
 			e.printStackTrace();
 			throw new ServletException(e.getMessage());
 		}
@@ -269,12 +281,11 @@ public class FileServlet extends HttpServlet {
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
 	private void initialize(HttpServletRequest request) throws Exception{
-		if (user == null){
-			user = getUser(request);
-			organization = user.getOrganization();
-			UPLOAD_DIRECTORY = Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getUploadsHome();	
-			EMPTY_FILE = Reviewer.getOrganizationsHome() + organization.getName() + Reviewer.getUploadsHome() + Reviewer.getEmptyDocument();
-		} 
+		user = getUser(request);
+		organization = user.getOrganization();
+		UPLOAD_DIRECTORY = Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getUploadsHome();	
+		EMPTY_FILE = Reviewer.getOrganizationsHome() + organization.getName() + Reviewer.getUploadsHome() + Reviewer.getEmptyDocument();
+		 
 		if (assignmentManager == null){
 			assignmentManager = Reviewer.getAssignmentManager();
 			assignmentDao = assignmentManager.getAssignmentDao();

@@ -158,6 +158,8 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	
 
 	public void logout() throws Exception{
+		user = null;
+		organization = null;
 		ConnectionUtil.logout(this.getThreadLocalRequest());
 	}
 	

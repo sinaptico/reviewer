@@ -991,6 +991,7 @@ public class AdminEntryPoint implements EntryPoint {
 			}
 		});
 		tabs.selectTab(0);
+		nodePanel.clear();
 	}
 	
 	// verify if the logged user enters an email or a username
