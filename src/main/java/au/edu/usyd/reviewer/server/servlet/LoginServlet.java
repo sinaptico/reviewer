@@ -19,7 +19,7 @@ public class LoginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 //	private DigitalSigner digitalSigner = Reviewer.getDigitalSigner();
-		
+
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
@@ -28,7 +28,7 @@ public class LoginServlet extends HttpServlet {
 			// tomcat sso login
 			email = request.getUserPrincipal().getName();
 		} else {
-			
+
 		}
 
 		if (email != null) {
