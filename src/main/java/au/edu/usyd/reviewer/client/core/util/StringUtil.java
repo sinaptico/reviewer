@@ -102,4 +102,12 @@ public class StringUtil {
 		}
 		return csv;
 	}
+	
+	public static boolean stringToBool(String s) {
+		if (s.equals(Constants.SHIBBOLETH_ENABLED_YES)){
+			return true;
+		} else { //if (s.equals("0"))
+		    return false;
+		}
+	}
 }

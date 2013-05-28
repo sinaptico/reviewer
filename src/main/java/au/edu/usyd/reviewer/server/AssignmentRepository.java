@@ -173,8 +173,9 @@ public class AssignmentRepository {
 	}
 
 	// ServiceException, IOException 
-	public User createUser(User user) throws MessageException{
-		googleUserServiceImpl.createUser(user.getUsername(), user.getFirstname(), user.getLastname(), "Changeme" + user.getUsername() + "!");
+	public User createUser(User user,String password) throws MessageException{
+		//googleUserServiceImpl.createUser(user.getUsername(), user.getFirstname(), user.getLastname(), "Changeme" + user.getUsername() + "!");
+		googleUserServiceImpl.createUser(user.getUsername(), user.getFirstname(), user.getLastname(), password);
 		return user;
 	}
 	

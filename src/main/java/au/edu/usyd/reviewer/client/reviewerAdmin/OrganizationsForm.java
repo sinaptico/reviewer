@@ -242,11 +242,7 @@ public class OrganizationsForm extends Composite {
 		    // Add column with save button to save the value of the property
 		    Column<Organization,String> saveButtonColumn = createSaveButtonColumn(nameColumn);
 		    organizationsTable.addColumn(saveButtonColumn);
-		    
-//		    // Add column to delete the organization
-//		    Column<Organization, String> deleteOrganization = deleteOrganizationColumn();
-//		    organizationsTable.addColumn(deleteOrganization);
-		    
+		    		    
 		    // Add column with edit properties button to save the value of the property
 		    Column<Organization,String> editProperpetiesColumn = createEditPropertiesColumn();
 		    organizationsTable.addColumn(editProperpetiesColumn);
@@ -304,8 +300,8 @@ public class OrganizationsForm extends Composite {
 	    saveButtonColumn.setFieldUpdater(new FieldUpdater<Organization, String>() {
 	    	@Override
 	    	public void update(int index, final Organization organization, String value) {
-	    		final String name = newOrganizationName;
-	    	    // verify if the organization name entered by the is empty
+	    		final String name = organization.getName();
+	    		// verify if the organization name entered by the is empty
 	    		if (!StringUtil.isBlank(name)){
 	    			organization.setName(name);
 	    			saveOrganization(organization);

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.List;
 
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Property;
@@ -276,5 +277,33 @@ public class OrganizationDao extends ObjectDao{
 			throw new MessageException(Constants.EXCEPTION_GET_ORGANIZATIONS);
 		}
 		return organizations;
+	}
+	
+	
+	public Organization getOrganizationByDomain(String domain) throws MessageException{
+		Organization organization = null;
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			String sQuery = "SELECT DISTINCT organization FROM Organization organization "+
+							"LEFT JOIN FETCH organization.emailDomain emailDomain " +
+							"WHERE emailDomain=:domain";
+			Query query= session.createQuery(sQuery);
+			if (domain!=null){
+				query.setParameter("domain", domain.toLowerCase());
+			}
+			organization = (Organization) query.uniqueResult();
+			if (organization != null){
+				organization = organization.clone();
+			}
+			return organization;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_ORGANIZATION);
+		}
 	}
 }

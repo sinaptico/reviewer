@@ -546,23 +546,22 @@ public class AssignmentManager {
 	}
 	
 	private void saveStudentUsers(Course course) throws Exception {
-		
+		Organization organization = course.getOrganization();
 		for (UserGroup studentGroup : course.getStudentGroups()) {
 			for (User student : studentGroup.getUsers()) {
 				// search student by email so it's no necessary get it by organization because the email is unique
 				User user = userDao.getUserByEmail(student.getEmail());
 				if (user == null) {
 					if (student.getOrganization() == null){
-						student.setOrganization(course.getOrganization());
+						student.setOrganization(organization);
 					}
-					if ( student.getDomain() != null && student.getOrganization() != null && 
-							student.getOrganization().getGoogleDomain()!= null &&
-							student.getDomain().toLowerCase().equals(student.getOrganization().getGoogleDomain().toLowerCase())){	
-						assignmentRepository.createUser(student);
+					if (student.getDomain() != null && student.getOrganization() != null && 
+						student.getOrganization().domainBelongsToEmailsDomain(student.getDomain())){	
+						assignmentRepository.createUser(student,organization.getOrganizationPasswordNewUsers() + student.getUsername());
 					} else {
 						throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN);
 					}
-				} else{
+				} else {
 					student.setId(user.getId());
 				}
 				
@@ -571,20 +570,19 @@ public class AssignmentManager {
 	}
 	
 	private void saveLecturerUsers(Course course) throws Exception{
-		
+		Organization organization = course.getOrganization();
 		for (User lecturer : course.getLecturers()) {
 			User user = userDao.getUserByEmail(lecturer.getEmail());
 			if (user == null) {
 				if ( lecturer.getOrganization() == null){
-					lecturer.setOrganization(course.getOrganization());
+					lecturer.setOrganization(organization);
 				}
 				lecturer.addRole(Constants.ROLE_ADMIN);
 				lecturer.addRole(Constants.ROLE_GUEST);	
 				lecturer.setWasmuser(false);
-				if (lecturer.getDomain() != null &&  lecturer.getOrganization() != null && 
-						lecturer.getOrganization().getGoogleDomain() != null &&
-						lecturer.getDomain().toLowerCase().equals(lecturer.getOrganization().getGoogleDomain().toLowerCase())){	
-					assignmentRepository.createUser(lecturer);
+				if (lecturer.getDomain() != null && lecturer.getOrganization() != null && 
+						lecturer.getOrganization().domainBelongsToEmailsDomain(lecturer.getDomain())){
+					assignmentRepository.createUser(lecturer,organization.getOrganizationPasswordNewUsers()+lecturer.getUsername());
 				} else {
 					throw new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
 				}
@@ -595,20 +593,20 @@ public class AssignmentManager {
 	}
 	
 	private void saveTutorUsers(Course course) throws Exception {
-		
+		Organization organization = course.getOrganization();
 		for (User tutor : course.getTutors()) {
 			User user = userDao.getUserByEmail(tutor.getEmail());
 			if (user == null) {
 				if ( tutor.getOrganization() == null){
-					tutor.setOrganization(course.getOrganization());
+					tutor.setOrganization(organization);
 				}
 				tutor.addRole(Constants.ROLE_ADMIN);					
 				tutor.addRole(Constants.ROLE_GUEST);
 				tutor.setWasmuser(false);
 				if (tutor.getDomain() != null && tutor.getOrganization() != null && 
 						tutor.getOrganization().getGoogleDomain()!= null &&
-						tutor.getDomain().toLowerCase().equals(tutor.getOrganization().getGoogleDomain().toLowerCase())){
-					assignmentRepository.createUser(tutor);
+						tutor.getOrganization().domainBelongsToEmailsDomain(tutor.getDomain())){
+					assignmentRepository.createUser(tutor,organization.getOrganizationPasswordNewUsers()+tutor.getUsername());
 				} else {
 					throw new MessageException(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
 				}	
@@ -619,62 +617,86 @@ public class AssignmentManager {
 	}
 	
 	private void saveLecturerDB(Course course) throws Exception{
+		Organization organization = course.getOrganization();
 		for(User lecturer : course.getLecturers()) {
 			User user = userDao.getUserByEmail(lecturer.getEmail());
 			if(user == null){
 				//send password notification if not a wasm user
-				if (!lecturer.getWasmuser()){
-					emailNotifier.sendPasswordNotification(lecturer, course); 
-					lecturer.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
+				if (!lecturer.getWasmuser() && organization!= null){
+					if (!organization.isShibbolethEnabled()){
+						emailNotifier.sendPasswordNotification(lecturer, course);
+						lecturer.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
+					} else {
+						lecturer.setPassword(null);
+					}
 				}
 				if (lecturer.getOrganization() == null){
-					lecturer.setOrganization(course.getOrganization());
+					lecturer.setOrganization(organization);
 				}
 				lecturer.addRole(Constants.ROLE_ADMIN);
 				lecturer.addRole(Constants.ROLE_GUEST);
 				userDao.save(lecturer);
 			} else {
+				if (!lecturer.isAdmin()){
+					lecturer.addRole(Constants.ROLE_ADMIN);
+					userDao.save(lecturer);
+				}
 				lecturer.setId(user.getId());
 			}
 		}
 	}
 	
 	private void saveTutorDB(Course course) throws Exception {
+		Organization organization = course.getOrganization();
 		for(User tutor : course.getTutors()) {
 			User user = userDao.getUserByEmail(tutor.getEmail());
 			if(user == null){
-				//send password notification if not a wasm user
-				if (!tutor.getWasmuser()){					
-					emailNotifier.sendPasswordNotification(tutor, course);
-					tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
+				//send password notification if not a wasm user or the organization use shibboleht
+				if (!tutor.getWasmuser() && organization!= null ){					
+					if (!organization.isShibbolethEnabled()){
+						emailNotifier.sendPasswordNotification(tutor, course);
+						tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
+					} else{
+						tutor.setPassword(null);
+					}
 				}				
 				if (tutor.getOrganization() == null){
-					tutor.setOrganization(course.getOrganization());
+					tutor.setOrganization(organization);
 				}
 				tutor.addRole(Constants.ROLE_ADMIN);
 				tutor.addRole(Constants.ROLE_GUEST);
 				userDao.save(tutor);	
 			} else {
+				if (!tutor.isAdmin()){
+					tutor.addRole(Constants.ROLE_ADMIN);
+					userDao.save(tutor);
+				}
 				tutor.setId(user.getId());
 			}
 		}
 	}
 	
 	private void saveUserGroupDB(Course course)throws Exception{
+		Organization organization = course.getOrganization();
 		for(UserGroup studentGroup : course.getStudentGroups()) {
 			for(User student : studentGroup.getUsers()) {
 				User user = userDao.getUserByEmail(student.getEmail());
 				if(user == null){
 					//send password notification if not a wasm user
-					if (!student.getWasmuser()){
-						emailNotifier.sendPasswordNotification(student, course);
-						student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
+					if (!student.getWasmuser() && organization!= null){
+						if (!organization.isShibbolethEnabled()){
+							emailNotifier.sendPasswordNotification(student, course);
+							student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
+						} else {
+							student.setPassword(null);
+						}
 					}	
 					if (student.getOrganization() == null){
-						student.setOrganization(course.getOrganization());
+						student.setOrganization(organization);
 					}
 					student = userDao.save(student);
 				} else {
+					
 					student.setId(user.getId());
 				}
 			}
@@ -1431,7 +1453,7 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public void saveLecturers(Course course, List<User> lecturers, User loggedUser) throws Exception {
-		
+		Organization organization = course.getOrganization();
 		for (User lecturer : lecturers) {
 			lecturer.setOrganization(course.getOrganization());
 			// search the lecturer in the database
@@ -1443,7 +1465,7 @@ public class AssignmentManager {
 				if (lecturer.getDomain() != null &&  lecturer.getOrganization() != null && 
 						lecturer.getOrganization().getGoogleDomain() != null &&
 						lecturer.getDomain().toLowerCase().equals(lecturer.getOrganization().getGoogleDomain().toLowerCase())){	
-					assignmentRepository.createUser(lecturer);
+					assignmentRepository.createUser(lecturer,organization.getOrganizationPasswordNewUsers()+lecturer.getUsername());
 				} else {
 					MessageException me = new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
 					me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
@@ -1451,9 +1473,13 @@ public class AssignmentManager {
 				}
 				
 				//send password notification if not a wasm user
-				if (!lecturer.getWasmuser()){
-					emailNotifier.sendPasswordNotification(lecturer, course);
-					user.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
+				if (!lecturer.getWasmuser() && organization!= null){
+					if (!organization.isShibbolethEnabled()){
+						emailNotifier.sendPasswordNotification(lecturer, course);
+						user.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
+					} else {
+						user.setPassword(null);
+					}
 				}
 				
 				// save the lecturer in the database
@@ -1486,7 +1512,7 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public void saveTutors(Course course, List<User> tutors, User loggedUser) throws Exception {
-		
+		Organization organization = course.getOrganization();
 		for (User tutor : course.getTutors()) {
 			tutor.setOrganization(course.getOrganization());
 			// search the tutor in the database
@@ -1497,15 +1523,19 @@ public class AssignmentManager {
 				if (tutor.getDomain() != null && tutor.getOrganization() != null && 
 						tutor.getOrganization().getGoogleDomain()!= null &&
 						tutor.getDomain().toLowerCase().equals(tutor.getOrganization().getGoogleDomain().toLowerCase())){
-					assignmentRepository.createUser(tutor);
+					assignmentRepository.createUser(tutor, organization.getOrganizationPasswordNewUsers() + tutor.getUsername());
 				} else {
 					throw new MessageException(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
 				}
 				
 				//send password notification if not a wasm user
-				if (!tutor.getWasmuser()){					
-					emailNotifier.sendPasswordNotification(tutor, course);
-					tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
+				if (!tutor.getWasmuser() && organization!= null ){
+					if (!organization.isShibbolethEnabled()){
+						emailNotifier.sendPasswordNotification(tutor, course);
+						tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
+					} else {
+						tutor.setPassword(null);
+					}
 				}
 				// save tutor into the database
 				userDao.save(tutor);
@@ -1685,7 +1715,7 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public void saveStudentsGroup(Course course, Set<User> students, String group, String tutorial) throws Exception {
-				
+		Organization organization = course.getOrganization();
 		if (!course.getTutorials().contains(tutorial)) {
 			throw new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL + Constants.MESSAGE_STUDENTS_TUTORIAL);
 		}
@@ -1702,7 +1732,7 @@ public class AssignmentManager {
 				if ( student.getDomain() != null && student.getOrganization() != null && 
 						student.getOrganization().getGoogleDomain()!= null &&
 						student.getDomain().toLowerCase().equals(student.getOrganization().getGoogleDomain().toLowerCase())){	
-					assignmentRepository.createUser(student);
+					assignmentRepository.createUser(student,organization.getOrganizationPasswordNewUsers()+student.getUsername());
 				} else {
 					throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN);
 				}
@@ -1710,17 +1740,21 @@ public class AssignmentManager {
 				// wasmuser is true only for Sydney University students
 				student.setWasmuser(false);
 		
-				// Generate a ramdom password
-				student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+				// Generate a ramdom passw
+				if (organization!= null){
+					if (!organization.isShibbolethEnabled()){
+						student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+						// send email notification with password
+						emailNotifier.sendPasswordNotification(student, course);
+						// encrypt the password with MD5
+						student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
+					} else {
+						student.setPassword(null);
+					}
+				}
 				
 				// Students have Guest role
 				student.getRole_name().add(Constants.ROLE_GUEST);
-				
-				// send email notivication with password
-				emailNotifier.sendPasswordNotification(student, course);
-				
-				// encrypt the password with MD5
-				student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
 				
 				// save the user in the database
 				student = userDao.save(student);

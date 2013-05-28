@@ -17,17 +17,19 @@ public class Constants {
 	public static String AGG_INSERT_TO_EXCEL_PATH="aqg.insertToExcelPath";
 
 	/** Organizations properties **/
-	public static String REVIEWER_EMAIL_USERNAME="reviewer_email_username";
-	public static String REVIEWER_EMAIL_PASSWORD="reviewer_email_password";
-	public static String REVIEWER_GOOGLE_USERNAME="revierwer_google_username";
-	public static String REVIEWER_GOOGLE_PASSWORD ="reviewer_google_password";
-	public static String REVIEWER_GOOGLE_DOMAIN ="reviewer_google_domain";
+	public static String REVIEWER_EMAIL_USERNAME="reviewer.email.username";
+	public static String REVIEWER_EMAIL_PASSWORD="reviewer.email.password";
+	public static String REVIEWER_GOOGLE_USERNAME="reviewer.google.username";
+	public static String REVIEWER_GOOGLE_PASSWORD ="reviewer.google.password";
+	public static String REVIEWER_GOOGLE_DOMAIN ="reviewer.google.domain";
 	public static String REVIEWER_SMTP_HOST ="reviewer.smtp.host";
 	public static String REVIEWER_SMTP_PORT = "reviewer.smtp.port";
 	public static String REVIEWER_GLOSSER_HOST = "reviewer.glosser.host";
 	public static String REVIEWER_GLOSSER_PORT ="reviewer.glosser.port";
 	public static String ORGANIZATION_LOGO_FILE = "organization.logo.file";
 	public static String REVIEWER_DOMAIN="reviewer.domain";
+	public static String ORGANIZATION_SHIBBOLETH_ENABLED="organization.shibboleht.enabled";
+	public static String ORGANIZATION_PASSWORD_NEW_USERS="organization.password.new.users";
 	
 		
 	/** Exception messages to the user  **/
@@ -54,7 +56,7 @@ public class Constants {
 	public static String EXCEPTION_FAILED_INITIALIZE_ASSIGNMENT_MANAGER = "Failed to initialize assignment manager";
 	public static String EXCEPTION_ACTIVITY_NOT_SAVED_GOOGLE_COURSE_NOT_EXIST="The activity could not be create because the course doesn't exist in Google Docs";
 	public static String EXCEPTION_GOOGLE_AUTHENTICATION_ ="You are not authorized to work with this document in Google Docs";
-	public static String EXCEPTION_GET_LOGGED_USER="There was an error obtaining the logged user information";
+	public static String EXCEPTION_GET_LOGGED_USER="Failed to get the logged user information";
 	public static String EXCEPTION_ACTIVITY_NOT_FINISHED ="The activity wasn't finished because the file doesn't exist.";
 	public static String EXCEPTION_ENCRYPT="Failed to encrypt the value";
 	public static String EXCEPTION_DECRYPT="Failed to decrypt the value";
@@ -259,6 +261,7 @@ public class Constants {
 	public static String EXCEPTION_FAILED_DELETE_USER="Failed to delete user";
 	public static String EXCEPTION_FAILED_RETRIEVE_USER="Failed to retrieve user";
 	public static String EXCEPTION_GOOGLE_DOWNLOAD_FILE="Could not download file %s of type: %s";
+	public static String EXCEPTION_GOOGLE_APPS="Google Apps message ";
 	
 	// Google Document Types
 	public static String GOOGLE_DOCUMENT_TYPE_PDF = "pdf";
@@ -274,5 +277,12 @@ public class Constants {
 	public static String GOOGLE_EXPORT_TYPE_PNG="png";
 	public static String GOOGLE_EXPORT_TYPE_PDF="pdf";
 	public static String GOOGLE_EXPORT_TYPE_HTML="html";
+
 	
+	// Shibboleth enabled property values
+	public static String SHIBBOLETH_ENABLED_YES="YES";
+	public static String SHIBBOLETH_ENABLED_NO="NO";
+	
+	// Default password of new users in Google Apps
+	public static String NEW_USERS_PASSWORD_DEFAULT_VALUE="Changeme";
 }

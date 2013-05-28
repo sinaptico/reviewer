@@ -150,45 +150,47 @@ public class EditPropertiesForm extends Composite {
 	    		// The user clicked on the button 
 	    		// there is not an organization with the same name
 	    		final String oldValue = property.getValue();
-	    		
-	    		if (!StringUtil.isBlank(newPropertyValue) ){
-	    			property.setValue(newPropertyValue);
+	    		if (newPropertyValue == null){
+	    			newPropertyValue = oldValue;
+	    		}
+	    		property.setValue(newPropertyValue);
+	    		if (!StringUtil.isBlank(property.getValue()) ){
 	    			reviewerAdminService.saveOrganizationProperty(property, new AsyncCallback<OrganizationProperty>(){
-						@Override
-						public void onFailure(Throwable caught) {
-							String message = EXCEPTION_ERROR_MESSSAGE;
-							if (caught instanceof MessageException){
-								message = caught.getMessage();
-							} else {
-								message += caught.getMessage();
-							}
-							String name = "";
-							if (property != null && property.getProperty() != null){
-								name = " " + property.getProperty().getName();
-							}
-							Window.setTitle(TAB_TITLE_PROPERTY + name);
-							Window.alert(message);
-							property.setValue(oldValue);
-						}
-		
-						@Override
-						public void onSuccess(OrganizationProperty property) {
-							String name = "";
-							if (property != null && property.getProperty() != null){
-								name = " " + property.getProperty().getName();
-							}
-							Window.setTitle(TAB_TITLE_PROPERTY + name);
-							Window.alert(MESSAGE_SAVED);
-						}
-					});
+	    				@Override
+	   					public void onFailure(Throwable caught) {
+	   						String message = EXCEPTION_ERROR_MESSSAGE;
+	   						if (caught instanceof MessageException){
+	    						message = caught.getMessage();
+	    					} else {
+	    						message += caught.getMessage();
+	    					}
+	   						String name = "";
+	    					if (property != null && property.getProperty() != null){
+	    						name = " " + property.getProperty().getName();
+	    					}
+	    					Window.setTitle(TAB_TITLE_PROPERTY + name);
+	    					Window.alert(message);
+	    					property.setValue(oldValue);
+	    				}
+	
+    					@Override
+	    				public void onSuccess(OrganizationProperty property) {
+	    					String name = "";
+	    					if (property != null && property.getProperty() != null){
+	    						name = " " + property.getProperty().getName();
+	   						}
+	   						Window.setTitle(TAB_TITLE_PROPERTY + name);
+	   						Window.alert(MESSAGE_SAVED);
+	    				}
+	    			});
 	    		} else {
 	    			String name = "";
-	    			if (property != null && property.getProperty() != null){
-						name = " " + property.getProperty().getName();
-					}
-	    			Window.setTitle(TAB_TITLE_PROPERTY + name);
-	    			Window.alert(MESSAGE_NAME_EMPTY);
-	    		}
+	   				if (property != null && property.getProperty() != null){
+	   					name = " " + property.getProperty().getName();
+	   				}	
+	   				Window.setTitle(TAB_TITLE_PROPERTY + name);
+	   				Window.alert(MESSAGE_NAME_EMPTY);
+	   			}
 	    	}
 	    });
 	    return saveButtonColumn;

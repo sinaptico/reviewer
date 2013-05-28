@@ -143,9 +143,9 @@ public class AssignmentServiceImpl extends ReviewerServiceImpl implements Assign
 		return organizations;
 	}
 	
-	public void logout() throws Exception{
-
-		ConnectionUtil.logout(this.getThreadLocalRequest());
-	}
+//	public void logout() throws Exception{
+//
+//		ConnectionUtil.logout(this.getThreadLocalRequest());
+//	}
 }
 	

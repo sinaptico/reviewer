@@ -123,10 +123,6 @@ public class User implements Serializable {
 	public String getUsername() {
 		String usernameResult = null;
 		if ( username == null && this.email != null){
-//			String  expression="^[_a-z0-9-]+(\\.[_a-z0-9-]+)*"; 
-//			Pattern pattern = Pattern.compile(expression,Pattern.CASE_INSENSITIVE); 
-//			Matcher matcher = pattern.matcher(email);
-//			username = matcher.group(0);
 			String email = getEmail();
 			int i = email.indexOf("@");
 			if ( i > 0){
@@ -312,9 +308,15 @@ public class User implements Serializable {
 	}
 	
 	public String getDomain(){
+		String domain = null;
 		String email = getEmail();
-		int i = email.indexOf("@");
-		String domain = email.substring(i+1,email.length());
+		if (email !=  null){
+			int i = email.indexOf("@");
+			domain = email.substring(i+1,email.length());
+			if (domain != null){
+				domain = domain.toLowerCase();
+			}
+		}
 		return domain;
 	}
 	

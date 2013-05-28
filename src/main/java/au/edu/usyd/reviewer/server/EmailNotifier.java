@@ -161,7 +161,7 @@ public class EmailNotifier {
 	}	
 	
 	private String getReviewerLinkForUser() {	
-		return "http://"+reviewerDomain+"/reviewer/Assignments.html";
+		return "https://"+reviewerDomain+"/reviewer/Assignments.html";
 	}
 	
 	public void setProperties(Properties properties) {

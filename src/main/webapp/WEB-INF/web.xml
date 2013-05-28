@@ -165,13 +165,17 @@
 		</auth-constraint>
 	</security-constraint> 
 	<login-config>
-		<!--auth-method>BASIC</auth-method-->     
+		<realm-name>iWrite</realm-name>
 		<auth-method>FORM</auth-method>
-		<realm-name>iWrite</realm-name>        
+		<!-- <auth-method>BASIC</auth-method> -->
 		<form-login-config>
 			<form-login-page>/Login.jsp</form-login-page>
 			<form-error-page>/Login.jsp?error=true</form-error-page>
-		</form-login-config>
+		</form-login-config> 
+		<!-- <form-login-config>
+			<form-login-page>/Login.html</form-login-page>
+			<form-error-page>/Login.html</form-error-page>
+		</form-login-config> -->
 	</login-config>
 	<security-constraint>
 		<web-resource-collection>

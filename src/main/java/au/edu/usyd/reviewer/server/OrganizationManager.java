@@ -169,6 +169,15 @@ public class OrganizationManager {
 		ReviewerProperty organizationLogoFile = propertyDao.load(Constants.ORGANIZATION_LOGO_FILE);
 		organization.addProperty(organizationLogoFile, null);
 		
+		ReviewerProperty organizationShibbolethEnabled = propertyDao.load(Constants.ORGANIZATION_SHIBBOLETH_ENABLED);
+		organization.addProperty(organizationShibbolethEnabled, Constants.SHIBBOLETH_ENABLED_NO);
+		
+		ReviewerProperty organizationPasswordNewUsers = propertyDao.load(Constants.ORGANIZATION_PASSWORD_NEW_USERS);
+		organization.addProperty(organizationPasswordNewUsers, Constants.NEW_USERS_PASSWORD_DEFAULT_VALUE);
+		
+		ReviewerProperty reviewerDomain = propertyDao.load(Constants.REVIEWER_DOMAIN);
+		organization.addProperty(reviewerDomain, null);
+		
 		return organization;
 	}
 
@@ -392,6 +401,15 @@ public class OrganizationManager {
 			}
 		}
 		
+		value = organization.getReviewerDomain();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_DOMAIN;
+			} else {
+				message = Constants.REVIEWER_DOMAIN;
+			}
+		}
+		
 		if (!StringUtil.isBlank(message)){
 			propertiesOK = false;
 			throw new MessageException(Constants.EXCEPTION_ORGANIZATION_PROPERTIES + "\n" + message);
@@ -429,7 +447,8 @@ public class OrganizationManager {
 			String domain = organization.getGoogleDomain();
 			String smtpHost = organization.getSMTPHost();
 			String smtpPort = organization.getSMTPPort();
-			String reviewerDomain = Reviewer.getReviewerDomain();
+			//String reviewerDomain = Reviewer.getReviewerDomain();
+			String reviewerDomain = organization.getReviewerDomain();
 			AESCipher aesCipher = AESCipher.getInstance();
 			String decryptedValue = aesCipher.decrypt(password);
 			EmailNotifier emailSender = new EmailNotifier(username, password, smtpHost, smtpPort, domain,reviewerDomain);
@@ -449,5 +468,15 @@ public class OrganizationManager {
 			}
 		}
 		return anOrganization;
+	}
+	
+	/**
+	 * This method return the organization whose domain is equal to the domain received as parameter
+	 * @param domain domain of the organization to look for
+	 * @return organization with domain equals to the domain received as parameter
+	 */
+	public Organization getOrganizationByDomain(String domain) throws MessageException{
+		Organization organization = organizationDao.getOrganizationByDomain(domain);
+		return organization;
 	}
 }

@@ -146,6 +146,7 @@ public class OrganizationProperty implements Serializable {
 		}
 		property.setOrganizationId(this.getOrganizationId());
 		property.setPropertyId(this.getPropertyId());
+		property.setValue(this.getValue());
 		return property;
 	}
 }

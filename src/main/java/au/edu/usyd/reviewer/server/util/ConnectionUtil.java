@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.Principal;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
@@ -31,27 +32,8 @@ public class ConnectionUtil {
 		}
 	}
 	
-	public static User getLoggedUser(HttpServletRequest request) {
-		User user = null;
-		try {
-			Object obj = request.getSession().getAttribute("user");
-			
-			if (obj != null)
-			{
-				user = (User) obj;
-			}
-			Principal principal = request.getUserPrincipal();
-			UserDao userDao = UserDao.getInstance();
-			if  (user == null && principal != null && principal.getName() != null){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-			} else if (principal != null && principal.getName() != null && !principal.getName().equals(user.getEmail())){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-			}
-		} catch (MessageException e) {
-			e.printStackTrace();
-		}
-		return user;
+	public static void logoutAAF(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		logout(request);
+		response.sendRedirect(request.getRequestURL().toString().replace("/Shibboleth.sso/Logout", ""));
 	}
 }

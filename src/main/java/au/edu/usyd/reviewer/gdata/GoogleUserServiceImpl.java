@@ -84,23 +84,23 @@ public class GoogleUserServiceImpl {
 				if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.EntityExists)) {
 					// continue
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserDeletedRecently)) {
-					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_DELETED_RECENTLY + "\n" +  "Username: " + username );
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_DELETED_RECENTLY + "\n" +  "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserSuspended)) {
-					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_SUSPENDED + "\n" +  "Username: " + username);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_SUSPENDED + "\n" +  "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainUserLimitExceeded)) {
-					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_USER_LIMIT_EXCEEDED + "\n" + "Username: " + username);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_USER_LIMIT_EXCEEDED + "\n" + "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainSuspended)) {
-					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_SUSPENDED + "\n" + "Username: " + username);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_SUSPENDED + "\n" + "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				} else {
-					throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username);
+					throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				}
 			} else if (e instanceof ServiceForbiddenException){
-				throw new  MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + e.getMessage());
+				throw new  MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 			} else  {
 				e.printStackTrace();
-				throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username);
+				throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username );
 			}
-    	}
+    	} 
         return entry;
     }
 

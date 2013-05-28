@@ -9,17 +9,18 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.UserDao;
 
 public class LoginServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-//	private DigitalSigner digitalSigner = Reviewer.getDigitalSigner();
-
+		
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
@@ -28,7 +29,7 @@ public class LoginServlet extends HttpServlet {
 			// tomcat sso login
 			email = request.getUserPrincipal().getName();
 		} else {
-
+			
 		}
 
 		if (email != null) {
@@ -52,6 +53,7 @@ public class LoginServlet extends HttpServlet {
 				response.sendRedirect(request.getRequestURL().toString().replace("/login", ""));
 				throw new IOException(Constants.EXCEPTION_INVALID_LOGIN);
 			}
-		}
+		
+		} 
 	}
 }
