@@ -13,6 +13,9 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
@@ -25,6 +28,7 @@ import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 public class EmailNotifier {
 
+	private final Logger logger = LoggerFactory.getLogger(EmailNotifier.class);
 	private String username;
 	private String password;
 	private String smtpHost;
@@ -77,7 +81,7 @@ public class EmailNotifier {
 		content = content.replaceAll("@LecturerName@", to);
 		content = content.replaceAll("@ActivityName@", activity.getName());
 		content = content.replaceAll("@DeadlineName@", deadlineName);
-		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser(lecturer));
 		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(lecturer, subject, content);
 	}
@@ -90,7 +94,7 @@ public class EmailNotifier {
 		content = content.replaceAll("@StudentName@", to);
 		content = content.replaceAll("@ActivityName@", writingActivity.getName());
 		content = content.replaceAll("@DeadlineName@", deadlineName);
-		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser(user));
 		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(user, subject, content);
 	}	
@@ -107,7 +111,15 @@ public class EmailNotifier {
 		message.setSubject(subject);
 		message.addRecipients(Message.RecipientType.TO, internetAddress);
 		message.saveChanges();
+		logger.info("MARIELA - username " + username);
+		logger.info("MARIELA - password " + password);
+		logger.info("MARIELA - email content " + content);
+		logger.info("MARIELA - email fromAddress " + fromAddress);
+		logger.info("MARIELA - email fromName " + fromName);
+		logger.info("MARIELA - email To " + message.getRecipients(Message.RecipientType.TO));
+		logger.info("MARIELA - before send the email");
 		transport.sendMessage(message, message.getRecipients(Message.RecipientType.TO));
+		logger.info("MARIELA - after send the email");
 	}
 
 	public void sendStudentActivityStartNotification(User student, Course course, WritingActivity writingActivity, Deadline deadline) throws MessagingException, UnsupportedEncodingException, MessageException {
@@ -118,7 +130,7 @@ public class EmailNotifier {
 		String content = email.getMessage();
 		content = content.replaceAll("@StudentName@", to);
 		content = content.replaceAll("@ActivityName@", writingActivity.getName());
-		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser(student));
 		content = content.replaceAll("@DeadlineDate@", deadlineDate);
 		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(student, subject, content);
@@ -132,7 +144,7 @@ public class EmailNotifier {
 		String content = email.getMessage();
 		content = content.replaceAll("@StudentName@", to);
 		content = content.replaceAll("@ActivityName@", writingActivity.getName());
-		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser(student));
 		content = content.replaceAll("@DeadlineDate@", deadlineDate);
 		content = content.replaceAll("@FromName@", fromName);
 		sendNotification(student, subject, content);
@@ -143,9 +155,10 @@ public class EmailNotifier {
 		String content = email.getMessage();
 		content = content.replaceAll("@UserName@", user.getFirstname()+" "+user.getLastname());
 		content = content.replaceAll("@CourseName@", course.getName());
-		content = content.replaceAll("@UserUsername@", user.getUsername());
+		content = content.replaceAll("@UserUsername@", user.getEmail());
 		content = content.replaceAll("@Password@", user.getPassword());
-		content = content.replaceAll("@iWriteLink@", getReviewerLinkForUser());
+		content = content.replaceAll("@iWriteLink@", getReviewerLinkForUser(user));
+		content = content.replaceAll("@FromName@", fromName);
 		this.sendNotification(user, "iWrite user details", content);
 	}
 	
@@ -154,18 +167,25 @@ public class EmailNotifier {
 		String content = email.getMessage();
 		content = content.replaceAll("@UserName@", user.getFirstname()+" "+user.getLastname());
 		content = content.replaceAll("@ActivityName@", reviewingActivity.getName());
-		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser());
+		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser(user));
 		content = content.replaceAll("@FromName@", fromName);
 		String subject = "[" + course.getName().toUpperCase() + "] " + reviewingActivity.getName();
 		this.sendNotification(user, subject, content);
 	}	
 	
-	private String getReviewerLinkForUser() {	
-		return "https://"+reviewerDomain+"/reviewer/Assignments.html";
+	private String getReviewerLinkForUser(User user) {	
+//		return "https://"+reviewerDomain+"/reviewer/Assignments.html";
+		return user.getWasmuser()?
+				"https://"+reviewerDomain+"/reviewer/Assignments.html":
+				"https://"+reviewerDomain+"/reviewer/iWrite.html";
 	}
 	
 	public void setProperties(Properties properties) {
 		this.properties = properties;
 	}
-	
+
+	public void sendTestSMTPEmail(User user) throws MessagingException, UnsupportedEncodingException, MessageException {
+		String content = Constants.EMAIL_TEST_MESSAGE;
+		this.sendNotification(user, "Test email from reviewer", content);
+	}
 }

@@ -120,21 +120,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 		// Add Logout command
 		logoutCommand = new Command(){
 			public void execute() {
-				assignmentService.logout(new AsyncCallback<Void>(){
-					@Override
-					public void onFailure(Throwable caught) {
-						if (caught instanceof MessageException){
-							processMessageException((MessageException)caught);
-						} else {
-							Window.alert("Logout failed" + caught.getMessage());
-						}
-					}
-
-					@Override
-					public void onSuccess(Void result) {
-						Window.Location.replace(GWT.getHostPageBaseURL()+"Assignments.html");
-					}
-				});
+				logout();
 			}
 		};
 
@@ -144,7 +130,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 		
 		FlexTable headerTable = new FlexTable();
 		headerTable.setSize("100%", "5%");
-		headerTable.setWidget(0, 0, new HTML ("<h1 "+cssH1Style +">ASSIGNMENTS LIS </h1>"));
+		headerTable.setWidget(0, 0, new HTML ("<h1 "+cssH1Style +">ASSIGNMENTS LIST </h1>"));
 		headerTable.setWidget(0, 1, logoutMenu);
 		headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
 		headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -165,20 +151,32 @@ public class AssignmentEntryPoint implements EntryPoint {
 			@Override
 			public void onFailure(Throwable caught) {
 				userDetailsButton.setEnabled(false);
+				caught.printStackTrace();
+				if (caught instanceof MessageException){
+					Window.alert(caught.getMessage());
+				} else {
+					Window.alert("Logout failed" + caught.getMessage());
+				}
+				
+				if (GWT.getHostPageBaseURL() != null && GWT.getHostPageBaseURL().contains("AAF")){
+					Window.Location.replace("https://" + GWT.getModuleBaseURL() + "/Shibboleth.sso/Logout");
+				} else {
+					Window.Location.replace(GWT.getHostPageBaseURL()+"Assignments.html");
+				}
 			}
 
 			@Override
 			public void onSuccess(final User user) {
-				if (!user.getWasmuser()){
-					loggedUser = user;
-					Organization organization = user.getOrganization();
-					userPanel.add(new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName()));
-					userPanel.setStyleName("contentDeco");
-					userDetailsFlexTable.clear();
-					userDetailsFlexTable.setWidth("60%");
-					mainPanel.add(userDetailsFlexTable);
-					mainPanel.add(new HTML("</br>"));					
-					
+//				if (!user.getWasmuser()){
+				loggedUser = user;
+				Organization organization = user.getOrganization();
+				userPanel.add(new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName()));
+				userPanel.setStyleName("contentDeco");
+				userDetailsFlexTable.clear();
+				userDetailsFlexTable.setWidth("60%");
+				mainPanel.add(userDetailsFlexTable);
+				mainPanel.add(new HTML("</br>"));					
+//				if (!user.getWasmuser()){	
 					userDetailsFlexTable.setHTML(0, 0, "<p "+cssTextStyle +" >If you need to change your password, please click here: </p>");							
 					userDetailsFlexTable.setWidget(0, 1, userDetailsButton);
 					mainPanel.add(new HTML("</br>"));
@@ -237,7 +235,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 							dialogBox.show();
 						}
 					});
-					
+//				}	
 					// if there are organization then the logged user is a master			
 					if (user.isSuperAdmin()){
 						// Get Organizations to populate  a drop down list
@@ -254,9 +252,8 @@ public class AssignmentEntryPoint implements EntryPoint {
 			
 					filterActivitiesGrid.getRowFormatter().setStyleName(0, "centerFilterTable");
 					filterActivitiesGrid.getRowFormatter().setStyleName(1, "centerFilterTable");
-					
-				    
-									}				
+					    
+//				}				
 			}
 		});		
 		
@@ -485,5 +482,34 @@ public class AssignmentEntryPoint implements EntryPoint {
 		if (me.getStatusCode() == Constants.HTTP_CODE_LOGOUT){
 			logoutCommand.execute();
 		}
+	}
+	
+	private void logout(){
+		assignmentService.logout(new AsyncCallback<Void>(){
+			@Override
+			public void onFailure(Throwable caught) {
+				caught.printStackTrace();
+				if (caught instanceof MessageException){
+					Window.alert(caught.getMessage());
+				} else {
+					Window.alert("Logout failed" + caught.getMessage());
+				}
+				
+				if (GWT.getHostPageBaseURL() != null && GWT.getHostPageBaseURL().contains("AAF")){
+					Window.Location.replace("https://" + GWT.getModuleBaseURL() + "/Shibboleth.sso/Logout");
+				} else {
+					Window.Location.replace(GWT.getHostPageBaseURL()+"Assignments.html");
+				}
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				if (loggedUser !=  null && loggedUser.getOrganization() != null && loggedUser.getOrganization().isShibbolethEnabled()){
+					Window.Location.replace("https://" + loggedUser.getOrganization().getReviewerDomain() + "/Shibboleth.sso/Logout");
+				} else {
+					Window.Location.replace(GWT.getHostPageBaseURL()+"Assignments.html");
+				}
+			}
+		});
 	}
 }

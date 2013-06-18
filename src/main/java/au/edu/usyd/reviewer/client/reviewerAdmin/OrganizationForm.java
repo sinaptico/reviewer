@@ -62,7 +62,9 @@ public class OrganizationForm extends Composite {
 		Grid grid = new Grid(2, 2);
 		grid.setWidget(0, 0, new Label("Name:"));
 		grid.setWidget(0,1, organizationName);
-		
+		grid.getColumnFormatter().setWidth(0, "20%");
+	    grid.getColumnFormatter().setWidth(1, "100%");
+	    
 		// Set save button click handler
 		final SubmitButton saveButton = new SubmitButton("Save", "Saving...", "Saved");
 		setSaveButtonClickHandler(saveButton);

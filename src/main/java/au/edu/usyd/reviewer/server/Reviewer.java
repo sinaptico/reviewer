@@ -68,7 +68,6 @@ public class Reviewer {
 				String emailPassword = aesCipher.decrypt(organization.getEmailPassword());
 				String smtpHost = organization.getSMTPHost();
 				String smtpPort = organization.getSMTPPort();
-//				String reviewerDomain = getReviewerDomain();
 				String reviewerDomain = organization.getReviewerDomain();
 				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain,reviewerDomain));
 				

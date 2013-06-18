@@ -323,4 +323,32 @@ public class User implements Serializable {
 	public void setUsername(String username) {
 		this.username = username;
 	}
+	
+	/**
+	 * If the Google Domain of the organization is the only domain into the domains emails table of the Organization, then 
+	 * the format of the returned emails should be  username@googleDomain otherwise username.emailDomain@googleDomain 
+	 *  
+	 * @return email to access to Google
+	 */
+	public String getGoogleAppsEmail(){
+		String googleEmail = null;
+		if (organization.isGoogleDomianTheOnlyDomainInEmailDomains()) {
+			googleEmail = this.getUsername() + "@" + this.getOrganization().getGoogleDomain();
+		} else {
+			googleEmail = this.getUsername() + "." + this.getDomain() + "@" + this.getOrganization().getGoogleDomain();
+		}
+		return googleEmail;
+	}
+	
+	public String getGoogleAppsEmailUsername(){
+		String usernameEmail = "";
+		String googleAppsEmail = this.getGoogleAppsEmail();
+		if ( googleAppsEmail != null){
+			int i = googleAppsEmail.indexOf("@");
+			if ( i > 0){
+				usernameEmail = googleAppsEmail.substring(0,i);
+			}
+		}
+		return usernameEmail;	
+	} 
 }

@@ -30,9 +30,11 @@ import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
+import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.util.FileUtil;
@@ -53,7 +55,7 @@ public class FileServlet extends HttpServlet {
 		ServletOutputStream out = null;
 		DataInputStream in = null;
 		try {
-			initialize(request);
+			initialize(request,response);
 		
 			String docId = request.getParameter("docId");
 			String docVersion = request.getParameter("docVersion");
@@ -74,7 +76,9 @@ public class FileServlet extends HttpServlet {
 					Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
 	
 					// check if user owns the document or is a lecturer or tutor
-					if (docEntry.getOwner() != null && docEntry.getOwner().equals(user) || docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user) || course.getLecturers().contains(user) || course.getTutors().contains(user)) {
+					if ((docEntry.getOwner() != null && docEntry.getOwner().equals(user)) || 
+						(docEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(user)) || 
+						(course.getLecturers().contains(user) || course.getTutors().contains(user))) {
 						file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
 						filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
 					} else {
@@ -174,7 +178,7 @@ public class FileServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 		try {
-			initialize(req);
+			initialize(req, resp);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			throw new ServletException(e1.getMessage());
@@ -234,9 +238,19 @@ public class FileServlet extends HttpServlet {
 		                        fileName = course.getName()+" - Sem- "+Integer.toString(course.getSemester())+" - "+Integer.toString(course.getYear())+" - "+docEntry.getTitle();
 		                        File uploadedFile = new File(UPLOAD_DIRECTORY, fileName+"."+extension);
 		                        File filePath = new File(UPLOAD_DIRECTORY);
-		                        if (!filePath.exists()){
-		                        	filePath.mkdirs();
+		                        
+		                        logger.error("MARIELA 9- before create parents of filePath folders activityFolder.getParent().mkdirs() " + filePath.getParent());
+		                        if (!filePath.getParentFile().exists()){
+		                        	filePath.getParentFile().mkdirs();
 		                        }
+		                        logger.error("MARIELA 10- before create  filePath folders activityFolder.mkdirs() " + filePath.getParent());
+		                        if (!filePath.exists()){
+		                        	filePath.createNewFile();
+		                        }
+		                        logger.error("MARIELA 11- after create parents of activity folders activityFolder.mkdirs() " + filePath.getParent());
+//		                        if (!filePath.exists()){
+//		                        	filePath.mkdirs();
+//		                        }
 		                        
 		                        item.write(uploadedFile);	                            
 		                        resp.setStatus(HttpServletResponse.SC_CREATED);
@@ -280,8 +294,8 @@ public class FileServlet extends HttpServlet {
 	/**
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
-	private void initialize(HttpServletRequest request) throws Exception{
-		user = getUser(request);
+	private void initialize(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		user = getUser(request, response);
 		organization = user.getOrganization();
 		UPLOAD_DIRECTORY = Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getUploadsHome();	
 		EMPTY_FILE = Reviewer.getOrganizationsHome() + organization.getName() + Reviewer.getUploadsHome() + Reviewer.getEmptyDocument();
@@ -294,36 +308,212 @@ public class FileServlet extends HttpServlet {
 	}
 	
 
-	private User getUser(HttpServletRequest request) {
+	private User getUser(HttpServletRequest request, HttpServletResponse response) {
 		
-		Object obj = request.getSession().getAttribute("user");
-			
-		if (obj != null){
-			user = (User) obj;
-		}
-		Principal principal = request.getUserPrincipal();
-		UserDao userDao = UserDao.getInstance();
-		try{
-			if  (user == null){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-				
-			}
-			
-			if (user.isSuperAdmin() || user.isAdmin()){
+//		Object obj = request.getSession().getAttribute("user");
+//			
+//		if (obj != null){
+//			user = (User) obj;
+//		}
+//		Principal principal = request.getUserPrincipal();
+//		UserDao userDao = UserDao.getInstance();
+//		try{
+//			if  (user == null){
+//				user = userDao.getUserByEmail(principal.getName());
+//				request.getSession().setAttribute("user", user);
+//			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
+//				user = userDao.getUserByEmail(principal.getName());
+//				request.getSession().setAttribute("user", user);
+//				
+//			}
+//			
+//			if (user.isSuperAdmin() || user.isAdmin()){
+//				User mockedUser = (User) request.getSession().getAttribute("mockedUser");
+//				if (mockedUser != null && mockedUser.getOrganization() == null){
+//					mockedUser = userDao.getUserByEmail(mockedUser.getEmail());
+//				} 
+//				return mockedUser;
+//			}
+//		}
+//		catch(Exception e){
+//			e.printStackTrace();
+//		}
+//		return user
+		User user = null;
+		try {
+			user = getLoggedUser(request, response);
+			if (user != null && user.isSuperAdmin() || user.isAdmin()) {
 				User mockedUser = (User) request.getSession().getAttribute("mockedUser");
-				if (mockedUser != null && mockedUser.getOrganization() == null){
-					mockedUser = userDao.getUserByEmail(mockedUser.getEmail());
+				if (mockedUser != null) {
+					user = mockedUser;
+					if ( mockedUser.getOrganization() == null){
+						UserDao userDao = UserDao.getInstance();
+						user = userDao.getUserByEmail(mockedUser.getEmail());
+					}
 				} 
-				return mockedUser;
 			}
-		}
-		catch(Exception e){
+		} catch (MessageException e) {
 			e.printStackTrace();
 		}
 		return user;
+	}
+	
+	public User getLoggedUser(HttpServletRequest request,HttpServletResponse response) throws MessageException{
+		try {			
+			
+			// Get user from session
+			Object obj = request.getSession().getAttribute("user");
+			if (obj != null){
+				user = (User) obj;
+			}
+			
+			// getEmail
+			String email = getEmail(request,response);
+			
+			if (email == null && user == null){
+				// ERROR we need the email o the user to continue. 
+				MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
+				me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
+				throw me;
+			} else if (email != null && user != null && (user != null && user.getEmail() != null && user.getEmail().equals(email))){
+				//user is logged ==> continue	
+			} else {
+				// user is null or user's email is different to the email obtained from request ==> get user from Database
+				if (email != null && ((user == null) || (user != null && user.getEmail() != null && !user.getEmail().equals(email)))){
+					UserDao userDao = UserDao.getInstance();
+					user = userDao.getUserByEmail(email);
+				} 
+				
+				// Get organization
+				organization = getOrganization(email, user);
+												
+				if (organization == null){
+					// ERROR we need the organization to know if shibboleth property is enabled or not
+					logger.info("Organization is null so we can not verify the shibboleth property");
+					MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
+					me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
+					throw me;
+				} else {
+					// Verify if the organization is activated and deleted
+					if (!organization.isActivated() ){
+						MessageException me = new MessageException(Constants.EXCEPTION_ORGANIZATION_UNACTIVATED);;
+						me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
+						throw me;
+					} else if (organization.isDeleted()){
+						organization = null;
+						user = null;
+						request.getSession().setAttribute("user", null);
+						MessageException me = new MessageException(Constants.EXCEPTION_ORGANIZATION_DELETED);;
+						me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
+						throw me;
+					}
+					
+					// Check if shibboleth is enabled or not in the organization	
+					if (organization.isShibbolethEnabled()){
+						if (user != null){
+							// set user in session
+							user.setOrganization(organization);
+							if (StringUtil.isBlank(user.getFirstname()) || StringUtil.isBlank(user.getLastname())){
+								String firstname = (String) request.getAttribute("givenName");
+								String lastname = (String) request.getAttribute("surname");
+								user.setFirstname(firstname);
+								user.setLastname(lastname);
+								UserDao userDao = UserDao.getInstance();
+								user = userDao.save(user);
+							}
+							request.getSession().setAttribute("user", user);
+						} else {	
+							// create user
+							user = createUser(request, email, organization);
+										
+							// set user in session
+							request.getSession().setAttribute("user", user);
+						}
+					} else{
+						// User comes from reviewer login page
+						if (user != null){
+							user.setOrganization(organization);
+							
+							request.getSession().setAttribute("user", user);
+						} else {
+							MessageException me = new MessageException(Constants.EXCEPTION_INVALID_LOGIN);;
+							me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
+							throw me;
+						}
+					}	
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (e instanceof MessageException){
+				throw (MessageException)e;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);
+			}
+		}
+		return user;
+	}
+	
+	private String getEmail(HttpServletRequest request, HttpServletResponse response){
+		// Get email from request
+		String email = null;
+		if (request.getUserPrincipal() != null) {
+			// Get email from reviewer login page
+			email = request.getUserPrincipal().getName();
+		} else if (request.getAttribute("email") != null){
+			// Get email from AAF IdP property
+			email = (String) request.getAttribute("email");
+		}
+		return email;
+	}
+	
+	/**
+	 * Get organization from logged user or from the database using the domain of the email
+	 * @param email email to get the domain
+	 * @return Organization
+	 * @throws MessageException
+	 */
+	private Organization getOrganization(String email, User user) throws MessageException{
+		Organization organization = null;
+		if (user != null){
+			// Get organization from user
+			organization = user.getOrganization();
+		}  else {
+			// Get organization using the email domain
+			int i = email.indexOf("@");
+			String domain = email.substring(i+1,email.length());
+			OrganizationManager organizationManager = OrganizationManager.getInstance();
+			organization = organizationManager.getOrganizationByDomain(domain);
+		}
+		return organization;
+	}
+	
+	/**
+	 * Create a user in the database. This method should be called only the first time that a new user loggin in reviewer and organization use shibboleht (AAF login)
+	 * @param request Request to obtain the givenName and the surname of the user
+	 * @param email email of the user
+	 * @return User
+	 * @throws MessageException
+	 */
+	private User createUser(HttpServletRequest request, String email, Organization anOrganization) throws MessageException{
+		
+		// add user into the database as a guest 
+		logger.info("MARIELA - user doesn't exists in the database so he/she will be created as guest");
+		String firstname = (String) request.getAttribute("givenName");
+		logger.info("MARIELA - firstname " + firstname);
+		String lastname = (String) request.getAttribute("surname");
+		logger.info("MARIELA - lastname " + lastname);
+		UserDao userDao = UserDao.getInstance();
+		User newUser = userDao.getUserByEmail(email);
+		if (newUser == null){
+			newUser = new User();
+			newUser.setFirstname(firstname);
+			newUser.setLastname(lastname);
+			newUser.setEmail(email);
+			newUser.setOrganization(anOrganization);
+			newUser.addRole(Constants.ROLE_GUEST);
+			newUser = userDao.save(newUser);
+		}
+		return newUser;
 	}
 }

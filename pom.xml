@@ -162,11 +162,11 @@
 			<version>2.2</version>
 			<scope>provided</scope>
 		</dependency>
-		<!--  dependency>
+		<dependency>
 			<groupId>au.edu.usyd.iwrite</groupId>
 			<artifactId>wasm</artifactId>
 			<version>1.0.0</version>
-		</dependency-->
+		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>

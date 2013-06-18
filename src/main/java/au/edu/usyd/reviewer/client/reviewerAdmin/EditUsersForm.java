@@ -75,6 +75,7 @@ public class EditUsersForm extends Composite {
 
 	/** panel for the organizations drop dwon list **/
 	private VerticalPanel organizationsPanel = new VerticalPanel();
+	private VerticalPanel usersPanel = new VerticalPanel();;
 
 	/**
 	 * Constructor
@@ -231,6 +232,7 @@ public class EditUsersForm extends Composite {
 	 */
 	public void addUsers(){
 		
+		usersPanel.clear();
 		usersTable = new CellTable<User>();
 		
 	    // Display 10 rows per page
@@ -290,11 +292,12 @@ public class EditUsersForm extends Composite {
 	    	 
 	    SimplePager pager = new SimplePager();
 	    pager.setDisplay(usersTable);
-	    	 
-	    VerticalPanel vp = new VerticalPanel();
-	    vp.add(usersTable);
-	    vp.add(pager);
-	    mainPanel.add(vp);
+	    
+	    
+	    usersPanel.add(usersTable);
+	    usersPanel.add(pager);
+	    mainPanel.add(usersPanel);
+	    
 	    
 
 	}
@@ -305,10 +308,10 @@ public class EditUsersForm extends Composite {
 	private Column<User,String> createEditButtonColumn(){
 		
 			
-		ButtonCell saveButton = new ButtonCell();
-	    Column<User,String> saveButtonColumn = new Column<User,String>(saveButton) {
+		ButtonCell editButton = new ButtonCell();
+	    Column<User,String> saveButtonColumn = new Column<User,String>(editButton) {
 	    	  public String getValue(User usert) {
-	    	    return "Save"; //button name
+	    	    return "Edit"; //button name
 	    	  }
 	    };
 	    	

@@ -30,7 +30,7 @@ public class GoogleDownloadService {
     // Google Spreadsheet Service
     private SpreadsheetService spreadsheetsService;
     
-    private String GOOGLE_EXPORT_URL="https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=";
+    private String GOOGLE_SPREADSHEET_EXPORT_URL="https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=";
     
 
     /**
@@ -58,33 +58,29 @@ public class GoogleDownloadService {
      *             When an error occurred in the google service.
      */
     public void download(DocumentListEntry entry, String destination) throws MessageException {
-//    	String documentTitle = entry.getTitle().getPlainText();
     	try {
-	        
-	        if (Constants.GOOGLE_DOCUMENT_TYPE_DOCUMENT.equals(entry.getType())) {
-//	            downloadDocument(entry, destination + documentTitle + "." + Constants.GOOGLE_EXPORT_TYPE_DOC, Constants.GOOGLE_EXPORT_TYPE_DOC);
+    		String fileExtension = destination.substring(destination.lastIndexOf(".") + 1);
+    		destination = destination.substring(0,destination.lastIndexOf("."));
+    		
+    	    if (Constants.GOOGLE_EXPORT_TYPE_DOC.equals(fileExtension)) {
+	            destination = destination + "." +  Constants.GOOGLE_EXPORT_TYPE_DOC;
 	        	downloadDocument(entry, destination, Constants.GOOGLE_EXPORT_TYPE_DOC);
-	            return;
-	        }
-	        if (Constants.GOOGLE_DOCUMENT_TYPE_SPREADSHEET.toString().equals(entry.getType())) {
+	        } else if (Constants.GOOGLE_EXPORT_TYPE_XLS.equals(fileExtension)) {
+	        	destination = destination + "." + Constants.GOOGLE_EXPORT_TYPE_XLS;
 	            downloadSpreadSheet(entry, destination, Constants.GOOGLE_EXPORT_TYPE_XLS);
-	            return;
-	        }
-	        if (Constants.GOOGLE_DOCUMENT_TYPE_PRESENTATION.toString().equals(entry.getType())) {
+	        } else if (Constants.GOOGLE_EXPORT_TYPE_PPT.equals(fileExtension)) {
+	        	destination = destination + "." + Constants.GOOGLE_EXPORT_TYPE_PPT;
 	            downloadDocument(entry, destination, Constants.GOOGLE_EXPORT_TYPE_PPT);
-	            return;
-	        }
-	        if (Constants.GOOGLE_DOCUMENT_TYPE_DRAWING.toString().equals(entry.getType())) {
+	        } else if (Constants.GOOGLE_EXPORT_TYPE_PNG.equals(fileExtension)) {
+	        	destination = destination + "." + Constants.GOOGLE_EXPORT_TYPE_PNG;
 	            downloadDocument(entry, destination, Constants.GOOGLE_EXPORT_TYPE_PNG);
-	            return;
-	        }
-	        if (Constants.GOOGLE_DOCUMENT_TYPE_PDF.toString().equals(entry.getType())) {
-	            downloadNativeFile(entry, destination);
-	            return;
-	        }
-	        downloadNativeFile(entry, destination);
-        }
-        catch (Exception e) {
+	        } else if (Constants.GOOGLE_EXPORT_TYPE_PDF.equals(fileExtension)) { 
+	        	destination = destination + "." + Constants.GOOGLE_EXPORT_TYPE_PDF;
+	        	downloadDocument(entry, destination, Constants.GOOGLE_EXPORT_TYPE_PDF);
+	        } else {
+	        	downloadNativeFile(entry, destination + "." + fileExtension);
+    		}
+        } catch (Exception e) {
         	e.printStackTrace();
         	String error = String.format(Constants.EXCEPTION_GOOGLE_DOWNLOAD_FILE, destination, entry.getType());
         	throw new MessageException(error);
@@ -102,7 +98,8 @@ public class GoogleDownloadService {
      * @throws ServiceException When an excpetion occured inside the google service.
      */
     private void downloadDocument(DocumentListEntry entry, String filepath, String exportType) throws Exception {
-        String exportUrl = ((MediaContent) entry.getContent()).getUri() + "&exportFormat=" + exportType.toString();
+//        String exportUrl = ((MediaContent) entry.getContent()).getUri() + "&exportFormat=" + exportType.toString();
+        String exportUrl = ((MediaContent) entry.getContent()).getUri() + "&format=" + exportType.toString();
         downloadFile(new URL(exportUrl), filepath);
     }
 
@@ -124,7 +121,7 @@ public class GoogleDownloadService {
        UserToken spreadsheetsToken = (UserToken) spreadsheetsService.getAuthTokenFactory().getAuthToken();
        docsService.setUserToken(spreadsheetsToken.getValue());
 
-       String exportUrl = this.GOOGLE_EXPORT_URL + entry.getDocId() + "&exportFormat=" + exportType.toString();
+       String exportUrl = this.GOOGLE_SPREADSHEET_EXPORT_URL + entry.getDocId() + "&exportFormat=" + exportType.toString();
        downloadFile(new URL(exportUrl), filepath);
 
        // Restore docs token

@@ -56,8 +56,10 @@ CREATE TABLE `Activity` (
   PRIMARY KEY (`id`),
   KEY `FKA126572F4F68B324` (`startDate_id`),
   CONSTRAINT `FKA126572F4F68B324` FOREIGN KEY (`startDate_id`) REFERENCES `Deadline` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `Activity` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Activity_Entries_Entry`
@@ -93,6 +95,7 @@ CREATE TABLE `Choice` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `Choice` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `Course`
 --
@@ -114,9 +117,10 @@ CREATE TABLE `Course` (
   PRIMARY KEY (`id`),
   KEY `FK78A7CC3B340139E3` (`organizationId`),
   CONSTRAINT `FK78A7CC3B340139E3` FOREIGN KEY (`organizationId`) REFERENCES `Organization` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `Course` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `Course_Activities_Activity`
 --
@@ -275,9 +279,10 @@ CREATE TABLE `Deadline` (
   `name` varchar(255) DEFAULT NULL,
   `status` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `Deadline` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `DocEntry_Reviews_Review`
 --
@@ -313,6 +318,7 @@ CREATE TABLE `DocumentType` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `DocumentType` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `DocumentType_Rubrics`
 --
@@ -348,8 +354,10 @@ CREATE TABLE `Email` (
   KEY `FK3FF5B7CE6BD0C7C` (`course_id`),
   CONSTRAINT `FK3FF5B7CBA5353FC` FOREIGN KEY (`organization_id`) REFERENCES `Organization` (`id`),
   CONSTRAINT `FK3FF5B7CE6BD0C7C` FOREIGN KEY (`course_id`) REFERENCES `Course` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `Email` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Entry`
@@ -395,6 +403,8 @@ CREATE TABLE `Entry` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `Entry` AUTO_INCREMENT = 1;
+
 --
 -- Table structure for table `Entry_Entry`
 --
@@ -431,8 +441,10 @@ CREATE TABLE `FeedbackTemplate` (
   `descriptionA` longtext,
   `descriptionB` longtext,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=86 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `FeedbackTemplate` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Grade`
@@ -454,6 +466,8 @@ CREATE TABLE `Grade` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `Grade` AUTO_INCREMENT = 1;
+
 --
 -- Table structure for table `Organization`
 --
@@ -468,8 +482,10 @@ CREATE TABLE `Organization` (
   `activated` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `Organization` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Organization_Emails_Domains`
@@ -480,8 +496,8 @@ DROP TABLE IF EXISTS `Organization_Emails_Domains`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Organization_Emails_Domains` (
   `Organization_id` bigint(20) NOT NULL,
-  `emailDomain` varchar(255) NOT NULL,
-  PRIMARY KEY (`Organization_id`,`emailDomain`),
+  `emailDomains` varchar(255) NOT NULL,
+  PRIMARY KEY (`Organization_id`,`emailDomains`),
   KEY `FK83B3ACB3BA5353FC` (`Organization_id`),
   CONSTRAINT `FK83B3ACB3BA5353FC` FOREIGN KEY (`Organization_id`) REFERENCES `Organization` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -522,6 +538,7 @@ CREATE TABLE `Question` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `Question` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `QuestionScore`
 --
@@ -538,6 +555,8 @@ CREATE TABLE `QuestionScore` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `QuestionScore` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Question_Owner`
@@ -600,6 +619,8 @@ CREATE TABLE `Rating` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `Rating` AUTO_INCREMENT = 1;
+
 --
 -- Table structure for table `Review`
 --
@@ -617,6 +638,8 @@ CREATE TABLE `Review` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `Review` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `ReviewTemplate`
@@ -636,6 +659,8 @@ CREATE TABLE `ReviewTemplate` (
   CONSTRAINT `FK124A1C12340139E3` FOREIGN KEY (`organizationId`) REFERENCES `Organization` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `ReviewTemplate` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `ReviewTemplates_Sections`
@@ -725,8 +750,10 @@ CREATE TABLE `ReviewerProperty` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `ReviewerProperty` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Rubric`
@@ -741,8 +768,10 @@ CREATE TABLE `Rubric` (
   `number` varchar(255) DEFAULT NULL,
   `link` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `Rubric` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Rubric_FeedbackTemplates`
@@ -776,6 +805,8 @@ CREATE TABLE `Section` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `Section` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Sections_Choices`
@@ -817,6 +848,8 @@ CREATE TABLE `TemplateReply` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `TemplateReply` AUTO_INCREMENT = 1;
+
 --
 -- Table structure for table `User`
 --
@@ -839,8 +872,10 @@ CREATE TABLE `User` (
   UNIQUE KEY `email_2` (`email`),
   KEY `FK285FEB340139E3` (`organizationId`),
   CONSTRAINT `FK285FEB340139E3` FOREIGN KEY (`organizationId`) REFERENCES `Organization` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `User` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `UserGroup`
@@ -854,8 +889,10 @@ CREATE TABLE `UserGroup` (
   `name` varchar(255) DEFAULT NULL,
   `tutorial` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+ALTER TABLE `UserGroup` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `UserGroup_Users_User`
@@ -956,4 +993,4 @@ CREATE TABLE `WritingActivity_ReviewingActivities_ReviewingActivity` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-05-27 12:23:48
+-- Dump completed on 2013-06-05  9:32:39

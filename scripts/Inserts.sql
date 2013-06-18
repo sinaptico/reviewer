@@ -14,37 +14,41 @@ UPDATE Organization SET activated = 1 WHERE id=1;
 
 ALTER TABLE User auto_increment=1;
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('tomcat','Admin','Tomcat',MD5('s1n4pt1c0'),1,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('tomcat','Admin','Tomcat',MD5('s1n4pt1c0'),1,'','tomcat');
 INSERT INTO User_roles (email,role_name) VALUES ('tomcat','manager-gui');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('superAdmin@demo-sinaptico.com','SuperAdmin','For Demo Sinaptico',MD5('reviewer'),1,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('superAdmin@demo-sinaptico.com','SuperAdmin','For Demo Sinaptico',MD5('reviewer'),1,'','superadmin');
 INSERT INTO User_roles (email,role_name) VALUES ('superAdmin@demo-sinaptico.com','SuperAdmin');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('admin@demo-sinaptico.com','Admin','For Demo Sinaptico',MD5('reviewer'),1,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('admin@demo-sinaptico.com','Admin','For Demo Sinaptico',MD5('reviewer'),1,'','admin');
 INSERT INTO User_roles (email,role_name) VALUES ('admin@demo-sinaptico.com','Admin');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('admin@smart-sourcing.com.ar','Admin','For Smart',MD5('reviewer'),2,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('admin@smart-sourcing.com.ar','Admin','For Smart',MD5('reviewer'),2,'','admin');
 INSERT INTO User_roles (email,role_name) VALUES ('admin@smart-sourcing.com.ar','Admin');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('lecturer@demo-sinaptico.com','Lecturer','For Demo Sinaptico',MD5('reviewer'),1,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('lecturer@demo-sinaptico.com','Lecturer','For Demo Sinaptico',MD5('reviewer'),1,'','lecturer');
 INSERT INTO User_roles (email,role_name) VALUES ('lecturer@demo-sinaptico.com','Admin');
 INSERT INTO User_roles (email,role_name) VALUES ('lecturer@demo-sinaptico.com','Guest');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('tutor@demo-sinaptico.com','Tutor','For Demo Sinaptico',MD5('reviewer'),1,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('tutor@demo-sinaptico.com','Tutor','For Demo Sinaptico',MD5('reviewer'),1,'','tutor');
 INSERT INTO User_roles (email,role_name) VALUES ('tutor@demo-sinaptico.com','Admin');
 INSERT INTO User_roles (email,role_name) VALUES ('tutor@demo-sinaptico.com','Guest');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('student1@demo-sinaptico.com','Student 1','For Demo Sinaptico',MD5('reviewer'),1,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student1@demo-sinaptico.com','Student 1','For Demo Sinaptico',MD5('reviewer'),1,'','student1');
 INSERT INTO User_roles (email,role_name) VALUES ('student1@demo-sinaptico.com','Guest');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('student2@demo-sinaptico.com','Student 2','For Demo Sinaptico',MD5('reviewer'),1,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student2@demo-sinaptico.com','Student 2','For Demo Sinaptico',MD5('reviewer'),1,'','student2');
 INSERT INTO User_roles (email,role_name) VALUES ('student2@demo-sinaptico.com','Guest');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('student@smart-sourcing.com.ar','Student','For Smart',MD5('reviewer'),2,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student@smart-sourcing.com.ar','Student','For Smart',MD5('reviewer'),2,'','student');
 INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar','Admin');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser) VALUES ('mariela.dagraca@smart-sourcing.com.ar','Lecturer','For Smart',MD5('reviewer'),2,'');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('mariela.dagraca@smart-sourcing.com.ar','Lecturer','For Smart',MD5('reviewer'),2,'','mariela.dagraca');
 INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar','Admin');
+
+INSERT INTO Organization_Emails_Domains (organization_Id,emailDomains) VALUES (1,'demo-sinaptico.com');
+INSERT INTO Organization_Emails_Domains (organization_Id,emailDomains) VALUES (2,'smart-sourcing.com.ar');
+
 
 ALTER TABLE ReviewerProperty  auto_increment=1;
 

@@ -32,8 +32,4 @@ public class ConnectionUtil {
 		}
 	}
 	
-	public static void logoutAAF(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		logout(request);
-		response.sendRedirect(request.getRequestURL().toString().replace("/Shibboleth.sso/Logout", ""));
-	}
 }

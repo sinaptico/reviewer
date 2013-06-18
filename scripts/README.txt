@@ -19,6 +19,7 @@ Run the scripts in the following order:
 5.	mysql -uroot -p reviewer <FeedbackTemplate.sql 
 6.	mysql -uroot -p reviewer <Rubric_FeedbackTemplates.sql
 7.	mysql -uroot -p reviewer <Inserts.sql
+8.	mysql -uroot -p reviewer <newOrganizations.sql
 
 Configurate the organizations
 1.	Go to http://dev-02.sinapti.co/ReviewerAdmin.html
@@ -37,4 +38,5 @@ Clean Google
 1.	Go to Google docs with the admin users for the organizations
 2.	Delete all the folders and documents 
 
-
+New Organization
+Follow the steps in newOrganization.txt file

@@ -68,8 +68,8 @@ public class EditPropertiesForm extends Composite {
 	@Override
 	public void onLoad() {
   
-	    // Display 10 rows in one page
-	    propertiesTable.setPageSize(10);
+	    // Display 15 rows in one page
+	    propertiesTable.setPageSize(15);
 	    
 	    
 	    // Add a text column to show the name. 

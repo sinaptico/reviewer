@@ -75,7 +75,7 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public AclEntry addDocumentPermission(DocumentListEntry entry, AclRole aclRole, String user) throws IOException, ServiceException {
-//		logger.info("Adding document permission: " + entry.getResourceId() + ", role=" + aclRole.getValue() + ", user=" + user);
+		logger.info("MARIELA - Adding document permission: " + entry.getResourceId() + ", role=" + aclRole.getValue() + ", user=" + user);
 		AclEntry aclEntry = new AclEntry();
 		AclScope aclScope = new AclScope(AclScope.Type.USER, user);
 		aclEntry.setRole(aclRole);
@@ -208,39 +208,6 @@ public class GoogleDocsServiceImpl {
 		}
 	}
 
-//	public void downloadDocumentFile(DocumentListEntry entry, String filepath) throws IOException, ServiceException {
-////		logger.info("downloading document " + entry.getResourceId());
-//		String fileExtension = filepath.substring(filepath.lastIndexOf(".") + 1);
-//		String exportUrl = ((MediaContent) entry.getContent()).getUri() + "&format=" + fileExtension;
-//
-//		MediaContent mc = new MediaContent();
-//		mc.setUri(exportUrl);
-//		MediaSource ms = docsService.getMedia(mc);
-//
-//		File file = new File(filepath);
-//		file.createNewFile();
-//
-//		InputStream inStream = null;
-//		FileOutputStream outStream = null;
-//
-//		try {
-//			inStream = ms.getInputStream();
-//			outStream = new FileOutputStream(file);
-//
-//			int c;
-//			while ((c = inStream.read()) != -1) {
-//				outStream.write(c);
-//			}
-//		} finally {
-//			if (inStream != null) {
-//				inStream.close();
-//			}
-//			if (outStream != null) {
-//				outStream.flush();
-//				outStream.close();
-//			}
-//		}
-//	}
 
 	public String downloadDocumentHtml(BaseEntry<?> entry) throws IOException, ServiceException {
 		MediaContent mc = new MediaContent();
@@ -376,7 +343,7 @@ public class GoogleDocsServiceImpl {
 	}
 	
 	public boolean updateDocumentPermission(DocumentListEntry entry, AclRole aclRole, String user) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Updating document permission: " + entry.getResourceId() + ", user=" + user);
+		logger.info("MARIELA - Updating document permission: " + entry.getResourceId() + ", user=" + user + " role " + aclRole.getValue());
 		List<AclEntry> aclEntries = getDocumentPermissions(entry);
 		for (AclEntry aclEntry : aclEntries) {
 			if (aclEntry.getScope().getValue().equals(user)) {

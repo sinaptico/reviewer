@@ -147,7 +147,7 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 	@Override
 	public Course saveCourse(Course course) throws Exception {
 		initialize();
-		if (isAdminOrSuperAdmin()|| isCourseLecturer(courseDao.loadCourse(course.getId()))) {
+		if (isAdminOrSuperAdmin() ||  isCourseLecturer(courseDao.loadCourse(course.getId()))) {
 			try {
 				// Before save the course set its organization
 				if (course.getOrganization() == null){
@@ -365,17 +365,28 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 	public User mockUser(User aUser) throws Exception {
 		initialize();
 		if (isAdminOrSuperAdmin()) {
-			String email = null;
-			if ( aUser.getEmail() != null && !StringUtil.isBlank(aUser.getEmail())){
-				email = aUser.getEmail();
-			} else if (aUser.getUsername() != null && !StringUtil.isBlank(aUser.getUsername())){
-				email = aUser.getUsername() + "@" + organization.getGoogleDomain();
+			String email = aUser.getEmail();
+			String username = aUser.getUsername();
+			User mockedUser= null;
+			if (email != null && !StringUtil.isBlank(email)){
+				mockedUser = userDao.getUserByEmail(email);
+			} else if (username != null && !StringUtil.isBlank(username)){
+				username = username.toLowerCase();
+				for (User userDB :userDao.getUserByUsername(username)){
+					if (organization.domainBelongsToEmailsDomain(userDB.getDomain())){
+						mockedUser = userDB.clone();
+					}
+				}
 			} else {
 				throw new MessageException(Constants.EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST);
 			}
-			User mockedUser = userDao.getUserByEmail(email);
+			
 			if (mockedUser != null){
-//				logger.info("Mocking user: " + mockedUser.getEmail());
+				logger.info("MARIELA - try to mock user: " + mockedUser.getEmail());
+				if (!organization.domainBelongsToEmailsDomain(user.getDomain())){
+					throw new MessageException(Constants.EXCEPTION_WRONG_ORGANIZATION_DOMAIN);
+				}
+				logger.info("MARIELA - Mocking user: " + mockedUser.getEmail());
 				this.getThreadLocalRequest().getSession().setAttribute("mockedUser", mockedUser);
 				return mockedUser;
 			} else{

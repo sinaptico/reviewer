@@ -3,16 +3,31 @@ package au.edu.usyd.reviewer.server.rpc;
 
 import java.io.IOException;
 
+
+
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.feedback.feedbacktracking.FeedbackTrackingDao;
+//import au.edu.usyd.iwrite.security.RandomMessageIDGenerator;
+//import au.edu.usyd.iwrite.security.WasmAuthenticationProtocol;
+//import au.edu.usyd.iwrite.security.WasmResponse;
+//import au.edu.usyd.iwrite.security.WasmService;
+//import au.edu.usyd.iwrite.security.WasmSocketFactory;
+//import au.edu.usyd.iwrite.security.RandomMessageIDGenerator;
+//import au.edu.usyd.iwrite.security.WasmAuthenticationProtocol;
+//import au.edu.usyd.iwrite.security.WasmResponse;
+//import au.edu.usyd.iwrite.security.WasmService;
+//import au.edu.usyd.iwrite.security.WasmSocketFactory;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
@@ -54,8 +69,8 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	 * Get logger user, its organization an initialize Reviewer with it
 	 */
 	protected void initialize() throws Exception{
-		user = getLoggedUser();
-		organization = user.getOrganization();	
+		user = getLoggedUser();	
+		organization = user.getOrganization();
 		Reviewer.initializeAssignmentManager(organization);	
 	}
 	
@@ -67,6 +82,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	public User getLoggedUser() throws MessageException{
 		try {			
 			HttpServletRequest request = this.getThreadLocalRequest();
+			HttpServletResponse response = this.getThreadLocalResponse();
 			request = this.getThreadLocalRequest();
 			
 			// Get user from session
@@ -76,11 +92,10 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 			}
 			
 			// getEmail
-			String email = getEmail(request);
+			String email = getEmail(request,response);
 			
 			if (email == null && user == null){
 				// ERROR we need the email o the user to continue. 
-				logger.info("MARIELA - Error user null and email null");
 				MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
 				me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 				throw me;
@@ -94,7 +109,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 				} 
 				
 				// Get organization
-				Organization organization = getOrganization(email);
+				organization = getOrganization(email, user);
 												
 				if (organization == null){
 					// ERROR we need the organization to know if shibboleth property is enabled or not
@@ -117,30 +132,37 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 						throw me;
 					}
 					
-					// Check if shibboleth is enabled or not in the organization
-					logger.info("MARIELA - shibbolethEnabled = " + organization.isShibbolethEnabled());	
+					// Check if shibboleth is enabled or not in the organization	
 					if (organization.isShibbolethEnabled()){
 						if (user != null){
 							// set user in session
+							user.setOrganization(organization);
+							String firstname = (String) request.getAttribute("givenName");
+							String lastname = (String) request.getAttribute("surname");
+							logger.info("MARIELA - givenName " + firstname);
+							logger.info("MARIELA - surname " + lastname);
+							logger.info("MARIELA - fisrtname " + user.getFirstname());
+							logger.info("MARIELA - lastname " + user.getLastname());
+							if (StringUtil.isBlank(user.getFirstname()) || StringUtil.isBlank(user.getLastname()) ||
+							 (firstname != null && !firstname.toLowerCase().equals(user.getFirstname())) || 
+							 (lastname != null && !lastname.toLowerCase().equals(user.getLastname()))){								
+								user.setFirstname(firstname);
+								user.setLastname(lastname);
+								user = userDao.save(user);
+							}
 							request.getSession().setAttribute("user", user);
 						} else {	
 							// create user
-							user = createUser(request, email);
-							
-							if (user != null){
-								logger.info("MARIELA - user added to the database " + user.getId());
-							} else {
-								logger.info("MARIELA - user created is null");
-							}
+							user = createUser(request, email, organization);
 							
 							// set user in session
 							request.getSession().setAttribute("user", user);
 						}
 					} else{
 						// User comes from reviewer login page
-						logger.info("MARIELA - shibboleth is not enabled, so we suppose the user comes from the reviewer login page");
+						
 						if (user != null){
-							logger.info("MARIELA - user is not null");
+							user.setOrganization(organization);
 							request.getSession().setAttribute("user", user);
 						} else {
 							MessageException me = new MessageException(Constants.EXCEPTION_INVALID_LOGIN);;
@@ -179,7 +201,8 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	}
 	
 	protected boolean isCourseLecturer(Course course) {
-		return user == null ? false : course.getLecturers().contains(user);
+		
+		return user == null ? false : course!= null && course.getLecturers().contains(user);
 	}
 	
 	protected boolean isGuestOrAdminOrSuperAdmin(){
@@ -212,19 +235,13 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_USER_NOT_MOCKED);
 		}
+		
 		return mockedUser;
 	}
 	
 
 	public void logout() throws Exception{
-		if (user != null && organization == null){
-			organization = user.getOrganization();
-		}
-		if (organization != null && organization.isShibbolethEnabled()){
-			ConnectionUtil.logoutAAF(this.getThreadLocalRequest(), this.getThreadLocalResponse());
-		} else {
-			ConnectionUtil.logout(this.getThreadLocalRequest());
-		}
+		ConnectionUtil.logout(this.getThreadLocalRequest());
 		user = null;
 		organization = null;
 	}
@@ -236,7 +253,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	 */
 	public Organization checkOrganizationProperties(Organization anOrganization) throws Exception{
 		if (isSuperAdmin()){
-			anOrganization = organizationManager.activateOrganization(anOrganization);
+			anOrganization = organizationManager.activateOrganization(user, anOrganization);
 			if (anOrganization != null && organization != null && anOrganization.getId() != null && anOrganization.getId().equals(organization.getId())){
 				organization = anOrganization;
 			}
@@ -262,7 +279,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	 * @param request
 	 * @return email obtained from request
 	 */
-	private String getEmail(HttpServletRequest request){
+	private String getEmail(HttpServletRequest request, HttpServletResponse response){
 		// Get email from request
 		String email = null;
 		if (request.getUserPrincipal() != null) {
@@ -272,7 +289,6 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 			// Get email from AAF IdP property
 			email = (String) request.getAttribute("email");
 		}
-		logger.info("MARIELA - email " + email);
 		return email;
 	}
 	
@@ -282,7 +298,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	 * @return Organization
 	 * @throws MessageException
 	 */
-	private Organization getOrganization(String email) throws MessageException{
+	private Organization getOrganization(String email, User user) throws MessageException{
 		Organization organization = null;
 		if (user != null){
 			// Get organization from user
@@ -294,7 +310,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 			OrganizationManager organizationManager = OrganizationManager.getInstance();
 			organization = organizationManager.getOrganizationByDomain(domain);
 		}
-		logger.info("MARIELA - organization!= null? " + (organization!= null));
+		
 		return organization;
 	}
 	
@@ -305,22 +321,25 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	 * @return User
 	 * @throws MessageException
 	 */
-	private User createUser(HttpServletRequest request, String email) throws MessageException{
+	private User createUser(HttpServletRequest request, String email, Organization anOrganization) throws MessageException{
 		
 		// add user into the database as a guest 
-		logger.info("MARIELA - user doesn't exists in the database so he/she will be created as guest");
-		String firstname = (String) request.getAttribute("givenName");
-		logger.info("MARIELA - firstname " + firstname);
-		String lastname = (String) request.getAttribute("surname");
-		logger.info("MARIELA - lastname " + lastname);
-		User newUser = new User();
-		user.setFirstname(firstname);
-		user.setLastname(lastname);
-		user.setEmail(email);
-		user.setOrganization(organization);
-		user.addRole(Constants.ROLE_GUEST);
 		
-		newUser = userDao.save(newUser);
+		String firstname = (String) request.getAttribute("givenName");
+		String lastname = (String) request.getAttribute("surname");
+		logger.info("MARIELA - email " + email);
+		logger.info("MARIELA - givenName " + firstname);
+		logger.info("MARIELA - surname " + lastname);
+		User newUser = userDao.getUserByEmail(email);
+		if (newUser == null){
+			newUser = new User();
+			newUser.setFirstname(firstname);
+			newUser.setLastname(lastname);
+			newUser.setEmail(email);
+			newUser.setOrganization(anOrganization);
+			newUser.addRole(Constants.ROLE_GUEST);
+			newUser = userDao.save(newUser);
+		}
 		return newUser;
 	}
 }

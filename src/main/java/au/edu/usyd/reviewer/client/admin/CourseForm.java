@@ -8,7 +8,9 @@ import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.gwt.DocEntryWidget;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
@@ -91,13 +93,18 @@ public class CourseForm extends Composite {
 	 *
 	 * @return the course
 	 */
-	public Course getCourse() {
+	public Course getCourse() throws MessageException{
 		course.setName(courseName.getText());
 		course.setSemester(Integer.valueOf(courseSemester.getItemText(courseSemester.getSelectedIndex())));
 		course.setYear((int) courseYear.getSpinner().getValue());
 		course.setTutorials(StringUtil.csvToStrings(courseTutorials.getText()));
-		course.setLecturers(StringUtil.csvToUsers(courseLecturers.getText()));
-		course.setTutors(StringUtil.csvToUsers(courseTutors.getText()));
+		try{
+			course.setLecturers(StringUtil.csvToUsers(courseLecturers.getText()));
+			course.setTutors(StringUtil.csvToUsers(courseTutors.getText()));
+		} catch(MessageException me){
+			Window.alert(me.getMessage());
+			throw me;
+		}
 //		course.setSupervisors(StringUtil.csvToUsers(courseSupervisors.getText()));
 //		course.setAutomaticReviewers(StringUtil.csvToUsers(courseAutomaticReviewers.getText()));
 		return course;

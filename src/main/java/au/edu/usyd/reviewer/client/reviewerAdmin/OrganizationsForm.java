@@ -94,6 +94,8 @@ public class OrganizationsForm extends Composite {
 		Grid searchGrid = new Grid(2, 2);
 		searchGrid.setWidget(0, 0, searchLabel);
 		searchGrid.setWidget(0,1, searchText);
+		searchGrid.getColumnFormatter().setWidth(0, "20%");
+		searchGrid.getColumnFormatter().setWidth(1, "100%");
 		
 		// Load Button
 		loadButton = createLoadButton();
@@ -224,6 +226,7 @@ public class OrganizationsForm extends Composite {
 		
 			 // Add a text column to show the organization name. 
 			 TextInputCell nameInputCell = new TextInputCell();
+			 
 			 Column<Organization, String> nameColumn = new Column<Organization, String>(nameInputCell) {
 				 @Override
 				 public String getValue(Organization organization) {
@@ -237,6 +240,8 @@ public class OrganizationsForm extends Composite {
 					newOrganizationName = ((String)value);
 				}
 			});
+		    
+		   
 		    organizationsTable.addColumn(nameColumn, "Name");
 		    organizationsTable.addColumnStyleName(2, "gridOrganizationNameColumn");
 		    // Add column with save button to save the value of the property
@@ -339,6 +344,7 @@ public class OrganizationsForm extends Composite {
 					@Override
 					public void onClick(ClickEvent event) {
 						dialogBox.hide();
+						loadButton.click();
 					}
 				}));
 				
@@ -378,6 +384,7 @@ public class OrganizationsForm extends Composite {
 			public void onSuccess(final Organization organization) {
 				Window.setTitle(TAB_TITLE_ORGANIZATION);
 				Window.alert(MESSAGE_SAVED);
+				loadButton.click();
 			}
 		});
 		

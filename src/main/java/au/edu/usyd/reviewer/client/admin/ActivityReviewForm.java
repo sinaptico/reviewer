@@ -317,7 +317,7 @@ public class ActivityReviewForm extends Composite {
 			case ReviewingActivity.STATUS_START:
 				name.setEnabled(false);
 				startDate.setEnabled(false);
-				finishDate.setEnabled(false);
+				finishDate.setEnabled(true);
 				reviewType.setEnabled(false);
 				reviewTemplateLst.setEnabled(false);
 				allocationStrategy.setEnabled(false);

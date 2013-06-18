@@ -231,10 +231,16 @@ public class AdminEntryPoint implements EntryPoint {
 			adminService.getLoggedUser(new AsyncCallback<User>(){
 				@Override
 				public void onFailure(Throwable caught) {
+					caught.printStackTrace();
 					if (caught instanceof MessageException){
-						processMessageException((MessageException) caught);
+						Window.alert(caught.getMessage());
 					} else {
-						Window.alert("Failed get the logged user" + caught.getMessage());
+						Window.alert("Failed get the logged user " + caught.getMessage());
+					}
+					if (GWT.getHostPageBaseURL() != null && GWT.getHostPageBaseURL().contains("AAF")){
+						Window.Location.replace("https://" + GWT.getModuleBaseURL() + "/Shibboleth.sso/Logout");
+					} else {
+						Window.Location.replace(GWT.getHostPageBaseURL()+"Admin.html");
 					}
 				}
 	
@@ -271,28 +277,32 @@ public class AdminEntryPoint implements EntryPoint {
 				createButton.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
-						Course course = courseForm.getCourse();
-						if (isValidCourse(course)){
-							createButton.updateStateSubmitting();
-							adminService.saveCourse(course, new AsyncCallback<Course>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									if (caught instanceof MessageException){
-										processMessageException((MessageException) caught);
-									} else {
-										Window.alert("Failed to create course: " + caught.getMessage());
+						try{
+							Course course = courseForm.getCourse();
+							if (isValidCourse(course)){
+								createButton.updateStateSubmitting();
+								adminService.saveCourse(course, new AsyncCallback<Course>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										if (caught instanceof MessageException){
+											processMessageException((MessageException) caught);
+										} else {
+											Window.alert("Failed to create course: " + caught.getMessage());
+										}
+										createButton.updateStateSubmit();
 									}
-									createButton.updateStateSubmit();
-								}
 
-								@Override
-								public void onSuccess(Course course) {
-									dialogBox.hide();
-									refreshCoursesTree(tabs);
-									createButton.updateStateSubmit();
-								}
-							});
-						} else {
+									@Override
+									public void onSuccess(Course course) {
+										dialogBox.hide();
+										refreshCoursesTree(tabs);
+										createButton.updateStateSubmit();
+									}
+								});
+							} else {
+								createButton.updateStateSubmit();
+							}
+						} catch(Exception e){
 							createButton.updateStateSubmit();
 						}
 					}
@@ -535,25 +545,30 @@ public class AdminEntryPoint implements EntryPoint {
 					saveButton.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							saveButton.updateStateSubmitting();
-							adminService.saveCourse(courseForm.getCourse(), new AsyncCallback<Course>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									if (caught instanceof MessageException){
-										processMessageException((MessageException) caught);
-									} else {
-										Window.alert("Failed to save course: " + caught.getMessage());
+							try{
+								Course course = courseForm.getCourse();
+								saveButton.updateStateSubmitting();
+								adminService.saveCourse(course, new AsyncCallback<Course>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										if (caught instanceof MessageException){
+											processMessageException((MessageException) caught);
+										} else {
+											Window.alert("Failed to save course: " + caught.getMessage());
+										}
+										saveButton.updateStateSubmit();
 									}
-									saveButton.updateStateSubmit();
-								}
-
-								@Override
-								public void onSuccess(Course course) {
-									Window.alert("Course saved.");
-									courseForm.setCourse(course);
-									saveButton.updateStateSubmit();
-								}
-							});
+	
+									@Override
+									public void onSuccess(Course course) {
+										Window.alert("Course saved.");
+										courseForm.setCourse(course);
+										saveButton.updateStateSubmit();
+									}
+								});
+							} catch(Exception e){
+								saveButton.updateStateSubmit();
+							}
 						}
 					});
 
@@ -563,25 +578,30 @@ public class AdminEntryPoint implements EntryPoint {
 						public void onClick(ClickEvent event) {
 							deleteButton.setEnabled(false);
 							if (Window.confirm("Are you sure you want to delete this course?")) {
-								adminService.deleteCourse(courseForm.getCourse(), new AsyncCallback<Course>() {
-									@Override
-									public void onFailure(Throwable caught) {
-										if (caught instanceof MessageException){
-											processMessageException((MessageException) caught);
-										} else {
-											Window.alert("Failed to delete course: " + caught.getMessage());
+								try{
+									Course course = courseForm.getCourse();
+									adminService.deleteCourse(course, new AsyncCallback<Course>() {
+										@Override
+										public void onFailure(Throwable caught) {
+											if (caught instanceof MessageException){
+												processMessageException((MessageException) caught);
+											} else {
+												Window.alert("Failed to delete course: " + caught.getMessage());
+											}
+											deleteButton.setEnabled(true);
+											refreshCoursesTree(tabs);
 										}
-										deleteButton.setEnabled(true);
-										refreshCoursesTree(tabs);
-									}
-
-									@Override
-									public void onSuccess(Course course) {
-										Window.alert("Course deleted.");
-										refreshCoursesTree(tabs);
-										panel.removeFromParent();
-									}
-								});
+	
+										@Override
+										public void onSuccess(Course course) {
+											Window.alert("Course deleted.");
+											refreshCoursesTree(tabs);
+											panel.removeFromParent();
+										}
+									});
+								} catch(Exception e){
+									deleteButton.setEnabled(true);
+								}
 							} else {
 								deleteButton.setEnabled(true);
 							}
@@ -835,7 +855,7 @@ public class AdminEntryPoint implements EntryPoint {
 				if (caught instanceof MessageException){
 					processMessageException((MessageException) caught);
 				} else {
-					Window.alert("Failed get the years" + caught.getMessage());
+					Window.alert("Failed get the years " + caught.getMessage());
 				}
 			}
 
@@ -848,21 +868,7 @@ public class AdminEntryPoint implements EntryPoint {
 		// Add Logout command
 		logoutCommand = new Command(){
 			public void execute() {
-				adminService.logout(new AsyncCallback<Void>(){
-					@Override
-					public void onFailure(Throwable caught) {
-						if (caught instanceof MessageException){
-							processMessageException((MessageException) caught);
-						} else {
-							Window.alert("Logout failed" + caught.getMessage());
-						}
-					}
-
-					@Override
-					public void onSuccess(Void result) {
-						Window.Location.replace(GWT.getHostPageBaseURL()+"Admin.html");
-					}
-				});
+				logout();
 			}
 		};
 
@@ -1085,8 +1091,10 @@ public class AdminEntryPoint implements EntryPoint {
 		} else {
 			Date today = new Date();
 			int month = today.getMonth();
-			if ((month < 7 && course.getSemester() == 2) || (month > 6 && course.getSemester() == 1)){
-				valid = false;
+			int year = today.getYear();
+			if ((course.getSemester() == 1 && month > 7 && course.getYear() <= year) || 
+						(course.getYear() < year )){
+				valid = false;		
 				Window.alert(Constants.EXCEPTION_WRONG_SEMESTER);
 			}
 		}
@@ -1113,7 +1121,35 @@ public class AdminEntryPoint implements EntryPoint {
 			logoutCommand.execute();
 		}
 	}
+	
 	class ListChangeEvent extends ChangeEvent {}
+	
+	private void logout() {
+		adminService.logout(new AsyncCallback<Void>(){
+			@Override
+			public void onFailure(Throwable caught) {
+				if (caught instanceof MessageException){
+					Window.alert(((MessageException) caught).getMessage());
+				} else {
+					Window.alert("Logout failed" + caught.getMessage());
+				}
+				
+				if (GWT.getHostPageBaseURL() != null && GWT.getHostPageBaseURL().contains("AAF")){
+					Window.Location.replace("https://" + GWT.getModuleBaseURL() + "/Shibboleth.sso/Logout");
+				} else {
+					Window.Location.replace(GWT.getHostPageBaseURL()+"Admin.html");
+				}			}
+
+			@Override
+			public void onSuccess(Void result) {
+				if (loggedUser !=  null && loggedUser.getOrganization() != null && loggedUser.getOrganization().isShibbolethEnabled()){
+					Window.Location.replace("https://" + loggedUser.getOrganization().getReviewerDomain() + "/Shibboleth.sso/Logout");
+				} else {
+					Window.Location.replace(GWT.getHostPageBaseURL()+"Admin.html");
+				}
+			}
+		});
+	}
 }
  
  

@@ -167,15 +167,10 @@
 	<login-config>
 		<realm-name>iWrite</realm-name>
 		<auth-method>FORM</auth-method>
-		<!-- <auth-method>BASIC</auth-method> -->
 		<form-login-config>
 			<form-login-page>/Login.jsp</form-login-page>
 			<form-error-page>/Login.jsp?error=true</form-error-page>
 		</form-login-config> 
-		<!-- <form-login-config>
-			<form-login-page>/Login.html</form-login-page>
-			<form-error-page>/Login.html</form-error-page>
-		</form-login-config> -->
 	</login-config>
 	<security-constraint>
 		<web-resource-collection>
@@ -197,7 +192,7 @@
     	<role-name>SuperAdmin</role-name>
 		<role-name>Admin</role-name>
 		<role-name>Guest</role-name>	
-	</security-role>>
+	</security-role>
 	<!-- session config -->
 	<session-config>
 		<session-timeout>300</session-timeout>

@@ -84,7 +84,8 @@ public class Constants {
 	public static String EXCEPTION_REVIEW_NOT_FOUND="Review not found";
 	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_RATING="Your session has expired. Please login again to submit your rating.";
 	public static String EXCEPTION_SESSION_EXPIRED_SAVE_REVIEW="Your session has expired. Please login again to save your review.";
-	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_REVIEW="Your session has expired. Please login again to submit your review.";	
+	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_REVIEW="Your session has expired. Please login again to submit your review.";
+	public static String EXCEPTION_WRONG_ORGANIZATION_DOMAIN="The domain of the email doesn't belong to the organization";
 	
 	
 	// Dao Exceptions
@@ -184,6 +185,7 @@ public class Constants {
 																		"\n" + "Reviewing task with wrong finish date: ";
 	public static String EXCEPTION_DELETE_ORPHAN_EMAILS="Failed to delete the orphan emails.";
 	public static String EXCEPTION_NOT_ACTIVITY_FINISH_DATE = "The activity doesn't have a finish date. Please, set it";
+	public static String EXCEPTION_COURSE_LECTURERS_TUTORS="Wrong quantity of parameters. Please, verify the information of the lecturers and tuturos";
 	
 	// Roles
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
@@ -250,6 +252,8 @@ public class Constants {
 	public static String EMAIL_STUDENT_RECEIVED_REVIEW_MESSAGE = "Dear @UserName@, " + 
 																 "\n\n " + "You have received feedback from the activity @ActivityName@. " +
 																 "\n " + "You can go to @ReviewerLink@ to read it." + "\n\n " + "@FromName@";
+	
+	public static String EMAIL_TEST_MESSAGE = "This email is sent by reviewer to test the SMTP connection";
 
 	// Google user service messages
 	public static String EXCEPTION_GOOGLE_USER_DELETED_RECENTLY="The request instructs Google to create a new user but uses the username of an account that was deleted in the previous five days";
@@ -262,6 +266,8 @@ public class Constants {
 	public static String EXCEPTION_FAILED_RETRIEVE_USER="Failed to retrieve user";
 	public static String EXCEPTION_GOOGLE_DOWNLOAD_FILE="Could not download file %s of type: %s";
 	public static String EXCEPTION_GOOGLE_APPS="Google Apps message ";
+	public static String EXCEPTION_SPREADSHEET_GROUP="The group must be numeric";
+	public static String EXCEPTION_SPREADSHEET_EMAIL="The email is not valid, it must belong to the organization domain";
 	
 	// Google Document Types
 	public static String GOOGLE_DOCUMENT_TYPE_PDF = "pdf";
@@ -285,4 +291,8 @@ public class Constants {
 	
 	// Default password of new users in Google Apps
 	public static String NEW_USERS_PASSWORD_DEFAULT_VALUE="Changeme";
+	
+	// Shibboleth enabled property values
+	public static String YES="YES";
+
 }

@@ -35,6 +35,7 @@ public class UserDao extends ObjectDao {
 	private String USER_EMAIL="email";
 	private String ORGANIZATION = "organization";
 	private String ORGANIZATION_ID = "organizationId";
+	private String USER_USERNAME = "username";
 	
 	// Singleton
 	public static UserDao instance = null;
@@ -499,5 +500,37 @@ public class UserDao extends ObjectDao {
 			he.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_GET_USERS);
 		}
+	}
+	
+	
+	/**
+	 * Return user whose email is equals to the email received as parameter
+	 * @param email user email
+	 * @return user
+	 * @throws MessageException message to the logged user
+	 */
+	public List<User> getUserByUsername(String username) throws MessageException{
+		Session session = null;
+		List<User> users = new ArrayList<User>();;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			List<User> usersList = new ArrayList<User>();
+			usersList = session.createCriteria(User.class).add(Property.forName(USER_USERNAME).eq(username)).list();
+			session.getTransaction().commit();
+			for(User user: usersList){
+				if(user!=null){
+					users.add(user.clone());
+				}
+			}
+			
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USER);
+		}
+		return users;
 	}
 }

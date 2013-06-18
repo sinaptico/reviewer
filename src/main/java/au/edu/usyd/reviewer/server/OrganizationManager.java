@@ -323,7 +323,7 @@ public class OrganizationManager {
 		return organization;
 	}
 	
-	public boolean isOrganizationActivated(Organization organization) throws MessageException {
+	public boolean isOrganizationActivated(User loggedUser, Organization organization) throws MessageException {
 		boolean isOrganizationActivated = true;
 		
 		//check if the properties are completed
@@ -333,7 +333,7 @@ public class OrganizationManager {
 		isOrganizationActivated &=checkGoogleConnection(organization);
 		
 		//check SMTP connection
-		isOrganizationActivated &=checkSMTPConnection(organization);
+		isOrganizationActivated &=checkSMTPConnection(loggedUser, organization);
 		
 		return isOrganizationActivated;
 
@@ -439,7 +439,7 @@ public class OrganizationManager {
 		return connectionOK;
 	}
 	
-	private boolean checkSMTPConnection(Organization organization) throws MessageException {
+	private boolean checkSMTPConnection(User loggedUser, Organization organization) throws MessageException {
 		boolean connectionOK = true;
 		try{
 			String username = organization.getEmailUsername();
@@ -451,7 +451,8 @@ public class OrganizationManager {
 			String reviewerDomain = organization.getReviewerDomain();
 			AESCipher aesCipher = AESCipher.getInstance();
 			String decryptedValue = aesCipher.decrypt(password);
-			EmailNotifier emailSender = new EmailNotifier(username, password, smtpHost, smtpPort, domain,reviewerDomain);
+			EmailNotifier emailSender = new EmailNotifier(username, decryptedValue, smtpHost, smtpPort, domain,reviewerDomain);
+			emailSender.sendTestSMTPEmail(loggedUser);
 		} catch (Exception e) {
 			connectionOK = false;
 			e.printStackTrace();
@@ -460,8 +461,8 @@ public class OrganizationManager {
 		return connectionOK;
 	}
 	
-	public Organization activateOrganization(Organization anOrganization) throws MessageException {
-		if (organizationManager.isOrganizationActivated(anOrganization)){
+	public Organization activateOrganization(User loggedUser, Organization anOrganization) throws MessageException {
+		if (organizationManager.isOrganizationActivated(loggedUser,anOrganization)){
 			if (!anOrganization.isActivated()){
 				anOrganization.setActivated(true);
 				anOrganization = organizationDao.save(anOrganization);

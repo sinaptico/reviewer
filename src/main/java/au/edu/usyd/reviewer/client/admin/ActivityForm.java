@@ -253,7 +253,7 @@ public class ActivityForm extends Composite {
 		int row = reviewTable.getRowCount();
 		reviewTable.setWidget(row, 0, reviewForm);
 		reviewTable.setWidget(row, 1, remove);
-		if (reviewingActivity.getStatus() >= Activity.STATUS_START){
+		if (reviewingActivity.getStatus() >= Activity.STATUS_FINISH){
 			remove.setEnabled(false);
 		} else{
 			remove.setEnabled(true);
@@ -634,7 +634,7 @@ public class ActivityForm extends Composite {
 					focusWidget.setEnabled(false);
 				} else if ( widget instanceof DateBox){
 					DateBox dateBox = (DateBox)widget;
-					dateBox.setEnabled(false);
+					dateBox.setEnabled(true);
 				}
 			}
 		}

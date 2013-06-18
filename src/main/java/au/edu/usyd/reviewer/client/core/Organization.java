@@ -20,9 +20,12 @@ import javax.persistence.OneToMany;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
+import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.OrganizationDao;
 import au.edu.usyd.reviewer.server.Reviewer;
 
@@ -61,12 +64,15 @@ public class Organization implements Serializable {
 	private boolean activated = false;
 	
 	
-	/** Domains of the emails that belong to the organization */
+	
+	/** emailDomains are the domains of the emails that belong to the organization. 
+	 * If this table has only one and this domain is equals to Google Domain then it means that the email for access to the Google
+	 * will be username@googleDomain otherwise username.emailDomain@googleDomain 
+	 */
 	@ElementCollection
 	@JoinTable(name = "Organization_Emails_Domains")
 	@LazyCollection(LazyCollectionOption.FALSE)
-	private Set<String> emailDomain = new HashSet<String>();
-		
+	private Set<String> emailDomains = new HashSet<String>();
 
 	public Organization(){
 	}
@@ -122,18 +128,19 @@ public class Organization implements Serializable {
 		this.activated = activated;
 	}
 	
-	public Set<String> getEmailsDomains() {
-		return emailDomain;
-	}
-
-	public void setEmailsDomains(Set<String> emailsDomains) {
-		this.emailDomain = emailsDomains;
-	}
-
 	
+	public Set<String> getEmailDomains() {
+		return emailDomains;
+	}
+
+	public void setEmailDomains(Set<String> emailDomains) {
+		this.emailDomains = emailDomains;
+	}
+	
+
 	/** End Getters and Setters **/
-
 	
+
 	/**
 	 * Add a property to the collection of properties
 	 * @param property property to add
@@ -235,13 +242,11 @@ public class Organization implements Serializable {
 		organization.setDeleted(this.isDeleted());
 		organization.setActivated(this.isActivated());
 		
-		Set<String> emailDomain = new HashSet<String>();
-		for(String domain: this.getEmailsDomains()){
-			if(domain != null){
-				emailDomain.add(domain);
-			}
+		Set<String> emailDomains = new HashSet<String>();
+		for(String domain: this.getEmailDomains()){
+			emailDomains.add(domain);
 		}
-		
+		organization.setEmailDomains(emailDomains);
 		return organization;
 	}
 	
@@ -392,8 +397,7 @@ public class Organization implements Serializable {
 	 * @return
 	 */
 	public boolean domainBelongsToEmailsDomain(String domain){
-		
-		return  this.emailDomain.contains(domain.toLowerCase());
+		return  this.emailDomains.contains(domain);
 	}
 	
 	/**
@@ -401,8 +405,17 @@ public class Organization implements Serializable {
 	 * @param domain
 	 */
 	public void addDomainToEmailsDomains(String domain){
-		this.emailDomain.add(domain);
+		this.emailDomains.add(domain);
 	}
-	
+
+	/**
+	 * Return a boolean to say if the domains of the emails of organization contains the google apps domain (Google Domain) and it's the
+	 * only email in this table for this organization
+	 * @return true or false
+	 */
+	public boolean isGoogleDomianTheOnlyDomainInEmailDomains() {
+		return  this.emailDomains.contains(this.getGoogleDomain()) && 
+			   (this.emailDomains.size() == 1);
+	}
 
 }

@@ -287,7 +287,7 @@ public class OrganizationDao extends ObjectDao{
 			session = this.getSession();
 			session.beginTransaction();
 			String sQuery = "SELECT DISTINCT organization FROM Organization organization "+
-							"LEFT JOIN FETCH organization.emailDomain emailDomain " +
+							"LEFT JOIN FETCH organization.emailDomains emailDomain " +
 							"WHERE emailDomain=:domain";
 			Query query= session.createQuery(sQuery);
 			if (domain!=null){

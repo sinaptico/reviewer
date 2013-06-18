@@ -41,8 +41,6 @@ public static String folderUrl(String id, String domain) {
 	 */
 	//public static String glosserUrl(Long siteId, String docId) {
     public static void glosserUrl(Anchor glosserLink, Long siteId, String docId){
-//		return "http://129.78.13.24:8080/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
-    	//return "http://"+getGlosserHost()+":"+getGlosserHost()+"/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
     	getGlosserUrl(glosserLink, siteId, docId);
 	}
 
