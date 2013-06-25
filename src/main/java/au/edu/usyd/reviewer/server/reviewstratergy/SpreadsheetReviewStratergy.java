@@ -21,6 +21,7 @@ import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentRepository;
@@ -51,13 +52,13 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		this.assignmentRepository = assignmentRepository;
 		this.userDao = UserDao.getInstance();
 		this.courseDao = CourseDao.getInstance();
-		if (assignmentRepository != null){
+		if (assignmentRepository != null && writingActivity.getCurrentDeadline()!= null){
 			this.folder = getDocumentsFolder(course,writingActivity.getId(),writingActivity.getCurrentDeadline().getId(),WritingActivity.TUTORIAL_ALL);
 		}
 	}
 	
 	private String getDocumentsFolder( Course course, long activityId, long activityDeadlineId, String tutorial)  {
-		//String documentsHome = Reviewer.getDocumentsHome();
+		//
 		Organization organization = course.getOrganization();
 		String documentsHome = Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getDocumentsHome(); 
 		return String.format(documentsHome + "/%s/%s/%s/%s", course.getId(), activityId, activityDeadlineId, tutorial);
@@ -73,8 +74,12 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		
 		LOOP_ENTRIES: for (ListEntry listEntry : listEntries) {
 			// get document to review	
-			String username = listEntry.getCustomElements().getValue("revieweeId").trim();
-			User reviewee = userDao.getUserByUsername(username, course.getOrganization());
+			//String username = listEntry.getCustomElements().getValue("revieweeId").trim();
+			String email = listEntry.getCustomElements().getValue("revieweeId").trim();
+			User reviewee = userDao.getUserByEmail(email);
+			if (reviewee == null){
+				throw new MessageException(Constants.EXCEPTION_STUDENT_NO_EXIST + "\nEmail " + email);
+			}
 			DocEntry docEntry;
 			
 			docEntry = returnDocEntry(reviewee);
@@ -84,10 +89,26 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 				Collections.shuffle(entriesNumberList,new Random());
 			    
 			    for (Integer entryNumber : entriesNumberList) {
-			    	username = listEntries.get(entryNumber).getCustomElements().getValue("revieweeId").trim();
-			    	reviewee = userDao.getUserByUsername(username,course.getOrganization());
-			    	username = listEntries.get(entryNumber).getCustomElements().getValue("reviewerId").trim();
-			    	User reviewer = userDao.getUserByUsername(username,course.getOrganization());
+			    	//username = listEntries.get(entryNumber).getCustomElements().getValue("revieweeId").trim();
+			    	email = listEntries.get(entryNumber).getCustomElements().getValue("revieweeId").trim();
+			    	reviewee = userDao.getUserByEmail(email);
+			    	if (reviewee == null){
+						throw new MessageException(Constants.EXCEPTION_STUDENT_NO_EXIST + "\nEmail " + email);
+					}
+			    	if (reviewee.getDomain() != null && reviewee.getOrganization() != null && 
+							!reviewee.getOrganization().domainBelongsToEmailsDomain(reviewee.getDomain())){
+						throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN + "\nStudent email in Sheet2: " + email);
+					}
+			    	//username = listEntries.get(entryNumber).getCustomElements().getValue("reviewerId").trim();
+			    	email = listEntries.get(entryNumber).getCustomElements().getValue("reviewerId").trim();
+			    	User reviewer = userDao.getUserByEmail(email);
+			    	if (reviewer == null){
+						throw new MessageException(Constants.EXCEPTION_STUDENT_NO_EXIST + "\nEmail " + email);
+					}
+			    	if (reviewer.getDomain() != null && reviewer.getOrganization() != null && 
+							!reviewer.getOrganization().domainBelongsToEmailsDomain(reviewer.getDomain())){
+						throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN + "\nStudent email in Sheet2: " + email);
+					}
 			    	if (reviewer.getUsername().equalsIgnoreCase(reviewee.getUsername())){continue;}
 			    	
 			    	DocEntry tempDocEntry = returnDocEntry(reviewee);
@@ -100,8 +121,16 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 			
 	        if (docEntry !=null){	        	
 				// check that reviewer has not already been assigned to review this document
-	        	username = listEntry.getCustomElements().getValue("reviewerId").trim();
-				User reviewer = userDao.getUserByUsername(username,course.getOrganization());
+	        	//email = listEntry.getCustomElements().getValue("reviewerId").trim();
+	        	email = listEntry.getCustomElements().getValue("reviewerId").trim();
+				User reviewer = userDao.getUserByEmail(email);
+				if (reviewer == null){
+					throw new MessageException(Constants.EXCEPTION_STUDENT_NO_EXIST + "\nEmail " + email);
+				}
+				if (reviewer.getDomain() != null && reviewer.getOrganization() != null && 
+						!reviewer.getOrganization().domainBelongsToEmailsDomain(reviewer.getDomain())){
+					throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN + "\nStudent email in Sheet2: " + email);
+				}
 				ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, reviewer);
 				if (reviewEntry != null) {
 					continue LOOP_ENTRIES;
@@ -137,9 +166,9 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 	}
 
 	private boolean docEntryIsEmpty(DocEntry docEntry) {
-		File file = new File(folder + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
 		
 		try{
+			File file = new File(folder + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
 			Organization organization = course.getOrganization();
 			File empty = new File(Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getDocumentsHome() + Reviewer.getEmptyDocument());
 			if (empty.length() == file.length()){return true;}			
@@ -167,15 +196,18 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		return revieweeUserGroup;
 	}
 
-	protected List<ListEntry> getListEntries() {
+	protected List<ListEntry> getListEntries() throws MessageException {
 		List<ListEntry> listEntries = null;
 		try {
 			SpreadsheetEntry spreadsheetEntry = assignmentRepository.getGoogleDocsServiceImpl().getSpreadsheet(course.getSpreadsheetId());
-			WorksheetEntry worksheetEntry = assignmentRepository.getGoogleSpreadsheetServiceImpl().getSpreadsheetWorksheets(spreadsheetEntry).get(1);
+//			WorksheetEntry worksheetEntry = assignmentRepository.getGoogleSpreadsheetServiceImpl().getSpreadsheetWorksheets(spreadsheetEntry).get(1);
+			List<WorksheetEntry> worksheetEntryList = assignmentRepository.getGoogleSpreadsheetServiceImpl().getSpreadsheetWorksheets(spreadsheetEntry);
+			WorksheetEntry worksheetEntry = worksheetEntryList.get(1);
 			listEntries = assignmentRepository.getGoogleSpreadsheetServiceImpl().getWorksheetRows(worksheetEntry);
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("Failed to alloation reviews", e);
+			throw new MessageException(Constants.EXCEPTION_PEER_REVIEW_NOT_EXIST);
 		}
 		return listEntries;
 	}

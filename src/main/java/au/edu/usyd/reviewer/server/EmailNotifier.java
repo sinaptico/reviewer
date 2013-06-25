@@ -111,15 +111,7 @@ public class EmailNotifier {
 		message.setSubject(subject);
 		message.addRecipients(Message.RecipientType.TO, internetAddress);
 		message.saveChanges();
-		logger.info("MARIELA - username " + username);
-		logger.info("MARIELA - password " + password);
-		logger.info("MARIELA - email content " + content);
-		logger.info("MARIELA - email fromAddress " + fromAddress);
-		logger.info("MARIELA - email fromName " + fromName);
-		logger.info("MARIELA - email To " + message.getRecipients(Message.RecipientType.TO));
-		logger.info("MARIELA - before send the email");
 		transport.sendMessage(message, message.getRecipients(Message.RecipientType.TO));
-		logger.info("MARIELA - after send the email");
 	}
 
 	public void sendStudentActivityStartNotification(User student, Course course, WritingActivity writingActivity, Deadline deadline) throws MessagingException, UnsupportedEncodingException, MessageException {

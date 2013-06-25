@@ -75,7 +75,6 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public AclEntry addDocumentPermission(DocumentListEntry entry, AclRole aclRole, String user) throws IOException, ServiceException {
-		logger.info("MARIELA - Adding document permission: " + entry.getResourceId() + ", role=" + aclRole.getValue() + ", user=" + user);
 		AclEntry aclEntry = new AclEntry();
 		AclScope aclScope = new AclScope(AclScope.Type.USER, user);
 		aclEntry.setRole(aclRole);
@@ -343,7 +342,6 @@ public class GoogleDocsServiceImpl {
 	}
 	
 	public boolean updateDocumentPermission(DocumentListEntry entry, AclRole aclRole, String user) throws MalformedURLException, IOException, ServiceException {
-		logger.info("MARIELA - Updating document permission: " + entry.getResourceId() + ", user=" + user + " role " + aclRole.getValue());
 		List<AclEntry> aclEntries = getDocumentPermissions(entry);
 		for (AclEntry aclEntry : aclEntries) {
 			if (aclEntry.getScope().getValue().equals(user)) {

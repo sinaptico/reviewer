@@ -139,10 +139,6 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 							user.setOrganization(organization);
 							String firstname = (String) request.getAttribute("givenName");
 							String lastname = (String) request.getAttribute("surname");
-							logger.info("MARIELA - givenName " + firstname);
-							logger.info("MARIELA - surname " + lastname);
-							logger.info("MARIELA - fisrtname " + user.getFirstname());
-							logger.info("MARIELA - lastname " + user.getLastname());
 							if (StringUtil.isBlank(user.getFirstname()) || StringUtil.isBlank(user.getLastname()) ||
 							 (firstname != null && !firstname.toLowerCase().equals(user.getFirstname())) || 
 							 (lastname != null && !lastname.toLowerCase().equals(user.getLastname()))){								
@@ -200,20 +196,26 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 		return this.isAdmin() || this.isSuperAdmin();
 	}
 	
-	protected boolean isCourseLecturer(Course course) {
+	private boolean isCourseLecturer(Course course) {
 		
 		return user == null ? false : course!= null && course.getLecturers().contains(user);
 	}
 	
-	protected boolean isGuestOrAdminOrSuperAdmin(){
-		return this.isAdmin() || this.isSuperAdmin() || isGuest();
+	protected boolean isGuestOrAdminOrSuperAdminOrStaff(){
+		return this.isAdmin() || this.isSuperAdmin() || this.isGuest() || this.isStaff();
 	}
 	
 	protected boolean isGuest(){
 		return user == null? false : user.isGuest();
 	}
 	
-
+	protected boolean isStaff(){
+		return user == null? false : user.isStaff();
+	}
+	
+	protected boolean isStaff(Course course){
+		return (isCourseLecturer(course) && isStaff());
+	}
 
 	protected User getMockedUser() throws MessageException{
 		User mockedUser = null;
@@ -327,9 +329,6 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 		
 		String firstname = (String) request.getAttribute("givenName");
 		String lastname = (String) request.getAttribute("surname");
-		logger.info("MARIELA - email " + email);
-		logger.info("MARIELA - givenName " + firstname);
-		logger.info("MARIELA - surname " + lastname);
 		User newUser = userDao.getUserByEmail(email);
 		if (newUser == null){
 			newUser = new User();

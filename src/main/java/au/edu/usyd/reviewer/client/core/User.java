@@ -307,6 +307,12 @@ public class User implements Serializable {
 		return this.getRole_name().contains(Constants.ROLE_GUEST);
 	}
 	
+	public boolean isStaff(){
+		return this.getRole_name().contains(Constants.ROLE_STAFF);
+	}
+	
+	
+	
 	public String getDomain(){
 		String domain = null;
 		String email = getEmail();

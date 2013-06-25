@@ -142,16 +142,6 @@ public class AssignmentManager {
 	private void downloadDocuments(Course course, WritingActivity writingActivity, Deadline deadline) {
 		Organization organization = course.getOrganization();
 		File activityFolder = new File(getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), "all", organization));
-		logger.error("MARIELA - activityFolder.getParent() " + activityFolder.getParent());
-		logger.error("MARIELA - activityFolder.getParentFile().exists() " + activityFolder.getParentFile().exists());
-		logger.error("MARIELA - activityFolder.getPath() " + activityFolder.getPath());
-		logger.error("MARIELA - activityFolder.canWrite() " + activityFolder.canWrite());
-		logger.error("MARIELA - activityFolder.exists() " + activityFolder.exists());
-		logger.error("MARIELA - before activityFolder.getAbsolutePath() " + activityFolder.getAbsolutePath());
-		logger.error("MARIELA - before activityFolder.setWritable(true)");
-		activityFolder.setWritable(true);
-		logger.error("MARIELA - activityFolder.canWrite() " + activityFolder.canWrite());
-		logger.error("MARIELA - before activityFolder.mkdirs()");
 		activityFolder.mkdirs();
 		for (DocEntry docEntry : writingActivity.getEntries()) {
 			try {
@@ -579,9 +569,7 @@ public class AssignmentManager {
 			    !lecturer.getOrganization().domainBelongsToEmailsDomain(lecturer.getDomain())){	
 				throw new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
 			}
-			if (!lecturer.isAdmin()){
-				lecturer.addRole(Constants.ROLE_ADMIN);
-			}
+			
 			// lecture doesn't exists in database
 			if (lecturer.getEmail() != null){
 				lecturer.getUsername();
@@ -603,15 +591,19 @@ public class AssignmentManager {
 					// lecture doesn't have a password to login in reviewer because uses shibboleth 
 					lecturer.setPassword(null);
 				} 
-				
+				lecturer.addRole(Constants.ROLE_STAFF);
 			} else {
 				lecturer.setId(user.getId());
 				lecturer.setPassword(user.getPassword());
+				lecturer.setRole_name(user.getRole_name());
 				if (lecturer.getFirstname() == null){
 					lecturer.setFirstname(user.getFirstname());
 				}
 				if (lecturer.getLastname() == null){
 					lecturer.setLastname(user.getLastname());
+				}
+				if (!lecturer.isAdmin() && !lecturer.isStaff() && !lecturer.isSuperAdmin()){
+					lecturer.addRole(Constants.ROLE_STAFF);
 				}
 			}
 			lecturer = userDao.save(lecturer);
@@ -627,10 +619,7 @@ public class AssignmentManager {
 			if (tutor.getOrganization() == null){
 				tutor.setOrganization(organization);
 			}
-			if (!tutor.isAdmin()){
-				tutor.addRole(Constants.ROLE_ADMIN);
-			}
-			tutor.addRole(Constants.ROLE_GUEST);
+			
 			// if the domain of the tutor's email belong to the organizations email domains ==> create the user in Google Apps.
 			if (tutor.getDomain() != null && tutor.getOrganization() != null && 
 					!tutor.getOrganization().domainBelongsToEmailsDomain(tutor.getDomain())){	
@@ -660,6 +649,8 @@ public class AssignmentManager {
 					tutor.setPassword(null);
 				} 
 				
+				tutor.addRole(Constants.ROLE_STAFF);
+				
 			} else {
 				tutor.setId(user.getId());
 				tutor.setPassword(user.getPassword());
@@ -668,6 +659,9 @@ public class AssignmentManager {
 				}
 				if (tutor.getLastname() == null){
 					tutor.setLastname(user.getLastname());
+				}
+				if (!tutor.isAdmin() && !tutor.isStaff() && !tutor.isSuperAdmin()){
+					tutor.addRole(Constants.ROLE_STAFF);
 				}
 			}
 			tutor = userDao.save(tutor);
@@ -783,11 +777,31 @@ public class AssignmentManager {
 			// save student users
 			saveStudentUsers(course);
 			
+			// if the logged user is staff and course lecturers and tutors are empty then add the logged user as lecturer
+			if (course.getLecturers().isEmpty() && course.getTutors().isEmpty() && user.isStaff()){
+				course.getLecturers().add(user);
+			}
 			// save lecturer users
 			saveLecturerUsers(course);
 			
 			// save tutor users
 			saveTutorUsers(course);
+			
+			//if logged user is an admin and it's one of the lecturers or tutors then
+			// remove if from lectures or tutors before update the course becuase they have permissions
+			// if they are lecturer or tutors then Google will remove his/her permissions
+			for(User lecturer : course.getLecturers()){
+				if (lecturer.isAdmin() || lecturer.isSuperAdmin()){
+					throw new MessageException(Constants.EXCEPTION_ADMIN_CAN_NO_BE_LECTURER);
+				} 
+			}
+					
+			for(User tutor : course.getTutors()){
+				if (tutor.isAdmin() && tutor.isSuperAdmin()){
+					throw new MessageException(Constants.EXCEPTION_ADMIN_CAN_NO_BE_TUTOR);
+				}
+			}
+			
 			
 			// update course document permissions
 			assignmentRepository.updateCourseDocumentPermissions(course, user);
@@ -1488,9 +1502,6 @@ public class AssignmentManager {
 				assignmentRepository.createUser(lecturer,organization.getOrganizationPasswordNewUsers()+lecturer.getUsername());
 			}
 			
-			lecturer.addRole(Constants.ROLE_ADMIN);					
-			lecturer.addRole(Constants.ROLE_GUEST);
-			
 			// search the lecturer in the database
 			User user = userDao.getUserByEmail(lecturer.getEmail());
 			if (lecturer.getEmail() != null){
@@ -1512,6 +1523,7 @@ public class AssignmentManager {
 						lecturer.setPassword(null);
 					}
 				}
+				lecturer.addRole(Constants.ROLE_STAFF);
 			}
 			else {
 				lecturer.setId(user.getId());
@@ -1521,6 +1533,9 @@ public class AssignmentManager {
 				}
 				if (lecturer.getLastname() == null){
 					lecturer.setLastname(user.getLastname());
+				}
+				if (!lecturer.isAdmin() && !lecturer.isStaff() && !lecturer.isSuperAdmin()){
+					lecturer.addRole(Constants.ROLE_STAFF);
 				}
 			}	
 			
@@ -1554,11 +1569,7 @@ public class AssignmentManager {
 		Organization organization = course.getOrganization();
 		for (User tutor : course.getTutors()) {
 			tutor.setOrganization(course.getOrganization());
-			if (!tutor.isAdmin()){
-				tutor.addRole(Constants.ROLE_ADMIN);
-			}
-			tutor.addRole(Constants.ROLE_GUEST);
-		
+			
 			if (tutor.getDomain() != null && tutor.getOrganization() != null && 
 				    !tutor.getOrganization().domainBelongsToEmailsDomain(tutor.getDomain())){	
 				MessageException me = new MessageException(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
@@ -1586,6 +1597,7 @@ public class AssignmentManager {
 						tutor.setPassword(null);
 					}
 				}
+				tutor.addRole(Constants.ROLE_STAFF);
 			} else {
 				tutor.setId(user.getId());
 				tutor.setPassword(user.getPassword());
@@ -1594,6 +1606,9 @@ public class AssignmentManager {
 				}
 				if (tutor.getLastname() == null){
 					tutor.setLastname(user.getLastname());
+				}
+				if (!tutor.isAdmin() && !tutor.isStaff() && !tutor.isSuperAdmin()){
+					tutor.addRole(Constants.ROLE_STAFF);
 				}
 			}
 			

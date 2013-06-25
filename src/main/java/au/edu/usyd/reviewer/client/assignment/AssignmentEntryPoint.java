@@ -488,7 +488,6 @@ public class AssignmentEntryPoint implements EntryPoint {
 		assignmentService.logout(new AsyncCallback<Void>(){
 			@Override
 			public void onFailure(Throwable caught) {
-				caught.printStackTrace();
 				if (caught instanceof MessageException){
 					Window.alert(caught.getMessage());
 				} else {

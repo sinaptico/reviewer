@@ -238,19 +238,7 @@ public class FileServlet extends HttpServlet {
 		                        fileName = course.getName()+" - Sem- "+Integer.toString(course.getSemester())+" - "+Integer.toString(course.getYear())+" - "+docEntry.getTitle();
 		                        File uploadedFile = new File(UPLOAD_DIRECTORY, fileName+"."+extension);
 		                        File filePath = new File(UPLOAD_DIRECTORY);
-		                        
-		                        logger.error("MARIELA 9- before create parents of filePath folders activityFolder.getParent().mkdirs() " + filePath.getParent());
-		                        if (!filePath.getParentFile().exists()){
-		                        	filePath.getParentFile().mkdirs();
-		                        }
-		                        logger.error("MARIELA 10- before create  filePath folders activityFolder.mkdirs() " + filePath.getParent());
-		                        if (!filePath.exists()){
-		                        	filePath.createNewFile();
-		                        }
-		                        logger.error("MARIELA 11- after create parents of activity folders activityFolder.mkdirs() " + filePath.getParent());
-//		                        if (!filePath.exists()){
-//		                        	filePath.mkdirs();
-//		                        }
+		                        filePath.mkdirs();
 		                        
 		                        item.write(uploadedFile);	                            
 		                        resp.setStatus(HttpServletResponse.SC_CREATED);
@@ -259,14 +247,13 @@ public class FileServlet extends HttpServlet {
 		                            
 		                        docEntry.setUploaded(true);
 		                        docEntry.setFileName(fileName+"."+extension);
-	//	                            logger.info("fileName+Extension " + fileName+"."+extension);
+		                    
 		                        docEntry = assignmentDao.save(docEntry);
 		      				}       
 	      			    }     
                 }
                   
                   if (csv != null){
-//                	  logger.info("Serving csv file");
                 	  resp.setContentType("application/octet-stream");
                 	  resp.setHeader("Content-Disposition", "attachment; filename=\"" + FileUtil.escapeFilename("results.csv") + "\"");			
                 	  resp.getOutputStream().write(csv.getBytes());
@@ -276,15 +263,11 @@ public class FileServlet extends HttpServlet {
                   
                   
             } catch (Exception e) {
+            	e.printStackTrace();
             	logger.info("An error occurred while creating the file : " + e.getMessage());
-//                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-//                        "An error occurred while creating the file : " + e.getMessage());
             	throw new ServletException("An error occurred while creating the file : " + e.getMessage());
             }
         } else {
-//        	logger.info("Not a multipart request, User uploading file: " + user);      
-//            resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
-//                            "Request contents type is not supported by the servlet.");
         	ServletException me = new ServletException("Request contents type is not supported by the servlet.");
             throw me;
         }
@@ -310,35 +293,6 @@ public class FileServlet extends HttpServlet {
 
 	private User getUser(HttpServletRequest request, HttpServletResponse response) {
 		
-//		Object obj = request.getSession().getAttribute("user");
-//			
-//		if (obj != null){
-//			user = (User) obj;
-//		}
-//		Principal principal = request.getUserPrincipal();
-//		UserDao userDao = UserDao.getInstance();
-//		try{
-//			if  (user == null){
-//				user = userDao.getUserByEmail(principal.getName());
-//				request.getSession().setAttribute("user", user);
-//			} else if (principal.getName() != null && !principal.getName().equals(user.getEmail())){
-//				user = userDao.getUserByEmail(principal.getName());
-//				request.getSession().setAttribute("user", user);
-//				
-//			}
-//			
-//			if (user.isSuperAdmin() || user.isAdmin()){
-//				User mockedUser = (User) request.getSession().getAttribute("mockedUser");
-//				if (mockedUser != null && mockedUser.getOrganization() == null){
-//					mockedUser = userDao.getUserByEmail(mockedUser.getEmail());
-//				} 
-//				return mockedUser;
-//			}
-//		}
-//		catch(Exception e){
-//			e.printStackTrace();
-//		}
-//		return user
 		User user = null;
 		try {
 			user = getLoggedUser(request, response);
@@ -498,11 +452,8 @@ public class FileServlet extends HttpServlet {
 	private User createUser(HttpServletRequest request, String email, Organization anOrganization) throws MessageException{
 		
 		// add user into the database as a guest 
-		logger.info("MARIELA - user doesn't exists in the database so he/she will be created as guest");
 		String firstname = (String) request.getAttribute("givenName");
-		logger.info("MARIELA - firstname " + firstname);
 		String lastname = (String) request.getAttribute("surname");
-		logger.info("MARIELA - lastname " + lastname);
 		UserDao userDao = UserDao.getInstance();
 		User newUser = userDao.getUserByEmail(email);
 		if (newUser == null){

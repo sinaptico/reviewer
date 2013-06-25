@@ -120,6 +120,7 @@
 			<role-name>Guest</role-name>
 			<role-name>SuperAdmin</role-name>
 			<role-name>Admin</role-name>
+			<role-name>Staff</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<security-constraint>
@@ -134,6 +135,7 @@
 		<auth-constraint>
 			<role-name>SuperAdmin</role-name>
 			<role-name>Admin</role-name>
+			<role-name>Staff</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<security-constraint>
@@ -149,6 +151,7 @@
 			<role-name>Guest</role-name>
 			<role-name>SuperAdmin</role-name>
 			<role-name>Admin</role-name>
+			<role-name>Staff</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<security-constraint>
@@ -181,6 +184,7 @@
 			<role-name>SuperAdmin</role-name>
 			<role-name>Admin</role-name>
 			<role-name>Guest</role-name>
+			<role-name>Staff</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<security-constraint>
@@ -192,6 +196,7 @@
     	<role-name>SuperAdmin</role-name>
 		<role-name>Admin</role-name>
 		<role-name>Guest</role-name>	
+		<role-name>Staff</role-name>
 	</security-role>
 	<!-- session config -->
 	<session-config>

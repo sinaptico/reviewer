@@ -27,12 +27,10 @@ INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,us
 INSERT INTO User_roles (email,role_name) VALUES ('admin@smart-sourcing.com.ar','Admin');
 
 INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('lecturer@demo-sinaptico.com','Lecturer','For Demo Sinaptico',MD5('reviewer'),1,'','lecturer');
-INSERT INTO User_roles (email,role_name) VALUES ('lecturer@demo-sinaptico.com','Admin');
-INSERT INTO User_roles (email,role_name) VALUES ('lecturer@demo-sinaptico.com','Guest');
+INSERT INTO User_roles (email,role_name) VALUES ('lecturer@demo-sinaptico.com','Staff');
 
 INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('tutor@demo-sinaptico.com','Tutor','For Demo Sinaptico',MD5('reviewer'),1,'','tutor');
-INSERT INTO User_roles (email,role_name) VALUES ('tutor@demo-sinaptico.com','Admin');
-INSERT INTO User_roles (email,role_name) VALUES ('tutor@demo-sinaptico.com','Guest');
+INSERT INTO User_roles (email,role_name) VALUES ('tutor@demo-sinaptico.com','Staff');
 
 INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student1@demo-sinaptico.com','Student 1','For Demo Sinaptico',MD5('reviewer'),1,'','student1');
 INSERT INTO User_roles (email,role_name) VALUES ('student1@demo-sinaptico.com','Guest');
@@ -40,11 +38,11 @@ INSERT INTO User_roles (email,role_name) VALUES ('student1@demo-sinaptico.com','
 INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student2@demo-sinaptico.com','Student 2','For Demo Sinaptico',MD5('reviewer'),1,'','student2');
 INSERT INTO User_roles (email,role_name) VALUES ('student2@demo-sinaptico.com','Guest');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student@smart-sourcing.com.ar','Student','For Smart',MD5('reviewer'),2,'','student');
-INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar','Admin');
+#INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student@smart-sourcing.com.ar','Student','For Smart',MD5('reviewer'),2,'','student');
+#INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar','Guest');
 
-INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('mariela.dagraca@smart-sourcing.com.ar','Lecturer','For Smart',MD5('reviewer'),2,'','mariela.dagraca');
-INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar','Admin');
+#INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('mariela.dagraca@smart-sourcing.com.ar','Lecturer','For Smart',MD5('reviewer'),2,'','mariela.dagraca');
+#INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar','Staff');
 
 INSERT INTO Organization_Emails_Domains (organization_Id,emailDomains) VALUES (1,'demo-sinaptico.com');
 INSERT INTO Organization_Emails_Domains (organization_Id,emailDomains) VALUES (2,'smart-sourcing.com.ar');
@@ -78,7 +76,7 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,10,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,11,'NO');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,12,'NewPassword');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,13,'dev-02.sinapti.co');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,13,'dev-01.sinapti.co');
 
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,1,'admin@smart-sourcing.com.ar');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,2,'3f923c4d96751840');
@@ -90,7 +88,7 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,8,'dev-01.sinapti.co');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,9,'80');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,value) VALUES (2,10,'');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,11,'YES');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,11,'NO');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,12,'PasswordSmart');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,13,'dev-02.sinapti.co');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,13,'dev-01.sinapti.co');
 

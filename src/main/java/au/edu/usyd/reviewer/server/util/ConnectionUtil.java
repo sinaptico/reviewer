@@ -27,7 +27,7 @@ public class ConnectionUtil {
 				session.invalidate();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			throw new IOException(Constants.EXCEPTION_LOGOUT);
 		}
 	}

@@ -292,17 +292,22 @@ public class AssignmentDao {
 		}
 	}
 
-	public List<Course> loadLecturerCourses(Integer semester, Integer year, User lecturer) throws MessageException{
+	public List<Course> loadStaffCourses(Integer semester, Integer year, User staff) throws MessageException{
 		Session session = null;
+		List<Course> resultList = new ArrayList<Course>();
 		try{
 			String query = "from Course course " + 
-						   "join fetch course.lecturers lecturer " + 
-						   "where lecturer=:lecturer and course.semester=:semester AND course.year=:year AND course.deleted=false";
+						   "left join fetch course.lecturers lecturer " +
+						   "left join fetch course.tutors tutor " +
+						   "where (lecturer=:lecturer OR tutor=:tutor) and course.semester=:semester AND course.year=:year AND course.deleted=false";
 			session = this.getSession();
 			session.beginTransaction();
-			List<Course> courses = session.createQuery(query).setParameter("semester", semester).setParameter("year", year).setParameter("lecturer", lecturer).list();
+			List<Course> courses = session.createQuery(query).setParameter("semester", semester)
+															 .setParameter("year", year)
+															 .setParameter("lecturer", staff)
+															 .setParameter("tutor", staff).list();
 			session.getTransaction().commit();
-			List<Course> resultList = new ArrayList<Course>();
+			
 			for(Course course : courses){
 				if (course != null){
 					Set<WritingActivity> activities = new HashSet<WritingActivity>();
@@ -315,7 +320,6 @@ public class AssignmentDao {
 					resultList.add(course.clone());
 				}
 			}
-			return resultList;
 		} catch (Exception e){
 			e.printStackTrace();
 			if ( session != null && session.getTransaction() != null){
@@ -323,6 +327,7 @@ public class AssignmentDao {
 			}
 			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
 		}
+		return resultList;
 	}
 
 	public Rating loadRating(Long ratingId) throws MessageException{

@@ -157,7 +157,6 @@ public class AssignmentRepository {
 			for (AclEntry aclEntry : aclEntries) {
 				if (aclEntry.getScope().getValue().equals(owner.getGoogleAppsEmail())) {
 					try{
-						logger.info("MARIELA 1 - owner.getGoogleAppsEmail() " +  owner.getGoogleAppsEmail());
 						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.WRITER, owner.getGoogleAppsEmail());
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
@@ -168,7 +167,6 @@ public class AssignmentRepository {
 					continue USER_LOOP;
 				}
 			}
-			logger.info("MARIELA 2 - owner.getGoogleAppsEmail() " +  owner.getGoogleAppsEmail());
 			googleDocsServiceImpl.addDocumentPermission(documentListEntry, AclRole.WRITER, owner.getGoogleAppsEmail());
 		  }
 		}
@@ -414,7 +412,6 @@ public class AssignmentRepository {
 				
 				if (aclEntry.getScope().getValue().equals(email)) {
 					try{
-						logger.info("MARIELA 3 - email " +  email);
 						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, newAclRole, email);
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();
@@ -426,7 +423,6 @@ public class AssignmentRepository {
 				}
 			}
 			try{
-				logger.info("MARIELA 4 - owner.getGoogleAppsEmail() " +  owner.getGoogleAppsEmail());
 				googleDocsServiceImpl.addDocumentPermission(documentListEntry, newAclRole, owner.getGoogleAppsEmail());
 			} catch(com.google.gdata.util.VersionConflictException vce){
 				vce.printStackTrace();
@@ -443,7 +439,6 @@ public class AssignmentRepository {
 			if (!isAnOwner(owners, user) && aclEntry.getRole().equals(AclRole.WRITER)) {
 				if (docEntry instanceof LogpageDocEntry) {
 					try{
-						logger.info("MARIELA 5 - user.getGoogleAppsEmail() " +  user.getGoogleAppsEmail());
 						googleDocsServiceImpl.updateDocumentPermission(documentListEntry, AclRole.READER, user.getGoogleAppsEmail());
 					} catch(com.google.gdata.util.VersionConflictException vce){
 						vce.printStackTrace();

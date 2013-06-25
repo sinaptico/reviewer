@@ -86,7 +86,13 @@ public class Constants {
 	public static String EXCEPTION_SESSION_EXPIRED_SAVE_REVIEW="Your session has expired. Please login again to save your review.";
 	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_REVIEW="Your session has expired. Please login again to submit your review.";
 	public static String EXCEPTION_WRONG_ORGANIZATION_DOMAIN="The domain of the email doesn't belong to the organization";
-	
+	public static String EXCEPTION_ADMIN_CAN_NO_BE_LECTURER="It's not necessary that an Admin user be lecturer becuase he/she has permissions " +
+															"to work with courses createdy by himself/herself." + "\n" + 
+															"Please remove him/her from lecturers and try again.";
+	public static String EXCEPTION_ADMIN_CAN_NO_BE_TUTOR="It's not necessary that an Admin user be tutor becuase he/she has permissions " +
+														 "to work with courses createdy by himself/herself." + "\n" + 
+														 "Please remove him/her from tutors and try again.";
+														 
 	
 	// Dao Exceptions
 	public static String EXCEPTION_HIBERNATE_SESSION_MESSAGE="Failed to create a session to database";
@@ -186,11 +192,19 @@ public class Constants {
 	public static String EXCEPTION_DELETE_ORPHAN_EMAILS="Failed to delete the orphan emails.";
 	public static String EXCEPTION_NOT_ACTIVITY_FINISH_DATE = "The activity doesn't have a finish date. Please, set it";
 	public static String EXCEPTION_COURSE_LECTURERS_TUTORS="Wrong quantity of parameters. Please, verify the information of the lecturers and tuturos";
+	public static String EXCEPTION_PEER_REVIEW_NOT_EXIST= "The Sheet2 doesn't exit in the student spreadsheet.\n" + 
+														  "Please, add it with the reviewee and reviewer emails.";
+	public static String EXCEPTION_STUDENT_NO_EXIST = "The student doesn't exist in the database.";
 	
 	// Roles
+	// Role of the admin of all the organizations
 	public static String ROLE_SUPER_ADMIN = "SuperAdmin";
+	// Role for the admin of the organization ==> see all the courses of the organization
 	public static String ROLE_ADMIN = "Admin";
+	// students ==> they see only the assignments page with his/her assignments
 	public static String ROLE_GUEST = "Guest";
+	//Role for lecturers and tutors ==> see all the courses where he/she is lecturer or tutor
+	public static String ROLE_STAFF="Staff";
 	
 	// Rest methods parameters include and object attributes used in relationships or to generate Json maps and lists
 	public static String ALL = "all";
