@@ -72,8 +72,8 @@ public class OrganizationsForm extends Composite {
 	public  String TITLE_PROPERTIES = "Organization Properties";  
 	public  String MESSAGE_EMPTY_SEARCH_RESULT = "No results found for your search";
 	private String STYLE_TEXT="RichTextToolbar";
-	private String MESSAGE_DELETED ="Organization deleted.";
 	private String MESSAGE_PROPERTIES_OK ="Proproperties OK, Organization activated.";
+	private String MESSAGE_ALL_PROPERTIES_SAVED="All the properties were saved";
 	
 	private User loggedUser = null;
 	/**
@@ -93,6 +93,7 @@ public class OrganizationsForm extends Composite {
 		
 		Grid searchGrid = new Grid(2, 2);
 		searchGrid.setWidget(0, 0, searchLabel);
+		searchText.setWidth("300px");
 		searchGrid.setWidget(0,1, searchText);
 		searchGrid.getColumnFormatter().setWidth(0, "20%");
 		searchGrid.getColumnFormatter().setWidth(1, "100%");
@@ -347,7 +348,6 @@ public class OrganizationsForm extends Composite {
 						loadButton.click();
 					}
 				}));
-				
 			    VerticalPanel panel = new VerticalPanel();
 				panel.add(editPropertiesForm);
 				panel.add(buttonsPanel);

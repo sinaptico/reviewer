@@ -436,10 +436,23 @@ public class WritingActivity extends Activity<DocEntry> {
 				break;
 			}
 		}
-		
 		return currentDeadline;
 	}
 
+	public Deadline getFinalDeadline(){
+		Deadline finalDeadline = null;
+		
+		for(Deadline deadline : getDeadlines()){
+			if (finalDeadline == null){
+				finalDeadline = deadline;
+			} else if ( deadline.getFinishDate() != null && finalDeadline.getFinishDate() != null && 
+					    deadline.getFinishDate().after(finalDeadline.getFinishDate())){
+				finalDeadline = deadline;
+			}
+		}
+		return finalDeadline;
+	}
+	
 	/**
 	 * Sets the exclude empty docs in reviews.
 	 *

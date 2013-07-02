@@ -38,11 +38,14 @@ INSERT INTO User_roles (email,role_name) VALUES ('student1@demo-sinaptico.com','
 INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student2@demo-sinaptico.com','Student 2','For Demo Sinaptico',MD5('reviewer'),1,'','student2');
 INSERT INTO User_roles (email,role_name) VALUES ('student2@demo-sinaptico.com','Guest');
 
-#INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student@smart-sourcing.com.ar','Student','For Smart',MD5('reviewer'),2,'','student');
-#INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar','Guest');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student3@demo-sinaptico.com','Student 3','For Demo Sinaptico',MD5('reviewer'),1,'','student3');
+INSERT INTO User_roles (email,role_name) VALUES ('student3@demo-sinaptico.com','Guest');
 
-#INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('mariela.dagraca@smart-sourcing.com.ar','Lecturer','For Smart',MD5('reviewer'),2,'','mariela.dagraca');
-#INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar','Staff');
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('student@smart-sourcing.com.ar','Student','For Smart',MD5('reviewer'),2,'','student');
+INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar','Guest');
+
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('mariela.dagraca@smart-sourcing.com.ar','Mariela','Da Graca Guerra',MD5('reviewer'),2,'','mariela.dagraca');
+INSERT INTO User_roles (email,role_name) VALUES ('mariela.dagraca@smart-sourcing.com.ar','Staff');
 
 INSERT INTO Organization_Emails_Domains (organization_Id,emailDomains) VALUES (1,'demo-sinaptico.com');
 INSERT INTO Organization_Emails_Domains (organization_Id,emailDomains) VALUES (2,'smart-sourcing.com.ar');

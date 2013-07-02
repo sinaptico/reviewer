@@ -125,7 +125,7 @@ public class Constants {
 	public static String EXCEPTION_GET_USER="Failed to get the user";
 	public static String EXCEPTION_GET_USERS="Failed to get the users";
 	public static String EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST="The user doesn't exist. Please enter other username or email";
-	public static String EXCEPTION_USER_NOT_FOUND="User not found";
+	public static String EXCEPTION_USER_NOT_FOUND="User not found. He/she doesn't exist in the database";
 	public static String EXCEPTION_MOCKED_USER="Failed to get mocked user";
 	public static String EXCEPTION_MOCKED_USER_NOT_FOUND="Mocked user not found";
 	public static String EXCEPTION_ORGANIZATION_NOT_FOUND="Organization not found";
@@ -195,6 +195,7 @@ public class Constants {
 	public static String EXCEPTION_PEER_REVIEW_NOT_EXIST= "The Sheet2 doesn't exit in the student spreadsheet.\n" + 
 														  "Please, add it with the reviewee and reviewer emails.";
 	public static String EXCEPTION_STUDENT_NO_EXIST = "The student doesn't exist in the database.";
+	public static String EXCEPTION_INVALID_EMAIL="Please, enter a valid value for the email.";
 	
 	// Roles
 	// Role of the admin of all the organizations

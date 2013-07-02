@@ -12,11 +12,6 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +30,11 @@ import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
-import au.edu.usyd.reviewer.server.AssignmentDao;
+
 import au.edu.usyd.reviewer.server.AssignmentManager;
-import au.edu.usyd.reviewer.server.CourseDao;
 import au.edu.usyd.reviewer.server.CourseManager;
-import au.edu.usyd.reviewer.server.OrganizationDao;
 import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
-import au.edu.usyd.reviewer.server.UserDao;
 import au.edu.usyd.reviewer.server.report.UserStatsAnalyser;
 import au.edu.usyd.reviewer.server.servlet.LogoutServlet;
 import au.edu.usyd.reviewer.server.util.CalendarUtil;
@@ -84,7 +76,7 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 	@Override
 	public WritingActivity deleteWritingActivity(WritingActivity writingActivity) throws Exception {
 		initialize();
-		if (isAdminOrSuperAdmin() ||  isStaff(assignmentDao.loadCourseWhereWritingActivity(writingActivity))) { 
+		if (isAdminOrSuperAdmin() ||  isStaff(assignmentManager.loadCourseWhereWritingActivity(writingActivity))) { 
 			try {
 				if (writingActivity != null){
 					assignmentManager.deleteActivity(writingActivity);
@@ -111,8 +103,7 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 			if ( organizationId == null || (isSuperAdmin() && user.getOrganization().equals(organizationId))){
 				organizationSelected = organization;
 			} else if (organizationId != null){
-				OrganizationDao organizationDao = OrganizationDao.getInstance();
-				organizationSelected = organizationDao.load(organizationId);
+				organizationSelected = organizationManager.getOrganization(organizationId);
 			}
 			if ( year == null){
 				Calendar today = Calendar.getInstance();
@@ -222,7 +213,7 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 				if (reviewTemplate.getOrganization() == null){
 					reviewTemplate.setOrganization(organization);
 				}
-				return assignmentManager.saveReviewTemplate(reviewTemplate);
+				return assignmentManager.saveReviewTemplate(reviewTemplate, user);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw e;
@@ -249,11 +240,10 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 			if (organizationId == null || (isSuperAdmin() && user.getOrganization().equals(organizationId) )){
 				organizationSelected = organization;
 			} else if (organizationId != null ){
-				OrganizationDao organizationDao = OrganizationDao.getInstance();
 				organizationSelected = organizationDao.load(organizationId);
 			} 
 			if (organizationSelected != null) {
-				reviewTemplates = assignmentDao.loadReviewTemplates(organizationSelected);
+				reviewTemplates = assignmentManager.loadReviewTemplates(organizationSelected, user);
 			}
 		} 
 		return reviewTemplates;
@@ -365,7 +355,6 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 		initialize();
 		Collection organizations = new ArrayList<Organization>();
 		if (isSuperAdmin()){
-			OrganizationManager organizationManager = OrganizationManager.getInstance();
 			organizations = organizationManager.getOrganizations();
 		} 
 		return organizations;
@@ -409,6 +398,42 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 			throw new MessageException( Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
+
+	public ReviewTemplate shareReviewTemplateWith(ReviewTemplate reviewTemplate, String email) throws Exception {
+		initialize();
+		if (isAdminOrSuperAdmin() || isStaff()) {
+			try {
+				if (StringUtil.isValidateEmail(email)){
+					if (reviewTemplate.getOrganization()== null){
+						reviewTemplate.setOrganization(organization);
+					}
+					reviewTemplate = assignmentManager.shareReviewTemplateWith(reviewTemplate, email);
+					return reviewTemplate;
+				} else {
+					throw new MessageException(Constants.EXCEPTION_INVALID_EMAIL);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw e;
+			}
+		} else {
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+		}
+	}
 	
+	public ReviewTemplate noShareReviewTemplateWith(ReviewTemplate reviewTemplate, String email) throws Exception {
+		initialize();
+		if (isAdminOrSuperAdmin() || isStaff()) {
+			try {
+				reviewTemplate = assignmentManager.noShareReviewTemplateWith(reviewTemplate, email);
+				return reviewTemplate;
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw e;
+			}
+		} else {
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+		}
+	}
 	
 }

@@ -6,8 +6,6 @@ import java.io.Serializable;
 
 import java.util.HashSet;
 import java.util.Set;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -262,7 +260,6 @@ public class User implements Serializable {
 
 	public User clone(){
 		User user = new User();
-		
 		user.setId(this.getId());
 		user.setEmail(this.getEmail());
 		user.setFirstname(this.getFirstname());
@@ -280,6 +277,7 @@ public class User implements Serializable {
 		}
 		user.setRole_name(roles);
 		user.setWasmuser(this.getWasmuser());
+		user.setUsername(this.getUsername());
 		return user;
 	}
 		

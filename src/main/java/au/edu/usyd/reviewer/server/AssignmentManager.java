@@ -251,7 +251,6 @@ public class AssignmentManager {
 		if (writingActivity.getEmailStudents()) {
 			for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
 				if (deadline.equals(reviewingActivity.getStartDate()) && (reviewingActivity.getNumStudentReviewers() > 0)) {
-//					logger.info("Sending start review noficiation: course=" + course.getName() + ", activity=" + writingActivity.getName() +", NumStudentReviewers=" + reviewingActivity.getNumStudentReviewers());
 					for (UserGroup studentGroup : course.getStudentGroups()) {
 						if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
 							for (User student : studentGroup.getUsers()) {
@@ -264,7 +263,6 @@ public class AssignmentManager {
 							}
 						}
 					}
-					//break;
 				}
 			}
 		}	
@@ -884,11 +882,18 @@ public class AssignmentManager {
 										try {
 											finishReviewingActivity(courseDao.loadCourse(courseId), assignmentDao.loadReviewingActivity(reviewingActivity.getId()),deadline);
 										} catch (MessageException e) {
-											logger.error("Error running acctivity " + reviewingActivity.getId());
+											logger.error("Error running reviewing activity " + reviewingActivity.getId());
 											e.printStackTrace();
 										}
 									}
 								}, reviewingActivity.getFinishDate());
+							} else if ( reviewingActivity.getStatus() == Activity.STATUS_NONE) {
+								try{
+									startReviewActivity(courseDao.loadCourse(courseId), writingActivity, assignmentDao.loadReviewingActivity(reviewingActivity.getId()),deadline);
+								} catch(Exception e){
+									logger.error("Error running reviewing activity " + reviewingActivity.getId());
+									e.printStackTrace();
+								}
 							}
 						}
 					}
@@ -1353,8 +1358,13 @@ public class AssignmentManager {
 			Course course = courseDao.loadCourse(assignmentDao.loadCourseWhereWritingActivity(writingActivity).getId());
 			Organization organization = course.getOrganization();
 			String filename = FileUtil.escapeFilename(entry.getDocumentId()) + ".pdf";
-			File file = new File(getDocumentsFolder(course.getId(), writingActivity.getId(), writingActivity.getCurrentDeadline().getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + filename);
-			
+			Long deadlineId;
+			if (writingActivity.getCurrentDeadline() != null){
+				deadlineId = writingActivity.getCurrentDeadline().getId();
+			} else {
+				deadlineId = writingActivity.getFinalDeadline().getId();
+			}
+			File file = new File(getDocumentsFolder(course.getId(), writingActivity.getId(),deadlineId , WritingActivity.TUTORIAL_ALL, organization) + "/" + filename);
 			try{
 				File empty = new File(Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getDocumentsHome() + Reviewer.getEmptyDocument());
 				if (empty.length() != file.length()){
@@ -1390,7 +1400,7 @@ public class AssignmentManager {
 		return docEntry;
 	}
 
-	public ReviewTemplate saveReviewTemplate(ReviewTemplate reviewTemplate) throws Exception {
+	public ReviewTemplate saveReviewTemplate(ReviewTemplate reviewTemplate, User loggedUser) throws Exception {
 
 		for (Section section : reviewTemplate.getSections()) {
 			if (section.getType() != Section.OPEN_QUESTION) {
@@ -1400,6 +1410,7 @@ public class AssignmentManager {
 			}
 			section = assignmentDao.save(section);
 		}
+		reviewTemplate.setOwner(loggedUser);
 		reviewTemplate = assignmentDao.save(reviewTemplate);
 		if (reviewTemplate != null){
 			reviewTemplate = reviewTemplate.clone();
@@ -1941,4 +1952,86 @@ public class AssignmentManager {
 		return course;
 		
 	}
+	
+	
+	public List<ReviewTemplate> loadReviewTemplates(Organization organization, User loggedUser) throws MessageException{
+		return assignmentDao.loadReviewTemplates(organization, loggedUser);
+	}
+	
+	public Course loadCourseWhereWritingActivity(WritingActivity writingActivity) throws MessageException {
+		return assignmentDao.loadCourseWhereWritingActivity(writingActivity);
+	}
+	
+	public ReviewTemplate shareReviewTemplateWith(ReviewTemplate reviewTemplate, String email) throws MessageException{
+		
+		// get email domain
+		String domain = null;
+		if (email !=  null){
+			int i = email.indexOf("@");
+			domain = email.substring(i+1,email.length());
+			if (domain != null){
+				domain = domain.toLowerCase();
+			}
+		}
+		if (reviewTemplate.getOrganization()!= null && domain!= null && reviewTemplate.getOrganization().domainBelongsToEmailsDomain(domain)){
+			User userToShare = userDao.getUserByEmail(email);
+			if (userToShare == null){
+				throw new MessageException(Constants.EXCEPTION_USER_NOT_FOUND);
+			}
+			reviewTemplate.sharedWith(userToShare);
+			reviewTemplate = assignmentDao.save(reviewTemplate);
+		} else {
+			throw new MessageException(Constants.EXCEPTION_WRONG_ORGANIZATION_DOMAIN);
+		}
+		return reviewTemplate;
+		
+	}
+	
+	public ReviewTemplate noShareReviewTemplateWith(ReviewTemplate reviewTemplate, String email) throws MessageException{
+		User userToShare = userDao.getUserByEmail(email);
+		if (userToShare == null){
+			throw new MessageException(Constants.EXCEPTION_USER_NOT_FOUND);
+		}
+		reviewTemplate.noShareWith(userToShare);
+		reviewTemplate = assignmentDao.save(reviewTemplate);
+		return reviewTemplate;
+	}
+
+	public void startReviewActivity(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline deadline) throws Exception{
+		// check reviewactivity status
+		if (reviewingActivity.getStatus() >= Activity.STATUS_START) {
+//			logger.info("Review has already finished.");
+			return;
+		}
+		
+		if (deadline.equals(reviewingActivity.getStartDate())) {
+			updateActivityReviews(course, writingActivity, reviewingActivity);
+			reviewingActivity.setStatus(Activity.STATUS_START);
+			reviewingActivity = assignmentDao.save(reviewingActivity);
+		}
+		
+		// send review start notification to students
+		if (writingActivity.getEmailStudents()) {
+			if (deadline.equals(reviewingActivity.getStartDate()) && (reviewingActivity.getNumStudentReviewers() > 0)) {
+				for (UserGroup studentGroup : course.getStudentGroups()) {
+					if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
+						for (User student : studentGroup.getUsers()) {
+							try {
+								emailNotifier.sendStudentReviewStartNotification(student, course, writingActivity, deadline);
+							} catch (Exception e) {
+								e.printStackTrace();
+								logger.error("Failed to send review start notification.", e);
+							}
+						}
+					}
+				}
+
+			}
+		}
+
+
+	}
+
+	
+	
 }

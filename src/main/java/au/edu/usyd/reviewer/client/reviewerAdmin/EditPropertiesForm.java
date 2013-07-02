@@ -44,11 +44,9 @@ public class EditPropertiesForm extends Composite {
     
 	
 	/** Constants **/
-	private String TAB_TITLE_PROPERTIES="Properties";
 	private String EXCEPTION_ERROR_MESSSAGE="Failed to load organization properties: ";
 	private String MESSAGE_NAME_EMPTY="Please, enter a property value. This field is mandatory";
 	private String TAB_TITLE_PROPERTY ="Property";
-	private String MESSAGE_PROPERTIES_NOT_EXIST="There is not properties for this organization";
 	private String MESSAGE_SAVED = "Property saved.";
 	
 	/**
@@ -79,7 +77,7 @@ public class EditPropertiesForm extends Composite {
 		        return property.getProperty().getName();
 		   }
 	    };
-	    
+	   
 	    propertiesTable.addColumn(nameColumn, "Name");
 	    
 	    // Add column with an input cell to edit the value of the property

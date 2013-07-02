@@ -6,16 +6,20 @@ import java.util.List;
 import au.edu.usyd.reviewer.client.core.Choice;
 import au.edu.usyd.reviewer.client.core.ReviewTemplate;
 import au.edu.usyd.reviewer.client.core.Section;
+import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
+import au.edu.usyd.reviewer.client.reviewerAdmin.EditPropertiesForm;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ChangeListener;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
@@ -363,7 +367,7 @@ public class ReviewTemplateForm extends Composite {
 				reviewTemplate.getSections().add(newSection);
 				addSection(newSection);
 			}});
-		
+				
 		sectionTable.setCellPadding(2);
 		sectionTable.setCellSpacing(0);
 		sectionTable.setBorderWidth(1);	
@@ -374,7 +378,7 @@ public class ReviewTemplateForm extends Composite {
 		mainPanel.clear();
 		mainPanel.add(grid);
 		mainPanel.add(new HTML("Sections:"));
-		mainPanel.add(sectionPanel);		
+		mainPanel.add(sectionPanel);
 	}
 
 }

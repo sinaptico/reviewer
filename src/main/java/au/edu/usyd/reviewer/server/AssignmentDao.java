@@ -1271,6 +1271,39 @@ public class AssignmentDao {
 			}
 			throw new MessageException(Constants.EXCEPTION_GET_DELETED_WRITING_ACTIVITIES);
 		}
+	}
+	
+	public List<ReviewTemplate> loadReviewTemplates(Organization organization, User loggedUser) throws MessageException{
+		List<ReviewTemplate> result = new ArrayList<ReviewTemplate>();
+		Session session = null;
+		try{
+			if ( organization != null){
+				String query = "SELECT Distinct review " +
+							   "FROM ReviewTemplate review " + 
+							   "LEFT JOIN FETCH review.sharedWith sharedUser " +
+							   "WHERE review.organization=:organization AND review.deleted=false AND " +
+							   "(review.owner=:owner OR sharedUser=:shared)";
+		        session = this.getSession();
+		        session.beginTransaction();
+		        List<ReviewTemplate> reviewTemplates = session.createQuery(query).setParameter("organization", organization)
+		        																 .setParameter("owner", loggedUser)
+		        																 .setParameter("shared", loggedUser).list();
+		        session.getTransaction().commit();
+		        for (ReviewTemplate template:reviewTemplates){
+		        	if (template != null){
+		        		template = this.loadReviewTemplate(template.getId());
+		        		result.add(template.clone());
+		        	}
+		        }
+			}
+	 		return result;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
+		}
 
 	}
 }

@@ -1,11 +1,14 @@
 package au.edu.usyd.reviewer.client.core.util;
 
 import java.util.Collection;
+
+
 import java.util.HashSet;
 import java.util.Set;
 
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+
 
 /**
  * <p>Class with String management methods; Includes:</p>
@@ -113,5 +116,10 @@ public class StringUtil {
 		    return false;
 		}
 	}
-	
+
+	public static boolean isValidateEmail(String email) throws MessageException {
+		boolean isValidEmail = !StringUtil.isBlank(email);
+		isValidEmail |= email.matches("[a-zA-Z0-9_.]*@[a-zA-Z]*.[a-zA-Z]*");
+        return isValidEmail;
+	}
 }

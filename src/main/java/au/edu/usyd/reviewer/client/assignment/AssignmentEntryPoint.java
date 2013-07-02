@@ -175,8 +175,9 @@ public class AssignmentEntryPoint implements EntryPoint {
 				userDetailsFlexTable.clear();
 				userDetailsFlexTable.setWidth("60%");
 				mainPanel.add(userDetailsFlexTable);
-				mainPanel.add(new HTML("</br>"));					
-//				if (!user.getWasmuser()){	
+				mainPanel.add(new HTML("</br>"));			
+				// if the organization doesn't use shibboleht then show change passwod button
+				if (!organization.isShibbolethEnabled()){	
 					userDetailsFlexTable.setHTML(0, 0, "<p "+cssTextStyle +" >If you need to change your password, please click here: </p>");							
 					userDetailsFlexTable.setWidget(0, 1, userDetailsButton);
 					mainPanel.add(new HTML("</br>"));
@@ -235,7 +236,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 							dialogBox.show();
 						}
 					});
-//				}	
+				}	
 					// if there are organization then the logged user is a master			
 					if (user.isSuperAdmin()){
 						// Get Organizations to populate  a drop down list

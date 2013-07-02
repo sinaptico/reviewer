@@ -150,6 +150,8 @@ public class ActivityForm extends Composite {
 
 	private Long organizationId = null;
 	
+	private Button addDeadline = new Button("Add Deadline");
+	
 	/**
 	 * Instantiates a new activity form and populates the "Static" Drop-menus with the "Document Types", "Document genres" and "Activity statuses".  
 	 */
@@ -356,7 +358,6 @@ public class ActivityForm extends Composite {
 		groupsPanel.add(groups);
 		groupsPanel.add(new Label(" create group documents."));
 		
-		Button addDeadline = new Button("Add Deadline");
 		addDeadline.addClickHandler(new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event) {	
@@ -652,6 +653,7 @@ public class ActivityForm extends Composite {
 		showStats.setEnabled(false);
 		allowSubmit.setEnabled(false);
 		trackReviews.setEnabled(false);
+		addDeadline.setEnabled(false);
 		for(int row=1; row<deadlineTable.getRowCount(); row++) {
 			for(int col=0;col<5;col++){
 				Widget widget = deadlineTable.getWidget(row, col);

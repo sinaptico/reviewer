@@ -2,6 +2,8 @@ package au.edu.usyd.reviewer.server.rpc;
 
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 
 
@@ -196,9 +198,18 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 		return this.isAdmin() || this.isSuperAdmin();
 	}
 	
-	private boolean isCourseLecturer(Course course) {
-		
-		return user == null ? false : course!= null && course.getLecturers().contains(user);
+	private boolean isCourseLecturer(Course course){
+		boolean result = true;
+		if (user != null){
+			for(User lecturer: course.getLecturers()){
+				result |= lecturer.getId() != null && lecturer.getId().equals(user.getId());
+				result |= lecturer.getEmail()!= null && lecturer.getEmail().equals(user.getEmail());
+			}
+		} else {
+			result = false;
+		}
+		return result;
+//		return user == null ? false : course!= null && course.getLecturers().contains(user);
 	}
 	
 	protected boolean isGuestOrAdminOrSuperAdminOrStaff(){

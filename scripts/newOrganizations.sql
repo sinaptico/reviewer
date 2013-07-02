@@ -55,3 +55,6 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO User (email,organizationId,username,lastname,firstname) VALUES ('eie.latte@sydney.edu.au',3,'eie.latte','eie','latte');
 INSERT INTO User_roles VALUES('eie.latte@sydney.edu.au','Admin');
 
+INSERT INTO User (email,organizationId,username,lastname,firstname) VALUES ('sazzad.hussain@sydney.edu.au',3,'sazzad.hussain','Hussain','Sazzad');
+INSERT INTO User_roles VALUES('sazzad.hussain@sydney.edu.au','STAFF');
+

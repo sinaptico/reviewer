@@ -985,6 +985,24 @@ CREATE TABLE `WritingActivity_ReviewingActivities_ReviewingActivity` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
+
+--
+-- Table structure for table `ReviewTemplate_Users`
+--
+
+DROP TABLE IF EXISTS `ReviewTemplate_Users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ReviewTemplate_Users` (
+  `ReviewTemplate_id` bigint(20) NOT NULL,
+  `sharedWith_id` bigint(20) NOT NULL,
+  KEY `FK4075477B3F214C1C` (`sharedWith_id`),
+  KEY `FK4075477B3AE4FF3C` (`ReviewTemplate_id`),
+  CONSTRAINT `FK4075477B3AE4FF3C` FOREIGN KEY (`ReviewTemplate_id`) REFERENCES `ReviewTemplate` (`id`),
+  CONSTRAINT `FK4075477B3F214C1C` FOREIGN KEY (`sharedWith_id`) REFERENCES `User` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

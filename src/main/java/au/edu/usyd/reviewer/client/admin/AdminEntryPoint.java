@@ -443,7 +443,7 @@ public class AdminEntryPoint implements EntryPoint {
 				dialogBox.show();
 			}
 		};		
-
+		
 		// Create new menu
 		MenuBar newMenu = new MenuBar(true);
 		MenuItem newCourseMenuItem = WidgetFactory.createNewMenuItem("Course", newCourseCmd, "newCourseMenuItem");
@@ -770,12 +770,48 @@ public class AdminEntryPoint implements EntryPoint {
 								deleteButton.setEnabled(true);
 							}
 						}
-					});					
+					});	
+					
+					// Button to see the emails of the users that share the review template.
+					// This form allows add new emails
+					final Button shareReviewTemplateButton = new Button("Share");
+					shareReviewTemplateButton.addClickHandler(new ClickHandler(){		
+						@Override
+						public void onClick(ClickEvent event) {
+							final ShareReviewTemplateWithForm shareReviewTemplateForm = new ShareReviewTemplateWithForm(adminService, reviewTemplateForm.getReviewTemplate());
+						    final DialogBox dialogBox = new DialogBox();
+						    dialogBox.setWidth("100px");
+						    HorizontalPanel buttonsPanel = new HorizontalPanel();
+							buttonsPanel.setWidth("100%");
+							
+							buttonsPanel.add(new Button("Close", new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									dialogBox.hide();
+									// reload all the reviews of the organization
+									ReviewTemplate reviewTemplate = shareReviewTemplateForm.getReviewTemplate();
+									reviewTemplateForm.setReviewTemplate(reviewTemplate);
+									treeItem.setUserObject(reviewTemplate);
+									refreshTemplateTree();
+								}
+							}));
+							
+						    VerticalPanel panel = new VerticalPanel();
+							panel.add(shareReviewTemplateForm);
+							panel.add(buttonsPanel);
+							dialogBox.setHTML("Review Template shared with");
+							dialogBox.setWidget(panel);
+							dialogBox.center();
+							dialogBox.show();
+				    	}				
+					});
+
 					
 					reviewTemplatesContentPanel.clear();
 					HorizontalPanel reviewTemplateButtonsPanel = new HorizontalPanel();
 					reviewTemplateButtonsPanel.add(saveButton);
 					reviewTemplateButtonsPanel.add(deleteButton);
+					reviewTemplateButtonsPanel.add(shareReviewTemplateButton);
 					reviewTemplatesContentPanel.add(reviewTemplateButtonsPanel);
 					reviewTemplatesContentPanel.add(new HTML("<hr/>"));
 					reviewTemplatesContentPanel.add(reviewTemplateForm);
@@ -827,9 +863,10 @@ public class AdminEntryPoint implements EntryPoint {
 		menuPanel.add(courseStackPanel);
 		menuPanel.add(new HTML("<hr/>"));
 		
+		
 		menuPanel.add(new HTML("<b/>Review Templates:<b/>"));
 		menuPanel.add(reviewTemplateTree);
-
+		
 		HorizontalPanel mainPanel = new HorizontalPanel();
 		mainPanel.add(menuPanel);
 		mainPanel.add(contentDeco);
@@ -920,8 +957,8 @@ public class AdminEntryPoint implements EntryPoint {
 
 			@Override
 			public void onSuccess(Collection<ReviewTemplate> templateList) {
-				// review templates tree
 				reviewTemplateTree.clear();
+				// review templates tree		
 				for (ReviewTemplate reviewTemplate : templateList) {
 					Label name = new Label();
 					name.setText(reviewTemplate.getName());

@@ -167,7 +167,7 @@ public class EditUsersForm extends Composite {
 	}
 	
 	/**
-	 * Create load button and configurate it to obtain all the organizations
+	 * Create load button and set it to obtain all the organizations
 	 * @return SubmitButton load button
 	 */
 	public SubmitButton createLoadButton(){ 
