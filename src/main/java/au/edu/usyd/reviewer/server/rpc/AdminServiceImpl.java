@@ -1,8 +1,5 @@
 package au.edu.usyd.reviewer.server.rpc;
 
-import java.security.Principal;
-
-
 
 import java.util.Collection;
 
@@ -30,18 +27,9 @@ import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
-
-import au.edu.usyd.reviewer.server.AssignmentManager;
-import au.edu.usyd.reviewer.server.CourseManager;
-import au.edu.usyd.reviewer.server.OrganizationManager;
-import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.report.UserStatsAnalyser;
-import au.edu.usyd.reviewer.server.servlet.LogoutServlet;
 import au.edu.usyd.reviewer.server.util.CalendarUtil;
-import au.edu.usyd.reviewer.server.util.ConnectionUtil;
 
-
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class AdminServiceImpl extends ReviewerServiceImpl implements AdminService {
 	
@@ -98,7 +86,8 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 	public Collection<Course> getCourses(Integer semester, Integer year, Long organizationId) throws Exception {
 		initialize();	
 		Collection<Course> courses = new ArrayList<Course>();
-		if (isAdminOrSuperAdmin()) {
+		
+		if (isAdminOrSuperAdmin() || isStaff()) {
 			Organization organizationSelected = null;
 			if ( organizationId == null || (isSuperAdmin() && user.getOrganization().equals(organizationId))){
 				organizationSelected = organization;
@@ -110,11 +99,15 @@ public class AdminServiceImpl extends ReviewerServiceImpl implements AdminServic
 				year = today.get(Calendar.YEAR);
 			}
 			if (organizationSelected != null){
-				courses = courseDao.loadCourses(semester, year, organizationSelected);
+				if (isAdminOrSuperAdmin()){
+					courses = courseDao.loadCourses(semester, year, organizationSelected);
+				} else {
+					courses = courseDao.loadStaffCourses(semester, year, organizationSelected, user);
+				}
 			}
-		} else if (isStaff()){ // staff == lecturer or Tutor
-			courses = assignmentDao.loadStaffCourses(semester, year, user);
-		}
+		} else {
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+		} 
 		return courses;
 	}
 

@@ -47,6 +47,10 @@ INSERT INTO User_roles (email,role_name) VALUES ('student@smart-sourcing.com.ar'
 INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('mariela.dagraca@smart-sourcing.com.ar','Mariela','Da Graca Guerra',MD5('reviewer'),2,'','mariela.dagraca');
 INSERT INTO User_roles (email,role_name) VALUES ('mariela.dagraca@smart-sourcing.com.ar','Staff');
 
+INSERT INTO User (email,firstname,lastname, password, organizationId,wasmuser,username) VALUES ('admin2@demo-sinaptico.com','Admin','For reviewer',MD5('reviewer'),1,'','admin2');
+INSERT INTO User_roles (email,role_name) VALUES ('admin2@demo-sinaptico.com','Admin');
+
+
 INSERT INTO Organization_Emails_Domains (organization_Id,emailDomains) VALUES (1,'demo-sinaptico.com');
 INSERT INTO Organization_Emails_Domains (organization_Id,emailDomains) VALUES (2,'smart-sourcing.com.ar');
 

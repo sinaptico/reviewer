@@ -8,8 +8,8 @@
 		</layout>
 	</appender>
 
-	<appender name="reviewer" class="org.apache.log4j.RollingFileAppender">
-		<param name="file" value="logs/reviewer.log" />
+	<appender name="reviewer-warn" class="org.apache.log4j.RollingFileAppender">
+		<param name="file" value="logs/reviewer-warn.log" />
 		<param name="maxFileSize" value="2048KB" />
 		<param name="maxBackupIndex" value="100" />
 		<layout class="org.apache.log4j.PatternLayout">
@@ -29,8 +29,8 @@
 	<logger name="au.edu.usyd">
 		<level value="error" />
 		<appender-ref ref="reviewer-error" />
-		<level value="debug" />
-		<appender-ref ref="reviewer" />
+		<level value="warn" />
+		<appender-ref ref="reviewer-warn" />
 	</logger>
 
 	<root>

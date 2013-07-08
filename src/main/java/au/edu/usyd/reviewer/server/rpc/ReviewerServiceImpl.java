@@ -1,13 +1,6 @@
 package au.edu.usyd.reviewer.server.rpc;
 
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
-
-
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -15,22 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.feedback.feedbacktracking.FeedbackTrackingDao;
-//import au.edu.usyd.iwrite.security.RandomMessageIDGenerator;
-//import au.edu.usyd.iwrite.security.WasmAuthenticationProtocol;
-//import au.edu.usyd.iwrite.security.WasmResponse;
-//import au.edu.usyd.iwrite.security.WasmService;
-//import au.edu.usyd.iwrite.security.WasmSocketFactory;
-//import au.edu.usyd.iwrite.security.RandomMessageIDGenerator;
-//import au.edu.usyd.iwrite.security.WasmAuthenticationProtocol;
-//import au.edu.usyd.iwrite.security.WasmResponse;
-//import au.edu.usyd.iwrite.security.WasmService;
-//import au.edu.usyd.iwrite.security.WasmSocketFactory;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.CourseDao;
@@ -66,6 +50,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	protected Organization organization = null;
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
 	
 	/**
 	 * Get logger user, its organization an initialize Reviewer with it
@@ -115,7 +100,6 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 												
 				if (organization == null){
 					// ERROR we need the organization to know if shibboleth property is enabled or not
-					logger.info("Organization is null so we can not verify the shibboleth property");
 					MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
 					me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 					throw me;
@@ -146,7 +130,11 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 							 (lastname != null && !lastname.toLowerCase().equals(user.getLastname()))){								
 								user.setFirstname(firstname);
 								user.setLastname(lastname);
-								user = userDao.save(user);
+								try{
+									user = userDao.save(user);
+								} catch(Exception e){
+									logger.error("Error to save the user to update the firstname and lastname" + lastname + " " + firstname);
+								}
 							}
 							request.getSession().setAttribute("user", user);
 						} else {	
@@ -248,7 +236,6 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_USER_NOT_MOCKED);
 		}
-		
 		return mockedUser;
 	}
 	

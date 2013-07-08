@@ -210,7 +210,6 @@ public class WritingTasks extends Composite {
 					if (docEntry instanceof LogbookDocEntry) {
 						logBook = true;
 					}
-					//dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(deadline.getStatus(), Deadline.STATUS_DEADLINE_FINISH) + "'>"+deadline.getName()+": " + StyleLib.dueDateFormat(deadline.getFinishDate()) + "</div>"));
 					Date dateTime=new Date();
 					dueDate.add(new HTML("<div style='" + StyleLib.dueDateStyle(dateTime,deadline.getFinishDate(),logBook) + "'>"+deadline.getName()+": " + StyleLib.dueDateFormat(deadline.getFinishDate()) + "</div>"));
 				}

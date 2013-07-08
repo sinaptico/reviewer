@@ -86,12 +86,8 @@ public class Constants {
 	public static String EXCEPTION_SESSION_EXPIRED_SAVE_REVIEW="Your session has expired. Please login again to save your review.";
 	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_REVIEW="Your session has expired. Please login again to submit your review.";
 	public static String EXCEPTION_WRONG_ORGANIZATION_DOMAIN="The domain of the email doesn't belong to the organization";
-	public static String EXCEPTION_ADMIN_CAN_NO_BE_LECTURER="It's not necessary that an Admin user be lecturer becuase he/she has permissions " +
-															"to work with courses createdy by himself/herself." + "\n" + 
-															"Please remove him/her from lecturers and try again.";
-	public static String EXCEPTION_ADMIN_CAN_NO_BE_TUTOR="It's not necessary that an Admin user be tutor becuase he/she has permissions " +
-														 "to work with courses createdy by himself/herself." + "\n" + 
-														 "Please remove him/her from tutors and try again.";
+	public static String EXCEPTION_ADMIN_CAN_NO_BE_LECTURER_OR_TUTOR="The admin user used to access to Google can not be used as lecturer or tutor.\n" +
+															"Please remove him/her from lecturers/tutors and try again.";
 														 
 	
 	// Dao Exceptions
@@ -158,7 +154,7 @@ public class Constants {
 	public static String EXCEPTION_SAVE_TEMPLATE ="Failed to save the template (doc entry)";
 	public static String EXCEPTION_INVALID_LECTURER="Invalid lecturer";
 	public static String EXCEPTION_EMPTY_LECTURERS_LIST="Empty list of lecturers";
-	public static String EXCEPTION_EMPTY_STUDENTS_LIST="Empgy list of students";
+	public static String EXCEPTION_EMPTY_STUDENTS_LIST="Empty list of students";
 	public static String EXCEPTION_EMPTY_TUTORS_LIST="Empty list of tutors";
 	public static String EXCEPTION_EMPTY_USERS_GROUPS_LIST="Empty list of students groups";
 	public static String EXCEPTION_INVALID_STATUS="Invalid status. The course status has changed." + 
@@ -196,6 +192,25 @@ public class Constants {
 														  "Please, add it with the reviewee and reviewer emails.";
 	public static String EXCEPTION_STUDENT_NO_EXIST = "The student doesn't exist in the database.";
 	public static String EXCEPTION_INVALID_EMAIL="Please, enter a valid value for the email.";
+	public static String EXCEPTION_LECTURER_FIRSTNAME_EMPTY="Please enter the firstname of the lecturer.\n" +
+													        "This field is mandatary";
+	public static String EXCEPTION_LECTURER_EMAIL_EMPTY="Please enter the email of the lecturer.\n" +
+    														"This field is mandatary";
+	public static String EXCEPTION_LECTURER_LASTNAME_EMPTY="Please enter the lastname of the lecturer.\n" +
+    														"This field is mandatary";
+	public static String EXCEPTION_TUTOR_FIRSTNAME_EMPTY="Please enter the firstname of the tutor.\n" +
+    														"This field is mandatary";
+	public static String EXCEPTION_TUTOR_EMAIL_EMPTY="Please enter the email of the tutor.\n" +
+													"This field is mandatary";
+	public static String EXCEPTION_TUTOR_LASTNAME_EMPTY="Please enter the lastname of the tutor.\n" +
+													"This field is mandatary";
+	public static String EXCEPTION_STUDENT_FIRSTNAME_EMPTY="Please enter the firstname of the student.\n" +
+														 "This field is mandatary";
+	public static String EXCEPTION_STUDENT_EMAIL_EMPTY="Please enter the email of the student.\n" +
+													  "This field is mandatary";
+	public static String EXCEPTION_STUDENT_LASTNAME_EMPTY="Please enter the lastname of the student.\n" +
+														"This field is mandatary";
+	
 	
 	// Roles
 	// Role of the admin of all the organizations
@@ -248,25 +263,25 @@ public class Constants {
 	public static String EMAIL_STUDENT_ACTIVITY_START_MESSAGE ="Dear @StudentName@, " + "\n\n" + 
 	   														   "A Google document has been created for you to write your @ActivityName@. " +
 	   														   "Please visit @ReviewerLink@ to write and submit your document before the deadline on @DeadlineDate@." +
-	   														   	"\n\n " + "@FromName@"; 
+	   														   	"\n\n" + "@FromName@"; 
 		
 	public static String EMAIL_LECTURER_DEADLINE_FINISH_MESSAGE ="Dear @LecturerName@, " +
-																 "\n\n " + "The @ActivityName@ @DeadlineName@ assessment has finished. " + "\n" + 
+																 "\n\n" + "The @ActivityName@ @DeadlineName@ assessment has finished. " + "\n" + 
 																 "Please go to @ReviewerLink@ to download the documents. " + "\n\n"; 
 		
 		
 	public static String EMAIL_PASSWORD_DETAILS_MESSAGE = "Dear @UserName@, " +
-														  "\n\n " + "The application for the course @CourseName@ is now available for you. " + 
-														  "\n " + " To login, please go to @iWriteLink@ " +
-														  "\n\n " + " Username: @UserUsername@ " + "\n " + " Password: @Password@" + "\n\n " + "@FromName@";
+														  "\n\n" + "The application for the course @CourseName@ is now available for you. " + 
+														  "\n" + " To login, please go to @iWriteLink@ " +
+														  "\n\n" + " Username: @UserUsername@ " + "\n" + " Password: @Password@" + "\n\n" + "@FromName@";
 	
-	public static String EMAIL_STUDENT_REVIEW_FINISH_MESSAGE = "Dear @LecturerName@, " + "\n\n " +
+	public static String EMAIL_STUDENT_REVIEW_FINISH_MESSAGE = "Dear @LecturerName@, " + "\n\n" +
 															   "The @ActivityName@ @DeadlineName@ assessment has finished. " + 
-															   "\n " + "Reviews are now available in @ReviewerLink@." + "\n\n" + "@FromName@";
+															   "\n" + "Reviews are now available in @ReviewerLink@." + "\n\n" + "@FromName@";
 	
 	public static String EMAIL_STUDENT_RECEIVED_REVIEW_MESSAGE = "Dear @UserName@, " + 
-																 "\n\n " + "You have received feedback from the activity @ActivityName@. " +
-																 "\n " + "You can go to @ReviewerLink@ to read it." + "\n\n " + "@FromName@";
+																 "\n\n" + "You have received feedback from the activity @ActivityName@. " +
+																 "\n" + "You can go to @ReviewerLink@ to read it." + "\n\n" + "@FromName@";
 	
 	public static String EMAIL_TEST_MESSAGE = "This email is sent by reviewer to test the SMTP connection";
 

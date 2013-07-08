@@ -24,6 +24,7 @@ import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
 public class EmailNotifier {
@@ -78,6 +79,9 @@ public class EmailNotifier {
 		String to = lecturer.getFirstname() + " " + lecturer.getLastname();
 		EmailCourse email = course.getEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH);
 		String content = email.getMessage();
+		if (StringUtil.isBlank(to)){
+			to="Lecturer";
+		}
 		content = content.replaceAll("@LecturerName@", to);
 		content = content.replaceAll("@ActivityName@", activity.getName());
 		content = content.replaceAll("@DeadlineName@", deadlineName);
@@ -91,6 +95,9 @@ public class EmailNotifier {
 		String to = user.getFirstname() + " " + user.getLastname();
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH); 
 		String content = email.getMessage();
+		if (StringUtil.isBlank(to)){
+			to="Student";
+		}
 		content = content.replaceAll("@StudentName@", to);
 		content = content.replaceAll("@ActivityName@", writingActivity.getName());
 		content = content.replaceAll("@DeadlineName@", deadlineName);
@@ -120,6 +127,9 @@ public class EmailNotifier {
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_ACTIVITY_START);
 		String content = email.getMessage();
+		if (StringUtil.isBlank(to)){
+			to="Student";
+		}
 		content = content.replaceAll("@StudentName@", to);
 		content = content.replaceAll("@ActivityName@", writingActivity.getName());
 		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser(student));
@@ -134,6 +144,9 @@ public class EmailNotifier {
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_REVIEW_START);
 		String content = email.getMessage();
+		if (StringUtil.isBlank(to)){
+			to="Student";
+		}
 		content = content.replaceAll("@StudentName@", to);
 		content = content.replaceAll("@ActivityName@", writingActivity.getName());
 		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser(student));
@@ -145,7 +158,11 @@ public class EmailNotifier {
 	public void sendPasswordNotification(User user, Course course) throws MessagingException, UnsupportedEncodingException, MessageException {
 		EmailCourse email = course.getEmail(Constants.EMAIL_PASSWORD_DETAILS);
 		String content = email.getMessage();
-		content = content.replaceAll("@UserName@", user.getFirstname()+" "+user.getLastname());
+		String to = user.getFirstname()+" "+user.getLastname();
+		if (StringUtil.isBlank(to)){
+			to="User";
+		}
+		content = content.replaceAll("@UserName@", to);
 		content = content.replaceAll("@CourseName@", course.getName());
 		content = content.replaceAll("@UserUsername@", user.getEmail());
 		content = content.replaceAll("@Password@", user.getPassword());
@@ -157,7 +174,11 @@ public class EmailNotifier {
 	public void sendReviewEarlyFinishNotification(User user, Course course, ReviewingActivity reviewingActivity) throws MessagingException, UnsupportedEncodingException, MessageException {
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW);
 		String content = email.getMessage();
-		content = content.replaceAll("@UserName@", user.getFirstname()+" "+user.getLastname());
+		String to = user.getFirstname()+" "+user.getLastname();
+		if (StringUtil.isBlank(to)){
+			to="User";
+		}
+		content = content.replaceAll("@UserName@", to);
 		content = content.replaceAll("@ActivityName@", reviewingActivity.getName());
 		content = content.replaceAll("@ReviewerLink@", getReviewerLinkForUser(user));
 		content = content.replaceAll("@FromName@", fromName);
@@ -167,9 +188,16 @@ public class EmailNotifier {
 	
 	private String getReviewerLinkForUser(User user) {	
 //		return "https://"+reviewerDomain+"/reviewer/Assignments.html";
-		return user.getWasmuser()?
-				"https://"+reviewerDomain+"/reviewer/Assignments.html":
-				"https://"+reviewerDomain+"/reviewer/iWrite.html";
+		String url = "";
+		if (user != null && user.getOrganization() != null && user.getOrganization().isShibbolethEnabled()){
+			url ="https://"+reviewerDomain+"/reviewerAAF/Assignments.html";
+		} else {
+			url = "https://"+reviewerDomain+"/reviewer/Assignments.html";
+		}
+		return url;
+//		return user.getWasmuser()?
+//				"https://"+reviewerDomain+"/reviewer/Assignments.html":
+//				"https://"+reviewerDomain+"/reviewer/iWrite.html";
 	}
 	
 	public void setProperties(Properties properties) {

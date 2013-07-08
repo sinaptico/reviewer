@@ -3,9 +3,11 @@ package au.edu.usyd.reviewer.server;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -292,44 +294,7 @@ public class AssignmentDao {
 		}
 	}
 
-	public List<Course> loadStaffCourses(Integer semester, Integer year, User staff) throws MessageException{
-		Session session = null;
-		List<Course> resultList = new ArrayList<Course>();
-		try{
-			String query = "from Course course " + 
-						   "left join fetch course.lecturers lecturer " +
-						   "left join fetch course.tutors tutor " +
-						   "where (lecturer=:lecturer OR tutor=:tutor) and course.semester=:semester AND course.year=:year AND course.deleted=false";
-			session = this.getSession();
-			session.beginTransaction();
-			List<Course> courses = session.createQuery(query).setParameter("semester", semester)
-															 .setParameter("year", year)
-															 .setParameter("lecturer", staff)
-															 .setParameter("tutor", staff).list();
-			session.getTransaction().commit();
-			
-			for(Course course : courses){
-				if (course != null){
-					Set<WritingActivity> activities = new HashSet<WritingActivity>();
-					for(WritingActivity activity : course.getWritingActivities()){
-						if (activity!=null && !activity.isDeleted()){
-							activities.add(activity);	
-						}
-					}
-					course.setWritingActivities(activities);
-					resultList.add(course.clone());
-				}
-			}
-		} catch (Exception e){
-			e.printStackTrace();
-			if ( session != null && session.getTransaction() != null){
-				session.getTransaction().rollback();
-			}
-			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
-		}
-		return resultList;
-	}
-
+	
 	public Rating loadRating(Long ratingId) throws MessageException{
 		Session session =null;
 		try{
@@ -571,7 +536,7 @@ public class AssignmentDao {
 	public Rating loadUserRatingForEditing(User owner, Review review)throws MessageException {
 		Session session = null;
 		try{
-//			logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
+			logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
 			session = this.getSession();
 			session.beginTransaction();
 			Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("owner").eq(owner)).add(Property.forName("review").eq(review)).uniqueResult();
@@ -592,7 +557,7 @@ public class AssignmentDao {
 	public Course loadUserReviewForEditing(User user, long reviewId) throws MessageException{
 		Session session = null;
 		try{
-//			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
+			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
 			String query = "select distinct course from Course course " + 
 			"left join fetch course.lecturers lecturer " + 
 			"left join fetch course.tutors tutor " + 

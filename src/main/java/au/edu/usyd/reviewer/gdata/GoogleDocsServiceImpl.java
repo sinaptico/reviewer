@@ -96,7 +96,7 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public DocumentEntry createDocument(DocumentEntry documentEntry, URL url) throws IOException, ServiceException {
-//		logger.info("Creating document titled: " + documentEntry.getTitle().getPlainText());
+		logger.info("Creating document titled: " + documentEntry.getTitle().getPlainText());
 		return docsService.insert(url, documentEntry);
 	}
 	
@@ -135,14 +135,14 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public FolderEntry createFolder(String title) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Creating folder titled: " + title);
+		logger.info("Creating folder titled: " + title);
 		FolderEntry folderEntry = new FolderEntry();
 		folderEntry.setTitle(new PlainTextConstruct(title));
 		return docsService.insert(new URL(DOCUMENT_FEEDS_URL), folderEntry);
 	}
 
 	public FolderEntry createFolder(String title, String folderRecourseId) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Creating folder titled: " + title);
+		logger.info("Creating folder titled: " + title);
 		FolderEntry folderEntry = new FolderEntry();
 		folderEntry.setTitle(new PlainTextConstruct(title));
 		return docsService.insert(new URL(DOCUMENT_FEEDS_URL + folderRecourseId + "/contents"), folderEntry);
@@ -161,7 +161,7 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public PresentationEntry createPresentation(String title, URL url) throws IOException, ServiceException {
-//		logger.info("Creating presentation titled: " + title);
+		logger.info("Creating presentation titled: " + title);
 		PresentationEntry presentationEntry = new PresentationEntry();
 		presentationEntry.setTitle(new PlainTextConstruct(title));
 		presentationEntry.setWritersCanInvite(false);
@@ -182,7 +182,7 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public SpreadsheetEntry createSpreadsheet(String title, URL url) throws IOException, ServiceException {
-//		logger.info("Creating spreadsheet titled: " + title);
+		logger.info("Creating spreadsheet titled: " + title);
 		SpreadsheetEntry spreadsheetEntry = new SpreadsheetEntry();
 		spreadsheetEntry.setTitle(new PlainTextConstruct(title));
 		spreadsheetEntry.setWritersCanInvite(false);
@@ -190,13 +190,9 @@ public class GoogleDocsServiceImpl {
 		return docsService.insert(url, spreadsheetEntry);
 	}
 
-//	public void delete(DocumentListEntry documentListEntry) throws IOException, ServiceException {
-//		logger.info("Deleting document: " + documentListEntry.getResourceId());
-//		docsService.delete(new URL(DOCUMENT_FEEDS_URL + documentListEntry.getResourceId()), "*");
-//	}
 
 	public void deleteDocumentPermission(DocumentListEntry entry, String user) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Deleting document permission: " + entry.getResourceId() + ", user=" + user);
+		logger.info("Deleting document permission: " + entry.getResourceId() + ", user=" + user);
 		List<AclEntry> aclEntries = getDocumentPermissions(entry);
 		for (AclEntry aclEntry : aclEntries) {
 			if (aclEntry.getScope().getValue().equals(user)) {
@@ -226,13 +222,13 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public DocumentEntry getDocument(String id) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Getting document: " + id);
+		logger.info("Getting document: " + id);
 		DocumentEntry entry = docsService.getEntry(new URL(DOCUMENT_FEEDS_URL + id), DocumentEntry.class);
 		return entry;
 	}
 
 	public DocumentListEntry getDocumentListEntry(String id) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Getting document: " + id);
+		logger.info("Getting document: " + id);
 		DocumentListEntry entry = docsService.getEntry(new URL(DOCUMENT_FEEDS_URL + id), DocumentListEntry.class);
 		return entry;
 	}
@@ -247,7 +243,7 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public List<RevisionEntry> getDocumentRevisions(String id) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Getting document revisions: " + id);
+		logger.info("Getting document revisions: " + id);
 		RevisionFeed feed = docsService.getFeed(new URL(DOCUMENT_FEEDS_URL + id + "/revisions"), RevisionFeed.class);
 		return feed.getEntries();
 	}
@@ -271,7 +267,7 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public FolderEntry getFolder(String id) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Getting folder: " + id);
+		logger.info("Getting folder: " + id);
 		FolderEntry entry = docsService.getEntry(new URL(DOCUMENT_FEEDS_URL + id), FolderEntry.class);
 		return entry;
 	}
@@ -289,13 +285,13 @@ public class GoogleDocsServiceImpl {
 	}
 
 	public PresentationEntry getPresentation(String id) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Getting presentation: " + id);
+		logger.info("Getting presentation: " + id);
 		PresentationEntry entry = docsService.getEntry(new URL(DOCUMENT_FEEDS_URL + id), PresentationEntry.class);
 		return entry;
 	}
 
 	public SpreadsheetEntry getSpreadsheet(String id) throws MalformedURLException, IOException, ServiceException {
-//		logger.info("Getting spreadsheet: " + id);
+		logger.info("Getting spreadsheet: " + id);
 		SpreadsheetEntry entry = docsService.getEntry(new URL(DOCUMENT_FEEDS_URL + id), SpreadsheetEntry.class);
 		return entry;
 	}

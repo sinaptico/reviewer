@@ -604,7 +604,7 @@ public class ActivityForm extends Composite {
 		documentType.setEnabled(false);
 		genre.setEnabled(false);
 		documentTemplate.setEnabled(false);
-		groups.setEnabled(false);
+		groups.setEnabled(true);
 		startDate.setEnabled(false);
 		
 		// Get minimum deadline date

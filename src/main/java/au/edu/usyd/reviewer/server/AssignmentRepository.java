@@ -94,7 +94,6 @@ public class AssignmentRepository {
 	public void createActivity(Course course, WritingActivity writingActivity) throws MalformedURLException, IOException, ServiceException,MessageException {
 		try{
 			String folderName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
-//			logger.debug("FolderName " + folderName + " course folder Id " + course.getFolderId());
 			FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
 			writingActivity.setFolderId(folderEntry.getResourceId());
 		} catch(ResourceNotFoundException e){
@@ -367,7 +366,7 @@ public class AssignmentRepository {
 		instructors.getUsers().addAll(course.getLecturers());
 		instructors.getUsers().addAll(course.getTutors());
 	
-		// if the logged user (who is creating the document) is not equals to the user used to enter to Google Docs then
+		// if the logged user (who is creating the document) is not equals to the user used to connnect to Google Docs then
 		// add permissions to the logged used to access to the course spreadsheet in Google Docs
 		if ( googleUserEmail != null && user != null &&  user.getGoogleAppsEmail() != null &&
 				 !googleUserEmail.toLowerCase().equals(user.getGoogleAppsEmail().toLowerCase())){
@@ -457,8 +456,8 @@ public class AssignmentRepository {
 	private boolean isAnOwner(Collection<User> owners, User user) {
 		boolean result = false;
 		for(User owner : owners){
-			if (owner != null && owner.getEmail() != null && user != null &&
-				owner.getEmail().equalsIgnoreCase(user.getEmail())){
+			if (owner != null && owner.getGoogleAppsEmail() != null && user != null &&
+				owner.getGoogleAppsEmail().equalsIgnoreCase(user.getEmail())){
 				result = true;
 				break;
 			}

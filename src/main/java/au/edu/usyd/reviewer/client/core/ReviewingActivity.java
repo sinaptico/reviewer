@@ -338,7 +338,9 @@ public class ReviewingActivity extends Activity<ReviewEntry> {
 		activity.setNumTutorReviewers(this.getNumTutorReviewers());
 		activity.setRatings(this.getRatings());
 		activity.setReviewTemplateId(this.getReviewTemplateId());
-		activity.setStartDate(this.getStartDate());
+		if (this.getStartDate() != null){
+			activity.setStartDate(this.getStartDate().clone());
+		}
 		activity.setStatus(this.getStatus());
 		activity.setDeleted(this.isDeleted());
 		return activity;

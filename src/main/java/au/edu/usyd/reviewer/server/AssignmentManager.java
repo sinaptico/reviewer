@@ -198,7 +198,6 @@ public class AssignmentManager {
 	public void finishActivityDeadline(Course course, WritingActivity writingActivity, Deadline deadline) throws Exception{
 		// check activity status
 		if (deadline.getStatus() >= Deadline.STATUS_DEADLINE_FINISH) {
-//			logger.info("Deadline has already finished.");
 			return;
 		}
 
@@ -271,7 +270,6 @@ public class AssignmentManager {
 	public void finishReviewingActivity(Course course, ReviewingActivity reviewingActivity, Deadline deadline) throws MessageException{
 		// check activity status
 		if (reviewingActivity.getStatus() >= Activity.STATUS_FINISH) {
-//			logger.info("Review has already finished.");
 			return;
 		}
 
@@ -340,7 +338,6 @@ public class AssignmentManager {
 		}
 
 		// zip HTML reviews 
-//		logger.info("Zip review files in: "+getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), "", organization));
 		String filePath = getDocumentsFolder(course.getId(), reviewingActivity.getId(), reviewingActivity.getStartDate().getId(), "", organization);
 		File file = new File(filePath);
 		
@@ -518,14 +515,18 @@ public class AssignmentManager {
 				if (student.getEmail() != null){
 					//generate the username with the email
 					student.getUsername();
-				} else if (student.getFirstname() != null){
-					// set the username with the firstname
-					student.setUsername(student.getFirstname().toLowerCase());
+				} else {
+					throw new MessageException(Constants.EXCEPTION_STUDENT_EMAIL_EMPTY);
 				}
 				// search student by email so it's no necessary get it by organization because the email is unique
 				User user = userDao.getUserByEmail(student.getEmail());
 				if (user == null) {
-	
+					if (StringUtil.isBlank(student.getFirstname())){
+						throw new MessageException(Constants.EXCEPTION_STUDENT_FIRSTNAME_EMPTY);
+					}
+					if(StringUtil.isBlank(student.getLastname())){
+						throw new MessageException(Constants.EXCEPTION_STUDENT_LASTNAME_EMPTY);
+					}
 					if (!organization.isShibbolethEnabled()){
 						// generate password to login in reviewer and send it by email
 						  if (student.getPassword() == null){
@@ -541,11 +542,20 @@ public class AssignmentManager {
 				} else {
 					student.setId(user.getId());
 					student.setPassword(user.getPassword());
-					if (student.getFirstname() == null){
-						student.setFirstname(user.getFirstname());
+					if (StringUtil.isBlank(student.getFirstname())){
+						if (StringUtil.isBlank(user.getFirstname())){
+							throw new MessageException(Constants.EXCEPTION_STUDENT_FIRSTNAME_EMPTY);
+						} else {						
+							student.setFirstname(user.getFirstname());
+						}
 					}
-					if (student.getLastname() == null){
-						student.setLastname(user.getLastname());
+					if(StringUtil.isBlank(student.getLastname())){
+						if(StringUtil.isBlank(user.getLastname())){
+							throw new MessageException(Constants.EXCEPTION_STUDENT_LASTNAME_EMPTY);
+						} else {
+							student.setLastname(user.getLastname());
+						}
+						
 					}
 				}
 				if (!assignmentRepository.userExists(student.getGoogleAppsEmailUsername())){
@@ -559,25 +569,32 @@ public class AssignmentManager {
 	private void saveLecturerUsers(Course course) throws Exception{
 		Organization organization = course.getOrganization();
 		for (User lecturer : course.getLecturers()) {
+			String message = (lecturer.getEmail()!= null)?"Lecturer: " + lecturer.getEmail() +"\n":"";
 			if (lecturer.getOrganization() == null){
 				lecturer.setOrganization(organization);
 			}
 			// if the domain of the lecturer's email belong to the organizations email domains ==> create the user in Google Apps.
 			if (lecturer.getDomain() != null && lecturer.getOrganization() != null && 
 			    !lecturer.getOrganization().domainBelongsToEmailsDomain(lecturer.getDomain())){	
-				throw new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
+				throw new MessageException(message + Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
 			}
 			
 			// lecture doesn't exists in database
 			if (lecturer.getEmail() != null){
 				lecturer.getUsername();
-			} else if (lecturer.getFirstname() != null){
-				lecturer.setUsername(lecturer.getFirstname().toLowerCase());
+			} else {
+				throw new MessageException(message + Constants.EXCEPTION_LECTURER_EMAIL_EMPTY);
 			}
 			
 			// search lecture in database
 			User user = userDao.getUserByEmail(lecturer.getEmail());
 			if (user == null) {	
+				if (StringUtil.isBlank(lecturer.getFirstname())){
+					throw new MessageException(message + Constants.EXCEPTION_LECTURER_FIRSTNAME_EMPTY);
+				}
+				if(StringUtil.isBlank(lecturer.getLastname())){
+					throw new MessageException(message + Constants.EXCEPTION_LECTURER_LASTNAME_EMPTY);
+				}
 				if (!organization.isShibbolethEnabled()){
 					// generate password to login in reviewer and send it by email
 					if (lecturer.getPassword() == null){
@@ -594,16 +611,30 @@ public class AssignmentManager {
 				lecturer.setId(user.getId());
 				lecturer.setPassword(user.getPassword());
 				lecturer.setRole_name(user.getRole_name());
-				if (lecturer.getFirstname() == null){
-					lecturer.setFirstname(user.getFirstname());
+				if (StringUtil.isBlank(lecturer.getFirstname())){
+					if (StringUtil.isBlank(user.getFirstname())){
+						throw new MessageException(message + Constants.EXCEPTION_LECTURER_FIRSTNAME_EMPTY);
+					} else {
+						lecturer.setFirstname(user.getFirstname());
+					}
 				}
-				if (lecturer.getLastname() == null){
-					lecturer.setLastname(user.getLastname());
+				if(StringUtil.isBlank(lecturer.getLastname())){
+					if(StringUtil.isBlank(user.getLastname())){
+						throw new MessageException(message + Constants.EXCEPTION_LECTURER_LASTNAME_EMPTY);
+					} else {
+						lecturer.setLastname(user.getLastname());
+					}
 				}
 				if (!lecturer.isAdmin() && !lecturer.isStaff() && !lecturer.isSuperAdmin()){
 					lecturer.addRole(Constants.ROLE_STAFF);
 				}
 			}
+			// if the lecturer is Admin and is the same user is used to access to Google, then remove them from lecturers
+			// otherwise Google will delete his/hers permissions and will give an exception
+			if ((lecturer.isAdmin() || lecturer.isSuperAdmin()) && 
+					(lecturer.getEmail() != null && lecturer.getEmail().equalsIgnoreCase(organization.getGoogleUsername()))){
+					throw new MessageException(message + Constants.EXCEPTION_ADMIN_CAN_NO_BE_LECTURER_OR_TUTOR);
+			} 
 			lecturer = userDao.save(lecturer);
 			// if the user doesn't exist in Google Apps then create it
 			if (!assignmentRepository.userExists(lecturer.getGoogleAppsEmailUsername())){
@@ -614,6 +645,8 @@ public class AssignmentManager {
 	private void saveTutorUsers(Course course) throws Exception {
 		Organization organization = course.getOrganization();
 		for (User tutor : course.getTutors()) {
+			String message = ( tutor.getEmail() != null)?"Tutor: " + tutor.getEmail() + "\n":"";
+			
 			if (tutor.getOrganization() == null){
 				tutor.setOrganization(organization);
 			}
@@ -621,19 +654,24 @@ public class AssignmentManager {
 			// if the domain of the tutor's email belong to the organizations email domains ==> create the user in Google Apps.
 			if (tutor.getDomain() != null && tutor.getOrganization() != null && 
 					!tutor.getOrganization().domainBelongsToEmailsDomain(tutor.getDomain())){	
-				throw new MessageException(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
+				throw new MessageException(message + Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
 			}
 			
 			if (tutor.getEmail() != null){
 				tutor.getUsername();
-			} else if (tutor.getFirstname() != null){
-				tutor.setUsername(tutor.getFirstname().toLowerCase());
+			} else {
+				throw new MessageException(message + Constants.EXCEPTION_TUTOR_EMAIL_EMPTY);
 			}
 
 			// search tutor in database
 			User user = userDao.getUserByEmail(tutor.getEmail());
 			if (user == null) {
-				
+				if (StringUtil.isBlank(tutor.getFirstname())){
+					throw new MessageException(message + Constants.EXCEPTION_TUTOR_FIRSTNAME_EMPTY);
+				}
+				if(StringUtil.isBlank(tutor.getLastname())){
+					throw new MessageException(message + Constants.EXCEPTION_TUTOR_LASTNAME_EMPTY);
+				}
 				// tutor doesn't exists in database
 				if (!organization.isShibbolethEnabled()){
 					// generate password to login in reviewer and send it by email
@@ -652,15 +690,32 @@ public class AssignmentManager {
 			} else {
 				tutor.setId(user.getId());
 				tutor.setPassword(user.getPassword());
-				if (tutor.getFirstname() == null){
-					tutor.setFirstname(user.getFirstname());
+				tutor.setRole_name(user.getRole_name());
+				
+				if (StringUtil.isBlank(tutor.getFirstname())){
+					if (StringUtil.isBlank(user.getFirstname())){
+						throw new MessageException(message + Constants.EXCEPTION_TUTOR_FIRSTNAME_EMPTY);
+					} else {
+						tutor.setFirstname(user.getFirstname());
+					}
 				}
-				if (tutor.getLastname() == null){
-					tutor.setLastname(user.getLastname());
+				if(StringUtil.isBlank(tutor.getLastname())){
+					if(StringUtil.isBlank(user.getLastname())){
+						throw new MessageException(message + Constants.EXCEPTION_TUTOR_LASTNAME_EMPTY);
+					} else {
+						tutor.setLastname(user.getLastname());
+					}
 				}
 				if (!tutor.isAdmin() && !tutor.isStaff() && !tutor.isSuperAdmin()){
 					tutor.addRole(Constants.ROLE_STAFF);
 				}
+			}
+			
+			// if the tutor is Admin and is the same user is used to access to Google, then remove them from tutors
+			// otherwise Google will delete his/hers permissions and will give an exception
+			if ((tutor.isAdmin() || tutor.isSuperAdmin()) && 
+			   (tutor.getEmail() != null && tutor.getEmail().equalsIgnoreCase(organization.getGoogleUsername()))){
+				throw new MessageException(message + Constants.EXCEPTION_ADMIN_CAN_NO_BE_LECTURER_OR_TUTOR);
 			}
 			tutor = userDao.save(tutor);
 			// if the user doesn't exist in Google Apps then create it
@@ -693,18 +748,18 @@ public class AssignmentManager {
 	
 	private void validateActivity(WritingActivity writingActivity) throws MessageException{
 		MessageException me = null;
-		if (writingActivity.getId() != null && writingActivity.getStatus() == writingActivity.STATUS_FINISH){
-			boolean allFinished = true;
-			for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()){
-				allFinished = allFinished && (reviewingActivity.getStatus() == reviewingActivity.STATUS_FINISH);
-			}
-			// if all the reviews of the activity finished then the activity can not be modified
-			if (allFinished){
-				me = new MessageException(Constants.EXCEPTION_ACTIVITY_FINISHED);
-				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
-				throw me;
-			}
-		}
+//		if (writingActivity.getId() != null && writingActivity.getStatus() == writingActivity.STATUS_FINISH){
+//			boolean allFinished = true;
+//			for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()){
+//				allFinished = allFinished && (reviewingActivity.getStatus() == reviewingActivity.STATUS_FINISH);
+//			}
+//			// if all the reviews of the activity finished then the activity can not be modified
+//			if (allFinished){
+//				me = new MessageException(Constants.EXCEPTION_ACTIVITY_FINISHED);
+//				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+//				throw me;
+//			}
+//		}
 		
 		int index = 0;
 		// All the reviewing finish date must be greater than the corresponding writing activity deadline finish date
@@ -763,7 +818,6 @@ public class AssignmentManager {
 			throw new MessageException(Constants.EXCEPTION_EMPTY_COURSE_TUTORIALS);
 		}
 		
-		
 		try{
 			
 			// Add emails to the course
@@ -775,32 +829,18 @@ public class AssignmentManager {
 			// save student users
 			saveStudentUsers(course);
 			
-			// if the logged user is staff and course lecturers and tutors are empty then add the logged user as lecturer
-			if (course.getLecturers().isEmpty() && course.getTutors().isEmpty() && user.isStaff()){
+			// If logged user is staff and he/she doesn't belong to the lecturers of the course 
+			// then add him/her to the lectures of the course
+			if (user.isStaff() && !isCourseLecturer(course,user)){
 				course.getLecturers().add(user);
 			}
+			
 			// save lecturer users
 			saveLecturerUsers(course);
 			
 			// save tutor users
 			saveTutorUsers(course);
-			
-			//if logged user is an admin and it's one of the lecturers or tutors then
-			// remove if from lectures or tutors before update the course becuase they have permissions
-			// if they are lecturer or tutors then Google will remove his/her permissions
-			for(User lecturer : course.getLecturers()){
-				if (lecturer.isAdmin() || lecturer.isSuperAdmin()){
-					throw new MessageException(Constants.EXCEPTION_ADMIN_CAN_NO_BE_LECTURER);
-				} 
-			}
-					
-			for(User tutor : course.getTutors()){
-				if (tutor.isAdmin() && tutor.isSuperAdmin()){
-					throw new MessageException(Constants.EXCEPTION_ADMIN_CAN_NO_BE_TUTOR);
-				}
-			}
-			
-			
+						
 			// update course document permissions
 			assignmentRepository.updateCourseDocumentPermissions(course, user);
 			
@@ -906,11 +946,9 @@ public class AssignmentManager {
 
 		// check activity status
 		if (writingActivity.getStatus() >= Activity.STATUS_START) {
-//			logger.info("Assessment has already started.");
 			return;
 		}
 
-//		logger.info("Assigning documents: course=" + course.getName() + ", activity=" + writingActivity.getName());
 		updateActivityDocuments(course, writingActivity);
 
 		// update activity status
@@ -929,7 +967,6 @@ public class AssignmentManager {
 
 		// send assessment start notification to students
 		if (writingActivity.getEmailStudents()) {
-//			logger.info("Sending start assessment noficiation: course=" + course.getName() + ", activity=" + writingActivity.getName());
 			for (UserGroup studentGroup : course.getStudentGroups()) {
 				if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
 					for (User student : studentGroup.getUsers()) {
@@ -1205,7 +1242,6 @@ public class AssignmentManager {
 				}
 			}
 
-//			logger.info("Assigning student reviewers: course=" + course.getName() + ", activity=" + writingActivity.getName());
 			ReviewStratergy reviewStratergy = null;
 			if (reviewingActivity.getAllocationStrategy().equals(ReviewingActivity.REVIEW_STRATEGY_RANDOM)) {
 				reviewStratergy = new RandomReviewStratergy(reviewingActivity, docEntries, students);
@@ -1269,7 +1305,6 @@ public class AssignmentManager {
 			// create user reviews
 			for (DocEntry docEntry : reviewSetup.keySet()) {
 				for (User user : reviewSetup.get(docEntry)) {
-//					logger.info("Assigning reviewer: reviewer=" + user.getUsername() + ", docid=" + docEntry.getId());
 					Review review;
 					if (reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_QUESTION)) {
 						QuestionReview questionReview = new QuestionReview();
@@ -1498,73 +1533,73 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public void saveLecturers(Course course, List<User> lecturers, User loggedUser) throws Exception {
-		Organization organization = course.getOrganization();
-		for (User lecturer : lecturers) {
-			lecturer.setOrganization(course.getOrganization());
-				
-			if (lecturer.getDomain() != null && lecturer.getOrganization() != null && 
-				    !lecturer.getOrganization().domainBelongsToEmailsDomain(lecturer.getDomain())){	
-				MessageException me = new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
-				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
-				throw me;
-			}
-			// if the user doesn't exist in Google Apps then create it
-			if (!assignmentRepository.userExists(lecturer.getGoogleAppsEmailUsername())){
-				assignmentRepository.createUser(lecturer,organization.getOrganizationPasswordNewUsers()+lecturer.getUsername());
-			}
-			
-			// search the lecturer in the database
-			User user = userDao.getUserByEmail(lecturer.getEmail());
-			if (lecturer.getEmail() != null){
-				lecturer.getUsername();
-			} else if (lecturer.getFirstname() != null){
-				lecturer.setUsername(lecturer.getFirstname().toLowerCase());
-			}
-			if (user == null) {
-				
-				if (organization!= null){
-					// if organization use shibboleth then set password to null, otherwise generate a new one an encrypt it
-					if (!organization.isShibbolethEnabled()){
-						if (lecturer.getPassword() == null){
-							lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-						}
-						emailNotifier.sendPasswordNotification(lecturer, course);
-						lecturer.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
-					} else {
-						lecturer.setPassword(null);
-					}
-				}
-				lecturer.addRole(Constants.ROLE_STAFF);
-			}
-			else {
-				lecturer.setId(user.getId());
-				lecturer.setPassword(user.getPassword());
-				if (lecturer.getFirstname() == null){
-					lecturer.setFirstname(user.getFirstname());
-				}
-				if (lecturer.getLastname() == null){
-					lecturer.setLastname(user.getLastname());
-				}
-				if (!lecturer.isAdmin() && !lecturer.isStaff() && !lecturer.isSuperAdmin()){
-					lecturer.addRole(Constants.ROLE_STAFF);
-				}
-			}	
-			
-			// save the lecturer in the database
-			lecturer = userDao.save(lecturer);
-			
-			// add the lecturer to the course 
-			course.getLecturers().add(lecturer);
-		}
-		
-		// update course document permissions
-		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
-
-		// save course in DB in order to save the relationshiop with the course
-		course = courseDao.save(course);		
-		
-		// for each activity create documents and reviewers for new users
-		processActivitiesForNewUsers(course);
+//		Organization organization = course.getOrganization();
+//		for (User lecturer : lecturers) {
+//			lecturer.setOrganization(course.getOrganization());
+//				
+//			if (lecturer.getDomain() != null && lecturer.getOrganization() != null && 
+//				    !lecturer.getOrganization().domainBelongsToEmailsDomain(lecturer.getDomain())){	
+//				MessageException me = new MessageException(Constants.EXCEPTION_LECTURER_INVALID_DOMAIN);
+//				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+//				throw me;
+//			}
+//			// if the user doesn't exist in Google Apps then create it
+//			if (!assignmentRepository.userExists(lecturer.getGoogleAppsEmailUsername())){
+//				assignmentRepository.createUser(lecturer,organization.getOrganizationPasswordNewUsers()+lecturer.getUsername());
+//			}
+//			
+//			// search the lecturer in the database
+//			User user = userDao.getUserByEmail(lecturer.getEmail());
+//			if (lecturer.getEmail() != null){
+//				lecturer.getUsername();
+//			} else if (lecturer.getFirstname() != null){
+//				lecturer.setUsername(lecturer.getFirstname().toLowerCase());
+//			}
+//			if (user == null) {
+//				
+//				if (organization!= null){
+//					// if organization use shibboleth then set password to null, otherwise generate a new one an encrypt it
+//					if (!organization.isShibbolethEnabled()){
+//						if (lecturer.getPassword() == null){
+//							lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+//						}
+//						emailNotifier.sendPasswordNotification(lecturer, course);
+//						lecturer.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
+//					} else {
+//						lecturer.setPassword(null);
+//					}
+//				}
+//				lecturer.addRole(Constants.ROLE_STAFF);
+//			}
+//			else {
+//				lecturer.setId(user.getId());
+//				lecturer.setPassword(user.getPassword());
+//				if (lecturer.getFirstname() == null){
+//					lecturer.setFirstname(user.getFirstname());
+//				}
+//				if (lecturer.getLastname() == null){
+//					lecturer.setLastname(user.getLastname());
+//				}
+//				if (!lecturer.isAdmin() && !lecturer.isStaff() && !lecturer.isSuperAdmin()){
+//					lecturer.addRole(Constants.ROLE_STAFF);
+//				}
+//			}	
+//			
+//			// save the lecturer in the database
+//			lecturer = userDao.save(lecturer);
+//			
+//			// add the lecturer to the course 
+//			course.getLecturers().add(lecturer);
+//		}
+//		
+//		// update course document permissions
+//		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
+//
+//		// save course in DB in order to save the relationshiop with the course
+//		course = courseDao.save(course);		
+//		
+//		// for each activity create documents and reviewers for new users
+//		processActivitiesForNewUsers(course);
 	}
 	
 	
@@ -1577,72 +1612,72 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public void saveTutors(Course course, List<User> tutors, User loggedUser) throws Exception {
-		Organization organization = course.getOrganization();
-		for (User tutor : course.getTutors()) {
-			tutor.setOrganization(course.getOrganization());
-			
-			if (tutor.getDomain() != null && tutor.getOrganization() != null && 
-				    !tutor.getOrganization().domainBelongsToEmailsDomain(tutor.getDomain())){	
-				MessageException me = new MessageException(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
-				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
-				throw me;
-			}
-			if (tutor.getEmail() != null){
-				tutor.getUsername();
-			} else if (tutor.getFirstname() != null){
-				tutor.setUsername(tutor.getFirstname().toLowerCase());
-			}
-			// search the tutor in the database
-			User user = userDao.getUserByEmail(tutor.getEmail());
-			if (user == null) {
-				
-				//if organization use shibboleth then set password to null, otherwise generate a new one an encrypt it
-				if (organization!= null ){
-					if (!organization.isShibbolethEnabled()){
-						if (tutor.getPassword() == null){
-							tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-						}
-						emailNotifier.sendPasswordNotification(tutor, course);
-						tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
-					} else {
-						tutor.setPassword(null);
-					}
-				}
-				tutor.addRole(Constants.ROLE_STAFF);
-			} else {
-				tutor.setId(user.getId());
-				tutor.setPassword(user.getPassword());
-				if (tutor.getFirstname() == null){
-					tutor.setFirstname(user.getFirstname());
-				}
-				if (tutor.getLastname() == null){
-					tutor.setLastname(user.getLastname());
-				}
-				if (!tutor.isAdmin() && !tutor.isStaff() && !tutor.isSuperAdmin()){
-					tutor.addRole(Constants.ROLE_STAFF);
-				}
-			}
-			
-			// save tutor into the database
-			tutor = userDao.save(tutor);
-			
-			// if the user doesn't exist in Google Apps then create it
-			if (!assignmentRepository.userExists(tutor.getGoogleAppsEmailUsername())){
-				assignmentRepository.createUser(tutor,organization.getOrganizationPasswordNewUsers()+tutor.getUsername());
-			}
-			
-			// add the tutor to the course 
-			course.getTutors().add(tutor);
-		}
-		
-		// update course document permissions
-		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
-		
-		// save course in DB
-		course = courseDao.save(course);		
-		
-		// for each activity create documents and reviewers for new users
-		processActivitiesForNewUsers(course);
+//		Organization organization = course.getOrganization();
+//		for (User tutor : course.getTutors()) {
+//			tutor.setOrganization(course.getOrganization());
+//			
+//			if (tutor.getDomain() != null && tutor.getOrganization() != null && 
+//				    !tutor.getOrganization().domainBelongsToEmailsDomain(tutor.getDomain())){	
+//				MessageException me = new MessageException(Constants.EXCEPTION_TUTORS_INVALID_DOMAIN);
+//				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+//				throw me;
+//			}
+//			if (tutor.getEmail() != null){
+//				tutor.getUsername();
+//			} else 
+//				
+//			}
+//			// search the tutor in the database
+//			User user = userDao.getUserByEmail(tutor.getEmail());
+//			if (user == null) {
+//				
+//				//if organization use shibboleth then set password to null, otherwise generate a new one an encrypt it
+//				if (organization!= null ){
+//					if (!organization.isShibbolethEnabled()){
+//						if (tutor.getPassword() == null){
+//							tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+//						}
+//						emailNotifier.sendPasswordNotification(tutor, course);
+//						tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
+//					} else {
+//						tutor.setPassword(null);
+//					}
+//				}
+//				tutor.addRole(Constants.ROLE_STAFF);
+//			} else {
+//				tutor.setId(user.getId());
+//				tutor.setPassword(user.getPassword());
+//				if (tutor.getFirstname() == null){
+//					tutor.setFirstname(user.getFirstname());
+//				}
+//				if (tutor.getLastname() == null){
+//					tutor.setLastname(user.getLastname());
+//				}
+//				if (!tutor.isAdmin() && !tutor.isStaff() && !tutor.isSuperAdmin()){
+//					tutor.addRole(Constants.ROLE_STAFF);
+//				}
+//			}
+//			
+//			// save tutor into the database
+//			tutor = userDao.save(tutor);
+//			
+//			// if the user doesn't exist in Google Apps then create it
+//			if (!assignmentRepository.userExists(tutor.getGoogleAppsEmailUsername())){
+//				assignmentRepository.createUser(tutor,organization.getOrganizationPasswordNewUsers()+tutor.getUsername());
+//			}
+//			
+//			// add the tutor to the course 
+//			course.getTutors().add(tutor);
+//		}
+//		
+//		// update course document permissions
+//		assignmentRepository.updateCourseDocumentPermissions(course, loggedUser);
+//		
+//		// save course in DB
+//		course = courseDao.save(course);		
+//		
+//		// for each activity create documents and reviewers for new users
+//		processActivitiesForNewUsers(course);
 	}
 		
 	/**
@@ -1805,81 +1840,81 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public void saveStudentsGroup(Course course, Set<User> students, String group, String tutorial) throws Exception {
-		Organization organization = course.getOrganization();
-		if (!course.getTutorials().contains(tutorial)) {
-			throw new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL + Constants.MESSAGE_STUDENTS_TUTORIAL);
-		}
-	
-		for(User student: students){
-			// set the organization
-			if (student.getOrganization() == null){
-				student.setOrganization(course.getOrganization());
-			}	
-			// Students have Guest role
-			student.getRole_name().add(Constants.ROLE_GUEST);
-			
-			// check if student domanin is equals to the organization domain
-			if (student.getDomain() != null && student.getOrganization() != null && 
-					!student.getOrganization().domainBelongsToEmailsDomain(student.getDomain())){
-				throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN);
-			}
-			
-			if (student.getEmail() != null){
-				student.getUsername();
-			} else if (student.getFirstname() != null){
-				student.setUsername(student.getFirstname().toLowerCase());
-			}
-			
-			// search student by email so it's no necessary get it by organization because the email is unique
-			User user = userDao.getUserByEmail(student.getEmail());
-			if (user == null) {
-				//if organization use shibboleth then set password to null, otherwise generate a new one an encrypt it
-				if (organization!= null){
-					if (!organization.isShibbolethEnabled()){
-						student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-						// send email notification with password
-						emailNotifier.sendPasswordNotification(student, course);
-						// encrypt the password with MD5
-						student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
-					} else {
-						student.setPassword(null);
-					}
-				}
-			} else{
-				student.setId(user.getId());
-				student.setPassword(user.getPassword());
-				if (student.getFirstname() == null){
-					student.setFirstname(user.getFirstname());
-				}
-				if (student.getLastname() == null){
-					student.setLastname(user.getLastname());
-				}
-			}
-			// save the user in the database
-			student = userDao.save(student);
-			
-			if (!assignmentRepository.userExists(student.getGoogleAppsEmailUsername())){
-				assignmentRepository.createUser(student,organization.getOrganizationPasswordNewUsers() + student.getUsername());
-			}
-								
-		
-		}
-		
-		// create a new user group
-		UserGroup studentGroup = new UserGroup();
-		studentGroup.setTutorial(tutorial);
-		studentGroup.setUsers(students);
-		studentGroup.setName(group);
-		
-		//save the user group
-		studentGroup = assignmentDao.save(studentGroup);
-		
-		//add the user group to the course
-		course.getStudentGroups().add(studentGroup);
-		
-		//save the course in DB
-		course = courseDao.save(course);
-		
+//		Organization organization = course.getOrganization();
+//		if (!course.getTutorials().contains(tutorial)) {
+//			throw new MessageException(Constants.EXCEPTION_INVALID_TUTORIAL + Constants.MESSAGE_STUDENTS_TUTORIAL);
+//		}
+//	
+//		for(User student: students){
+//			// set the organization
+//			if (student.getOrganization() == null){
+//				student.setOrganization(course.getOrganization());
+//			}	
+//			// Students have Guest role
+//			student.getRole_name().add(Constants.ROLE_GUEST);
+//			
+//			// check if student domanin is equals to the organization domain
+//			if (student.getDomain() != null && student.getOrganization() != null && 
+//					!student.getOrganization().domainBelongsToEmailsDomain(student.getDomain())){
+//				throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN);
+//			}
+//			
+//			if (student.getEmail() != null){
+//				student.getUsername();
+//			} else if (student.getFirstname() != null){
+//				student.setUsername(student.getFirstname().toLowerCase());
+//			}
+//			
+//			// search student by email so it's no necessary get it by organization because the email is unique
+//			User user = userDao.getUserByEmail(student.getEmail());
+//			if (user == null) {
+//				//if organization use shibboleth then set password to null, otherwise generate a new one an encrypt it
+//				if (organization!= null){
+//					if (!organization.isShibbolethEnabled()){
+//						student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
+//						// send email notification with password
+//						emailNotifier.sendPasswordNotification(student, course);
+//						// encrypt the password with MD5
+//						student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
+//					} else {
+//						student.setPassword(null);
+//					}
+//				}
+//			} else{
+//				student.setId(user.getId());
+//				student.setPassword(user.getPassword());
+//				if (student.getFirstname() == null){
+//					student.setFirstname(user.getFirstname());
+//				}
+//				if (student.getLastname() == null){
+//					student.setLastname(user.getLastname());
+//				}
+//			}
+//			// save the user in the database
+//			student = userDao.save(student);
+//			
+//			if (!assignmentRepository.userExists(student.getGoogleAppsEmailUsername())){
+//				assignmentRepository.createUser(student,organization.getOrganizationPasswordNewUsers() + student.getUsername());
+//			}
+//								
+//		
+//		}
+//		
+//		// create a new user group
+//		UserGroup studentGroup = new UserGroup();
+//		studentGroup.setTutorial(tutorial);
+//		studentGroup.setUsers(students);
+//		studentGroup.setName(group);
+//		
+//		//save the user group
+//		studentGroup = assignmentDao.save(studentGroup);
+//		
+//		//add the user group to the course
+//		course.getStudentGroups().add(studentGroup);
+//		
+//		//save the course in DB
+//		course = courseDao.save(course);
+//		
 	}
 	
 	public Course loadCourseWhereDeadline(Deadline deadline) throws MessageException{
@@ -2000,7 +2035,6 @@ public class AssignmentManager {
 	public void startReviewActivity(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline deadline) throws Exception{
 		// check reviewactivity status
 		if (reviewingActivity.getStatus() >= Activity.STATUS_START) {
-//			logger.info("Review has already finished.");
 			return;
 		}
 		
@@ -2032,6 +2066,22 @@ public class AssignmentManager {
 
 	}
 
-	
-	
+	/**
+	 * This method returns a boolean indicating if the user received as parameter is lecturer of the course received as parameter
+	 * @param course course to verify the lectures
+	 * @param user user check if is a lecturer or not. The user is a lecturer if he/she has the same id or email of one of the lecturers of the course
+	 * @return true if user is lecture of the course otherwise false
+	 */
+	private boolean isCourseLecturer(Course course, User user){
+		boolean result = true;
+		if (user != null && !course.getLecturers().isEmpty()){
+			for(User lecturer: course.getLecturers()){
+				result |= lecturer.getId() != null && lecturer.getId().equals(user.getId());
+				result |= lecturer.getEmail()!= null && lecturer.getEmail().equalsIgnoreCase(user.getEmail());
+			}
+		} else {
+			result = false;
+		}
+		return result;
+	}
 }
