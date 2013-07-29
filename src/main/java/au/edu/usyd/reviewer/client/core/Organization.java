@@ -340,6 +340,11 @@ public class Organization implements Serializable {
 		return value;
 	}
 	
+	public String getReviewerEmailNotificationDomain(){
+		String value = getPropertyValue(Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN);
+		return value;
+	}
+	
 	/**
 	 * Return an email template 
 	 * @param name name of the email template

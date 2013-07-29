@@ -178,4 +178,7 @@ interface AdminServiceAsync {
 	 * Remove a user from the list of users that share the review template
 	 */	public void noShareReviewTemplateWith(ReviewTemplate reviewTemplate, String email, AsyncCallback<ReviewTemplate> asyncCallback);
 
+	 public void getGoogleAuthorizationUrl(String currentUrl, AsyncCallback<String> asyncCallback);
+	 public void getUserToken(String code,String currentUrl, AsyncCallback<User> asyncCallback);
+	 
 }

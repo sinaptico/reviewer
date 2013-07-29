@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.OrganizationProperty;
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.server.util.AESCipher;
 import au.edu.usyd.reviewer.server.util.DigitalSigner;
@@ -68,8 +69,8 @@ public class Reviewer {
 				String emailPassword = aesCipher.decrypt(organization.getEmailPassword());
 				String smtpHost = organization.getSMTPHost();
 				String smtpPort = organization.getSMTPPort();
-				String reviewerDomain = organization.getReviewerDomain();
-				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain,reviewerDomain));
+				String reviewerEmailNotificationDomain = organization.getReviewerEmailNotificationDomain();
+				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain,reviewerEmailNotificationDomain));
 				
 				assignmentRepository = new AssignmentRepository(username, password, domain);
 				
@@ -108,7 +109,7 @@ public class Reviewer {
 	
 	
 	public static String getGlosserUrl(Long siteId, String docId){
-		return "http://"+organization.getGlosserHost()+":"+organization.getGlosserPort()+"/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
+		return "https://"+organization.getGlosserHost()+":"+ organization.getGlosserPort() +"/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
 	}
 	
 	/**

@@ -354,7 +354,7 @@ public class ActivityReviewForm extends Composite {
 		
 		startDate.clear();
 		for (int i = 0; i < deadLineNameList.size(); i++) {
-			startDate.addItem(deadLineNameList.get(i));
+			startDate.addItem(deadLineNameList.get(i)); 
 		}
 		
 		status.setSelectedIndex(reviewingActivity.getStatus());

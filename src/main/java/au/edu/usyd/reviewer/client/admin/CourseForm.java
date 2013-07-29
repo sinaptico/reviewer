@@ -3,6 +3,7 @@ package au.edu.usyd.reviewer.client.admin;
 import java.util.Date;
 
 import au.edu.usyd.reviewer.client.core.Course;
+import au.edu.usyd.reviewer.client.core.User;
 
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.gwt.DocEntryWidget;
@@ -70,7 +71,6 @@ public class CourseForm extends Composite {
 	
 	/** The course. */
 	private Course course = new Course();
-
 	/**
 	 * Instantiates a new course form.
 	 */
@@ -84,8 +84,7 @@ public class CourseForm extends Composite {
 			courseSemester.setSelectedIndex(0);
 		} else {
 			courseSemester.setSelectedIndex(1);
-		}
-		
+		}	
 	}
 
 	/**
@@ -149,7 +148,7 @@ public class CourseForm extends Composite {
 	 *
 	 * @param course the new course
 	 */
-	public void setCourse(Course course) {
+	public void setCourse(Course course, User loggedUser) {
 		this.course = course;
 		courseName.setText(course.getName());
 		courseName.setEnabled(false);
@@ -163,7 +162,7 @@ public class CourseForm extends Composite {
 
 		// students panel
 		HorizontalPanel studentsPanel = new HorizontalPanel();
-		studentsPanel.add(new DocEntryWidget(course.getSpreadsheetId(), "Students",course.getDomainName(), false));
+		studentsPanel.add(new DocEntryWidget(course.getSpreadsheetId(), "Students",course.getDomainName(), false, loggedUser));
 		int students = 0;
 		for (UserGroup studentGroup : course.getStudentGroups()) {
 			students += studentGroup.getUsers().size();

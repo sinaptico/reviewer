@@ -5,12 +5,13 @@ Mysql
 	⁃	drop database feedback;
 	⁃	drop database glosser;
 	⁃	drop database glosser_elec5619;
+ 	⁃       drop database glosser_uws300053;
 3.	Create databases
 	⁃	create database reviewer;
 	⁃	create database feedback;
 	⁃	create database glosser;
 	⁃	create database glosser_elec5619;
-
+        ⁃       create database glosser_uws300053;	
 Run the scripts in the following order:
 1.	mysql -uroot -p reviewer <reviewer.sql
 2.	mysql -uroot -p reviewer <Rubric.sql

@@ -153,7 +153,7 @@ public class OrganizationManager {
 		
 		ReviewerProperty reviewerGoogleDomain = propertyDao.load(Constants.REVIEWER_GOOGLE_DOMAIN);
 		organization.addProperty(reviewerGoogleDomain,null);
-		
+				
 		ReviewerProperty reviewerGooglePassword = propertyDao.load(Constants.REVIEWER_GOOGLE_PASSWORD);
 		organization.addProperty(reviewerGooglePassword,null);
 			
@@ -178,6 +178,9 @@ public class OrganizationManager {
 		ReviewerProperty reviewerDomain = propertyDao.load(Constants.REVIEWER_DOMAIN);
 		organization.addProperty(reviewerDomain, null);
 		
+		ReviewerProperty reviewerEmailNotificationDomain = propertyDao.load(Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN);
+		organization.addProperty(reviewerEmailNotificationDomain,null);
+
 		return organization;
 	}
 
@@ -401,12 +404,31 @@ public class OrganizationManager {
 			}
 		}
 		
+		value = organization.getOrganizationPasswordNewUsers();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.ORGANIZATION_PASSWORD_NEW_USERS;
+			} else {
+				message = Constants.ORGANIZATION_PASSWORD_NEW_USERS;
+			}
+		}
+		
+		
 		value = organization.getReviewerDomain();
 		if (StringUtil.isBlank(value)){
 			if (!StringUtil.isBlank(message)){
 				message += "\n" + Constants.REVIEWER_DOMAIN;
 			} else {
 				message = Constants.REVIEWER_DOMAIN;
+			}
+		}
+		
+		value = organization.getReviewerEmailNotificationDomain();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN;
+			} else {
+				message = Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN;
 			}
 		}
 		
@@ -447,11 +469,10 @@ public class OrganizationManager {
 			String domain = organization.getGoogleDomain();
 			String smtpHost = organization.getSMTPHost();
 			String smtpPort = organization.getSMTPPort();
-			//String reviewerDomain = Reviewer.getReviewerDomain();
-			String reviewerDomain = organization.getReviewerDomain();
+			String reviewerEmailNotificationDomain = organization.getReviewerEmailNotificationDomain();
 			AESCipher aesCipher = AESCipher.getInstance();
 			String decryptedValue = aesCipher.decrypt(password);
-			EmailNotifier emailSender = new EmailNotifier(username, decryptedValue, smtpHost, smtpPort, domain,reviewerDomain);
+			EmailNotifier emailSender = new EmailNotifier(username, decryptedValue, smtpHost, smtpPort, domain,reviewerEmailNotificationDomain);
 			emailSender.sendTestSMTPEmail(loggedUser);
 		} catch (Exception e) {
 			connectionOK = false;

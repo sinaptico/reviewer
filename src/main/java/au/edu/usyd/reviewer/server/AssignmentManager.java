@@ -347,12 +347,12 @@ public class AssignmentManager {
 					FileUtil.zipFolder(folder, new File(folder.getAbsolutePath() + ".zip"));
 				}
 			}
-		} else {
-			
-			MessageException me = new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_FINISHED + " File " + filePath);
-			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
-			throw me;
-		}
+		} 
+//		else {	
+//			MessageException me = new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_FINISHED + " File " + filePath);
+//			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+//			throw me;
+//		}
 
 		// update activity status
 		reviewingActivity.setStatus(Activity.STATUS_FINISH);
@@ -764,11 +764,27 @@ public class AssignmentManager {
 		int index = 0;
 		// All the reviewing finish date must be greater than the corresponding writing activity deadline finish date
 		for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()){
-			if (reviewingActivity.getStartDate().getFinishDate() == null){
+			
+			// All the review activity start deadline must belong to the deadlines of the writing activity
+			// This validation detects if a deadline of the writing activity was deleted by it's still used in a reviewing activity
+			if (!writingActivity.getDeadlines().contains(reviewingActivity.getStartDate())){
+				me = new MessageException(Constants.EXCEPTION_NOT_REVIEWING_ACTIVITY_START_DEADLINE + reviewingActivity.getName());
+				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+				throw me;
+			}
+			
+			if (reviewingActivity.getStartDate() != null && reviewingActivity.getStartDate().getFinishDate() == null){
 				me = new MessageException(Constants.EXCEPTION_NOT_ACTIVITY_FINISH_DATE);
 				me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
 				throw me;
 			}
+			// finish date of a review template can not be empty
+			if (reviewingActivity.getFinishDate() == null){
+						me = new MessageException(Constants.EXCEPTION_EMPTY_REVIEWING_ACTIVITY_FINISH_DATE  + reviewingActivity.getName());
+						me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+						throw me;
+			}
+			
 			if (reviewingActivity.getFinishDate() != null && reviewingActivity.getStartDate()!= null && 
 				reviewingActivity.getFinishDate().before(reviewingActivity.getStartDate().getFinishDate()) ||
 				reviewingActivity.getFinishDate().equals(reviewingActivity.getStartDate().getFinishDate())){
@@ -1503,7 +1519,7 @@ public class AssignmentManager {
 		// userId is the username
 		User user = userDao.getUserByUsername(userId, organization);
 		
-		if (assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user) == null){
+		if (assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user, reviewingActivity) == null){
 			ReviewEntry reviewEntry = new ReviewEntry();
 			Review review = new Review();		
 			review = assignmentDao.save(review);
@@ -2027,8 +2043,12 @@ public class AssignmentManager {
 		if (userToShare == null){
 			throw new MessageException(Constants.EXCEPTION_USER_NOT_FOUND);
 		}
-		reviewTemplate.noShareWith(userToShare);
-		reviewTemplate = assignmentDao.save(reviewTemplate);
+		if (!assignmentDao.reviewTemplateInUse(reviewTemplate, userToShare)){
+			reviewTemplate.noShareWith(userToShare);
+			reviewTemplate = assignmentDao.save(reviewTemplate);
+		} else {
+			throw new MessageException(Constants.EXCEPTION_REVIEW_TEMPLATE_USED_BY_USER);
+		}
 		return reviewTemplate;
 	}
 
@@ -2073,15 +2093,15 @@ public class AssignmentManager {
 	 * @return true if user is lecture of the course otherwise false
 	 */
 	private boolean isCourseLecturer(Course course, User user){
-		boolean result = true;
+		boolean result = false;
 		if (user != null && !course.getLecturers().isEmpty()){
 			for(User lecturer: course.getLecturers()){
 				result |= lecturer.getId() != null && lecturer.getId().equals(user.getId());
 				result |= lecturer.getEmail()!= null && lecturer.getEmail().equalsIgnoreCase(user.getEmail());
 			}
-		} else {
-			result = false;
-		}
+		} 
 		return result;
 	}
+	
+	
 }

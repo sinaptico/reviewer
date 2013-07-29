@@ -21,6 +21,7 @@
  ******************************************************************************/
 package au.edu.usyd.reviewer.gdata;
 
+import com.google.gdata.client.http.GoogleGDataRequest;
 import com.google.gdata.data.BaseEntry;
 
 import com.google.gdata.data.MediaContent;
@@ -46,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements interaction with Google services using gdata API. {@link http://code.google.com/apis/documents/}
@@ -318,6 +320,13 @@ public class GoogleDocsServiceImpl {
 		docsService = new RetryDocsService("AuthSub - Docs Service");
         docsService.setMaxRetryAttempts(maxRetryAttempts);
 		docsService.setAuthSubToken(sessionToken);
+		Set<GoogleGDataRequest.GoogleCookie> cookies = docsService.getCookies();
+		for(GoogleGDataRequest.GoogleCookie cookie: cookies){
+			logger.error("MARIELA Cookie name: " + cookie.getName());
+			logger.error("MARIELA Cookie domain: " + cookie.getDomain());
+			logger.error("MARIELA Cookie path: " + cookie.getPath());
+			logger.error("MARIELA Cookie expires: " + cookie.getExpires().toString());
+		}
 	}
 
 	public void setMaxRetryAttempts(int maxRetryAttempts) {

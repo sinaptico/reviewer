@@ -18,6 +18,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -209,10 +210,21 @@ public class ActivityForm extends Composite {
 			public void onClick(ClickEvent arg0) {
 				for(int i=1; i<deadlineTable.getRowCount(); i++) {
 					if(remove.equals(deadlineTable.getWidget(i, 4))) {
-						writingActivity.getDeadlines().remove(i-1);
-						deadlineTable.removeRow(i);
-						deadLineTextBoxList.remove(i-1);
-					}	
+						Deadline deadlineToRemove = writingActivity.getDeadlines().get(i-1);
+						boolean removeOK = true;
+						for(ReviewingActivity reviewing :writingActivity.getReviewingActivities()){
+							if (reviewing.getStartDate()!= null && reviewing.getStartDate().equals(deadlineToRemove)){
+								removeOK = false;
+								Window.alert("The deadline can not be deleted because it's been used by a reviewing task.\nPlease, change the reviewing task and then try to remove it again.\nReviewing Task: " + reviewing.getName());
+							}
+						}
+						if (removeOK){
+							writingActivity.getDeadlines().remove(i-1);
+							deadlineTable.removeRow(i);
+							deadLineTextBoxList.remove(i-1);
+						}
+						
+					}
 				}
 			}});
 		int row = deadlineTable.getRowCount();
@@ -221,7 +233,6 @@ public class ActivityForm extends Composite {
 		deadlineTable.setWidget(row, 2, maxGrade);
 		deadlineTable.setWidget(row, 3, deadlineDate);
 		deadlineTable.setWidget(row, 4, remove);
-		
 		deadLineTextBoxList.add(name);
 	}
 
@@ -237,7 +248,10 @@ public class ActivityForm extends Composite {
 		List<String> deadLineNameList = new ArrayList<String>();
 		
 		for (int i = 0; i < deadLineTextBoxList.size(); i++) {
-			deadLineNameList.add(deadLineTextBoxList.get(i).getValue());	
+			String deadlineName = deadLineTextBoxList.get(i).getValue();
+			if (!deadLineNameList.contains(deadlineName)){
+				deadLineNameList.add(deadlineName);
+			}
 		}	
 		
 		reviewForm.setActivityReview(writingActivity, reviewingActivity,deadLineNameList);

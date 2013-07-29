@@ -14,7 +14,6 @@ import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
-import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
 import au.edu.usyd.reviewer.server.AssignmentDao;
 import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.CourseDao;
@@ -24,6 +23,7 @@ import au.edu.usyd.reviewer.server.OrganizationDao;
 import au.edu.usyd.reviewer.server.OrganizationManager;
 import au.edu.usyd.reviewer.server.Reviewer;
 import au.edu.usyd.reviewer.server.UserDao;
+import au.edu.usyd.reviewer.server.oauth.GoogleAuthHelper;
 import au.edu.usyd.reviewer.server.util.ConnectionUtil;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -50,7 +50,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	protected Organization organization = null;
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	
+
 	
 	/**
 	 * Get logger user, its organization an initialize Reviewer with it
@@ -82,7 +82,10 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 			String email = getEmail(request,response);
 			
 			if (email == null && user == null){
-				// ERROR we need the email o the user to continue. 
+				// ERROR we need the email o the user to continue
+				logger.error("email is null or user is null");
+				logger.error("email " + email);
+				logger.error("user " + user);
 				MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
 				me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 				throw me;
@@ -100,12 +103,14 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 												
 				if (organization == null){
 					// ERROR we need the organization to know if shibboleth property is enabled or not
+					logger.error("organization is null");
 					MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
 					me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 					throw me;
 				} else {
 					// Verify if the organization is activated and deleted
 					if (!organization.isActivated() ){
+						logger.error("organization is no activated");
 						MessageException me = new MessageException(Constants.EXCEPTION_ORGANIZATION_UNACTIVATED);;
 						me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 						throw me;
@@ -113,6 +118,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 						organization = null;
 						user = null;
 						request.getSession().setAttribute("user", null);
+						logger.error("organization was deleted");
 						MessageException me = new MessageException(Constants.EXCEPTION_ORGANIZATION_DELETED);;
 						me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 						throw me;
@@ -123,8 +129,11 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 						if (user != null){
 							// set user in session
 							user.setOrganization(organization);
+							logger.debug("Information received from IDP");
 							String firstname = (String) request.getAttribute("givenName");
+							logger.debug("givenName " + firstname);
 							String lastname = (String) request.getAttribute("surname");
+							logger.debug("surname " + lastname);
 							if (StringUtil.isBlank(user.getFirstname()) || StringUtil.isBlank(user.getLastname()) ||
 							 (firstname != null && !firstname.toLowerCase().equals(user.getFirstname())) || 
 							 (lastname != null && !lastname.toLowerCase().equals(user.getLastname()))){								
@@ -151,11 +160,12 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 							user.setOrganization(organization);
 							request.getSession().setAttribute("user", user);
 						} else {
+							logger.error("user is null");
 							MessageException me = new MessageException(Constants.EXCEPTION_INVALID_LOGIN);;
 							me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 							throw me;
 						}
-					}	
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -165,6 +175,9 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 			} else {
 				throw new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);
 			}
+		}
+		if (user != null){
+			user = user.clone();	
 		}
 		return user;
 	}
@@ -285,9 +298,12 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 		if (request.getUserPrincipal() != null) {
 			// Get email from reviewer login page
 			email = request.getUserPrincipal().getName();
+			logger.debug("email " + email);
 		} else if (request.getAttribute("email") != null){
 			// Get email from AAF IdP property
 			email = (String) request.getAttribute("email");
+			logger.debug("Information received from IDP");
+			logger.debug("email " + email);
 		}
 		return email;
 	}
@@ -322,21 +338,71 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	 * @throws MessageException
 	 */
 	private User createUser(HttpServletRequest request, String email, Organization anOrganization) throws MessageException{
-		
-		// add user into the database as a guest 
-		
-		String firstname = (String) request.getAttribute("givenName");
-		String lastname = (String) request.getAttribute("surname");
-		User newUser = userDao.getUserByEmail(email);
-		if (newUser == null){
-			newUser = new User();
-			newUser.setFirstname(firstname);
-			newUser.setLastname(lastname);
-			newUser.setEmail(email);
-			newUser.setOrganization(anOrganization);
-			newUser.addRole(Constants.ROLE_GUEST);
-			newUser = userDao.save(newUser);
+		User newUser = null;
+		try{
+			// add user into the database as a guest
+			logger.debug("Information received from IDP");
+			String firstname = (String) request.getAttribute("givenName");
+			logger.debug("givenName " + firstname);
+			String lastname = (String) request.getAttribute("surname");
+			logger.debug("surname " + lastname);
+			newUser = userDao.getUserByEmail(email);
+			
+			if (newUser == null){
+				newUser = new User();
+				newUser.setFirstname(firstname);
+				newUser.setLastname(lastname);
+				newUser.setEmail(email);
+				newUser.setOrganization(anOrganization);
+				newUser.addRole(Constants.ROLE_GUEST);
+				newUser = userDao.save(newUser);
+			}
+		} catch(Exception e){
+			logger.error("error creating user with the IDP information");
+			e.printStackTrace();
+			
 		}
 		return newUser;
 	}
+	
+	/**
+	 * This method returns the Url of Google authorization page of user to access to his/her data
+	 * This page return the code of authorization used to obtain the user token 
+	 * @param currentUrl this page will be used to come back to the application after the authorization 
+	 * @return String Google Authorization page
+	 * @throws Exception
+	 */
+	public String getGoogleAuthorizationUrl(String currentUrl) throws Exception {
+		String url = null;
+		
+		try{
+			GoogleAuthHelper helper = new GoogleAuthHelper();
+			url = helper.getGoogleAuthorizationUrl(user, currentUrl);
+			
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return url;
+	}
+		
+
+	/**
+	 * This method obtain the token and refresh token of the user to access to his/her data without login
+	 * @param code code obtained from Google Authorization page
+	 * @param currentUrl url to come back
+	 * @return user wiht his/her tokens
+	 * @throws Exception
+	 */
+	public User getUserToken(String code, String currentUrl) throws Exception {
+		try{
+			HttpServletRequest request = this.getThreadLocalRequest();
+			GoogleAuthHelper helper = new GoogleAuthHelper();
+			// Get user informatino to obtain the token
+			user = helper.getUserTokens(user, code, currentUrl);
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return user;
+	}
+	
 }

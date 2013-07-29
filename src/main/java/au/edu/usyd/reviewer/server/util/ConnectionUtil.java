@@ -2,7 +2,10 @@ package au.edu.usyd.reviewer.server.util;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -19,15 +22,29 @@ public class ConnectionUtil {
 	
 	private static final Logger logger = LoggerFactory.getLogger("ConnectionUtil");
 	
+//	public static void logout(HttpServletRequest request, HttpServletResponse response, String domain) throws IOException {
 	public static void logout(HttpServletRequest request) throws IOException {
 		try{
-			HttpSession	 session = request.getSession();
-			if (session != null)
-			{
-				session.invalidate();
+			if ( request != null){
+				HttpSession	 session = request.getSession();
+				if (session != null)
+				{
+					session.invalidate();
+//					for(Cookie cookie :request.getCookies() ){
+//						
+//						if (cookie != null && cookie.getDomain() != null && domain != null &&
+//						    cookie.getDomain().equalsIgnoreCase(domain)){ 
+//						      cookie.setValue(null);
+//						    	cookie.setMaxAge(0);
+//						    	cookie.setValue("");
+//						    	response.addCookie(cookie);   	
+//						}
+//					}
+					
+				}
 			}
 		} catch (Exception e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 			throw new IOException(Constants.EXCEPTION_LOGOUT);
 		}
 	}

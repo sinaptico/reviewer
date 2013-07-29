@@ -70,6 +70,7 @@ INSERT INTO ReviewerProperty (name) VALUE ('organization.logo.file');
 INSERT INTO ReviewerProperty (name) VALUE ('organization.shibboleht.enabled');
 INSERT INTO ReviewerProperty (name) VALUE ('organization.password.new.users');
 INSERT INTO ReviewerProperty (name) VALUE ('reviewer.domain');
+INSERT INTO ReviewerProperty (name) VALUE ('reviewer.email.notification.domain');
 
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,1,'admin@demo-sinaptico.com');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,2,'3fe44aff77c3a349');
@@ -78,12 +79,13 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,5,'demo-sinaptico.com');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,6,'smtp.gmail.com');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,7,'465');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,8,'dev-01.sinapti.co');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,8,'dev-02.sinapti.co');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,9,'80');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,10,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,11,'NO');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,12,'NewPassword');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,13,'dev-01.sinapti.co');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,12,'SINAPTICO');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,13,'dev-02.sinapti.co');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,14,'dev-02.sinapti.co');
 
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,1,'admin@smart-sourcing.com.ar');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,2,'3f923c4d96751840');
@@ -92,10 +94,10 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,5,'smart-sourcing.com.ar');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,6,'smtp.gmail.com');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,7,'465');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,8,'dev-01.sinapti.co');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,8,'dev-02.sinapti.co');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,9,'80');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,value) VALUES (2,10,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,11,'NO');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,12,'PasswordSmart');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,13,'dev-01.sinapti.co');
-
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,12,'SMART');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,13,'dev-02.sinapti.co');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,14,'dev-02.sinapti.co');

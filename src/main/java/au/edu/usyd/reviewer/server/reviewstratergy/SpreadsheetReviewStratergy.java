@@ -131,11 +131,17 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 						!reviewer.getOrganization().domainBelongsToEmailsDomain(reviewer.getDomain())){
 					throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN + "\nStudent email in Sheet2: " + email);
 				}
-				ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, reviewer);
-				if (reviewEntry != null) {
+				
+//				ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, reviewer);
+//				if (reviewEntry != null) {
+//					continue LOOP_ENTRIES;
+//				}
+
+				List<ReviewEntry> reviewEntries = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, reviewer);
+				if (reviewEntries.size() > 0) {
 					continue LOOP_ENTRIES;
 				}
-
+				
 				// assign reviewer to document
 				if (!reviewSetup.containsKey(docEntry)) {
 					reviewSetup.put(docEntry, new HashSet<User>());

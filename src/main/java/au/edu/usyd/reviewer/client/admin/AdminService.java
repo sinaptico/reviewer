@@ -201,4 +201,9 @@ public interface AdminService extends RemoteService {
 	 * @return review template modified 
 	 * @throws Exception
 	 */	public ReviewTemplate noShareReviewTemplateWith(ReviewTemplate reviewTemplate, String email) throws Exception;
+	 
+	 
+	 public String getGoogleAuthorizationUrl(String currentUrl) throws Exception;
+	 public User getUserToken(String code,String currentUrl) throws Exception;
+	 
 }

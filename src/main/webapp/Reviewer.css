@@ -237,3 +237,6 @@ gridOrganizationPropertyLargButtonColumn{
      left:50%;
      margin:-150px 0 0 -200px;
 }
+.userText{
+	text-align: right;
+}

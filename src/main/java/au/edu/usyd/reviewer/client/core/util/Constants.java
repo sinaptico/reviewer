@@ -1,5 +1,7 @@
 package au.edu.usyd.reviewer.client.core.util;
 
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+
 
 /** 
  * This class has all the constants used in reviewer
@@ -30,16 +32,16 @@ public class Constants {
 	public static String REVIEWER_DOMAIN="reviewer.domain";
 	public static String ORGANIZATION_SHIBBOLETH_ENABLED="organization.shibboleht.enabled";
 	public static String ORGANIZATION_PASSWORD_NEW_USERS="organization.password.new.users";
-	
+	public static String REVIEWER_EMAIL_NOTIFICATION_DOMAIN ="reviewer.email.notification.domain";
 		
 	/** Exception messages to the user  **/
-	public static String EXCEPTION_USER_EXISTS="Exists a user in the database with the same email.";
-	public static String EXCEPTION_ORGANIZATION_EXISTS="Exists an organization in the database with the same name.";
+	public static String EXCEPTION_USER_EXISTS="User exists in the database with the same email.";
+	public static String EXCEPTION_ORGANIZATION_EXISTS="An organization exists in the database with the same name.";
 	public static String EXCEPTION_ORGANIZATION_HAS_USERS = "The organization can not be deleted because it has users that belongs to it";
-	public static String EXCEPTION_ORGANIZATION_HAS_COURSES ="The organization can not be deleted because it has courses that belongg to it";
+	public static String EXCEPTION_ORGANIZATION_HAS_COURSES ="The organization can not be deleted because it has courses that belonganda to it";
 	public static String EXCEPTION_ORGANIZATION_EMPTY="The organization name can not be empty. This field is mandatory";
 	public static String EXCEPTION_FIELD_EMPTIES="Please, enter some of the search fields";
-	public static String EXCEPTION_PERMISSION_DENIED ="Permission denied. You don't have permission to execute this action.";
+	public static String EXCEPTION_PERMISSION_DENIED ="Permission denied. You do not have permission to execute this action.";
 	public static String EXCEPTION_INVALID_TUTORIAL="Invalid tutorial.";
 	public static String MESSAGE_RELOAD_COURSES = "\nPlease, reload the courses";
 	public static String MESSAGE_STUDENTS_TUTORIAL = "\nThe tutorials of the course must be equals to the tutorials of the student in the students spreadsheets.";
@@ -54,16 +56,15 @@ public class Constants {
 	public static String EXCEPTION_STUDENTS_INVALID_DOMAIN = "The email of the students must belong to the organization domain";
 	public static String EXCEPTION_TUTORS_INVALID_DOMAIN = "The email of the tutors must belong to the organization domain";
 	public static String EXCEPTION_FAILED_INITIALIZE_ASSIGNMENT_MANAGER = "Failed to initialize assignment manager";
-	public static String EXCEPTION_ACTIVITY_NOT_SAVED_GOOGLE_COURSE_NOT_EXIST="The activity could not be create because the course doesn't exist in Google Docs";
-	public static String EXCEPTION_GOOGLE_AUTHENTICATION_ ="You are not authorized to work with this document in Google Docs";
+	public static String EXCEPTION_ACTIVITY_NOT_SAVED_GOOGLE_COURSE_NOT_EXIST="Could not create the activity because the course does not exist in Google Docs";
 	public static String EXCEPTION_GET_LOGGED_USER="Failed to get the logged user information";
-	public static String EXCEPTION_ACTIVITY_NOT_FINISHED ="The activity wasn't finished because the file doesn't exist.";
+	public static String EXCEPTION_ACTIVITY_NOT_FINISHED ="The activity wasn't finished because the file does not exist.";
 	public static String EXCEPTION_ENCRYPT="Failed to encrypt the value";
 	public static String EXCEPTION_DECRYPT="Failed to decrypt the value";
 	public static String EXCEPTION_SAVE_EMAIL_ORGANIZATION="Failed to save the email of the organization";
 	public static String EXCEPTION_SAVE_EMAIL_COURSE="Failed to save the email of the course";
 	public static String EXCEPTION_WRONG_SEMESTER="The semester must correspond with the semester of the year.";
-	public static String EXCEPTION_EMPTY_COURSE_NAME = "Please, enter the name of the course; this field is mandatary.";
+	public static String EXCEPTION_EMPTY_COURSE_NAME = "Please, enter the name of the course; this field is required.";
 	public static String EXCEPTION_EMPTY_COURSE_TUTORIALS ="Please, enter the tutorial of the course; this field is mandatory.";
 	public static String EXCEPTION_ORGANIZATION_UNACTIVATED="The organization is not activated." + 
 															"\n" + "The admin of the organization must complete the required properties to activate it.";
@@ -85,7 +86,7 @@ public class Constants {
 	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_RATING="Your session has expired. Please login again to submit your rating.";
 	public static String EXCEPTION_SESSION_EXPIRED_SAVE_REVIEW="Your session has expired. Please login again to save your review.";
 	public static String EXCEPTION_SESSION_EXPIRED_SUBMIT_REVIEW="Your session has expired. Please login again to submit your review.";
-	public static String EXCEPTION_WRONG_ORGANIZATION_DOMAIN="The domain of the email doesn't belong to the organization";
+	public static String EXCEPTION_WRONG_ORGANIZATION_DOMAIN="The domain of the email does not belong to the organization";
 	public static String EXCEPTION_ADMIN_CAN_NO_BE_LECTURER_OR_TUTOR="The admin user used to access to Google can not be used as lecturer or tutor.\n" +
 															"Please remove him/her from lecturers/tutors and try again.";
 														 
@@ -120,8 +121,8 @@ public class Constants {
 	public static String EXCEPTION_GET_REVIEW="Failed to get the review";
 	public static String EXCEPTION_GET_USER="Failed to get the user";
 	public static String EXCEPTION_GET_USERS="Failed to get the users";
-	public static String EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST="The user doesn't exist. Please enter other username or email";
-	public static String EXCEPTION_USER_NOT_FOUND="User not found. He/she doesn't exist in the database";
+	public static String EXCEPTION_USERNAME_OR_EMAIL_NO_EXIST="The user does not exist. Please enter other username or email";
+	public static String EXCEPTION_USER_NOT_FOUND="User not found. He/she does n0t exist in the database";
 	public static String EXCEPTION_MOCKED_USER="Failed to get mocked user";
 	public static String EXCEPTION_MOCKED_USER_NOT_FOUND="Mocked user not found";
 	public static String EXCEPTION_ORGANIZATION_NOT_FOUND="Organization not found";
@@ -164,7 +165,7 @@ public class Constants {
 																 "\n" + "Deadeline with wrong finish date: ";
 	public static String EXCEPTION_SAVE_REVIEWING_ACTIVITIES="Failed to save the reviewing activities";
 	public static String EXCEPTION_SAVE_ORGANIZATION ="Failed to save ths organization";
-	public static String EXCEPTION_USERNAME_NO_EXIST="The user doesn't exist. Please enter other username";
+	public static String EXCEPTION_USERNAME_NO_EXIST="The user does not exist. Please enter other username";
 	public static String EXCEPTION_GET_REVIEWER_PROPERTY="Failed to get reviewer property";
 	public static String EXCEPTION_GET_REVIEWER_PROPERTIES="Failed to get reviewer properties";
 	public static String EXCEPTION_SAVE_WRITING_ACTIVITIES ="Failed to save the writing activity";
@@ -185,12 +186,19 @@ public class Constants {
 	public static String EXCEPTION_REVIEW_ENTRY_NOT_FOUND = "Review entry not found";
 	public static String EXCEPTION_WRONG_REVIEWING_ACTIVITY_FINISH_DATE="The reviewing task start date is greater than the finish date of one of the activity deadlines." +
 																		"\n" + "Reviewing task with wrong finish date: ";
+	public static String EXCEPTION_EMPTY_REVIEWING_ACTIVITY_FINISH_DATE="The reviewing task finish date is empty.Please, enter a date" + 
+	 																	"\n" + "Reviewing task with empty finish date: ";
+	
+	public static String EXCEPTION_NOT_REVIEWING_ACTIVITY_START_DEADLINE="The reviewing task start (Review Start) does not exist.Please, choose a correct one" + 
+		"\n" + "Reviewing task with empty finish date: ";
+	
+	
 	public static String EXCEPTION_DELETE_ORPHAN_EMAILS="Failed to delete the orphan emails.";
-	public static String EXCEPTION_NOT_ACTIVITY_FINISH_DATE = "The activity doesn't have a finish date. Please, set it";
+	public static String EXCEPTION_NOT_ACTIVITY_FINISH_DATE = "The activity does not have a finish date. Please, set it";
 	public static String EXCEPTION_COURSE_LECTURERS_TUTORS="Wrong quantity of parameters. Please, verify the information of the lecturers and tuturos";
-	public static String EXCEPTION_PEER_REVIEW_NOT_EXIST= "The Sheet2 doesn't exit in the student spreadsheet.\n" + 
+	public static String EXCEPTION_PEER_REVIEW_NOT_EXIST= "The Sheet2 does not exit in the student spreadsheet.\n" + 
 														  "Please, add it with the reviewee and reviewer emails.";
-	public static String EXCEPTION_STUDENT_NO_EXIST = "The student doesn't exist in the database.";
+	public static String EXCEPTION_STUDENT_NO_EXIST = "The student does not exist in the database.";
 	public static String EXCEPTION_INVALID_EMAIL="Please, enter a valid value for the email.";
 	public static String EXCEPTION_LECTURER_FIRSTNAME_EMPTY="Please enter the firstname of the lecturer.\n" +
 													        "This field is mandatary";
@@ -210,6 +218,7 @@ public class Constants {
 													  "This field is mandatary";
 	public static String EXCEPTION_STUDENT_LASTNAME_EMPTY="Please enter the lastname of the student.\n" +
 														"This field is mandatary";
+	public static String EXCEPTION_REVIEW_TEMPLATE_USED_BY_USER="The user can not be deleted because one of his courses is using the review template";
 	
 	
 	// Roles

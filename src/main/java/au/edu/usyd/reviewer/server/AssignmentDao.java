@@ -335,9 +335,11 @@ public class AssignmentDao {
 		}
 	}
 
-	public ReviewEntry loadReviewEntryWhereDocEntryAndOwner(DocEntry docEntry, User owner) throws MessageException{
+	public ReviewEntry loadReviewEntryWhereDocEntryAndOwner(DocEntry docEntry, User owner, ReviewingActivity reviewingAcivity) throws MessageException{
 		Session session = null;
+		
 		try{
+				
 			String ownerQuery = "select distinct reviewEntry from ReviewEntry reviewEntry " + 
 			"join fetch reviewEntry.docEntry docEntry " + 
 			"join fetch reviewEntry.owner owner " + 
@@ -345,12 +347,54 @@ public class AssignmentDao {
 	
 			session = this.getSession();
 			session.beginTransaction();
-			ReviewEntry reviewEntry = (ReviewEntry) session.createQuery(ownerQuery).setParameter("owner", owner).setParameter("docEntry", docEntry).uniqueResult();
+			List<ReviewEntry> reviewEntries = session.createQuery(ownerQuery).setParameter("owner", owner).setParameter("docEntry", docEntry).list();
 			session.getTransaction().commit();
-			if (reviewEntry != null){
-				reviewEntry = reviewEntry.clone();
+			ReviewEntry reviewEntryResult = null;
+			
+			for(Entry entry: reviewingAcivity.getEntries()){
+				for(ReviewEntry reviewEntry: reviewEntries){
+					if (reviewEntry != null && reviewEntry.getId().equals(entry.getId())){
+						reviewEntryResult = reviewEntry.clone();
+						break;
+					}
+				}
+				if (reviewEntryResult != null){
+					break;
+				}
 			}
-			return reviewEntry;
+			return reviewEntryResult;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_REVIEWENTRY);
+		}
+	}
+	
+	
+	public List<ReviewEntry> loadReviewEntryWhereDocEntryAndOwner(DocEntry docEntry, User owner) throws MessageException{
+		Session session = null;
+		List<ReviewEntry> reviewEntriesResult = new ArrayList<ReviewEntry>();
+		try{
+				
+			String ownerQuery = "select distinct reviewEntry from ReviewEntry reviewEntry " + 
+			"join fetch reviewEntry.docEntry docEntry " + 
+			"join fetch reviewEntry.owner owner " + 
+			"where owner=:owner AND docEntry=:docEntry AND reviewEntry.deleted=false";
+	
+			session = this.getSession();
+			session.beginTransaction();
+			List<ReviewEntry> reviewEntries = session.createQuery(ownerQuery).setParameter("owner", owner).setParameter("docEntry", docEntry).list();
+			session.getTransaction().commit();
+			ReviewEntry reviewEntryResult = null;
+			
+			for(ReviewEntry reviewEntry: reviewEntries){
+				if (reviewEntry != null){
+					reviewEntriesResult.add(reviewEntry.clone());
+				}
+			}
+			return reviewEntriesResult;
 		} catch (Exception e){
 			e.printStackTrace();
 			if ( session != null && session.getTransaction() != null){
@@ -935,11 +979,11 @@ public class AssignmentDao {
 		Session session = null;
 		boolean result = false;
 		try{
-			String query = "from Activity " +
-						   "where reviewTemplateId=:id";
+			String query = "FROM Activity " +
+						   "WHERE reviewTemplateId=:id AND deleted = false AND status<:status";
 			session = this.getSession();
 			session.beginTransaction();
-			List<ReviewingActivity> reviewingActivities = session.createQuery(query).setParameter("id", reviewTemplate.getId()).list();
+			List<ReviewingActivity> reviewingActivities = session.createQuery(query).setParameter("id", reviewTemplate.getId()).setParameter("status", Activity.STATUS_FINISH).list();
 			session.getTransaction().commit();
 			return (reviewingActivities.size() > 0);
 		} catch (Exception e){
@@ -1270,5 +1314,35 @@ public class AssignmentDao {
 			throw new MessageException(Constants.EXCEPTION_GET_REVIEW_TEMPLATES);
 		}
 
+	}
+	
+	public boolean reviewTemplateInUse(ReviewTemplate reviewTemplate, User user) {
+		boolean result = false;
+		Session session = null;
+		try{
+			String query = "from Course course " + 
+			"join fetch course.writingActivities writingActivity " + 
+			"join fetch writingActivity.reviewingActivities reviewingActivity " +
+			"where reviewingActivity.reviewTemplateId=:reviewTemplateId " +
+			" and course.deleted = false and writingActivity.deleted = false and reviewingActivity.deleted=false";
+			session = this.getSession();
+			session.beginTransaction();
+			List<Course> courses = session.createQuery(query).setParameter("reviewTemplateId", reviewTemplate.getId()).list();
+															   
+			session.getTransaction().commit();
+			for(Course course:courses){
+				if (course.lecturerExists(user) || course.tutorExists(user)){
+					result = true;
+					break;
+				}
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			result = true;
+		}
+		return result;
 	}
 }

@@ -70,6 +70,8 @@ public class User implements Serializable {
 	private Organization organization;
 
 	private String username;
+	private String googleToken;
+	private String googleRefreshToken;
 	
 	public User(){
 		
@@ -278,6 +280,8 @@ public class User implements Serializable {
 		user.setRole_name(roles);
 		user.setWasmuser(this.getWasmuser());
 		user.setUsername(this.getUsername());
+		user.setGoogleRefreshToken(this.getGoogleRefreshToken());
+		user.setGoogleToken(this.getGoogleToken());
 		return user;
 	}
 		
@@ -354,5 +358,24 @@ public class User implements Serializable {
 			}
 		}
 		return usernameEmail;	
-	} 
+	}
+
+	public String getGoogleToken() {
+		return googleToken;
+	}
+
+	public void setGoogleToken(String googleToken) {
+		this.googleToken = googleToken;
+	}
+
+	public String getGoogleRefreshToken() {
+		return googleRefreshToken;
+	}
+
+	public void setGoogleRefreshToken(String googleRefreshToken) {
+		this.googleRefreshToken = googleRefreshToken;
+	}
+	
+	
+	
 }

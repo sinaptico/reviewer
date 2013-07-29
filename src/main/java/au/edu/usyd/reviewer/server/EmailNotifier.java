@@ -190,9 +190,9 @@ public class EmailNotifier {
 //		return "https://"+reviewerDomain+"/reviewer/Assignments.html";
 		String url = "";
 		if (user != null && user.getOrganization() != null && user.getOrganization().isShibbolethEnabled()){
-			url ="https://"+reviewerDomain+"/reviewerAAF/Assignments.html";
+			url ="https://"+reviewerDomain+"/Assignments.html";
 		} else {
-			url = "https://"+reviewerDomain+"/reviewer/Assignments.html";
+			url = "https://"+reviewerDomain+"/Assignments.html";
 		}
 		return url;
 //		return user.getWasmuser()?

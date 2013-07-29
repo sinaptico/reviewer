@@ -10,6 +10,7 @@ import au.edu.usyd.reviewer.client.core.LogbookDocEntry;
 import au.edu.usyd.reviewer.client.core.LogpageDocEntry;
 import au.edu.usyd.reviewer.client.core.QuestionReview;
 import au.edu.usyd.reviewer.client.core.Review;
+import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.gwt.DocEntryWidget;
 import au.edu.usyd.reviewer.client.core.gwt.PDFWidget;
@@ -61,6 +62,7 @@ public class WritingTasks extends Composite {
 	
 	/** Asynchronous assignment service for model management. */
 	private AssignmentServiceAsync assignmentService;	
+	
 
 	/**
 	 * Instantiates a new writing tasks.
@@ -77,7 +79,7 @@ public class WritingTasks extends Composite {
 	 *
 	 * @param course the course
 	 */
-	private void addDocEntriesToTable(final Course course) {
+	private void addDocEntriesToTable(final Course course, final User user) {
 		int row = documentFlexTable.getRowCount();
 		documentFlexTable.setHTML(row, 0, "<b>"+course.getName()+"</b>");
 		documentFlexTable.setHTML(row, 4, "");
@@ -87,7 +89,7 @@ public class WritingTasks extends Composite {
 			for (final DocEntry docEntry : writingActivity.getEntries()) {
 				// document link
 				VerticalPanel documentLinks = new VerticalPanel();
-				DocEntryWidget documentLink = new DocEntryWidget(docEntry, writingActivity.getName());
+				DocEntryWidget documentLink = new DocEntryWidget(docEntry, writingActivity.getName(), user);
 				final Tree documentsTree = new Tree();
 				final TreeItem documentFolder = new TreeItem(documentLink);
 				if (docEntry instanceof LogbookDocEntry) {
@@ -95,10 +97,10 @@ public class WritingTasks extends Composite {
 					documentLinks.add(documentsTree);
 					for (LogpageDocEntry logpageDocEntry : ((LogbookDocEntry) docEntry).getPages()) {
 						if (logpageDocEntry.getLocked()) {
-							DocEntryWidget entryLink = new DocEntryWidget(logpageDocEntry.getDocumentId(), logpageDocEntry.getTitle(), docEntry.getDomainName(), docEntry.getLocked() || logpageDocEntry.getLocked());
+							DocEntryWidget entryLink = new DocEntryWidget(logpageDocEntry.getDocumentId(), logpageDocEntry.getTitle(), docEntry.getDomainName(), docEntry.getLocked() || logpageDocEntry.getLocked(), user);
 							documentFolder.addItem(entryLink);
 						} else {
-							DocEntryWidget entryLink = new DocEntryWidget(logpageDocEntry.getDocumentId(), logpageDocEntry.getTitle(), docEntry.getDomainName(), docEntry.getLocked() || logpageDocEntry.getLocked());
+							DocEntryWidget entryLink = new DocEntryWidget(logpageDocEntry.getDocumentId(), logpageDocEntry.getTitle(), docEntry.getDomainName(), docEntry.getLocked() || logpageDocEntry.getLocked(), user);
 							documentsTree.addItem(entryLink);
 						}
 					}
@@ -138,7 +140,7 @@ public class WritingTasks extends Composite {
 						holder.add(new HTML("<hr />"));
 	
 						holder.setHorizontalAlignment(HasAlignment.ALIGN_RIGHT);
-						holder.add(new Button("Submit", new ClickListener() {
+						holder.add(new Button("Upload", new ClickListener() {
 							public void onClick(Widget sender) { form.submit();}
 						}));
 	
@@ -274,9 +276,9 @@ public class WritingTasks extends Composite {
 												LogpageDocEntry newEntry = logbookDocEntry.getPages().get(logbookDocEntry.getPages().size() - 1);
 												LogpageDocEntry submittedEntry = logbookDocEntry.getPages().get(logbookDocEntry.getPages().size() - 2);
 
-												documentFolder.addItem(new DocEntryWidget(submittedEntry.getDocumentId(), submittedEntry.getTitle(),course.getDomainName(), true));
+												documentFolder.addItem(new DocEntryWidget(submittedEntry.getDocumentId(), submittedEntry.getTitle(),course.getDomainName(), true, user));
 												documentsTree.removeItem(documentsTree.getItem(documentsTree.getItemCount() - 1));
-												documentsTree.addItem(new DocEntryWidget(newEntry.getDocumentId(), newEntry.getTitle(),course.getDomainName(), false));
+												documentsTree.addItem(new DocEntryWidget(newEntry.getDocumentId(), newEntry.getTitle(),course.getDomainName(), false, user));
 												HTML entryHtml = new HTML("<div style='height:19px'>" + StyleLib.dateFormat(submittedEntry.getSubmitted()) + "</div>");
 												entryHtml.setTitle(submittedEntry.getTitle());
 												downloadFolder.addItem(entryHtml);
@@ -385,7 +387,7 @@ public class WritingTasks extends Composite {
 	 *
 	 * @param courses the new table entries
 	 */
-	public void setTableEntries(Collection<Course> courses) {
+	public void setTableEntries(Collection<Course> courses, User user) {
 		if (courses.size() > 0){
 			documentFlexTable.clear();
 			documentFlexTable.removeAllRows();
@@ -399,7 +401,7 @@ public class WritingTasks extends Composite {
 	
 			for (Course course : courses) {
 				if (course.getWritingActivities().size() > 0) {
-					addDocEntriesToTable(course);
+					addDocEntriesToTable(course, user);
 				}
 			}
 		}else{

@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -83,10 +84,14 @@ public class FileServlet extends HttpServlet {
 						filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
 					} else {
 						// check if user is a reviewer of a document
-						ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user);
-						if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
-							file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
-							filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
+//						ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user);
+//						if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
+						List<ReviewEntry> reviewEntries = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user);
+						for(ReviewEntry reviewEntry: reviewEntries){
+							if (reviewEntry != null && reviewEntry.getOwner().equals(user)) {
+								file = new File(assignmentManager.getDocumentsFolder(course.getId(), writingActivity.getId(), deadline.getId(), WritingActivity.TUTORIAL_ALL, organization) + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
+								filename = docEntry.getTitle() + " - " + deadline.getName() + ".pdf";
+							}
 						}
 					}
 				} else if (tutorial != null) {
