@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.Review;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
@@ -85,7 +86,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 			docEntry = returnDocEntry(reviewee);
 			
 			//find an non-empty entry in case that the assigned one in the spreadsheet is. 
-			if (docEntryIsEmpty(docEntry)){
+			if (docEntry != null && docEntryIsEmpty(docEntry)){
 				Collections.shuffle(entriesNumberList,new Random());
 			    
 			    for (Integer entryNumber : entriesNumberList) {
@@ -112,7 +113,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 			    	if (reviewer.getUsername().equalsIgnoreCase(reviewee.getUsername())){continue;}
 			    	
 			    	DocEntry tempDocEntry = returnDocEntry(reviewee);
-			    	if (!docEntryIsEmpty(tempDocEntry)){
+			    	if (tempDocEntry != null && !docEntryIsEmpty(tempDocEntry)){ 
 			    		docEntry = tempDocEntry;
 			    		break;
 			    	}
@@ -131,17 +132,20 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 						!reviewer.getOrganization().domainBelongsToEmailsDomain(reviewer.getDomain())){
 					throw new MessageException(Constants.EXCEPTION_STUDENTS_INVALID_DOMAIN + "\nStudent email in Sheet2: " + email);
 				}
-				
-//				ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, reviewer);
-//				if (reviewEntry != null) {
-//					continue LOOP_ENTRIES;
+								
+				// check that reviewer has not already been assigned to review this document for the same deadline
+//				for(ReviewEntry reviewEntry:assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, reviewer)){
+//				
+//					DocEntry docEntryReviewer = reviewEntry.getDocEntry();
+//					// if the reviewEntry has a docEntry for the same document and it's in the same
+//					// folder, it means that the deadline is the same so not create a new review for this user
+//					if (docEntryReviewer != null && docEntryReviewer.getDocumentId() != null &&  
+//						docEntryReviewer.getDocumentId().equals(docEntry.getDocumentId()) &&
+//						docEntryIsEmpty(docEntryReviewer)){
+//							continue LOOP_ENTRIES;
+//					}
 //				}
 
-				List<ReviewEntry> reviewEntries = assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, reviewer);
-				if (reviewEntries.size() > 0) {
-					continue LOOP_ENTRIES;
-				}
-				
 				// assign reviewer to document
 				if (!reviewSetup.containsKey(docEntry)) {
 					reviewSetup.put(docEntry, new HashSet<User>());
@@ -186,6 +190,7 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		return false;
 	}
 
+	
 	private UserGroup returnUserGroup(User reviewee) {
 		Set<UserGroup> studentGroup = course.getStudentGroups();
         Iterator<UserGroup> it = studentGroup.iterator();
@@ -206,7 +211,6 @@ public class SpreadsheetReviewStratergy implements ReviewStratergy {
 		List<ListEntry> listEntries = null;
 		try {
 			SpreadsheetEntry spreadsheetEntry = assignmentRepository.getGoogleDocsServiceImpl().getSpreadsheet(course.getSpreadsheetId());
-//			WorksheetEntry worksheetEntry = assignmentRepository.getGoogleSpreadsheetServiceImpl().getSpreadsheetWorksheets(spreadsheetEntry).get(1);
 			List<WorksheetEntry> worksheetEntryList = assignmentRepository.getGoogleSpreadsheetServiceImpl().getSpreadsheetWorksheets(spreadsheetEntry);
 			WorksheetEntry worksheetEntry = worksheetEntryList.get(1);
 			listEntries = assignmentRepository.getGoogleSpreadsheetServiceImpl().getWorksheetRows(worksheetEntry);

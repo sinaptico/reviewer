@@ -2,11 +2,14 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.io.Serializable;
 
+
+
 import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import org.hibernate.annotations.Type;
 
 /**
  * <p>Class used for the deadlines definitions of a writing activity, includes name, 
@@ -33,6 +36,7 @@ public class Deadline implements Serializable {
 	private Long id;
 	
 	/** The finish date. */
+	
 	private Date finishDate = null;
 	
 	/** The name. */

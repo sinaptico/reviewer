@@ -12,7 +12,9 @@ import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
+import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
+import au.edu.usyd.reviewer.client.core.gwt.DocEntryWidget;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -153,6 +155,11 @@ public class ActivityForm extends Composite {
 	
 	private Button addDeadline = new Button("Add Deadline");
 	
+	private User loggedUser =null;
+	
+	private HorizontalPanel googleTemplates = new HorizontalPanel();
+	
+	
 	/**
 	 * Instantiates a new activity form and populates the "Static" Drop-menus with the "Document Types", "Document genres" and "Activity statuses".  
 	 */
@@ -208,31 +215,43 @@ public class ActivityForm extends Composite {
 		remove.addClickHandler(new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent arg0) {
-				for(int i=1; i<deadlineTable.getRowCount(); i++) {
-					if(remove.equals(deadlineTable.getWidget(i, 4))) {
-						Deadline deadlineToRemove = writingActivity.getDeadlines().get(i-1);
-						boolean removeOK = true;
-						for(ReviewingActivity reviewing :writingActivity.getReviewingActivities()){
-							if (reviewing.getStartDate()!= null && reviewing.getStartDate().equals(deadlineToRemove)){
-								removeOK = false;
-								Window.alert("The deadline can not be deleted because it's been used by a reviewing task.\nPlease, change the reviewing task and then try to remove it again.\nReviewing Task: " + reviewing.getName());
+				if (deadlineTable.getRowCount() == 1 ){
+					Window.alert("This is the only deadline of the activity. You can not remove it.");
+				} else {
+					for(int i=1; i<deadlineTable.getRowCount(); i++) {
+						if(remove.equals(deadlineTable.getWidget(i, 4))) {
+							Deadline deadlineToRemove = writingActivity.getDeadlines().get(i-1);
+							boolean removeOK = true;
+							for(ReviewingActivity reviewing :writingActivity.getReviewingActivities()){
+								if (reviewing.getStartDate()!= null && reviewing.getStartDate().equals(deadlineToRemove)){
+									removeOK = false;
+									Window.alert("The deadline can not be deleted because it's been used by a reviewing task.\nPlease, change the reviewing task and then try to remove it again.\nReviewing Task: " + reviewing.getName());
+								}
 							}
+							if (removeOK){
+								writingActivity.getDeadlines().remove(i-1);
+								deadlineTable.removeRow(i);
+								deadLineTextBoxList.remove(i-1);
+							}
+							
 						}
-						if (removeOK){
-							writingActivity.getDeadlines().remove(i-1);
-							deadlineTable.removeRow(i);
-							deadLineTextBoxList.remove(i-1);
-						}
-						
 					}
 				}
 			}});
 		int row = deadlineTable.getRowCount();
+		if (deadline.getStatus() == Deadline.STATUS_DEADLINE_FINISH){
+			status.setEnabled(false);
+			name.setEnabled(false);
+			maxGrade.setEnabled(false);
+			deadlineDate.setEnabled(false);
+			remove.setEnabled(false);
+		}
 		deadlineTable.setWidget(row, 0, status);
 		deadlineTable.setWidget(row, 1, name);
 		deadlineTable.setWidget(row, 2, maxGrade);
 		deadlineTable.setWidget(row, 3, deadlineDate);
 		deadlineTable.setWidget(row, 4, remove);
+		
 		deadLineTextBoxList.add(name);
 	}
 
@@ -357,16 +376,9 @@ public class ActivityForm extends Composite {
 		activityGrid.setWidget(5, 0, new Label("Track reviews:"));
 		activityGrid.setWidget(5, 1, trackReviews);
 	
-
-//		HorizontalPanel showStatsPanel = new HorizontalPanel();
-//		showStatsPanel.add(showStats);
-//		showStatsPanel.add(new Label(" show writing statistics to students."));
-
 		Grid feedbackGrid = new Grid(2, 2);
 		feedbackGrid.setWidget(0, 0, new Label("Glosser:"));
 		feedbackGrid.setWidget(0, 1, glosserList);
-//		feedbackGrid.setWidget(1, 0, new Label("MyStats:"));
-//		feedbackGrid.setWidget(1, 1, showStatsPanel);
 
 		HorizontalPanel groupsPanel = new HorizontalPanel();
 		groupsPanel.add(groups);
@@ -386,7 +398,6 @@ public class ActivityForm extends Composite {
 		VerticalPanel deadlinePanel = new VerticalPanel();
 		deadlinePanel.add(deadlineTable);
 		deadlinePanel.add(addDeadline);
-
 		Grid writeGrid = new Grid(5, 3);
 		writeGrid.setWidget(0, 0, new Label("Name:"));
 		writeGrid.setWidget(0, 1, name);
@@ -395,6 +406,12 @@ public class ActivityForm extends Composite {
 		writeGrid.setWidget(1, 2, genre);
 		writeGrid.setWidget(2, 0, new Label("Document template:"));
 		writeGrid.setWidget(2, 1, documentTemplate);
+		googleTemplates.clear();
+		if (course != null && loggedUser != null){
+			DocEntryWidget widget = new DocEntryWidget(course.getTemplatesFolderId(), "Templates", course.getDomainName(), false, loggedUser);
+			googleTemplates.add(widget);
+			writeGrid.setWidget(2, 2,googleTemplates );
+		}
 		writeGrid.setWidget(3, 0, new Label("Groups:"));
 		writeGrid.setWidget(3, 1, groupsPanel);
 		writeGrid.setWidget(4, 0, new Label("Start date:"));
@@ -453,6 +470,11 @@ public class ActivityForm extends Composite {
 		for (DocEntry template : course.getTemplates()) {
 			documentTemplate.addItem(template.getTitle(), template.getDocumentId());
 		}
+		googleTemplates.clear();
+		if (course != null && loggedUser != null){
+			DocEntryWidget widget = new DocEntryWidget(course.getTemplatesFolderId(), "Templates", course.getDomainName(), false, loggedUser);
+			googleTemplates.add(widget);
+		}
 	}
 	
 	/**
@@ -486,9 +508,19 @@ public class ActivityForm extends Composite {
 				for (DocEntry template : course.getTemplates()) {
 					documentTemplate.addItem(template.getTitle(), template.getDocumentId());
 				}
+				googleTemplates.clear();
+				if (course != null && loggedUser != null){
+					DocEntryWidget widget = new DocEntryWidget(course.getTemplatesFolderId(), "Templates", course.getDomainName(), false, loggedUser);
+					googleTemplates.add(widget);
+				}
+				
 				break;
 			}
 		}
+	}
+	
+	public void setLoggedUser(User user){
+		loggedUser = user;
 	}
 
 	/**

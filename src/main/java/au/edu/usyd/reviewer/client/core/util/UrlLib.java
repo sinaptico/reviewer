@@ -22,7 +22,7 @@ public class UrlLib {
 	 */
 	public static String documentUrl(String id, String domain, User user) {
 		String url = "http://docs.google.com/a/" + domain + "/document/edit?id=" + id.replace("document:", "");
-		url = addGoogleParameters(url, user);
+		url = addGoogleParameters(url, user, false);
 		return url;
 	}
 
@@ -36,7 +36,7 @@ public class UrlLib {
  */
 	public static String folderUrl(String id, String domain, User user) {
 		String url = "http://docs.google.com/a/" + domain + "/#folders/" + id.replace(":", ".0.");
-		url = addGoogleParameters(url, user);
+		url = addGoogleParameters(url, user, true);
 		return url;
 	}
 
@@ -85,7 +85,7 @@ public class UrlLib {
 	 */
 	public static String presentationUrl(String id, String domain, User user) {
 		String url = "http://docs.google.com/a/" + domain + "/presentation/edit?id=" + id.replace("presentation:", "");
-		url = addGoogleParameters(url, user);
+		url = addGoogleParameters(url, user, false);
 		return url;
 	}
 
@@ -99,7 +99,7 @@ public class UrlLib {
 	 */
 	public static String spreadsheetUrl(String id, String domain, User user) {			
 		String url = "http://spreadsheets.google.com/a/" + domain + "/ccc?key=" + id.replace("spreadsheet:", "");
-		url = addGoogleParameters(url, user);
+		url = addGoogleParameters(url, user, false);
 		return url;
 	}
 
@@ -146,14 +146,18 @@ public class UrlLib {
      * @param userId user id to add
      * @return url with Google parameters
      */
-    private static String addGoogleParameters(String url, User user){
+    private static String addGoogleParameters(String url, User user, boolean isFolder){
     	String token = user.getGoogleToken();
     	Long userId = user.getId();
+    	String connector = "&";
+    	if (isFolder){
+    		connector = "?";
+    	}
     	if (!StringUtil.isBlank(token)){
-			url += "&access_token=" + token;
+			url += connector + "access_token=" + token;
 		}
 		if (userId > 0){
-			url += "&aquotaUser=" + userId;
+			url += connector + "aquotaUser=" + userId;
 		}
 		return url;
     }

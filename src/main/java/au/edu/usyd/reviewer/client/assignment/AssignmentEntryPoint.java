@@ -8,11 +8,13 @@ import java.util.Date;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.gwt.DocEntryWidget;
 import au.edu.usyd.reviewer.client.core.gwt.SubmitButton;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.ReviewerUtilService;
 import au.edu.usyd.reviewer.client.core.util.ReviewerUtilServiceAsync;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.CustomUncaughtExceptionHandler;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.client.admin.UserForm;
@@ -22,6 +24,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -155,36 +158,50 @@ public class AssignmentEntryPoint implements EntryPoint {
 				logoutItem = new MenuItem("Logout",logoutCommand);
 				logoutItem.setEnabled(true);
 				logoutMenu.addItem(logoutItem);
-				
-				
-				headerTable.setSize("100%", "5%");
+							
+				headerTable.setSize("73%", "5%");
 				headerTable.setWidget(0, 0, new HTML ("<h1 "+cssH1Style +">ASSIGNMENTS LIST </h1>"));
 				headerTable.setWidget(0, 2, logoutMenu);
 				
-				headerTable.getCellFormatter().setAlignment(0, 0, HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
-				headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
+				headerTable.getCellFormatter().setAlignment(0, 0, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
+				headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_RIGHT, HasVerticalAlignment.ALIGN_MIDDLE);
 				
 				//Assignment pages header
 				RootPanel.get("mainPanel").add(headerTable);
 				mainPanel.add(new HTML("</br>"));
-				mainPanel.add(new HTML ("Reminder: Log out from your Google account before you use this tool. You can keep logged into your personal Google account in another browser."));
-				mainPanel.add(new HTML("<p "+cssTextStyle +" >This section of the website provides an environment for students and academics to manage their written assignments, and reviews. The assignment</br> submission system is based on Google Docs. </p>"));
+				mainPanel.add(new HTML ("<b>Reminder: Log out from your Google account before you use this tool. You can keep logged into your personal Google account in another browser.</b>"));
+				mainPanel.add(new HTML("<p "+cssTextStyle +" >This section of the website provides an environment for students and academics to manage their written assignments, and reviews. </br>The assignment submission system is based on Google Docs. </p>"));
+				if (user != null && user.getOrganization() != null & user.getOrganization().getReviewerSupportEmail() != null){
+					String supportEmail = user.getOrganization().getReviewerSupportEmail();
+					mainPanel.add(new HTML("<p "+cssTextStyle + ">If you have any problem, don't hesitate to contact <a href='mailto:" + supportEmail + "'>" + supportEmail +"</a> for further support.</p>"));
+				}
+	
 				// Support 
-				// How does the assignment submission system work? Visit our Help page to learn more. If you have trouble, </br>please see the Troubleshooting Guide on the Help page for solutions to common problems or contact <a href='mailto:i.write@sydney.edu.au'>i.write@sydney.edu.au</a> for futher support.
+				// How does the assignment submission system work? Visit our Help page to learn more. 	
 				
 				loggedUser = user;
+				
 				Organization organization = user.getOrganization();
 				userDetailsFlexTable.clear();
 				userDetailsFlexTable.setWidth("60%");				
 				HTML htmlUser = new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName());
 				htmlUser.setStyleName("userText");
-				headerTable.setWidget(0, 1, htmlUser);
-				headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);;
+				headerTable.setWidget(0,1,htmlUser);
+				headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT, HasVerticalAlignment.ALIGN_MIDDLE);
+				
+				if (user != null && organization != null){	
+					String url = organization.getOrganizationLinkToShowInAssignmest();
+					String urlTitle = organization.getOrganizationTitleLinkToShowInAssignmest();
+					if (!StringUtil.isBlank(url) && !StringUtil.isBlank(urlTitle)){
+						headerTable.setWidget(1,2,new HTML("<a href='" + url +"' target='_blank'>" +  urlTitle + "</a>"));
+						headerTable.getCellFormatter().setAlignment(1, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
+					}
+				}
+				
 				// if the organization doesn't use shibboleht then show change passwod button
 				if (!organization.isShibbolethEnabled()){	
 					userDetailsFlexTable.setHTML(0, 0, "<p "+cssTextStyle +" >If you need to change your password, please click here: </p>");							
 					userDetailsFlexTable.setWidget(0, 1, userDetailsButton);
-					mainPanel.add(new HTML("</br>"));
 					
 					userDetailsButton.addClickHandler(new ClickHandler() {
 						@Override
@@ -241,37 +258,37 @@ public class AssignmentEntryPoint implements EntryPoint {
 						}
 					});
 				}	
-					refreshPanelButton = new SubmitButton("Load activities", "Loading activities, please wait...", "Load");
-					// if there are organization then the logged user is a master			
-					if (user.isSuperAdmin()){
-						// Get Organizations to populate  a drop down list
-						getOrganizations();
-					} else {
-						filterActivitiesGrid.setWidget(0, 0, new Label("Semester-Year:"));
-						filterActivitiesGrid.setWidget(0, 1, courseSemester);
-						filterActivitiesGrid.setWidget(0, 2, courseYear);
-						filterActivitiesGrid.setWidget(0, 3, refreshPanelButton);
-						filterActivitiesGrid.setWidget(1, 0, includeFinishedReviews);
-						filterActivitiesGrid.getFlexCellFormatter().setColSpan(1, 0, 3);
-						filterActivitiesGrid.getCellFormatter().setWidth(0, 3, "150px");
-					}
+				refreshPanelButton = new SubmitButton("Load activities", "Loading activities, please wait...", "Load");
+				// if there are organization then the logged user is a master			
+				if (user.isSuperAdmin()){
+					// Get Organizations to populate  a drop down list
+					getOrganizations();
+				} else {
+					filterActivitiesGrid.setWidget(0, 0, new Label("Semester-Year:"));
+					filterActivitiesGrid.setWidget(0, 1, courseSemester);
+					filterActivitiesGrid.setWidget(0, 2, courseYear);
+					filterActivitiesGrid.setWidget(0, 3, refreshPanelButton);
+					filterActivitiesGrid.setWidget(1, 0, includeFinishedReviews);
+					filterActivitiesGrid.getFlexCellFormatter().setColSpan(1, 0, 3);
+					filterActivitiesGrid.getCellFormatter().setWidth(0, 3, "150px");
+				}
 			
-					filterActivitiesGrid.getRowFormatter().setStyleName(0, "centerFilterTable");
-					filterActivitiesGrid.getRowFormatter().setStyleName(1, "centerFilterTable");
+				filterActivitiesGrid.getRowFormatter().setStyleName(0, "centerFilterTable");
+				filterActivitiesGrid.getRowFormatter().setStyleName(1, "centerFilterTable");
 					    
-					courseSemester.addItem("1", "1");
-					courseSemester.addItem("2", "2");
+				courseSemester.addItem("1", "1");
+				courseSemester.addItem("2", "2");
 					
-					Date today = new Date();
-					int month = today.getMonth();
-					if (month < 7) {
-						courseSemester.setSelectedIndex(0);
-					} else if (month > 6){
-						courseSemester.setSelectedIndex(1);
-					}
+				Date today = new Date();
+				int month = today.getMonth();
+				if (month < 6) {
+					courseSemester.setSelectedIndex(0);
+				} else {
+					courseSemester.setSelectedIndex(1);
+				}
 							
-					// get Current year and 5 years ago
-					reviewerUtilService.getYears(new AsyncCallback<Collection<Integer>>(){
+				// get Current year and 5 years ago
+				reviewerUtilService.getYears(new AsyncCallback<Collection<Integer>>(){
 						@Override
 						public void onFailure(Throwable caught) {
 							if (loggedUser != null){
@@ -288,10 +305,10 @@ public class AssignmentEntryPoint implements EntryPoint {
 							setYearsPanel(years); 
 							refreshPanelButton.fireEvent(new ButtonClickEvent ());
 						}
-					});
+				});
 
-					//Checkbox to include reviewing tasks
-					includeFinishedReviews.setText("Show finished reviewing activities");
+				//Checkbox to include reviewing tasks
+				includeFinishedReviews.setText("Show finished reviewing activities");
 					
 					
 					// assignments panel
@@ -314,6 +331,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 					activitiesPanel.add(instructorPanel, "Instructor Panel");
 					activitiesPanel.setWidth(panelWidth);
 					activitiesPanel.selectTab(0);
+					
 					final HTML htmlAdminLink = new HTML("<br/><p "+cssTextStyle +" >As an Instructor user of the  application, you can go to the Admin page and set up Writing Activities and Reviews. <a href='Admin.html'>Admin Page</a> </p></br>");
 					
 //					refreshPanelButton = new SubmitButton("Load activities", "Loading activities, please wait...", "Load");
@@ -382,6 +400,12 @@ public class AssignmentEntryPoint implements EntryPoint {
 								public void onSuccess(Collection<Course> courses) {
 									if (!courses.isEmpty()){
 										instructorPanel.setTableEntries(courses, loggedUser);
+										if (loggedUser != null && loggedUser.getOrganization() != null & 
+											!loggedUser.getOrganization().isShibbolethEnabled()){
+											mainPanel.add(new HTML("</br>"));											
+											mainPanel.add(userDetailsFlexTable);
+											mainPanel.add(new HTML("</br>"));
+										}
 										mainPanel.add(htmlAdminLink);
 										mainPanel.add(activitiesPanel);	
 									}						
@@ -403,6 +427,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 					mainPanel.add(new HTML("<br/>"));
 					mainPanel.add(reviewsPanel);			
 
+					mainPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 					// activities panel	
 					RootPanel.get("mainPanel").add(mainPanel);
 			}

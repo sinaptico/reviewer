@@ -3,7 +3,9 @@ package au.edu.usyd.reviewer.server;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -41,7 +43,6 @@ public class EmailNotifier {
 	private String domain = null;
 	private String fromName = "Reviewer Assignment Tracker";
 	private String fromAddress = "no-reply@"+domain;
-	private DateFormat dateFormat = new SimpleDateFormat("E d MMM h:mma");
 	private String reviewerDomain = null;
  
 	public EmailNotifier(String username, String password, String smtpHost, String smtpPort, String domain,String reviewerDomain) throws NoSuchProviderException {
@@ -122,7 +123,7 @@ public class EmailNotifier {
 	}
 
 	public void sendStudentActivityStartNotification(User student, Course course, WritingActivity writingActivity, Deadline deadline) throws MessagingException, UnsupportedEncodingException, MessageException {
-		String deadlineDate = dateFormat.format(deadline.getFinishDate());
+		String deadlineDate = convertDateInUTC(deadline.getFinishDate());
 		String to = student.getFirstname() + " " + student.getLastname();
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_ACTIVITY_START);
@@ -139,7 +140,7 @@ public class EmailNotifier {
 	}
 
 	public void sendStudentReviewStartNotification(User student, Course course, WritingActivity writingActivity, Deadline deadline) throws MessagingException, UnsupportedEncodingException, MessageException {		
-		String deadlineDate = dateFormat.format(writingActivity.getReviewingActivities().get(0).getFinishDate());
+		String deadlineDate = convertDateInUTC(writingActivity.getReviewingActivities().get(0).getFinishDate());
 		String to = student.getFirstname() + " " + student.getLastname();
 		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
 		EmailCourse email = course.getEmail(Constants.EMAIL_STUDENT_REVIEW_START);
@@ -190,14 +191,11 @@ public class EmailNotifier {
 //		return "https://"+reviewerDomain+"/reviewer/Assignments.html";
 		String url = "";
 		if (user != null && user.getOrganization() != null && user.getOrganization().isShibbolethEnabled()){
-			url ="https://"+reviewerDomain+"/Assignments.html";
+			url ="http://"+reviewerDomain+"/assignments.htm";
 		} else {
 			url = "https://"+reviewerDomain+"/Assignments.html";
 		}
 		return url;
-//		return user.getWasmuser()?
-//				"https://"+reviewerDomain+"/reviewer/Assignments.html":
-//				"https://"+reviewerDomain+"/reviewer/iWrite.html";
 	}
 	
 	public void setProperties(Properties properties) {
@@ -207,5 +205,20 @@ public class EmailNotifier {
 	public void sendTestSMTPEmail(User user) throws MessagingException, UnsupportedEncodingException, MessageException {
 		String content = Constants.EMAIL_TEST_MESSAGE;
 		this.sendNotification(user, "Test email from reviewer", content);
+	}
+	
+	private String convertDateInUTC(Date date) {
+		String sDate = "";
+		try{
+			DateFormat dateFormat = new SimpleDateFormat("E d MMM h:mma");
+			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+			sDate = dateFormat.format(date);
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return sDate;
+		
+		
+		
 	}
 }

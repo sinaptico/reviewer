@@ -345,6 +345,23 @@ public class Organization implements Serializable {
 		return value;
 	}
 	
+	public String getOrganizationLinkToShowInAssignmest(){
+		String value = getPropertyValue(Constants.ORGANIZATION_LINK_TO_SHOW_IN_ASSIGNMENTS);
+		return value;
+	}
+	
+	public String getOrganizationTitleLinkToShowInAssignmest(){
+		String value = getPropertyValue(Constants.ORGANIZATION_TITLE_LINK_TO_SHOW_IN_ASSIGNMENTS);
+		return value;
+	}
+	
+	public String getReviewerSupportEmail(){
+		String value = getPropertyValue(Constants.REVIEWER_SUPPORT_EMAIL);
+		return value;
+	}
+	
+	
+	
 	/**
 	 * Return an email template 
 	 * @param name name of the email template

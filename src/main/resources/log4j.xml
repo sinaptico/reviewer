@@ -12,6 +12,7 @@
 		<param name="file" value="logs/reviewer-warn.log" />
 		<param name="maxFileSize" value="2048KB" />
 		<param name="maxBackupIndex" value="100" />
+		<param name="Threshold" value="WARN"/>
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d %p (%x): [%c] - %m%n" />
 		</layout>
@@ -21,6 +22,17 @@
 		<param name="file" value="logs/reviewer-error.log" />
 		<param name="maxFileSize" value="2048KB" />
 		<param name="maxBackupIndex" value="100" />
+		<param name="Threshold" value="ERROR"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d %p (%x): [%c] - %m%n" />
+		</layout>
+	</appender>
+	
+	<appender name="reviewer-debug" class="org.apache.log4j.RollingFileAppender">
+		<param name="file" value="logs/reviewer-debug.log" />
+		<param name="maxFileSize" value="2048KB" />
+		<param name="maxBackupIndex" value="100" />
+		<param name="Threshold" value="DEBUG"/>
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern" value="%d %p (%x): [%c] - %m%n" />
 		</layout>
@@ -31,6 +43,8 @@
 		<appender-ref ref="reviewer-error" />
 		<level value="warn" />
 		<appender-ref ref="reviewer-warn" />
+		<level value="debug" />
+		<appender-ref ref="reviewer-debug" />
 	</logger>
 
 	<root>

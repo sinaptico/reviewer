@@ -200,8 +200,10 @@ public class AssignmentManager {
 		if (deadline.getStatus() >= Deadline.STATUS_DEADLINE_FINISH) {
 			return;
 		}
-
-		if(writingActivity.getDeadlines().get(writingActivity.getDeadlines().size()-1).equals(deadline)) {
+		
+		Deadline finalDeadline = writingActivity.getFinalDeadline();
+		//if deadline is the final deadline then finish de activity
+		if (finalDeadline != null && finalDeadline.equals(deadline)) {
 			// update document writer permissions to reader permissions for ALL
 			// documents in activity folder
 			assignmentRepository.lockActivityDocuments(writingActivity);
@@ -211,7 +213,7 @@ public class AssignmentManager {
 				docEntry.setLocked(true);
 				docEntry = assignmentDao.save(docEntry);
 			}
-	
+			
 			// update activity status
 			writingActivity.setStatus(Activity.STATUS_FINISH);
 			writingActivity = assignmentDao.save(writingActivity);
@@ -223,7 +225,7 @@ public class AssignmentManager {
 		// create reviews
 		for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
 			if (deadline.equals(reviewingActivity.getStartDate())) {
-				updateActivityReviews(course, writingActivity, reviewingActivity);
+				updateActivityReviews(course, writingActivity, reviewingActivity,deadline);
 				reviewingActivity.setStatus(Activity.STATUS_START);
 				reviewingActivity = assignmentDao.save(reviewingActivity);
 			}
@@ -236,35 +238,38 @@ public class AssignmentManager {
 		// schedule next activity deadline
 		scheduleActivityDeadline(course, writingActivity);
 		
-		// send assessment finish notification to lecturers
-		for (User lecturer : course.getLecturers()) {
-			try {
-				emailNotifier.sendLecturerDeadlineFinishNotification(lecturer, course, writingActivity, deadline.getName());
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error("Failed to send assessment finish notification.", e);
+		if (writingActivity.getEmailStudents()){
+			// send assessment finish notification to lecturers
+			for (User lecturer : course.getLecturers()) {
+				try {
+					emailNotifier.sendLecturerDeadlineFinishNotification(lecturer, course, writingActivity, deadline.getName());
+				} catch (Exception e) {
+					e.printStackTrace();
+					logger.error("Failed to send assessment finish notification.", e);
+				}
 			}
-		}
-		
-		// send review start notification to students
-		if (writingActivity.getEmailStudents()) {
-			for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
-				if (deadline.equals(reviewingActivity.getStartDate()) && (reviewingActivity.getNumStudentReviewers() > 0)) {
-					for (UserGroup studentGroup : course.getStudentGroups()) {
-						if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
-							for (User student : studentGroup.getUsers()) {
-								try {
-									emailNotifier.sendStudentReviewStartNotification(student, course, writingActivity, deadline);
-								} catch (Exception e) {
-									e.printStackTrace();
-									logger.error("Failed to send review start notification.", e);
+			
+			// send review start notification to students
+			if (writingActivity.getEmailStudents()) {
+				for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
+					if (deadline.equals(reviewingActivity.getStartDate()) && (reviewingActivity.getNumStudentReviewers() > 0)) {
+						for (UserGroup studentGroup : course.getStudentGroups()) {
+							if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
+								for (User student : studentGroup.getUsers()) {
+									try {
+										emailNotifier.sendStudentReviewStartNotification(student, course, writingActivity, deadline);
+									} catch (Exception e) {
+										e.printStackTrace();
+										logger.error("Failed to send review start notification.", e);
+									}
 								}
 							}
 						}
 					}
 				}
 			}
-		}	
+		}
+
 	}
 
 	public void finishReviewingActivity(Course course, ReviewingActivity reviewingActivity, Deadline deadline) throws MessageException{
@@ -348,11 +353,9 @@ public class AssignmentManager {
 				}
 			}
 		} 
-//		else {	
-//			MessageException me = new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_FINISHED + " File " + filePath);
-//			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
-//			throw me;
-//		}
+		else {	
+			logger.error(Constants.EXCEPTION_ACTIVITY_NOT_FINISHED + " File " + filePath);
+		}
 
 		// update activity status
 		reviewingActivity.setStatus(Activity.STATUS_FINISH);
@@ -370,40 +373,42 @@ public class AssignmentManager {
 			}
 		}
 
-		// send review finish notification to lecturers
-		for (User lecturer : course.getLecturers()) {
-			try {
-				emailNotifier.sendLecturerDeadlineFinishNotification(lecturer, course, reviewingActivity, reviewingActivity.getName());
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error("Failed to send review finish notification.", e);
-			}
-		}
-
-		//send review finish notifications to students	
 		WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
-		if(writingActivity != null && writingActivity.getEmailStudents()){
-			List<DocEntry> notifiedDocEntries = new ArrayList<DocEntry>();
-			for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
-				if (!reviewEntry.isDeleted()){
-					//Reviewed User
-					User user = reviewEntry.getDocEntry().getOwner();
-					if (!notifiedDocEntries.contains(reviewEntry.getDocEntry())){
-						try {
-							if (user != null){
-								emailNotifier.sendReviewFinishNotification(user, course, writingActivity, deadline.getName());
-								notifiedDocEntries.add(reviewEntry.getDocEntry());
-							}else{ 
-								//it's a document owned by a group
-								Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
-								for (User userToNotify : students) {
-									emailNotifier.sendReviewFinishNotification(userToNotify, course, writingActivity, deadline.getName());								
+		if (writingActivity.getEmailStudents()){
+			// send review finish notification to lecturers
+			for (User lecturer : course.getLecturers()) {
+				try {
+					emailNotifier.sendLecturerDeadlineFinishNotification(lecturer, course, reviewingActivity, reviewingActivity.getName());
+				} catch (Exception e) {
+					e.printStackTrace();
+					logger.error("Failed to send review finish notification.", e);
+				}
+			}
+	
+			//send review finish notifications to students	
+			if(writingActivity != null && writingActivity.getEmailStudents()){
+				List<DocEntry> notifiedDocEntries = new ArrayList<DocEntry>();
+				for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
+					if (!reviewEntry.isDeleted()){
+						//Reviewed User
+						User user = reviewEntry.getDocEntry().getOwner();
+						if (!notifiedDocEntries.contains(reviewEntry.getDocEntry())){
+							try {
+								if (user != null){
+									emailNotifier.sendReviewFinishNotification(user, course, writingActivity, deadline.getName());
+									notifiedDocEntries.add(reviewEntry.getDocEntry());
+								}else{ 
+									//it's a document owned by a group
+									Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
+									for (User userToNotify : students) {
+										emailNotifier.sendReviewFinishNotification(userToNotify, course, writingActivity, deadline.getName());								
+									}
+									notifiedDocEntries.add(reviewEntry.getDocEntry());
 								}
-								notifiedDocEntries.add(reviewEntry.getDocEntry());
+							} catch (Exception e) {
+								e.printStackTrace();
+								logger.error("Failed to send review finish notification.", e);
 							}
-						} catch (Exception e) {
-							e.printStackTrace();
-							logger.error("Failed to send review finish notification.", e);
 						}
 					}
 				}
@@ -412,10 +417,10 @@ public class AssignmentManager {
 
 		// read excel file and insert questions into DB
 		if (reviewingActivity.getFormType() != null && reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_QUESTION)) {
-			String path = getDocumentsFolder(course.getId(), reviewingActivity.getId(), "aqg", "", organization);
-			String filepath = path + Reviewer.getAggLoadExcelPath(); 
-			QuestionUtil questionUtil = new QuestionUtil();
 			try {
+				String path = getDocumentsFolder(course.getId(), reviewingActivity.getId(), "aqg", "", organization);
+				String filepath = path + Reviewer.getAggLoadExcelPath(); 
+				QuestionUtil questionUtil = new QuestionUtil();
 				questionUtil.readExcelInsertDB(filepath, course.getOrganization());
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -544,6 +549,8 @@ public class AssignmentManager {
 					student.setPassword(user.getPassword());
 					if (StringUtil.isBlank(student.getFirstname())){
 						if (StringUtil.isBlank(user.getFirstname())){
+							logger.debug("Student firstname: " + student.getFirstname());
+							logger.debug("Student DB firstname: " + user	.getFirstname());
 							throw new MessageException(Constants.EXCEPTION_STUDENT_FIRSTNAME_EMPTY);
 						} else {						
 							student.setFirstname(user.getFirstname());
@@ -551,6 +558,8 @@ public class AssignmentManager {
 					}
 					if(StringUtil.isBlank(student.getLastname())){
 						if(StringUtil.isBlank(user.getLastname())){
+							logger.debug("Student lastname: " + student.getLastname());
+							logger.debug("Student DB lastname: " + user	.getLastname());
 							throw new MessageException(Constants.EXCEPTION_STUDENT_LASTNAME_EMPTY);
 						} else {
 							student.setLastname(user.getLastname());
@@ -740,7 +749,7 @@ public class AssignmentManager {
 			// create reviews for new users
 			for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
 				if (reviewingActivity.getStatus() == Activity.STATUS_START) {
-					updateActivityReviews(course, writingActivity, reviewingActivity);
+					updateActivityReviews(course, writingActivity, reviewingActivity, null);
 				}
 			}
 		}
@@ -914,20 +923,32 @@ public class AssignmentManager {
 			}, writingActivity.getStartDate());
 		} else if (writingActivity.getStatus() < Activity.STATUS_FINISH || !writingActivity.getReviewingActivities().isEmpty()) {
 			for(final Deadline deadline : assignmentDao.loadWritingActivity(activityId).getDeadlines()) {
-				final Long deadlineId = deadline.getId();
-				if(deadline.getStatus() < Deadline.STATUS_DEADLINE_FINISH && deadline.getFinishDate() != null){
+				if ( deadline.getStatus() < Deadline.STATUS_DEADLINE_START){
 					timer.schedule(new TimerTask() {
 						@Override
-						public void run() {
-							
+						public void run() {			
 							try {
-								finishActivityDeadline(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), assignmentDao.loadDeadline(deadlineId));
+								startDeadlines(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), deadline);
 							} catch (Exception e) {
+								logger.error("Error finishing  activity dealine" + activityId);
+								e.printStackTrace();
+							}
+						}
+					}, writingActivity.getStartDate());
+					
+				} else if(deadline.getStatus() < Deadline.STATUS_DEADLINE_FINISH && deadline.getFinishDate() != null){
+					timer.schedule(new TimerTask() {
+						@Override
+						public void run() {			
+							try {
+								finishActivityDeadline(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), deadline);
+							} catch (Exception e) {
+								logger.error("Error finishing  activity dealine" + activityId);
 								e.printStackTrace();
 							}
 						}
 					}, deadline.getFinishDate());
-					break;
+//					break;
 				} else {
 					for(final ReviewingActivity reviewingActivity : assignmentDao.loadWritingActivity(activityId).getReviewingActivities()) {
 						if(deadline.equals(reviewingActivity.getStartDate())) {
@@ -937,20 +958,25 @@ public class AssignmentManager {
 									public void run() {
 										try {
 											finishReviewingActivity(courseDao.loadCourse(courseId), assignmentDao.loadReviewingActivity(reviewingActivity.getId()),deadline);
-										} catch (MessageException e) {
+										} catch (Exception e) {
 											logger.error("Error running reviewing activity " + reviewingActivity.getId());
 											e.printStackTrace();
 										}
 									}
 								}, reviewingActivity.getFinishDate());
-							} else if ( reviewingActivity.getStatus() == Activity.STATUS_NONE) {
-								try{
-									startReviewActivity(courseDao.loadCourse(courseId), writingActivity, assignmentDao.loadReviewingActivity(reviewingActivity.getId()),deadline);
-								} catch(Exception e){
-									logger.error("Error running reviewing activity " + reviewingActivity.getId());
-									e.printStackTrace();
-								}
-							}
+							} else if(reviewingActivity.getStatus() < Activity.STATUS_START && reviewingActivity.getFinishDate() != null){
+								timer.schedule(new TimerTask() {
+									@Override
+									public void run() {
+										try {
+											startReviewingActivity(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), assignmentDao.loadReviewingActivity(reviewingActivity.getId()),deadline);
+										} catch (Exception e) {
+											logger.error("Error running reviewing activity " + reviewingActivity.getId());
+											e.printStackTrace();
+										}
+									}
+								}, deadline.getFinishDate());
+							}  
 						}
 					}
 				}
@@ -958,6 +984,8 @@ public class AssignmentManager {
 		}
 	}
 
+	
+	
 	public void startActivity(Course course, WritingActivity writingActivity) throws MessageException{
 
 		// check activity status
@@ -969,33 +997,71 @@ public class AssignmentManager {
 
 		// update activity status
 		writingActivity.setStatus(Activity.STATUS_START);		
+		
 		// update document entry domains
 		Organization organization = course.getOrganization();
 		String domainName = organization.getGoogleDomain();
 		Set<DocEntry> docEntries = writingActivity.getEntries();
 		for (DocEntry docEntry : docEntries) {
 			docEntry.setDomainName(domainName);
-		}		
+		}
+		
+		// save activity 
 		writingActivity = assignmentDao.save(writingActivity);
-
-		// schedule next activity deadline
+		
+		// start all deadlines
+		for(Deadline deadline: writingActivity.getDeadlines()){
+			deadline.setStatus(Deadline.STATUS_DEADLINE_START);
+			deadline = assignmentDao.save(deadline);
+		}
+		
 		scheduleActivityDeadline(course, writingActivity);
-
-		// send assessment start notification to students
-		if (writingActivity.getEmailStudents()) {
-			for (UserGroup studentGroup : course.getStudentGroups()) {
-				if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
-					for (User student : studentGroup.getUsers()) {
-						try {
-							emailNotifier.sendStudentActivityStartNotification(student, course, writingActivity, writingActivity.getDeadlines().get(writingActivity.getDeadlines().size() - 1));
-						} catch (Exception e) {
-							e.printStackTrace();
-							logger.error("Failed to send assessment start notification.", e);
+		
+		// get final deadline   
+		Deadline finalDeadline = writingActivity.getFinalDeadline();
+		if (finalDeadline != null){
+			if (writingActivity.getEmailStudents()){
+				// send assessment start notification to students
+				if (writingActivity.getEmailStudents()) {
+					for (UserGroup studentGroup : course.getStudentGroups()) {
+						if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
+							for (User student : studentGroup.getUsers()) {
+								try {
+									emailNotifier.sendStudentActivityStartNotification(student, course, writingActivity, finalDeadline);
+								} catch (Exception e) {
+									e.printStackTrace();
+									logger.error("Failed to send assessment start notification.", e);
+								}
+							}
 						}
 					}
 				}
 			}
+		}	
+	}
+	
+	public void startDeadlines(Course course, WritingActivity writingActivity,Deadline deadline) throws MessageException{
+
+		
+		updateActivityDocuments(course, writingActivity);
+
+		// update document entry domains
+		Organization organization = course.getOrganization();
+		String domainName = organization.getGoogleDomain();
+		Set<DocEntry> docEntries = writingActivity.getEntries();
+		for (DocEntry docEntry : docEntries) {
+			docEntry.setDomainName(domainName);
 		}
+		
+		// save activity 
+		writingActivity = assignmentDao.save(writingActivity);
+		
+		// start the deadline and save it
+		deadline.setStatus(Deadline.STATUS_DEADLINE_START);
+		deadline = assignmentDao.save(deadline);
+		
+		// schedule the activity deadlines
+		scheduleActivityDeadline(course, writingActivity);		
 	}
 
 	public DocEntry submitDocument(DocEntry docEntry) throws Exception {
@@ -1226,14 +1292,14 @@ public class AssignmentManager {
 		}
 	}
 	
-	private void updateActivityReviews(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity) throws Exception{
+	private void updateActivityReviews(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline currentDeadline) throws Exception{
 		synchronized (writingActivity.getFolderId().intern()) {
 			// get documents to be reviewed
 			List<DocEntry> docEntries = new ArrayList<DocEntry>();
 			if (reviewingActivity.getStatus() < Activity.STATUS_START) {
 				try {
 					if (writingActivity.getExcludeEmptyDocsInReviews()){
-						docEntries.addAll(selectNonEmptyEntries(writingActivity));
+						docEntries.addAll(selectNonEmptyEntries(writingActivity, currentDeadline));
 					}else{
 						docEntries.addAll(writingActivity.getEntries());
 					}
@@ -1285,7 +1351,14 @@ public class AssignmentManager {
 							if (!lecturers.hasNext()) {
 								lecturers = course.getLecturers().iterator();
 							}
-							reviewSetup.get(docEntry).add(lecturers.next());
+							if (lecturers.hasNext()){
+								User lecturer = lecturers.next();
+								// lecturer can not review his/her activities
+								if (lecturer != null && docEntry != null & docEntry.getOwner() != null && !lecturer.equals(docEntry.getOwner())){
+									reviewSetup.get(docEntry).add(lecturer);
+								} 
+							}
+							
 						}
 					}
 				}
@@ -1298,7 +1371,13 @@ public class AssignmentManager {
 							if (!tutors.hasNext()) {
 								tutors = course.getTutors().iterator();
 							}
-							reviewSetup.get(docEntry).add(tutors.next());
+							if (tutors.hasNext()){
+								User tutor = tutors.next();
+								// tutor can not review his/her activities
+								if (tutor != null && docEntry != null & docEntry.getOwner() != null && !tutor.equals(docEntry.getOwner())){
+									reviewSetup.get(docEntry).add(tutor);
+								} 
+							}
 						}
 					}
 				}
@@ -1311,7 +1390,10 @@ public class AssignmentManager {
 							if (!autoReviewers.hasNext()) {
 								autoReviewers = course.getAutomaticReviewers().iterator();
 							}
-							reviewSetup.get(docEntry).add(autoReviewers.next());
+							User autoReviewUser = autoReviewers.next();
+							if (autoReviewUser != null && docEntry != null & docEntry.getOwner() != null && !autoReviewUser.equals(docEntry.getOwner())){
+								reviewSetup.get(docEntry).add(autoReviewUser);
+							}
 						}
 					}
 				}				
@@ -1320,89 +1402,132 @@ public class AssignmentManager {
 
 			// create user reviews
 			for (DocEntry docEntry : reviewSetup.keySet()) {
+				docEntry = assignmentDao.save(docEntry);
 				for (User user : reviewSetup.get(docEntry)) {
-					Review review;
-					if (reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_QUESTION)) {
-						QuestionReview questionReview = new QuestionReview();
-						Question question1 = new Question();
-						question1.setOwner(user);
-						question1.setDocId(docEntry.getDocumentId());
-						Question question2 = new Question();
-						question2.setOwner(user);
-						question2.setDocId(docEntry.getDocumentId());
-						Question question3 = new Question();
-						question3.setOwner(user);
-						question3.setDocId(docEntry.getDocumentId());
-						Question question4 = new Question();
-						question4.setOwner(user);
-						question4.setDocId(docEntry.getDocumentId());
-						Question question5 = new Question();
-						question5.setOwner(user);
-						question5.setDocId(docEntry.getDocumentId());
-						questionReview.getQuestions().add(question1);
-						questionReview.getQuestions().add(question2);
-						questionReview.getQuestions().add(question3);
-						questionReview.getQuestions().add(question4);
-						questionReview.getQuestions().add(question5);
-						review = questionReview;
-					} else {
-						
-						if (reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_TEMPLATE)) {
-							ReviewReply reviewReply = new ReviewReply();
-							ReviewTemplate templateToReply = assignmentDao.loadReviewTemplate(reviewingActivity.getReviewTemplateId());
+//					boolean existsReview = false;
+//					// check that user has not already been assigned to review this document for the same deadline
+//					for(ReviewEntry reviewEntry:assignmentDao.loadReviewEntryWhereDocEntryAndOwner(docEntry, user)){
+//						DocEntry docEntryReviewer = reviewEntry.getDocEntry();
+//						// if the reviewEntry has a docEntry for the same document and it's in the same
+//						// folder, it means that the deadline is the same so not create a new review for this user
+//						if (docEntryReviewer != null && docEntryReviewer.getDocumentId() != null &&  
+//							docEntryReviewer.getDocumentId().equals(docEntry.getDocumentId()) &&
+//							docEntryIsEmpty(course, writingActivity,docEntryReviewer)){
+//								existsReview = true;
+//								break;
+//						}
+//					}
+//					if (!existsReview){
+						Review review;
+						if (reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_QUESTION)) {
+							QuestionReview questionReview = new QuestionReview();
+							Question question1 = new Question();
+							question1.setOwner(user);
+							question1.setDocId(docEntry.getDocumentId());
+							Question question2 = new Question();
+							question2.setOwner(user);
+							question2.setDocId(docEntry.getDocumentId());
+							Question question3 = new Question();
+							question3.setOwner(user);
+							question3.setDocId(docEntry.getDocumentId());
+							Question question4 = new Question();
+							question4.setOwner(user);
+							question4.setDocId(docEntry.getDocumentId());
+							Question question5 = new Question();
+							question5.setOwner(user);
+							question5.setDocId(docEntry.getDocumentId());
+							questionReview.getQuestions().add(question1);
+							questionReview.getQuestions().add(question2);
+							questionReview.getQuestions().add(question3);
+							questionReview.getQuestions().add(question4);
+							questionReview.getQuestions().add(question5);
+							review = questionReview;
+						} else {
 							
-							for (Section section : templateToReply.getSections()){
-								TemplateReply answer = new TemplateReply();
-								answer.setReviewTemplate(templateToReply);
-								answer.setSection(section);	
-								answer.setText("");
+							if (reviewingActivity.getFormType().equals(ReviewingActivity.REVIEW_TYPE_TEMPLATE)) {
+								ReviewReply reviewReply = new ReviewReply();
+								ReviewTemplate templateToReply = assignmentDao.loadReviewTemplate(reviewingActivity.getReviewTemplateId());
 								
-								if (!section.getTool().equalsIgnoreCase("none")){
-									int siteId = Integer.valueOf(String.valueOf(writingActivity.getGlosserSite()));
-									String docId = docEntry.getDocumentId();
-									String toolType = section.getTool();
-									String feedBack = "";
-									try {
-										feedBack = feedBackService.getAutomatedFeedback(siteId,docId,toolType);
-									} catch (Exception e) {
-										logger.error("Error getting automatic feedback.", e +"Document id: "+docId+" Tooltype: "+toolType);
+								for (Section section : templateToReply.getSections()){
+									TemplateReply answer = new TemplateReply();
+									answer.setReviewTemplate(templateToReply);
+									answer.setSection(section);	
+									answer.setText("");
+									
+									if (!section.getTool().equalsIgnoreCase("none")){
+										int siteId = Integer.valueOf(String.valueOf(writingActivity.getGlosserSite()));
+										String docId = docEntry.getDocumentId();
+										String toolType = section.getTool();
+										String feedBack = "";
+										try {
+											feedBack = feedBackService.getAutomatedFeedback(siteId,docId,toolType);
+										} catch (Exception e) {
+											logger.error("Error getting automatic feedback.", e +"Document id: "+docId+" Tooltype: "+toolType);
+										}
+										answer.setText(feedBack);
 									}
-									answer.setText(feedBack);
+									
+									reviewReply.getTemplateReplies().add(answer);
 								}
 								
-								reviewReply.getTemplateReplies().add(answer);
+								review = reviewReply;
+							}else{
+								review = new Review();
 							}
-							
-							review = reviewReply;
-						}else{
-							review = new Review();
 						}
-					}
-					review.setFeedbackTemplateType(reviewingActivity.getFeedbackTemplateType());
-					review = assignmentDao.save(review);
-					
-					// Tracking monitor for study
-					if (writingActivity.getTrackReviews()){
-						FeedbackTracking feedbackTracking = new FeedbackTracking();
-						feedbackTracking.setFeedbackId(review.getId());
-						feedBackTrackingService.save(feedbackTracking);						
-					}
-					
-					ReviewEntry reviewEntry = new ReviewEntry();
-					reviewEntry.setDocEntry(docEntry);
-					reviewEntry.setOwner(user);
-					reviewEntry.setTitle(user.getLastname() + "," + user.getFirstname());
-					reviewEntry.setReview(review);
-					reviewEntry.setDeleted(false);
-					reviewEntry = assignmentDao.save(reviewEntry);
-					reviewingActivity.getEntries().add(reviewEntry);
-					reviewingActivity = assignmentDao.save(reviewingActivity);
+						review.setFeedbackTemplateType(reviewingActivity.getFeedbackTemplateType());
+						review = assignmentDao.save(review);
+						
+						// Tracking monitor for study
+						if (writingActivity.getTrackReviews()){
+							FeedbackTracking feedbackTracking = new FeedbackTracking();
+							feedbackTracking.setFeedbackId(review.getId());
+							feedBackTrackingService.save(feedbackTracking);						
+						}
+						
+						ReviewEntry reviewEntry = new ReviewEntry();
+						reviewEntry.setDocEntry(docEntry);
+						reviewEntry.setOwner(user);
+						reviewEntry.setTitle(user.getLastname() + "," + user.getFirstname());
+						reviewEntry.setReview(review);
+						reviewEntry.setDeleted(false);
+						reviewEntry = assignmentDao.save(reviewEntry);
+						reviewingActivity.getEntries().add(reviewEntry);
+						reviewingActivity = assignmentDao.save(reviewingActivity);
+//					}
 				}
 			}
 		}
 	}
 	
-	private Set<DocEntry> selectNonEmptyEntries(WritingActivity writingActivity) throws Exception {
+	private String getDocumentsFolder( Course course, long activityId, long activityDeadlineId, String tutorial)  {
+		//
+		Organization organization = course.getOrganization();
+		String documentsHome = Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getDocumentsHome(); 
+		return String.format(documentsHome + "/%s/%s/%s/%s", course.getId(), activityId, activityDeadlineId, tutorial);
+	}
+	
+	private boolean docEntryIsEmpty(Course course, WritingActivity writingActivity, DocEntry docEntry) {	
+		try{
+			String folder = null;
+			if (assignmentRepository != null && writingActivity.getCurrentDeadline()!= null){
+				folder = getDocumentsFolder(course,writingActivity.getId(),writingActivity.getCurrentDeadline().getId(),WritingActivity.TUTORIAL_ALL);
+			}
+			if (folder != null){
+				File file = new File(folder + "/" + FileUtil.escapeFilename(docEntry.getDocumentId()) + ".pdf");
+				Organization organization = course.getOrganization();
+				File empty = new File(Reviewer.getOrganizationsHome() + organization.getName()+ Reviewer.getDocumentsHome() + Reviewer.getEmptyDocument());
+				if (empty.length() == file.length()){return true;}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("Error reading empty document.", e);					
+		}	
+
+		return false;
+	}
+
+	private Set<DocEntry> selectNonEmptyEntries(WritingActivity writingActivity, Deadline deadline) throws Exception {
 		Set<DocEntry> entries = new HashSet<DocEntry>();
 		
 		for (DocEntry entry : writingActivity.getEntries()) {
@@ -1410,10 +1535,14 @@ public class AssignmentManager {
 			Organization organization = course.getOrganization();
 			String filename = FileUtil.escapeFilename(entry.getDocumentId()) + ".pdf";
 			Long deadlineId;
-			if (writingActivity.getCurrentDeadline() != null){
-				deadlineId = writingActivity.getCurrentDeadline().getId();
+			if (deadline != null){
+				deadlineId = deadline.getId();
 			} else {
-				deadlineId = writingActivity.getFinalDeadline().getId();
+				if (writingActivity.getCurrentDeadline() != null){
+					deadlineId = writingActivity.getCurrentDeadline().getId();
+				} else {
+					deadlineId = writingActivity.getFinalDeadline().getId();
+				}
 			}
 			File file = new File(getDocumentsFolder(course.getId(), writingActivity.getId(),deadlineId , WritingActivity.TUTORIAL_ALL, organization) + "/" + filename);
 			try{
@@ -2052,14 +2181,14 @@ public class AssignmentManager {
 		return reviewTemplate;
 	}
 
-	public void startReviewActivity(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline deadline) throws Exception{
+	public void startReviewingActivity(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline deadline) throws Exception{
 		// check reviewactivity status
 		if (reviewingActivity.getStatus() >= Activity.STATUS_START) {
 			return;
 		}
 		
 		if (deadline.equals(reviewingActivity.getStartDate())) {
-			updateActivityReviews(course, writingActivity, reviewingActivity);
+			updateActivityReviews(course, writingActivity, reviewingActivity, deadline);
 			reviewingActivity.setStatus(Activity.STATUS_START);
 			reviewingActivity = assignmentDao.save(reviewingActivity);
 		}
@@ -2082,8 +2211,6 @@ public class AssignmentManager {
 
 			}
 		}
-
-
 	}
 
 	/**
@@ -2102,6 +2229,5 @@ public class AssignmentManager {
 		} 
 		return result;
 	}
-	
 	
 }

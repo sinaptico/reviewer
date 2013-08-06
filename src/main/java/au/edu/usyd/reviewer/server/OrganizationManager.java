@@ -180,7 +180,14 @@ public class OrganizationManager {
 		
 		ReviewerProperty reviewerEmailNotificationDomain = propertyDao.load(Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN);
 		organization.addProperty(reviewerEmailNotificationDomain,null);
+		
+		ReviewerProperty organizationLinkToShowInAssignments = propertyDao.load(Constants.ORGANIZATION_LINK_TO_SHOW_IN_ASSIGNMENTS);
+		organization.addProperty(organizationLinkToShowInAssignments,null);
 
+		ReviewerProperty reviewerSupportEmail = propertyDao.load(Constants.REVIEWER_SUPPORT_EMAIL);
+		organization.addProperty(reviewerSupportEmail,null);
+
+		
 		return organization;
 	}
 
@@ -431,6 +438,18 @@ public class OrganizationManager {
 				message = Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN;
 			}
 		}
+		
+		
+		value = organization.getReviewerSupportEmail();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_SUPPORT_EMAIL;
+			} else {
+				message = Constants.REVIEWER_SUPPORT_EMAIL;
+			}
+		}
+		
+		
 		
 		if (!StringUtil.isBlank(message)){
 			propertiesOK = false;

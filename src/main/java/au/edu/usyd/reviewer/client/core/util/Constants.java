@@ -1,8 +1,5 @@
 package au.edu.usyd.reviewer.client.core.util;
 
-import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
-
-
 /** 
  * This class has all the constants used in reviewer
  * @author mdagraca
@@ -33,6 +30,10 @@ public class Constants {
 	public static String ORGANIZATION_SHIBBOLETH_ENABLED="organization.shibboleht.enabled";
 	public static String ORGANIZATION_PASSWORD_NEW_USERS="organization.password.new.users";
 	public static String REVIEWER_EMAIL_NOTIFICATION_DOMAIN ="reviewer.email.notification.domain";
+	public static String ORGANIZATION_LINK_TO_SHOW_IN_ASSIGNMENTS ="organization.link.to.show.in.assignments";
+	public static String ORGANIZATION_TITLE_LINK_TO_SHOW_IN_ASSIGNMENTS ="organization.title.link.to.show.in.assignments";
+	public static String REVIEWER_SUPPORT_EMAIL ="reviewer.support.email";
+	
 		
 	/** Exception messages to the user  **/
 	public static String EXCEPTION_USER_EXISTS="User exists in the database with the same email.";

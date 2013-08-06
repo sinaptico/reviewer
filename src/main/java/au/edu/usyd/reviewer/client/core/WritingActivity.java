@@ -2,6 +2,8 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.util.ArrayList;
 
+
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -429,11 +431,13 @@ public class WritingActivity extends Activity<DocEntry> {
 	 */
 	public Deadline getCurrentDeadline(){
 		Deadline currentDeadline = null;
-		
 		for(Deadline deadline : getDeadlines()){
-			if (deadline.getStatus() == Deadline.STATUS_DEADLINE_NONE){
+			if (currentDeadline == null && deadline.getStatus() == Deadline.STATUS_DEADLINE_START){
 				currentDeadline = deadline;
-				break;
+			} else if ( deadline.getStatus() == Deadline.STATUS_DEADLINE_START && 
+					deadline.getFinishDate() != null && currentDeadline.getFinishDate() != null && 
+				    deadline.getFinishDate().before(currentDeadline.getFinishDate())){
+				currentDeadline = deadline;
 			}
 		}
 		return currentDeadline;

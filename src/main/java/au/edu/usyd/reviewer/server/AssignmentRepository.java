@@ -310,13 +310,15 @@ public class AssignmentRepository {
 		for (ListEntry listEntry : googleSpreadsheetServiceImpl.getWorksheetRows(worksheetEntry)) {
 			User student = new User();
 			for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 3)) {
+				logger.debug("Information read from students spreadsheet " + property + " value " + StringUtils.trim(listEntry.getCustomElements().getValue(property)));
 				BeanUtils.setProperty(student, property, StringUtils.trim(listEntry.getCustomElements().getValue(property)));
+				
 			}
 			// Update user information with database information.
 			// I Added it because the id is null
-			if (userDao.containsUser(student)){
-				student = userDao.getUserByEmail(student.getEmail());
-			}
+//			if (userDao.containsUser(student)){
+//				student = userDao.getUserByEmail(student.getEmail());
+//			}
 			String studentGroupName = StringUtils.trim(listEntry.getCustomElements().getValue("group"));
 			UserGroup studentGroup = new UserGroup();
 			studentGroup.setName(studentGroupName);

@@ -142,7 +142,8 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 								try{
 									user = userDao.save(user);
 								} catch(Exception e){
-									logger.error("Error to save the user to update the firstname and lastname" + lastname + " " + firstname);
+									e.printStackTrace();
+									logger.error("Error to save the user to update the firstname and lastname " + firstname + lastname);
 								}
 							}
 							request.getSession().setAttribute("user", user);

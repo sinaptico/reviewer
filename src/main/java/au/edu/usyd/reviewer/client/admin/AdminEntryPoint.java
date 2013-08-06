@@ -250,9 +250,9 @@ public class AdminEntryPoint implements EntryPoint {
 						courseSemester.addItem("2", "2");
 						Date today = new Date();
 						int month = today.getMonth();
-						if (month < 7) {
+						if (month < 6) {
 							courseSemester.setSelectedIndex(0);
-						} else if (month > 6){
+						} else {
 							courseSemester.setSelectedIndex(1);
 						}	
 		
@@ -342,7 +342,8 @@ public class AdminEntryPoint implements EntryPoint {
 									Window.alert(Constants.EXCEPTION_NOT_COURSES_FOR_ACTIVITY);
 								} else {
 									
-									activityForm.setCourses(courses);		
+									activityForm.setCourses(courses);
+									activityForm.setLoggedUser(loggedUser);
 									activityForm.setGlosserSites(glosserSites);
 									activityForm.setWritingActivity(writingActivity);
 									final DialogBox dialogBox = new DialogBox();
@@ -627,6 +628,7 @@ public class AdminEntryPoint implements EntryPoint {
 									activityLabel.setHTML("<b>" + course.getName() + " > " + writingActivity.getName() + "</b>");
 									final ActivityForm activityForm = new ActivityForm();
 									activityForm.setGlosserSites(glosserSites);
+									activityForm.setLoggedUser(loggedUser);
 									activityForm.setWritingActivityAndCourse(writingActivity, course);
 									final VerticalPanel panel = new VerticalPanel();
 									final SubmitButton saveButton = new SubmitButton("Save", "Saving...", "Saved");
@@ -919,11 +921,11 @@ public class AdminEntryPoint implements EntryPoint {
 						// logout header menu
 						MenuBar logoutMenu = new MenuBar(true);
 						logoutItem = new MenuItem("Logout",logoutCommand);
-						logoutItem.setEnabled(true);
+						logoutItem.setEnabled(true);	
 						logoutMenu.addItem(logoutItem);
 						
 						
-						headerTable.setSize("80%", "5%");
+						headerTable.setSize("76%", "5%");
 						headerTable.setWidget(0, 0, new HTML ("<div "+cssDivStyle +" align='center'><h1 "+cssH1Style +">ADMIN PAGE </h1>"));
 						headerTable.setWidget(0, 2, logoutMenu);
 						headerTable.getCellFormatter().setAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT, HasVerticalAlignment.ALIGN_MIDDLE);

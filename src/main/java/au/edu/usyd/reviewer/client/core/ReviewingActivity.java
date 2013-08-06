@@ -2,11 +2,13 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.util.Date;
 
+
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+
 
 /**
  * <p>Class that extends {@link Activity Activity} class and it is used for Reviewing Activities management, it contains
