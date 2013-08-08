@@ -27,6 +27,7 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (3,15,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (3,16,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (3,17,'i.write@sydney.edu.au');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (3,18,'Australia/Sydney');
 
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (4,1,'reviewer.admin@iwrite.sydney.edu.au');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (4,2,'itsyourfault!');
@@ -45,6 +46,7 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (4,15,'https://vuws.uws.edu.au');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (4,16,'UWS e-learning system');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (4,17,'i.write@sydney.edu.au');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (4,18,'Australia/Sydney');
 
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (5,1,'reviewer.admin@iwrite.sydney.edu.au');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (5,2,'itsyourfault!');
@@ -63,7 +65,7 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (5,15,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (5,16,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (5,17,'i.write@sydney.edu.au');
-
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (5,18,'Australia/Sydney');
 
 INSERT INTO User (email,organizationId,username,lastname,firstname) VALUES ('eie.latte@sydney.edu.au',3,'eie.latte','eie','latte');
 INSERT INTO User_roles VALUES('eie.latte@sydney.edu.au','Admin');

@@ -33,7 +33,7 @@ public class Constants {
 	public static String ORGANIZATION_LINK_TO_SHOW_IN_ASSIGNMENTS ="organization.link.to.show.in.assignments";
 	public static String ORGANIZATION_TITLE_LINK_TO_SHOW_IN_ASSIGNMENTS ="organization.title.link.to.show.in.assignments";
 	public static String REVIEWER_SUPPORT_EMAIL ="reviewer.support.email";
-	
+	public static String ORGANIZATION_TIMEZONE="organization.timezone";
 		
 	/** Exception messages to the user  **/
 	public static String EXCEPTION_USER_EXISTS="User exists in the database with the same email.";
@@ -263,6 +263,9 @@ public class Constants {
 	public static String EMAIL_PASSWORD_DETAILS = "Password details";
 	public static String EMAIL_STUDENT_REVIEW_FINISH = "Student review finish";
 	public static String EMAIL_STUDENT_RECEIVED_REVIEW = "Student received review";
+	public static String EMAIL_ACTIVITY_NOTIFICATIONS_SENT ="Emails of activity notifications sent";
+	public static String EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT ="Emails of reviewing activity notifications sent";
+	
 	
 	// Emails messages
 	public static String EMAIL_STUDENT_REVIEW_START_MESSAGE = "Dear @StudentName@, " + "\n\n" +
@@ -294,6 +297,19 @@ public class Constants {
 																 "\n" + "You can go to @ReviewerLink@ to read it." + "\n\n" + "@FromName@";
 	
 	public static String EMAIL_TEST_MESSAGE = "This email is sent by reviewer to test the SMTP connection";
+	
+	public static String EMAIL_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE ="Dear @UserName@, " +
+														   "\n\n" + "The emails notifications @EmailName@ " +
+														   " corresponding to: " +
+														   "\nCourse: @CourseName@ \nActivity: @ActivityName@ " + 
+														   "\nwere sent." + "\n\n" + "@FromName@";
+	
+	public static String EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE ="Dear @UserName@, " +
+	   																"\n\n" + "The emails notifications @EmailName@ " +
+	   																"corresponding to: " + 
+	   																"\nCourse: @CourseName@ \nActivity: @ActivityName@ " + 
+	   																"\nReviewing Activity: @ReviewingActivityName@ " + 
+	   																"\nwere sent." + "\n\n" + "@FromName@";
 
 	// Google user service messages
 	public static String EXCEPTION_GOOGLE_USER_DELETED_RECENTLY="The request instructs Google to create a new user but uses the username of an account that was deleted in the previous five days";

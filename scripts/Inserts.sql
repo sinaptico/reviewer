@@ -74,6 +74,7 @@ INSERT INTO ReviewerProperty (name) VALUE ('reviewer.email.notification.domain')
 INSERT INTO ReviewerProperty (name) VALUE ('organization.link.to.show.in.assignments');
 INSERT INTO ReviewerProperty (name) VALUE ('organization.title.link.to.show.in.assignments');
 INSERT INTO ReviewerProperty (name) VALUE ('reviewer.support.email');
+INSERT INTO ReviewerProperty (name) VALUE ('organization.timezone');
 
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,1,'admin@demo-sinaptico.com');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,2,'3fe44aff77c3a349');
@@ -92,6 +93,7 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,15,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,16,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,17,'mariela@sinapti.co');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,18,'Australia/Sydney');
 
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,1,'admin@smart-sourcing.com.ar');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,2,'3f923c4d96751840');
@@ -110,3 +112,5 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,15,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,16,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,17,'mariela@sinapti.co');
+INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,18,'America/Argentina/Buenos Aires');
+

@@ -397,6 +397,11 @@ public class Organization implements Serializable {
 	}
 	
 	
+	public String getOrganizationTimeZone(){
+		String value = getPropertyValue(Constants.ORGANIZATION_TIMEZONE);
+		return value;
+	}
+	
 	public boolean hasEmails(){
 		return getEmails().size() > 0;
 	}

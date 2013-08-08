@@ -70,7 +70,9 @@ public class Reviewer {
 				String smtpHost = organization.getSMTPHost();
 				String smtpPort = organization.getSMTPPort();
 				String reviewerEmailNotificationDomain = organization.getReviewerEmailNotificationDomain();
-				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort, domain,reviewerEmailNotificationDomain));
+				String fromEmail = organization.getGoogleUsername();
+				String timeZone = organization.getOrganizationTimeZone();
+				setEmailNotifier(new EmailNotifier(emailUsername, emailPassword, smtpHost, smtpPort,reviewerEmailNotificationDomain,fromEmail,timeZone));
 				
 				assignmentRepository = new AssignmentRepository(username, password, domain);
 				

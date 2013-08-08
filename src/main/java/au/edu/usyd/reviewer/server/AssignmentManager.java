@@ -81,7 +81,7 @@ public class AssignmentManager {
 	private CourseDao courseDao = CourseDao.getInstance();
 	private OrganizationManager organizationManager = OrganizationManager.getInstance();
 	private EmailDao emailDao = EmailDao.getInstance();
-	
+	private Map<Long, Timer> studentsTimers = Collections.synchronizedMap(new HashMap<Long, Timer>());
 	public AssignmentManager() {
 	}
 
@@ -249,29 +249,71 @@ public class AssignmentManager {
 				}
 			}
 			
+			
+			final WritingActivity wActivity = writingActivity.clone();
+			final Course fCourse = course.clone();
+			final Long activityId = writingActivity.getId();
+			final Deadline fDeadline = deadline.clone();
+	
+			Timer timer = studentsTimers.get(activityId);
+			if (timer == null){
+				timer = new Timer();
+			}
 			// send review start notification to students
-			if (writingActivity.getEmailStudents()) {
-				for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
-					if (deadline.equals(reviewingActivity.getStartDate()) && (reviewingActivity.getNumStudentReviewers() > 0)) {
-						for (UserGroup studentGroup : course.getStudentGroups()) {
-							if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
-								for (User student : studentGroup.getUsers()) {
-									try {
-										emailNotifier.sendStudentReviewStartNotification(student, course, writingActivity, deadline);
-									} catch (Exception e) {
-										e.printStackTrace();
-										logger.error("Failed to send review start notification.", e);
-									}
-								}
-							}
+			for (final ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
+				if (deadline.equals(reviewingActivity.getStartDate()) && (reviewingActivity.getNumStudentReviewers() > 0)) {
+					// create task to send email notifications 
+					timer.schedule(new TimerTask() {
+						@Override
+						public void run() {
+							sendReviwingActivityStartNotificationToStudents(fCourse, wActivity, reviewingActivity, fDeadline);	
 						}
+					}, deadline.getFinishDate());
+					
+				}
+			}
+			studentsTimers.put(activityId, timer);
+		}
+	}
+
+	private void sendReviwingActivityStartNotificationToStudents(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline deadline){
+		int iEmailsSent = 0;
+		for (UserGroup studentGroup : course.getStudentGroups()) {
+			if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
+				for (User student : studentGroup.getUsers()) {
+					try {
+						emailNotifier.sendStudentReviewStartNotification(student, course, writingActivity, deadline);
+						iEmailsSent++;
+					} catch (Exception e) {
+						e.printStackTrace();
+						String mesagge = "Failed to send review start notification.";
+						if (student != null){
+							mesagge += " Student: " + student.getEmail();
+						}
+						logger.error(mesagge, e);
 					}
 				}
 			}
 		}
-
+		
+		if (iEmailsSent > 0){
+			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+			// send notification to admin to inform that the task finish
+			for(User admin: admins){
+				try{
+					emailNotifier.sendReviewingNotificationToAdmin(course,writingActivity, reviewingActivity, admin, Constants.EMAIL_STUDENT_REVIEW_START);
+				} catch(Exception e){
+					e.printStackTrace();
+					String message = "Failed to send notification of email sent.";
+					if ( admin != null ){
+						message +="Admin: " + admin.getEmail();
+					}
+					logger.error(message,e);
+				}
+			}
+		}
 	}
-
+	
 	public void finishReviewingActivity(Course course, ReviewingActivity reviewingActivity, Deadline deadline) throws MessageException{
 		// check activity status
 		if (reviewingActivity.getStatus() >= Activity.STATUS_FINISH) {
@@ -385,33 +427,25 @@ public class AssignmentManager {
 				}
 			}
 	
+			final WritingActivity wActivity = writingActivity.clone();
+			final Course fCourse = course.clone();
+			final Deadline fDeadline = deadline.clone();
+			final Long activityId = writingActivity.getId();
+			Timer timer = studentsTimers.get(activityId);
+			if (timer == null){
+				timer = new Timer();
+			}
+			final ReviewingActivity rActivity = reviewingActivity.clone();
 			//send review finish notifications to students	
-			if(writingActivity != null && writingActivity.getEmailStudents()){
-				List<DocEntry> notifiedDocEntries = new ArrayList<DocEntry>();
-				for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
-					if (!reviewEntry.isDeleted()){
-						//Reviewed User
-						User user = reviewEntry.getDocEntry().getOwner();
-						if (!notifiedDocEntries.contains(reviewEntry.getDocEntry())){
-							try {
-								if (user != null){
-									emailNotifier.sendReviewFinishNotification(user, course, writingActivity, deadline.getName());
-									notifiedDocEntries.add(reviewEntry.getDocEntry());
-								}else{ 
-									//it's a document owned by a group
-									Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
-									for (User userToNotify : students) {
-										emailNotifier.sendReviewFinishNotification(userToNotify, course, writingActivity, deadline.getName());								
-									}
-									notifiedDocEntries.add(reviewEntry.getDocEntry());
-								}
-							} catch (Exception e) {
-								e.printStackTrace();
-								logger.error("Failed to send review finish notification.", e);
-							}
-						}
+			if(writingActivity != null && writingActivity.getEmailStudents()){		
+				// create task to send email notifications 
+				timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						sendReviewingActivityFinishNotificationToStudents(fCourse, wActivity, rActivity, fDeadline);	
 					}
-				}
+				}, deadline.getFinishDate());
+				studentsTimers.put(activityId, timer);
 			}
 		}
 
@@ -429,6 +463,55 @@ public class AssignmentManager {
 		}
 	}
 
+	
+	private void sendReviewingActivityFinishNotificationToStudents(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline deadline){
+		List<DocEntry> notifiedDocEntries = new ArrayList<DocEntry>();
+		int iEmailsSent =0;
+		for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
+			if (!reviewEntry.isDeleted()){
+				//Reviewed User
+				User user = reviewEntry.getDocEntry().getOwner();
+				if (!notifiedDocEntries.contains(reviewEntry.getDocEntry())){
+					try {
+						if (user != null){
+							emailNotifier.sendReviewFinishNotification(user, course, writingActivity, deadline.getName());
+						}else{ 
+							//it's a document owned by a group
+							Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
+							for (User userToNotify : students) {
+								emailNotifier.sendReviewFinishNotification(userToNotify, course, writingActivity, deadline.getName());								
+							}
+						}
+						notifiedDocEntries.add(reviewEntry.getDocEntry());
+						iEmailsSent++;
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+						logger.error("Failed to send review finish notification.", e);
+					}
+				}
+			}
+		}
+		
+		if (iEmailsSent > 0){
+			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+			// send notification to admin to inform that the task finish
+			for(User admin: admins){
+				try{
+					emailNotifier.sendReviewingNotificationToAdmin(course,writingActivity, reviewingActivity,admin, Constants.EMAIL_STUDENT_REVIEW_FINISH);
+				} catch(Exception e){
+					e.printStackTrace();
+					String message = "Failed to send notification of email sent.";
+					if ( admin != null ){
+						message +="Admin: " + admin.getEmail();
+					}
+					logger.error(message,e);
+				}
+			}
+		}
+	}
+	
+	
 	public AssignmentDao getAssignmentDao() {
 		if ( assignmentDao == null){
 			assignmentDao = new AssignmentDao(Reviewer.getHibernateSessionFactory());
@@ -537,8 +620,12 @@ public class AssignmentManager {
 						  if (student.getPassword() == null){
 							  student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 						  }
-						  emailNotifier.sendPasswordNotification(student, course);
-						  student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
+						  try{
+							  emailNotifier.sendPasswordNotification(student, course);
+							  student.setPassword(RealmBase.Digest(student.getPassword(), "MD5",null));
+						  } catch(Exception e){
+							  logger.error("Failed to send email notification with password to " + student.getEmail());
+						  }
 					} else {
 						// student doesn't have a password to login in reviewer because uses shibboleth 
 						student.setPassword(null);
@@ -609,8 +696,12 @@ public class AssignmentManager {
 					if (lecturer.getPassword() == null){
 						lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 					}
-					emailNotifier.sendPasswordNotification(lecturer, course);
-					lecturer.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
+					try{
+						emailNotifier.sendPasswordNotification(lecturer, course);
+						lecturer.setPassword(RealmBase.Digest(lecturer.getPassword(), "MD5",null));
+					} catch(Exception e){
+						logger.error("Failed to send email notification with password to " + lecturer.getEmail());
+					}
 				} else {
 					// lecture doesn't have a password to login in reviewer because uses shibboleth 
 					lecturer.setPassword(null);
@@ -687,8 +778,12 @@ public class AssignmentManager {
 					if (tutor.getPassword() == null){
 						tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
 					}
-					emailNotifier.sendPasswordNotification(tutor, course);
-					tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
+					try{
+						emailNotifier.sendPasswordNotification(tutor, course);
+						tutor.setPassword(RealmBase.Digest(tutor.getPassword(), "MD5",null));
+					} catch(Exception e){
+						logger.error("Failed to send email notification with password to " + tutor.getEmail());
+					}
 				} else {
 					// tutor doesn't have a password to login in reviewer because uses shibboleth 
 					tutor.setPassword(null);
@@ -924,18 +1019,25 @@ public class AssignmentManager {
 		} else if (writingActivity.getStatus() < Activity.STATUS_FINISH || !writingActivity.getReviewingActivities().isEmpty()) {
 			for(final Deadline deadline : assignmentDao.loadWritingActivity(activityId).getDeadlines()) {
 				if ( deadline.getStatus() < Deadline.STATUS_DEADLINE_START){
-					timer.schedule(new TimerTask() {
-						@Override
-						public void run() {			
-							try {
-								startDeadlines(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), deadline);
-							} catch (Exception e) {
-								logger.error("Error finishing  activity dealine" + activityId);
-								e.printStackTrace();
+					if (writingActivity != null && writingActivity.getStartDate() != null){
+						timer.schedule(new TimerTask() {
+							@Override
+							public void run() {			
+								try {
+									startDeadlines(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), deadline);
+								} catch (Exception e) {
+									logger.error("Error finishing  activity dealine" + activityId);
+									e.printStackTrace();
+								}
 							}
+						}, writingActivity.getStartDate());
+					} else {
+						if (writingActivity != null){
+							logger.error("Could not start deadlines of writing activity " + writingActivity.getName() + " because it has null startDate");
+						} else {
+							logger.error("Could not start deadlines of writing activity becuase it is null");
 						}
-					}, writingActivity.getStartDate());
-					
+					}
 				} else if(deadline.getStatus() < Deadline.STATUS_DEADLINE_FINISH && deadline.getFinishDate() != null){
 					timer.schedule(new TimerTask() {
 						@Override
@@ -1017,27 +1119,65 @@ public class AssignmentManager {
 		
 		scheduleActivityDeadline(course, writingActivity);
 		
+		
+		final WritingActivity wActivity = writingActivity.clone();
+		final Course fCourse = course.clone();
+		final Long activityId = writingActivity.getId();
+		Timer timer = studentsTimers.get(activityId);
+		if (timer == null){
+			timer = new Timer();
+		}
+		// create task to send email notifications 
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				sendActivityStartNotificationToStudents(fCourse, wActivity);	
+			}
+		}, writingActivity.getStartDate());
+		studentsTimers.put(activityId, timer);
+	}
+	
+	private void sendActivityStartNotificationToStudents(Course course, WritingActivity writingActivity){
 		// get final deadline   
 		Deadline finalDeadline = writingActivity.getFinalDeadline();
 		if (finalDeadline != null){
-			if (writingActivity.getEmailStudents()){
-				// send assessment start notification to students
-				if (writingActivity.getEmailStudents()) {
-					for (UserGroup studentGroup : course.getStudentGroups()) {
-						if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
-							for (User student : studentGroup.getUsers()) {
-								try {
-									emailNotifier.sendStudentActivityStartNotification(student, course, writingActivity, finalDeadline);
-								} catch (Exception e) {
-									e.printStackTrace();
-									logger.error("Failed to send assessment start notification.", e);
+			// send assessment start notification to students
+			if (writingActivity.getEmailStudents()) {
+				int iEmailsSent = 0;
+				for (UserGroup studentGroup : course.getStudentGroups()) {
+					if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
+						for (User student : studentGroup.getUsers()) {
+							try {
+								emailNotifier.sendStudentActivityStartNotification(student, course, writingActivity, finalDeadline);
+								iEmailsSent++;
+							} catch (Exception e) {
+								e.printStackTrace();
+								logger.error("Failed to send assessment start notification.", e);
+								if ( student != null ){
+									logger.error("Start notification not sent to " + student.getEmail());
 								}
 							}
 						}
 					}
 				}
+				if (iEmailsSent > 0){
+					List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+					// send notification to admin to inform that the task finish
+					for(User admin: admins){
+						try{
+							emailNotifier.sendActivityNotificationToAdmin(course,writingActivity, admin, Constants.EMAIL_STUDENT_ACTIVITY_START);
+						} catch(Exception e){
+							e.printStackTrace();
+							String message = "Failed to send notification of email sent.";
+							if ( admin != null ){
+								message +="Admin: " + admin.getEmail();
+							}
+							logger.error(message,e);
+						}
+					}
+				}
 			}
-		}	
+		}
 	}
 	
 	public void startDeadlines(Course course, WritingActivity writingActivity,Deadline deadline) throws MessageException{
@@ -2098,6 +2238,8 @@ public class AssignmentManager {
 				createEmail(org.getEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW),course);
 				createEmail(org.getEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH),course);
 				createEmail(org.getEmail(Constants.EMAIL_STUDENT_REVIEW_START),course);
+				createEmail(org.getEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT),course);
+				createEmail(org.getEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT),course);
 			}
 				
 		} catch(Exception e){
@@ -2195,20 +2337,24 @@ public class AssignmentManager {
 		
 		// send review start notification to students
 		if (writingActivity.getEmailStudents()) {
-			if (deadline.equals(reviewingActivity.getStartDate()) && (reviewingActivity.getNumStudentReviewers() > 0)) {
-				for (UserGroup studentGroup : course.getStudentGroups()) {
-					if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
-						for (User student : studentGroup.getUsers()) {
-							try {
-								emailNotifier.sendStudentReviewStartNotification(student, course, writingActivity, deadline);
-							} catch (Exception e) {
-								e.printStackTrace();
-								logger.error("Failed to send review start notification.", e);
-							}
-						}
-					}
+			if (deadline.equals(reviewingActivity.getStartDate()) && (reviewingActivity.getNumStudentReviewers() > 0)) {				
+				final WritingActivity wActivity = writingActivity.clone();
+				final Course fCourse = course.clone();
+				final Long activityId = writingActivity.getId();
+				final Deadline fDeadline = deadline.clone();
+				final ReviewingActivity rActivity = reviewingActivity.clone();
+				Timer timer = studentsTimers.get(activityId);
+				if (timer == null){
+					timer = new Timer();
 				}
-
+				// create task to send email notifications 
+				timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						sendReviwingActivityStartNotificationToStudents(fCourse, wActivity, rActivity, fDeadline);	
+					}
+				}, deadline.getFinishDate());
+				studentsTimers.put(activityId, timer);
 			}
 		}
 	}

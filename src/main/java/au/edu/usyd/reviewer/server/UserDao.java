@@ -36,6 +36,7 @@ public class UserDao extends ObjectDao {
 	private String ORGANIZATION = "organization";
 	private String ORGANIZATION_ID = "organizationId";
 	private String USER_USERNAME = "username";
+	private String ROLE = "role";
 	
 	// Singleton
 	public static UserDao instance = null;
@@ -321,7 +322,7 @@ public class UserDao extends ObjectDao {
 			session.beginTransaction();
 			
 			Criteria criteria = session.createCriteria(User.class);
-			criteria.add(Restrictions.eq("username", username));
+			criteria.add(Restrictions.eq(USER_USERNAME, username));
 			criteria.add(Restrictions.eq(ORGANIZATION, organization));
 			criteria.addOrder( Order.asc(USER_LASTNAME) );
 			user = (User) criteria.uniqueResult();
@@ -517,6 +518,37 @@ public class UserDao extends ObjectDao {
 			session.beginTransaction();
 			List<User> usersList = new ArrayList<User>();
 			usersList = session.createCriteria(User.class).add(Property.forName(USER_USERNAME).eq(username)).list();
+			session.getTransaction().commit();
+			for(User user: usersList){
+				if(user!=null){
+					users.add(user.clone());
+				}
+			}
+			
+		} catch(HibernateException he){
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			he.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_GET_USER);
+		}
+		return users;
+	}
+	
+	
+	public List<User> getUsersByRole(Organization organization, String role) throws MessageException {
+		Session session = null;
+		List<User> users = new ArrayList<User>();;
+		try{
+			session = getSession();
+			session.beginTransaction();
+			String query = "from User user " +
+						   "join fetch user.role_name role " +
+						   "where organizationId=:organizationId and role=:role";
+			
+			List<User> usersList = session.createQuery(query).setParameter(ORGANIZATION_ID, organization.getId())
+															 .setParameter(ROLE, role).list();
+		
 			session.getTransaction().commit();
 			for(User user: usersList){
 				if(user!=null){

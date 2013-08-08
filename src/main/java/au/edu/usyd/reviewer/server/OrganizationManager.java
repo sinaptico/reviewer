@@ -187,6 +187,8 @@ public class OrganizationManager {
 		ReviewerProperty reviewerSupportEmail = propertyDao.load(Constants.REVIEWER_SUPPORT_EMAIL);
 		organization.addProperty(reviewerSupportEmail,null);
 
+		ReviewerProperty timeZone = propertyDao.load(Constants.ORGANIZATION_TIMEZONE);
+		organization.addProperty(timeZone,null);
 		
 		return organization;
 	}
@@ -317,6 +319,8 @@ public class OrganizationManager {
 			organization = createEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW,Constants.EMAIL_STUDENT_RECEIVED_REVIEW_MESSAGE, organization);
 			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH,Constants.EMAIL_STUDENT_REVIEW_FINISH_MESSAGE, organization);
 			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_START,Constants.EMAIL_STUDENT_REVIEW_START_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
 		} catch(Exception e){
 			throw new MessageException(Constants.EXCEPTION_GENERATE_ORGANIZATION_EMAILS);
 		}
@@ -449,7 +453,14 @@ public class OrganizationManager {
 			}
 		}
 		
-		
+		value = organization.getReviewerSupportEmail();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.ORGANIZATION_TIMEZONE;
+			} else {
+				message = Constants.ORGANIZATION_TIMEZONE;
+			}
+		}
 		
 		if (!StringUtil.isBlank(message)){
 			propertiesOK = false;
@@ -485,13 +496,14 @@ public class OrganizationManager {
 		try{
 			String username = organization.getEmailUsername();
 			String password = organization.getEmailPassword();
-			String domain = organization.getGoogleDomain();
 			String smtpHost = organization.getSMTPHost();
 			String smtpPort = organization.getSMTPPort();
 			String reviewerEmailNotificationDomain = organization.getReviewerEmailNotificationDomain();
+			String fromEmail = organization.getGoogleUsername();
 			AESCipher aesCipher = AESCipher.getInstance();
 			String decryptedValue = aesCipher.decrypt(password);
-			EmailNotifier emailSender = new EmailNotifier(username, decryptedValue, smtpHost, smtpPort, domain,reviewerEmailNotificationDomain);
+			String timeZone = organization.getOrganizationTimeZone();
+			EmailNotifier emailSender = new EmailNotifier(username, decryptedValue, smtpHost, smtpPort, reviewerEmailNotificationDomain, fromEmail, timeZone);
 			emailSender.sendTestSMTPEmail(loggedUser);
 		} catch (Exception e) {
 			connectionOK = false;
@@ -519,5 +531,20 @@ public class OrganizationManager {
 	public Organization getOrganizationByDomain(String domain) throws MessageException{
 		Organization organization = organizationDao.getOrganizationByDomain(domain);
 		return organization;
+	}
+	
+	public List<User> getAdminUsers(Organization organization){
+		List<User> users = new ArrayList<User>();
+		try{
+			users = userDao.getUsersByRole(organization, Constants.ROLE_ADMIN);
+		} catch(Exception e){
+			e.printStackTrace();
+			String message = "Failed to obtain the admin user from the organization ";
+			if (organization != null){
+				message += organization.getName();
+			}
+			logger.error(message);
+		}
+		return users;
 	}
 }
