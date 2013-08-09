@@ -265,6 +265,7 @@ public class Constants {
 	public static String EMAIL_STUDENT_RECEIVED_REVIEW = "Student received review";
 	public static String EMAIL_ACTIVITY_NOTIFICATIONS_SENT ="Emails of activity notifications sent";
 	public static String EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT ="Emails of reviewing activity notifications sent";
+	public static String EMAIL_SAVE_COURSE_FINISHED ="Save course process has finished";
 	
 	
 	// Emails messages
@@ -310,6 +311,10 @@ public class Constants {
 	   																"\nCourse: @CourseName@ \nActivity: @ActivityName@ " + 
 	   																"\nReviewing Activity: @ReviewingActivityName@ " + 
 	   																"\nwere sent." + "\n\n" + "@FromName@";
+	
+	public static String EMAIL_SAVE_COURSE_FINISHED_MESSAGE = "Dear @UserName@,\n" +
+															  "The process of save course corresponding to course @CourseName@ " +
+															  "has finished.\n\n" + "@FromName@";
 
 	// Google user service messages
 	public static String EXCEPTION_GOOGLE_USER_DELETED_RECENTLY="The request instructs Google to create a new user but uses the username of an account that was deleted in the previous five days";

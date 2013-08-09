@@ -609,6 +609,7 @@ public class AssignmentManager {
 				// search student by email so it's no necessary get it by organization because the email is unique
 				User user = userDao.getUserByEmail(student.getEmail());
 				if (user == null) {
+					// student doesn't exist into the database
 					if (StringUtil.isBlank(student.getFirstname())){
 						throw new MessageException(Constants.EXCEPTION_STUDENT_FIRSTNAME_EMPTY);
 					}
@@ -627,7 +628,7 @@ public class AssignmentManager {
 							  logger.error("Failed to send email notification with password to " + student.getEmail());
 						  }
 					} else {
-						// student doesn't have a password to login in reviewer because uses shibboleth 
+						// student doesn't have a password to login in reviewer because his organization uses shibboleth 
 						student.setPassword(null);
 					} 
 					student = userDao.save(student);
@@ -654,7 +655,9 @@ public class AssignmentManager {
 						
 					}
 				}
+				// check if the studet exists in Google Apps
 				if (!assignmentRepository.userExists(student.getGoogleAppsEmailUsername())){
+					// create the student in Google Apps
 					assignmentRepository.createUser(student,organization.getOrganizationPasswordNewUsers() + student.getUsername());
 				}
 			}
@@ -975,6 +978,13 @@ public class AssignmentManager {
 			// for each activity create documents and reviewers for new users
 			processActivitiesForNewUsers(course);
 			
+			// Get the admin users of the organization
+			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+			// send notification to admin to inform that the save course process has finished
+			for(User admin: admins){
+				emailNotifier.sendSaveCourseFinishedNotificationToAdmin(course,  admin, Constants.EMAIL_SAVE_COURSE_FINISHED);
+			}
+			
 		} catch(Exception e){
 			e.printStackTrace();
 			// rollback TODO COMPLETE ROLLBACK
@@ -1011,7 +1021,7 @@ public class AssignmentManager {
 					try {
 						startActivity(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId));
 					} catch (MessageException e) {
-						logger.error("Error running acctivity " + activityId);
+						logger.error("Error starting activity " + activityId);
 						e.printStackTrace();
 					}	
 				}
@@ -1026,7 +1036,7 @@ public class AssignmentManager {
 								try {
 									startDeadlines(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), deadline);
 								} catch (Exception e) {
-									logger.error("Error finishing  activity dealine" + activityId);
+									logger.error("Error starting deadline " + activityId);
 									e.printStackTrace();
 								}
 							}
@@ -1045,7 +1055,7 @@ public class AssignmentManager {
 							try {
 								finishActivityDeadline(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), deadline);
 							} catch (Exception e) {
-								logger.error("Error finishing  activity dealine" + activityId);
+								logger.error("Error finishing  activity deadline " + activityId);
 								e.printStackTrace();
 							}
 						}
@@ -1061,7 +1071,7 @@ public class AssignmentManager {
 										try {
 											finishReviewingActivity(courseDao.loadCourse(courseId), assignmentDao.loadReviewingActivity(reviewingActivity.getId()),deadline);
 										} catch (Exception e) {
-											logger.error("Error running reviewing activity " + reviewingActivity.getId());
+											logger.error("Error finishing reviewing activity " + reviewingActivity.getId());
 											e.printStackTrace();
 										}
 									}
@@ -1073,7 +1083,7 @@ public class AssignmentManager {
 										try {
 											startReviewingActivity(courseDao.loadCourse(courseId), assignmentDao.loadWritingActivity(activityId), assignmentDao.loadReviewingActivity(reviewingActivity.getId()),deadline);
 										} catch (Exception e) {
-											logger.error("Error running reviewing activity " + reviewingActivity.getId());
+											logger.error("Error starting reviewing activity " + reviewingActivity.getId());
 											e.printStackTrace();
 										}
 									}
@@ -2240,6 +2250,7 @@ public class AssignmentManager {
 				createEmail(org.getEmail(Constants.EMAIL_STUDENT_REVIEW_START),course);
 				createEmail(org.getEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT),course);
 				createEmail(org.getEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT),course);
+				createEmail(org.getEmail(Constants.EMAIL_SAVE_COURSE_FINISHED),course);
 			}
 				
 		} catch(Exception e){

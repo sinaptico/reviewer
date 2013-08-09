@@ -321,6 +321,7 @@ public class OrganizationManager {
 			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_START,Constants.EMAIL_STUDENT_REVIEW_START_MESSAGE, organization);
 			organization = createEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
 			organization = createEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_SAVE_COURSE_FINISHED,Constants.EMAIL_SAVE_COURSE_FINISHED_MESSAGE, organization);
 		} catch(Exception e){
 			throw new MessageException(Constants.EXCEPTION_GENERATE_ORGANIZATION_EMAILS);
 		}

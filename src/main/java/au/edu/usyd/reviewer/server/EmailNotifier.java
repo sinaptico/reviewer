@@ -39,7 +39,6 @@ public class EmailNotifier {
 	private Transport transport;
 	// google organization domain
 	private String fromName = "Reviewer Assignment Tracker";
-//	private String fromAddress = "no-reply@"+domain;
 	private String fromAddress = null;
 	private String reviewerDomain = null;
 	private String timeZone = null;
@@ -238,6 +237,22 @@ public class EmailNotifier {
 	public void sendTestSMTPEmail(User user) throws MessagingException, UnsupportedEncodingException, MessageException {
 		String content = Constants.EMAIL_TEST_MESSAGE;
 		this.sendNotification(user, "Test email from reviewer", content);
+	}
+
+	
+	public void sendSaveCourseFinishedNotificationToAdmin(Course course, User admin, String title) throws MessagingException, UnsupportedEncodingException, MessageException {
+		String to = admin.getFirstname() + " " + admin.getLastname(); 
+		String subject = "[" + course.getName().toUpperCase() + "] ";
+		EmailCourse email = course.getEmail(Constants.EMAIL_SAVE_COURSE_FINISHED);
+		String content = email.getMessage();
+		if (StringUtil.isBlank(to)){
+			to="Admin";
+		}
+		content = content.replaceAll("@UserName@", to);
+		content = content.replaceAll("@EmailName@", title);
+		content = content.replaceAll("@CourseName@", course.getName());
+		content = content.replaceAll("@FromName@", fromName);
+		sendNotification(admin, subject, content);
 	}
 	
 }
