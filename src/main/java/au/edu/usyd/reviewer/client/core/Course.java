@@ -586,4 +586,27 @@ public class Course implements Serializable {
 	public boolean hasEmails(){
 		return getEmails().size() > 0;
 	}
+	
+	
+	public boolean lecturerExists(User lecturer){
+		boolean result = false;
+		for(User user:this.getLecturers()){
+			if (user.getId() != null && lecturer.getId() != null && user.getId().equals(lecturer.getId())){
+				result = true;
+				break;
+			}
+		}
+		return result;
+	}
+	
+	public boolean tutorExists(User tutor){
+		boolean result = false;
+		for(User user:this.getTutors()){
+			if (user.getId() != null && tutor.getId() != null && user.getId().equals(tutor.getId())){
+				result = true;
+				break;
+			}
+		}
+		return result;
+	}
 }

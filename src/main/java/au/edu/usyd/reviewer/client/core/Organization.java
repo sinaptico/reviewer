@@ -9,6 +9,7 @@ import java.util.Set;
 
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -19,8 +20,12 @@ import javax.persistence.OneToMany;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.reviewer.client.core.util.Constants;
+import au.edu.usyd.reviewer.client.core.util.StringUtil;
+import au.edu.usyd.reviewer.server.AssignmentManager;
 import au.edu.usyd.reviewer.server.OrganizationDao;
 import au.edu.usyd.reviewer.server.Reviewer;
 
@@ -58,6 +63,17 @@ public class Organization implements Serializable {
 	private boolean deleted = false;
 	private boolean activated = false;
 	
+	
+	
+	/** emailDomains are the domains of the emails that belong to the organization. 
+	 * If this table has only one and this domain is equals to Google Domain then it means that the email for access to the Google
+	 * will be username@googleDomain otherwise username.emailDomain@googleDomain 
+	 */
+	@ElementCollection
+	@JoinTable(name = "Organization_Emails_Domains")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private Set<String> emailDomains = new HashSet<String>();
+
 	public Organization(){
 	}
 	
@@ -112,7 +128,18 @@ public class Organization implements Serializable {
 		this.activated = activated;
 	}
 	
+	
+	public Set<String> getEmailDomains() {
+		return emailDomains;
+	}
+
+	public void setEmailDomains(Set<String> emailDomains) {
+		this.emailDomains = emailDomains;
+	}
+	
+
 	/** End Getters and Setters **/
+	
 
 	/**
 	 * Add a property to the collection of properties
@@ -214,6 +241,12 @@ public class Organization implements Serializable {
 		organization.setEmails(emailsOrganization);
 		organization.setDeleted(this.isDeleted());
 		organization.setActivated(this.isActivated());
+		
+		Set<String> emailDomains = new HashSet<String>();
+		for(String domain: this.getEmailDomains()){
+			emailDomains.add(domain);
+		}
+		organization.setEmailDomains(emailDomains);
 		return organization;
 	}
 	
@@ -272,12 +305,6 @@ public class Organization implements Serializable {
 	}
 
 	
-//	@JsonIgnore
-//	public String getEmptyDocument() { 
-//			getPropertyValue(Constants.REVIEWER_EMPTY_DOCUMENT);
-//		return value;
-//	}
-
 	@JsonIgnore
 	public String getSMTPHost(){
 		String value = getPropertyValue(Constants.REVIEWER_SMTP_HOST);
@@ -308,6 +335,38 @@ public class Organization implements Serializable {
 		return value;
 	}
 	
+	public String getReviewerDomain(){
+		String value = getPropertyValue(Constants.REVIEWER_DOMAIN);
+		return value;
+	}
+	
+	public String getReviewerEmailNotificationDomain(){
+		String value = getPropertyValue(Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN);
+		return value;
+	}
+	
+	public String getOrganizationLinkToShowInAssignmest(){
+		String value = getPropertyValue(Constants.ORGANIZATION_LINK_TO_SHOW_IN_ASSIGNMENTS);
+		return value;
+	}
+	
+	public String getOrganizationTitleLinkToShowInAssignmest(){
+		String value = getPropertyValue(Constants.ORGANIZATION_TITLE_LINK_TO_SHOW_IN_ASSIGNMENTS);
+		return value;
+	}
+	
+	public String getReviewerSupportEmail(){
+		String value = getPropertyValue(Constants.REVIEWER_SUPPORT_EMAIL);
+		return value;
+	}
+	
+	
+	
+	/**
+	 * Return an email template 
+	 * @param name name of the email template
+	 * @return EmailOrganization Email of the organization
+	 */
 	public EmailOrganization getEmail(String name){
 		EmailOrganization result = null;
 		for(EmailOrganization email : getEmails()){
@@ -317,6 +376,30 @@ public class Organization implements Serializable {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * Returns a boolean to indicate if the organization uses AAF authentication (shibboleth) or not
+	 * @return boolean
+	 */
+	public  boolean isShibbolethEnabled() {
+		String value = getPropertyValue(Constants.ORGANIZATION_SHIBBOLETH_ENABLED);
+		return StringUtil.stringToBool(value);
+	}
+	
+	/**
+	 * Return a string with the begining of the password of the new users in Google Apps
+	 * @return
+	 */
+	public String getOrganizationPasswordNewUsers(){
+		String value = getPropertyValue(Constants.ORGANIZATION_PASSWORD_NEW_USERS);
+		return value;
+	}
+	
+	
+	public String getOrganizationTimeZone(){
+		String value = getPropertyValue(Constants.ORGANIZATION_TIMEZONE);
+		return value;
 	}
 	
 	public boolean hasEmails(){
@@ -334,4 +417,32 @@ public class Organization implements Serializable {
 			getEmails().add(email);
 		}
 	}
+	
+	/**
+	 * Return a boolean indicating if the domain received belongs to the organization emails domains or not 
+	 * @param email
+	 * @return
+	 */
+	public boolean domainBelongsToEmailsDomain(String domain){
+		return  this.emailDomains.contains(domain);
+	}
+	
+	/**
+	 * Add a domain to emails domains
+	 * @param domain
+	 */
+	public void addDomainToEmailsDomains(String domain){
+		this.emailDomains.add(domain);
+	}
+
+	/**
+	 * Return a boolean to say if the domains of the emails of organization contains the google apps domain (Google Domain) and it's the
+	 * only email in this table for this organization
+	 * @return true or false
+	 */
+	public boolean isGoogleDomianTheOnlyDomainInEmailDomains() {
+		return  this.emailDomains.contains(this.getGoogleDomain()) && 
+			   (this.emailDomains.size() == 1);
+	}
+
 }

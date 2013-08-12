@@ -12,7 +12,6 @@
   <classpathentry kind="var" path="M2_REPO/antlr/antlr/2.7.6/antlr-2.7.6.jar" sourcepath="M2_REPO/antlr/antlr/2.7.6/antlr-2.7.6-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/aopalliance/aopalliance/1.0/aopalliance-1.0.jar" sourcepath="M2_REPO/aopalliance/aopalliance/1.0/aopalliance-1.0-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/backport-util-concurrent/backport-util-concurrent/3.1/backport-util-concurrent-3.1.jar" sourcepath="M2_REPO/backport-util-concurrent/backport-util-concurrent/3.1/backport-util-concurrent-3.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/bouncycastle/bcprov-jdk16/1.46/bcprov-jdk16-1.46.jar" sourcepath="M2_REPO/org/bouncycastle/bcprov-jdk16/1.46/bcprov-jdk16-1.46-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/info/bliki/wiki/bliki-core/3.0.16/bliki-core-3.0.16.jar">
     <attributes>
       <attribute value="jar:file:/Users/Marie/Desarrollo/repository/info/bliki/wiki/bliki-core/3.0.16/bliki-core-3.0.16-javadoc.jar!/" name="javadoc_location"/>
@@ -78,9 +77,9 @@
   <classpathentry kind="var" path="M2_REPO/com/google/gdata/gdata-media/1.0/gdata-media-1.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/com/google/gdata/gdata-spreadsheet/3.0/gdata-spreadsheet-3.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/au/edu/usyd/glosser/glosser-app/3.0/glosser-app-3.0.jar"/>
-  <classpathentry kind="var" path="M2_REPO/glosser/glosser-app/4.0-SNAPSHOT/glosser-app-4.0-SNAPSHOT.jar"/>
+  <classpathentry kind="src" path="/glosser-app"/>
   <classpathentry kind="var" path="M2_REPO/au/edu/usyd/glosser/glosser-gdata/3.0/glosser-gdata-3.0.jar"/>
-  <classpathentry kind="var" path="M2_REPO/glosser/glosser-gdata/4.0-SNAPSHOT/glosser-gdata-4.0-SNAPSHOT.jar"/>
+  <classpathentry kind="src" path="/glosser-gdata"/>
   <classpathentry kind="var" path="M2_REPO/com/google/collections/google-collections/1.0-rc5/google-collections-1.0-rc5.jar" sourcepath="M2_REPO/com/google/collections/google-collections/1.0-rc5/google-collections-1.0-rc5-sources.jar">
     <attributes>
       <attribute value="jar:file:/Users/Marie/Desarrollo/repository/com/google/collections/google-collections/1.0-rc5/google-collections-1.0-rc5-javadoc.jar!/" name="javadoc_location"/>
@@ -190,7 +189,7 @@
   <classpathentry kind="var" path="M2_REPO/org/apache/tomcat/tomcat-servlet-api/7.0.0/tomcat-servlet-api-7.0.0.jar" sourcepath="M2_REPO/org/apache/tomcat/tomcat-servlet-api/7.0.0/tomcat-servlet-api-7.0.0-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/apache/tomcat/tomcat-util/7.0.0/tomcat-util-7.0.0.jar" sourcepath="M2_REPO/org/apache/tomcat/tomcat-util/7.0.0/tomcat-util-7.0.0-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/cytoscape/violinstrings/1.0.2/violinstrings-1.0.2.jar"/>
-  <classpathentry kind="var" path="M2_REPO/au/edu/usyd/iwrite/wasm/1.0.0/wasm-1.0.0.jar"/>
+  <classpathentry kind="src" path="/wasm"/>
   <classpathentry kind="var" path="M2_REPO/nz/ac/waikato/cs/weka/3.5.6/weka-3.5.6.jar"/>
   <classpathentry kind="var" path="M2_REPO/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar" sourcepath="M2_REPO/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2-sources.jar"/>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>

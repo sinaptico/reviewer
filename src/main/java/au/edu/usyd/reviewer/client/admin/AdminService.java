@@ -184,4 +184,26 @@ public interface AdminService extends RemoteService {
 	public Collection<Integer> getYears();
 	
 	public void logout() throws Exception;
+	
+	/**
+	 * Share a review template with the user with the email received as parameter
+	 * @param reviewTemplate review template to share
+	 * @param email email of the user who will share the revier template
+	 * @return review template modified 
+	 * @throws Exception
+	 */
+	public ReviewTemplate shareReviewTemplateWith(ReviewTemplate reviewTemplate, String email) throws Exception;
+	
+	/**
+	 * Remove a user from the list of users that share the review template
+	 * @param reviewTemplate review template which is shared by the user with the email received as parameter
+	 * @param email email of the user to remove from the list of users that share the review template
+	 * @return review template modified 
+	 * @throws Exception
+	 */	public ReviewTemplate noShareReviewTemplateWith(ReviewTemplate reviewTemplate, String email) throws Exception;
+	 
+	 
+	 public String getGoogleAuthorizationUrl(String currentUrl) throws Exception;
+	 public User getUserToken(String code,String currentUrl) throws Exception;
+	 
 }

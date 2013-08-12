@@ -138,7 +138,6 @@ public abstract class ReviewerController {
 			Principal principal = request.getUserPrincipal();
 			if (principal == null){
 				user = new User();
-				user = organizationManager.getUserByEmail("admin@smart-sourcing.com.ar");
 			}
 			else {
 				if  (user == null){

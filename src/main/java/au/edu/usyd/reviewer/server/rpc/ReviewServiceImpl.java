@@ -39,56 +39,79 @@ public class ReviewServiceImpl extends ReviewerServiceImpl implements ReviewServ
 	@Override
 	public Rating getUserRatingForEditing(Review review) throws Exception {
 		initialize();
-		Rating rating = assignmentDao.loadUserRatingForEditing(getMockedUser(), review);
-		if (rating == null) {
-			throw new MessageException(Constants.EXCEPTION_RATING_NOT_FOUND);
+		try{
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				Rating rating = assignmentDao.loadUserRatingForEditing(getMockedUser(), review);
+				if (rating == null) {
+					throw new MessageException(Constants.EXCEPTION_RATING_NOT_FOUND);
+				}		
+				return rating;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
-		return rating;
 	}
 
 	@Override
 	public Course getUserReviewForEditing(long reviewId) throws Exception {
 		initialize();
-		Course course = assignmentDao.loadUserReviewForEditing(getMockedUser(), reviewId);
-		
-		if (course == null) {
-			throw new MessageException(Constants.EXCEPTION_REVIEW_NOT_FOUND);
-		}
-		return course;
+		try{
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				Course course = assignmentDao.loadUserReviewForEditing(getMockedUser(), reviewId);
+				
+				if (course == null) {
+					throw new MessageException(Constants.EXCEPTION_REVIEW_NOT_FOUND);
+				}
+				return course;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		} 
 	}
 
 	@Override
 	public QuestionRating getQuestionRating(String docId) throws Exception {
-		initialize();
-		if (docId == null || docId.trim() == "") {
-			return null;
-		}
-		QuestionDao questionDao = new QuestionDao(Reviewer.getHibernateSessionFactory());
-
-		List<Question> questionlist = questionDao.getQuestion(docId);
-		if (questionlist.size() > 0) {
-			if (questionDao.getScore(questionlist.get(0)).size() > 0) {
-				return null;
-			}
-		}
-		Random random = new Random();
-		int size = questionlist.size();
-		List<Question> randomlist = new ArrayList<Question>();
-		for (int i = 0; i < size; i++) {
-			int j = random.nextInt(questionlist.size());
-			Question question = questionlist.remove(j);
-			if (StringUtils.isNotBlank(question.getQuestion())) {
-				randomlist.add(question);
-			}
-		}
-
-		QuestionRating review = new QuestionRating();
-		review.setTriggerQuestions(randomlist);
-
+		
 		try {
-			return review;
+			initialize();
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				if (docId == null || docId.trim() == "") {
+					return null;
+				}
+				QuestionDao questionDao = new QuestionDao(Reviewer.getHibernateSessionFactory());
+		
+				List<Question> questionlist = questionDao.getQuestion(docId);
+				if (questionlist.size() > 0) {
+					if (questionDao.getScore(questionlist.get(0)).size() > 0) {
+						return null;
+					}
+				}
+				Random random = new Random();
+				int size = questionlist.size();
+				List<Question> randomlist = new ArrayList<Question>();
+				for (int i = 0; i < size; i++) {
+					int j = random.nextInt(questionlist.size());
+					Question question = questionlist.remove(j);
+					if (StringUtils.isNotBlank(question.getQuestion())) {
+						randomlist.add(question);
+					}
+				}
+		
+				QuestionRating review = new QuestionRating();
+				review.setTriggerQuestions(randomlist);
+				return review;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			e.printStackTrace();
+			throw e;
 		}
 	}
 
@@ -96,194 +119,257 @@ public class ReviewServiceImpl extends ReviewerServiceImpl implements ReviewServ
 
 	@Override
 	public Collection<Grade> submitGrades(Collection<Grade> grades) throws Exception {
-		initialize();
-		for(Grade grade : grades) {
-			Deadline deadline = grade.getDeadline();
-			Course course = assignmentDao.loadCourseWhereDeadline(deadline);
-			if (isCourseInstructor(course)) {
-				User userGrade = grade.getUser();
-				Grade currentGrade = assignmentDao.loadGrade(deadline, userGrade);
-				if(currentGrade != null) {
-					currentGrade.setValue(grade.getValue());
-				} else {
-					currentGrade = grade;
+		try{
+			initialize();
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				for(Grade grade : grades) {
+					Deadline deadline = grade.getDeadline();
+					Course course = assignmentDao.loadCourseWhereDeadline(deadline);
+					if (isCourseInstructor(course)) {
+						User userGrade = grade.getUser();
+						Grade currentGrade = assignmentDao.loadGrade(deadline, userGrade);
+						if(currentGrade != null) {
+							currentGrade.setValue(grade.getValue());
+						} else {
+							currentGrade = grade;
+						}
+						currentGrade = assignmentDao.save(currentGrade);
+						WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
+						writingActivity.getGrades().add(currentGrade);
+						writingActivity = assignmentDao.save(writingActivity);
+					} else {
+						throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+					}
 				}
-				currentGrade = assignmentDao.save(currentGrade);
-				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDeadline(deadline);
-				writingActivity.getGrades().add(currentGrade);
-				writingActivity = assignmentDao.save(writingActivity);
+				return grades;
 			} else {
 				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
-		return grades;
 	}
 
 	@Override
 	public <R extends Rating> R submitRating(R rating, Review review) throws Exception {
-		initialize();
-		User loggedUser = getMockedUser();
-		// check permission
-		Rating userRating = assignmentDao.loadRating(rating.getId());
-		if (userRating != null) {
-			if (userRating.getOwner().equals(loggedUser)) {
-				rating.setId(userRating.getId());
+		try{
+			initialize();
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				User loggedUser = getMockedUser();
+				// check permission
+				Rating userRating = assignmentDao.loadRating(rating.getId());
+				if (userRating != null) {
+					if (userRating.getOwner().equals(loggedUser)) {
+						rating.setId(userRating.getId());
+					} else {
+						throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SUBMIT_RATING);
+					}
+				}
+		
+				// save rating
+				if (rating instanceof QuestionRating) {
+					if (((QuestionRating) rating).getEvaluatorBackground().equals("Yes")) {
+						loggedUser.setNativeSpeaker("Yes");
+					} else {
+						loggedUser.setNativeSpeaker("No");
+					}
+		
+					QuestionDao questionDao = new QuestionDao(Reviewer.getHibernateSessionFactory());
+					for (QuestionScore questionScore : ((QuestionRating) rating).getScores()) {
+						questionDao.saveScoreAndDocOwner(questionScore, loggedUser);
+					}
+				} else {
+					ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereReview(review);
+					rating.setEntry(reviewEntry);
+					rating.setOwner(loggedUser);
+					rating = assignmentDao.save(rating);
+				}
+		
+				return rating;
 			} else {
-				throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SUBMIT_RATING);
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
-
-		// save rating
-		if (rating instanceof QuestionRating) {
-			if (((QuestionRating) rating).getEvaluatorBackground().equals("Yes")) {
-				loggedUser.setNativeSpeaker("Yes");
-			} else {
-				loggedUser.setNativeSpeaker("No");
-			}
-
-			QuestionDao questionDao = new QuestionDao(Reviewer.getHibernateSessionFactory());
-			for (QuestionScore questionScore : ((QuestionRating) rating).getScores()) {
-				questionDao.saveScoreAndDocOwner(questionScore, loggedUser);
-			}
-		} else {
-			ReviewEntry reviewEntry = assignmentDao.loadReviewEntryWhereReview(review);
-			rating.setEntry(reviewEntry);
-			rating.setOwner(loggedUser);
-			rating = assignmentDao.save(rating);
-		}
-
-		return rating;
 	}
 
 	@Override
 	public <R extends Review> R saveReview(R review) throws Exception {
-		initialize();
-		// check review deadline
-		ReviewingActivity reviewingActivity = assignmentDao.loadReviewingActivityWhereReview(review);
-		Course course = assignmentDao.loadCourseWhereReviewingActivity(reviewingActivity);
-		if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course)) {
-			// check review owner
-			ReviewEntry reviewEntry =  assignmentDao.loadReviewEntryWhereReview(review);
-			if (reviewEntry != null && reviewEntry.getOwner().equals(getMockedUser())) {
-				review.setSaved(new Date());
-				review = assignmentDao.save(review);
+		try{
+			initialize();
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				// check review deadline
+				ReviewingActivity reviewingActivity = assignmentDao.loadReviewingActivityWhereReview(review);
+				Course course = assignmentDao.loadCourseWhereReviewingActivity(reviewingActivity);
+				if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course)) {
+					// check review owner
+					ReviewEntry reviewEntry =  assignmentDao.loadReviewEntryWhereReview(review);
+					if (reviewEntry != null && reviewEntry.getOwner().equals(getMockedUser())) {
+						review.setSaved(new Date());
+						review = assignmentDao.save(review);
+					} else {
+						throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SAVE_REVIEW);
+					}
+				} else {
+					throw new MessageException(Constants.EXCEPTION_DEADLINE_ALREADY_PASSED);
+				}
+				R newReview = (R) new Review();
+				if (review != null){
+					newReview = (R) review.clone();
+				}
+				return newReview;
 			} else {
-				throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SAVE_REVIEW);
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 			}
-		} else {
-			throw new MessageException(Constants.EXCEPTION_DEADLINE_ALREADY_PASSED);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
-		R newReview = (R) new Review();
-		if (review != null){
-			newReview = (R) review.clone();
-		}
-		return newReview;
 	}
 	
 	@Override
 	public <R extends Review> R submitReview(R review) throws Exception {
-		initialize();
-		// check review deadline
-		ReviewingActivity reviewingActivity = assignmentDao.loadReviewingActivityWhereReview(review);
-		Course course = assignmentDao.loadCourseWhereReviewingActivity(reviewingActivity);
-		if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course)) {
-			// check review owner
-			ReviewEntry reviewEntry =  assignmentDao.loadReviewEntryWhereReview(review);
-			if (reviewEntry != null && reviewEntry.getOwner().equals(getMockedUser())) {
-				review.setSaved(new Date());
-				review.setEarlySubmitted(true);
-				// release review
-					DocEntry docEntry = reviewEntry.getDocEntry();
-				//Check if the review hasn't been released early
-				if (!docEntry.getReviews().contains(reviewEntry.getReview())){
-					docEntry.getReviews().add(reviewEntry.getReview());
-					docEntry = assignmentDao.save(docEntry);
-					
-				}
-				review = assignmentDao.save(review);
-				try{
-					emailNotifier = Reviewer.getEmailNotifier();
-					if (docEntry.getOwner()!=null){
-						emailNotifier.sendReviewEarlyFinishNotification(docEntry.getOwner(), course, reviewingActivity);					
-					}else{
-						if (docEntry.getOwnerGroup() != null){
-							for (User user: docEntry.getOwnerGroup().getUsers()){
-								emailNotifier.sendReviewEarlyFinishNotification(user, course, reviewingActivity);							
-							}
+		try{
+			initialize();
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				// check review deadline
+				ReviewingActivity reviewingActivity = assignmentDao.loadReviewingActivityWhereReview(review);
+				Course course = assignmentDao.loadCourseWhereReviewingActivity(reviewingActivity);
+				if (reviewingActivity.getStatus() < Activity.STATUS_FINISH || isCourseInstructor(course)) {
+					// check review owner
+					ReviewEntry reviewEntry =  assignmentDao.loadReviewEntryWhereReview(review);
+					if (reviewEntry != null && reviewEntry.getOwner().equals(getMockedUser())) {
+						review.setSaved(new Date());
+						review.setEarlySubmitted(true);
+						// release review
+							DocEntry docEntry = reviewEntry.getDocEntry();
+						//Check if the review hasn't been released early
+						if (!docEntry.getReviews().contains(reviewEntry.getReview())){
+							docEntry.getReviews().add(reviewEntry.getReview());
+							docEntry = assignmentDao.save(docEntry);
+							
 						}
+						review = assignmentDao.save(review);
+						try{
+							emailNotifier = Reviewer.getEmailNotifier();
+							if (docEntry.getOwner()!=null){
+								emailNotifier.sendReviewEarlyFinishNotification(docEntry.getOwner(), course, reviewingActivity);					
+							}else{
+								if (docEntry.getOwnerGroup() != null){
+									for (User user: docEntry.getOwnerGroup().getUsers()){
+										emailNotifier.sendReviewEarlyFinishNotification(user, course, reviewingActivity);							
+									}
+								}
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+							logger.error("Error Sending email notification. Error: "+e.getMessage()+" - ReviewingActivity: "+reviewingActivity.getName());
+						}
+						
+					} else {
+						throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SUBMIT_REVIEW);
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					logger.error("Error Sending email notification. Error: "+e.getMessage()+" - ReviewingActivity: "+reviewingActivity.getName());
+				} else {
+					throw new MessageException(Constants.EXCEPTION_DEADLINE_ALREADY_PASSED);
 				}
-				
+				R newReview = (R) new Review();
+				if (review != null){
+					newReview = (R)(review.clone());
+				}
+				return newReview;
 			} else {
-				throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SUBMIT_REVIEW);
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 			}
-		} else {
-			throw new MessageException(Constants.EXCEPTION_DEADLINE_ALREADY_PASSED);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
-		R newReview = (R) new Review();
-		if (review != null){
-			newReview = (R)(review.clone());
-		}
-		return newReview;
 	}	
 	
 	@Override
 	public Course getUserReviewForViewing(long reviewId) throws Exception {
-		initialize();
-		Course course = assignmentDao.loadReviewForViewing(getMockedUser(), reviewId);
-		if (course == null) {
-			throw new MessageException(Constants.EXCEPTION_REVIEW_NOT_FOUND);
-		}
-		
-		Review review = assignmentDao.loadReview(reviewId);
-		ReviewEntry entryReview = assignmentDao.loadReviewEntryWhereReview(review);
-		DocEntry docEntry = assignmentDao.loadDocEntry(entryReview.getDocEntry().getDocumentId());
-		
-		WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
-		
-		if (writingActivity.getTrackReviews()){
-			/////// TRACKING FEEDBACK /////////////
-			// fill tracking review 'read date' if user is the reviewed document owner
-			// and it's the first time that views it 
-			FeedbackTracking fedbackTrackingRecord = feedbackTrackingService.loadByFeedbackId(reviewId);
-			   
-			if(fedbackTrackingRecord !=null && fedbackTrackingRecord.getReadDate() == null){
+		try{
+			initialize();
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				Course course = assignmentDao.loadReviewForViewing(getMockedUser(), reviewId);
+				if (course == null) {
+					throw new MessageException(Constants.EXCEPTION_REVIEW_NOT_FOUND);
+				}
 				
-				if (docEntry.getOwner()!=null){
-					if (docEntry.getOwner().equals(getMockedUser())){
-						fedbackTrackingRecord.setReadDate(new Date());
-						feedbackTrackingService.save(fedbackTrackingRecord);
+				Review review = assignmentDao.loadReview(reviewId);
+				ReviewEntry entryReview = assignmentDao.loadReviewEntryWhereReview(review);
+				DocEntry docEntry = assignmentDao.loadDocEntry(entryReview.getDocEntry().getDocumentId());
+				
+				WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(docEntry);
+				
+				if (writingActivity.getTrackReviews()){
+					/////// TRACKING FEEDBACK /////////////
+					// fill tracking review 'read date' if user is the reviewed document owner
+					// and it's the first time that views it 
+					FeedbackTracking fedbackTrackingRecord = feedbackTrackingService.loadByFeedbackId(reviewId);
+					   
+					if(fedbackTrackingRecord !=null && fedbackTrackingRecord.getReadDate() == null){
+						
+						if (docEntry.getOwner()!=null){
+							if (docEntry.getOwner().equals(getMockedUser())){
+								fedbackTrackingRecord.setReadDate(new Date());
+								feedbackTrackingService.save(fedbackTrackingRecord);
+							}
+						}else{
+							if (docEntry.getOwnerGroup() != null){
+								if (docEntry.getOwnerGroup().getUsers().contains(getMockedUser())){
+									fedbackTrackingRecord.setReadDate(new Date());
+									feedbackTrackingService.save(fedbackTrackingRecord);
+								}
+							}
+						}			
 					}
-				}else{
-					if (docEntry.getOwnerGroup() != null){
-						if (docEntry.getOwnerGroup().getUsers().contains(getMockedUser())){
-							fedbackTrackingRecord.setReadDate(new Date());
-							feedbackTrackingService.save(fedbackTrackingRecord);
-						}
-					}
-				}			
+					/////// TRACKING FEEDBACK /////////////			
+				}
+				
+				return course;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 			}
-			/////// TRACKING FEEDBACK /////////////			
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
-		
-		return course;
 	}
 	
 	@Override	
 	public Collection<DocumentType> getDocumentTypes(String genre) throws Exception {
-		initialize();
-		Collection<DocumentType> documentTypes = null;
-		//if (isAdmin()) {
-			documentTypes = assignmentDao.loadDocumentTypes(genre);
-		//}
-		return documentTypes;
+		try{
+			initialize();
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				Collection<DocumentType> documentTypes = null;
+				//if (isAdmin()) {
+				documentTypes = assignmentDao.loadDocumentTypes(genre);
+				//}
+				return documentTypes;
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 		
 	public String getGlosserUrl(Long siteId, String docId) {
-		return Reviewer.getGlosserUrl(siteId, docId);
+		try{
+			if (isGuestOrAdminOrSuperAdminOrStaff()){
+				return Reviewer.getGlosserUrl(siteId, docId);
+			} else {
+				throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
 	}
 
 }

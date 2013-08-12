@@ -1,7 +1,5 @@
 package au.edu.usyd.reviewer.client.login;
 
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
 
 import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;

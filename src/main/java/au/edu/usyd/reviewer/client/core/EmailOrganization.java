@@ -12,7 +12,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 /**
- * <p>Class used for email management of the organizations</p> 
+ * <p>Class used to admin the template of the emails of a organizations</p> 
  */
 @Entity
 public class EmailOrganization extends Email implements Serializable {
@@ -22,7 +22,6 @@ public class EmailOrganization extends Email implements Serializable {
 
 	/** The organization */
 	@ManyToOne
-//	@JoinColumn(name="organizationId")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	private Organization organization;
 	
@@ -44,11 +43,7 @@ public class EmailOrganization extends Email implements Serializable {
 		email.setId(this.getId());
 		email.setName(this.getName());
 		email.setMessage(this.getMessage());
-		
-//		if (this.getOrganization()!= null){
-//			email.setOrganization(this.getOrganization().clone());
-//		}
-		
+				
 		return email;
 	}
 }

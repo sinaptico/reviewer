@@ -20,6 +20,9 @@ import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.DocumentType;
+import au.edu.usyd.reviewer.client.core.Email;
+import au.edu.usyd.reviewer.client.core.EmailCourse;
+import au.edu.usyd.reviewer.client.core.EmailOrganization;
 import au.edu.usyd.reviewer.client.core.Entry;
 import au.edu.usyd.reviewer.client.core.FeedbackTemplate;
 import au.edu.usyd.reviewer.client.core.GeneralRating;
@@ -44,6 +47,7 @@ import au.edu.usyd.reviewer.client.core.Section;
 import au.edu.usyd.reviewer.client.core.TemplateReply;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
+import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
 
 /**
@@ -171,6 +175,9 @@ public class ObjectConverter {
 								   (value instanceof Deadline) ||
 								   (value instanceof DocEntry) ||
 								   (value instanceof DocumentType) ||
+								   (value instanceof Email) ||
+								   (value instanceof EmailCourse) ||
+								   (value instanceof EmailOrganization) ||
 								   (value instanceof Entry) ||
 								   (value instanceof FeedbackTemplate) ||
 								   (value instanceof GeneralRating) ||
@@ -194,7 +201,8 @@ public class ObjectConverter {
 								   (value instanceof Section) ||
 								   (value instanceof TemplateReply) ||
 								   (value instanceof User) ||
-								   (value instanceof UserGroup);
+								   (value instanceof UserGroup) ||
+								   (value instanceof WritingActivity);
 		return isReviewerObject;   
 	}
 	

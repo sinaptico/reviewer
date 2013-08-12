@@ -120,8 +120,20 @@
 		</plugins>
 	</build>
 	<distributionManagement>
+		<repository>
+			<id>LocalRepository</id>
+			<url>file:///Users/Marie/Desarrollo/repository</url>
+		</repository>
 	</distributionManagement>	
 	<repositories>
+		<repository>
+			<id>www.smartclient.com</id>
+			<url>http://www.smartclient.com/maven2</url>
+		</repository>
+		<!-- <repository>
+			<id>google-api-services</id>
+			<url>http://google-api-client-libraries.appspot.com/mavenrepo</url>
+		</repository> -->
 	</repositories>
 	<properties>
 		<spring.version>3.0.5.RELEASE</spring.version>
@@ -162,11 +174,11 @@
 			<version>2.2</version>
 			<scope>provided</scope>
 		</dependency>
-		<!--  dependency>
+		<dependency>
 			<groupId>au.edu.usyd.iwrite</groupId>
 			<artifactId>wasm</artifactId>
 			<version>1.0.0</version>
-		</dependency-->
+		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -202,7 +214,7 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-annotations</artifactId>
 			<version>3.5.1-Final</version>
-		</dependency>
+		</dependency> 
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-c3p0</artifactId>
@@ -303,8 +315,34 @@
              <artifactId>tomcat-catalina</artifactId>
              <version>7.0.0</version>
              <scope>provided</scope>
-        </dependency>     		
-	</dependencies>	
+        </dependency>
+        <!-- Google OAuth 2 dependencies  -->
+        <!-- <dependency>
+			<groupId>com.google.http-client</groupId>
+			<artifactId>google-http-client</artifactId>
+			<version>1.15.0-rc</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.http-client</groupId>
+			<artifactId>google-http-client-jackson</artifactId>
+			<version>1.15.0-rc</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-oauth2</artifactId>
+			<version>v2-rev39-1.15.0-rc</version>
+		</dependency>
+		<dependency>
+      		<groupId>com.google.oauth-client</groupId>
+      		<artifactId>google-oauth-client-jetty</artifactId>
+      		<version>1.15.0-rc</version>
+    	</dependency>      -->	
+    	<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
+  		</dependency>
+  	</dependencies>	
 		
 	<reporting>
 		<plugins>

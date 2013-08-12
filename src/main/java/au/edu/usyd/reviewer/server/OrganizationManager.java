@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.server;
 
 import java.net.MalformedURLException;
+
 import java.util.ArrayList;
 
 
@@ -26,6 +27,7 @@ import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleUserServiceImpl;
 import au.edu.usyd.reviewer.server.util.AESCipher;
 
 /**
@@ -153,7 +155,7 @@ public class OrganizationManager {
 		
 		ReviewerProperty reviewerGoogleDomain = propertyDao.load(Constants.REVIEWER_GOOGLE_DOMAIN);
 		organization.addProperty(reviewerGoogleDomain,null);
-		
+				
 		ReviewerProperty reviewerGooglePassword = propertyDao.load(Constants.REVIEWER_GOOGLE_PASSWORD);
 		organization.addProperty(reviewerGooglePassword,null);
 			
@@ -168,6 +170,27 @@ public class OrganizationManager {
 		
 		ReviewerProperty organizationLogoFile = propertyDao.load(Constants.ORGANIZATION_LOGO_FILE);
 		organization.addProperty(organizationLogoFile, null);
+		
+		ReviewerProperty organizationShibbolethEnabled = propertyDao.load(Constants.ORGANIZATION_SHIBBOLETH_ENABLED);
+		organization.addProperty(organizationShibbolethEnabled, Constants.SHIBBOLETH_ENABLED_NO);
+		
+		ReviewerProperty organizationPasswordNewUsers = propertyDao.load(Constants.ORGANIZATION_PASSWORD_NEW_USERS);
+		organization.addProperty(organizationPasswordNewUsers, Constants.NEW_USERS_PASSWORD_DEFAULT_VALUE);
+		
+		ReviewerProperty reviewerDomain = propertyDao.load(Constants.REVIEWER_DOMAIN);
+		organization.addProperty(reviewerDomain, null);
+		
+		ReviewerProperty reviewerEmailNotificationDomain = propertyDao.load(Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN);
+		organization.addProperty(reviewerEmailNotificationDomain,null);
+		
+		ReviewerProperty organizationLinkToShowInAssignments = propertyDao.load(Constants.ORGANIZATION_LINK_TO_SHOW_IN_ASSIGNMENTS);
+		organization.addProperty(organizationLinkToShowInAssignments,null);
+
+		ReviewerProperty reviewerSupportEmail = propertyDao.load(Constants.REVIEWER_SUPPORT_EMAIL);
+		organization.addProperty(reviewerSupportEmail,null);
+
+		ReviewerProperty timeZone = propertyDao.load(Constants.ORGANIZATION_TIMEZONE);
+		organization.addProperty(timeZone,null);
 		
 		return organization;
 	}
@@ -298,6 +321,9 @@ public class OrganizationManager {
 			organization = createEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW,Constants.EMAIL_STUDENT_RECEIVED_REVIEW_MESSAGE, organization);
 			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH,Constants.EMAIL_STUDENT_REVIEW_FINISH_MESSAGE, organization);
 			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_START,Constants.EMAIL_STUDENT_REVIEW_START_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
+			organization = createEmail(Constants.EMAIL_SAVE_COURSE_FINISHED,Constants.EMAIL_SAVE_COURSE_FINISHED_MESSAGE, organization);
 		} catch(Exception e){
 			throw new MessageException(Constants.EXCEPTION_GENERATE_ORGANIZATION_EMAILS);
 		}
@@ -314,7 +340,7 @@ public class OrganizationManager {
 		return organization;
 	}
 	
-	public boolean isOrganizationActivated(Organization organization) throws MessageException {
+	public boolean isOrganizationActivated(User loggedUser, Organization organization) throws MessageException {
 		boolean isOrganizationActivated = true;
 		
 		//check if the properties are completed
@@ -324,7 +350,7 @@ public class OrganizationManager {
 		isOrganizationActivated &=checkGoogleConnection(organization);
 		
 		//check SMTP connection
-		isOrganizationActivated &=checkSMTPConnection(organization);
+		isOrganizationActivated &=checkSMTPConnection(loggedUser, organization);
 		
 		return isOrganizationActivated;
 
@@ -392,6 +418,53 @@ public class OrganizationManager {
 			}
 		}
 		
+		value = organization.getOrganizationPasswordNewUsers();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.ORGANIZATION_PASSWORD_NEW_USERS;
+			} else {
+				message = Constants.ORGANIZATION_PASSWORD_NEW_USERS;
+			}
+		}
+		
+		
+		value = organization.getReviewerDomain();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_DOMAIN;
+			} else {
+				message = Constants.REVIEWER_DOMAIN;
+			}
+		}
+		
+		value = organization.getReviewerEmailNotificationDomain();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN;
+			} else {
+				message = Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN;
+			}
+		}
+		
+		
+		value = organization.getReviewerSupportEmail();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.REVIEWER_SUPPORT_EMAIL;
+			} else {
+				message = Constants.REVIEWER_SUPPORT_EMAIL;
+			}
+		}
+		
+		value = organization.getReviewerSupportEmail();
+		if (StringUtil.isBlank(value)){
+			if (!StringUtil.isBlank(message)){
+				message += "\n" + Constants.ORGANIZATION_TIMEZONE;
+			} else {
+				message = Constants.ORGANIZATION_TIMEZONE;
+			}
+		}
+		
 		if (!StringUtil.isBlank(message)){
 			propertiesOK = false;
 			throw new MessageException(Constants.EXCEPTION_ORGANIZATION_PROPERTIES + "\n" + message);
@@ -421,18 +494,20 @@ public class OrganizationManager {
 		return connectionOK;
 	}
 	
-	private boolean checkSMTPConnection(Organization organization) throws MessageException {
+	private boolean checkSMTPConnection(User loggedUser, Organization organization) throws MessageException {
 		boolean connectionOK = true;
 		try{
 			String username = organization.getEmailUsername();
 			String password = organization.getEmailPassword();
-			String domain = organization.getGoogleDomain();
 			String smtpHost = organization.getSMTPHost();
 			String smtpPort = organization.getSMTPPort();
-			String reviewerDomain = Reviewer.getReviewerDomain();
+			String reviewerEmailNotificationDomain = organization.getReviewerEmailNotificationDomain();
+			String fromEmail = organization.getGoogleUsername();
 			AESCipher aesCipher = AESCipher.getInstance();
 			String decryptedValue = aesCipher.decrypt(password);
-			EmailNotifier emailSender = new EmailNotifier(username, password, smtpHost, smtpPort, domain,reviewerDomain);
+			String timeZone = organization.getOrganizationTimeZone();
+			EmailNotifier emailSender = new EmailNotifier(username, decryptedValue, smtpHost, smtpPort, reviewerEmailNotificationDomain, fromEmail, timeZone);
+			emailSender.sendTestSMTPEmail(loggedUser);
 		} catch (Exception e) {
 			connectionOK = false;
 			e.printStackTrace();
@@ -441,13 +516,75 @@ public class OrganizationManager {
 		return connectionOK;
 	}
 	
-	public Organization activateOrganization(Organization anOrganization) throws MessageException {
-		if (organizationManager.isOrganizationActivated(anOrganization)){
+	public Organization activateOrganization(User loggedUser, Organization anOrganization) throws MessageException {
+		if (organizationManager.isOrganizationActivated(loggedUser,anOrganization)){
 			if (!anOrganization.isActivated()){
 				anOrganization.setActivated(true);
 				anOrganization = organizationDao.save(anOrganization);
 			}
 		}
 		return anOrganization;
+	}
+	
+	/**
+	 * This method return the organization whose domain is equal to the domain received as parameter
+	 * @param domain domain of the organization to look for
+	 * @return organization with domain equals to the domain received as parameter
+	 */
+	public Organization getOrganizationByDomain(String domain) throws MessageException{
+		Organization organization = organizationDao.getOrganizationByDomain(domain);
+		return organization;
+	}
+	
+	public List<User> getAdminUsers(Organization organization){
+		List<User> users = new ArrayList<User>();
+		try{
+			users = userDao.getUsersByRole(organization, Constants.ROLE_ADMIN);
+		} catch(Exception e){
+			e.printStackTrace();
+			String message = "Failed to obtain the admin user from the organization ";
+			if (organization != null){
+				message += organization.getName();
+			}
+			logger.error(message);
+		}
+		return users;
+	}
+	
+	public void forceUsersChangePassword(Organization organization,List<String> roles) throws MessageException{
+		try{
+			List<User> users = new ArrayList<User>(); 
+			for (String role: roles){
+				
+				if (role != null && role.equals(Constants.ROLE_ADMIN)){
+					users.addAll(userDao.getUsersByRole(organization, role));
+				} else if (role != null && role.equals(Constants.ROLE_GUEST)){
+					users.addAll(userDao.getUsersByRole(organization, role));
+				} else if (role != null && role.equals(Constants.ROLE_STAFF)){
+					users.addAll(userDao.getUsersByRole(organization, role));
+				} else if (role != null && role.equals(Constants.ROLE_SUPER_ADMIN)){
+					users.addAll(userDao.getUsersByRole(organization, role));
+				}
+			}
+			AESCipher aesCipher = AESCipher.getInstance();
+			String password = aesCipher.decrypt(organization.getGooglePassword());
+			GoogleUserServiceImpl googleUserServiceImpl = new GoogleUserServiceImpl(organization.getGoogleUsername(), password, organization.getGoogleDomain());
+			for(User user : users){
+				if (user != null){
+					try{
+						googleUserServiceImpl.forceUserToChangePassword(user.getGoogleAppsEmailUsername());
+					} catch(Exception e){
+						String username = "";
+						if ( user != null && user.getGoogleAppsEmailUsername() != null){
+							username = user.getGoogleAppsEmailUsername();
+						}
+						logger.error(Constants.EXCEPTION_FORCE_USERS_CHANGE_PASSWORD + "\n" + username);
+					}
+				}
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_FORCE_USERS_CHANGE_PASSWORD);
+		}
 	}
 }

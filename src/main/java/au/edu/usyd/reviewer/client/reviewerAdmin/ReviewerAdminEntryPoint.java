@@ -108,15 +108,15 @@ public class ReviewerAdminEntryPoint implements EntryPoint {
 		TreeItem editOrganizationsItem = new TreeItem("Edit Organizations");
 		organizationsItem.addItem(editOrganizationsItem);
 		
-		TreeItem usersItem = new TreeItem("Users");
-		TreeItem createUserItem = new TreeItem("Create User");
-		usersItem.addItem(createUserItem);
-		TreeItem editUsersItem = new TreeItem("Edit Users");
-		usersItem.addItem(editUsersItem);
-		organizationsItem.setState(true);
-		usersItem.setState(true);
+//		TreeItem usersItem = new TreeItem("Users");
+//		TreeItem createUserItem = new TreeItem("Create User");
+//		usersItem.addItem(createUserItem);
+//		TreeItem editUsersItem = new TreeItem("Edit Users");
+//		usersItem.addItem(editUsersItem);
+//		organizationsItem.setState(true);
+//		usersItem.setState(true);
 		menuTree.addItem(organizationsItem);
-		menuTree.addItem(usersItem);
+//		menuTree.addItem(usersItem);
 
 		// Tree item selection handler
 		menuTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
@@ -162,7 +162,7 @@ public class ReviewerAdminEntryPoint implements EntryPoint {
 
 					@Override
 					public void onSuccess(Void result) {
-						Window.Location.replace(GWT.getHostPageBaseURL()+"Admin.html");
+						Window.Location.replace(GWT.getHostPageBaseURL()+"ReviewerAdmin.html");
 					}
 				});
 			}
@@ -173,7 +173,7 @@ public class ReviewerAdminEntryPoint implements EntryPoint {
 		
 		// By default show create organization form
 		menuTree.setSelectedItem(createOrganizationItem);
-		tabs.setPixelSize(750, 600);
+		tabs.setPixelSize(950, 600);
 		tabs.selectTab(0);
 
 		VerticalPanel contentPanel = new VerticalPanel();
@@ -222,7 +222,6 @@ public class ReviewerAdminEntryPoint implements EntryPoint {
 	
 	private void setLoggedUser(User user){
 		loggedUser = user;
-//		headerPanel.add(new HTML ("<div "+cssDivStyle +"><h1 "+cssH1Style +">REVIEWER ADMIN PAGE </h1>" ));
 		Organization organization = user.getOrganization();
 		VerticalPanel userPanel = new VerticalPanel();
 		userPanel.add(new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName()));

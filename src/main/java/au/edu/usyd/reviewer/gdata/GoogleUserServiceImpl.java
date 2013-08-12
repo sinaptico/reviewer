@@ -72,6 +72,7 @@ public class GoogleUserServiceImpl {
 	        login.setUserName(username);
 	        login.setPassword(password);
 	        entry.addExtension(login);
+	        entry.getLogin().setChangePasswordAtNextLogin(true);
 	        Name name = new Name();
 	        name.setGivenName(firstname);
 	        name.setFamilyName(lastname);
@@ -84,23 +85,23 @@ public class GoogleUserServiceImpl {
 				if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.EntityExists)) {
 					// continue
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserDeletedRecently)) {
-					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_DELETED_RECENTLY + "\n" +  "Username: " + username );
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_DELETED_RECENTLY + "\n" +  "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.UserSuspended)) {
-					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_SUSPENDED + "\n" +  "Username: " + username);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_USER_SUSPENDED + "\n" +  "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainUserLimitExceeded)) {
-					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_USER_LIMIT_EXCEEDED + "\n" + "Username: " + username);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_USER_LIMIT_EXCEEDED + "\n" + "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				} else if (afyde.getErrorCode().equals(AppsForYourDomainErrorCode.DomainSuspended)) {
-					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_SUSPENDED + "\n" + "Username: " + username);
+					throw new MessageException(Constants.EXCEPTION_GOOGLE_DOMAIN_SUSPENDED + "\n" + "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				} else {
-					throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username);
+					throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 				}
 			} else if (e instanceof ServiceForbiddenException){
-				throw new  MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + e.getMessage());
+				throw new  MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username + "\n" + Constants.EXCEPTION_GOOGLE_APPS  + e.getMessage());
 			} else  {
 				e.printStackTrace();
-				throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username);
+				throw new MessageException (Constants.EXCEPTION_FAILED_CREATE_USER + "\n" + "Username: " + username );
 			}
-    	}
+    	} 
         return entry;
     }
 
@@ -157,4 +158,25 @@ public class GoogleUserServiceImpl {
     	}
     	return userEntry;
     }
+    
+    
+    /**
+    * Force user to change password.
+    *
+    * @param username the username
+    * @return the user entry
+    * @throws AppsForYourDomainException the apps for your domain exception
+    * @throws ServiceException the service exception
+    * @throws IOException Signals that an I/O exception has occurred.
+    */
+   public UserEntry forceUserToChangePassword(String username) throws AppsForYourDomainException, ServiceException, IOException {
+
+      URL retrieveUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
+      UserEntry userEntry = userService.getEntry(retrieveUrl, UserEntry.class);
+      userEntry.getLogin().setChangePasswordAtNextLogin(true);
+
+      URL updateUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
+      return userService.update(updateUrl, userEntry);
+   }
+    
 }

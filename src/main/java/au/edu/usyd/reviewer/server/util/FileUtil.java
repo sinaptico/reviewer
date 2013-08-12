@@ -59,4 +59,9 @@ public final class FileUtil {
 			logger.error("Error zipping folder contents: " + sourceFolder, e);
 		}
 	}
+	
+	
+	public static String replaceBlanks(String filename) {
+		return filename.replaceAll("[\\s]", "-");
+	}
 }

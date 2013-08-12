@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.server.rpc;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class ReviewerAdminServiceImpl extends ReviewerServiceImpl implements Rev
 	
 	@Override
 	public Organization saveOrganization(Organization organization) throws Exception {
-		if (isAdminOrSuperAdmin()){
+		if (isSuperAdmin()){
 			if (!StringUtil.isBlank(organization.getName())){
 				return  organizationManager.saveOrganization(organization,true); 
 			} else {
@@ -50,7 +51,7 @@ public class ReviewerAdminServiceImpl extends ReviewerServiceImpl implements Rev
 	}
 	
 	public Organization getOrganization(String organizationName) throws Exception{
-		if (isAdminOrSuperAdmin()){
+		if (isSuperAdmin()){
 			return organizationManager.getOrganization(organizationName);
 		} else {
 			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
@@ -58,7 +59,7 @@ public class ReviewerAdminServiceImpl extends ReviewerServiceImpl implements Rev
 	}
 	
 	public OrganizationProperty saveOrganizationProperty(OrganizationProperty organizationProperty) throws Exception {
-		if (isAdminOrSuperAdmin()){
+		if (isSuperAdmin()){
 			return organizationManager.saveOrganizationProperty(organizationProperty);
 		} else {
 			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
@@ -75,7 +76,7 @@ public class ReviewerAdminServiceImpl extends ReviewerServiceImpl implements Rev
 	
 
 	public Collection<User> getUsers(User user) throws Exception{
-		if (isAdminOrSuperAdmin()){
+		if (isSuperAdmin()){
 			return organizationManager.getUsers(user);
 		} else {
 			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
@@ -93,4 +94,9 @@ public class ReviewerAdminServiceImpl extends ReviewerServiceImpl implements Rev
 		return aUser;
 	}
 
+	public void forceUsersChangePassword(Organization organization,List<String> roles) throws Exception {
+		if (isSuperAdmin()){
+			organizationManager.forceUsersChangePassword(organization, roles);
+		}
+	}
 }

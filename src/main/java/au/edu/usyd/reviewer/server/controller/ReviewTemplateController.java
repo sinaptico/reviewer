@@ -201,7 +201,7 @@ public class ReviewTemplateController extends ReviewerController{
 					throw me;
 				} else {
 					// Before save the course set its organization
-					reviewTemplate = assignmentManager.saveReviewTemplate(reviewTemplate);
+					reviewTemplate = assignmentManager.saveReviewTemplate(reviewTemplate, user);
 					Map<String,Object> reviewTemplateMap = ObjectConverter.convertObjectInMap(reviewTemplate, "", "",0);
 					return reviewTemplateMap;
 				}

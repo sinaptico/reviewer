@@ -40,7 +40,7 @@ public class ReviewTemplate implements Serializable {
 	/** The sections. */
 	@OneToMany(cascade = CascadeType.ALL)
 	@LazyCollection(LazyCollectionOption.FALSE)
-	@JoinTable(name = "ReviewTemplates_Sections")
+	@JoinTable(name = "ReviewTemplate_Sections")
     @javax.persistence.OrderBy("number")
 	private List<Section> sections = new ArrayList<Section>();	
 	
@@ -51,6 +51,18 @@ public class ReviewTemplate implements Serializable {
 	private Organization organization;
 	
 	private boolean deleted = false;
+	
+	@ManyToOne
+	@JoinColumn(name="userId")
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private User owner;
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	@LazyCollection(LazyCollectionOption.FALSE)
+	@JoinTable(name = "ReviewTemplate_Users")
+	private List<User> sharedWith = new ArrayList<User>();	
+
+	
 	
 	public ReviewTemplate(){
 		
@@ -175,6 +187,33 @@ public class ReviewTemplate implements Serializable {
 		this.deleted = deleted;
 	}
 
+	
+	
+	public User getOwner() {
+		return owner;
+	}
+
+	public void setOwner(User owner) {
+		this.owner = owner;
+	}
+
+	public List<User> getSharedWith() {
+		return sharedWith;
+	}
+
+	public void setSharedWith(List<User> sharedWith) {
+		this.sharedWith = sharedWith;
+	}
+
+	public void sharedWith(User user){
+		this.getSharedWith().add(user);
+	}
+	
+	public void noShareWith(User user){
+		this.getSharedWith().remove(user);
+	}
+	
+	
 	public ReviewTemplate clone(){
 		ReviewTemplate template = new ReviewTemplate();
 		template.setName(this.getName());
@@ -193,6 +232,17 @@ public class ReviewTemplate implements Serializable {
 		}
 		template.setSections(sections);
 		template.setDeleted(this.isDeleted());
+		if (this.getOwner() != null){
+			template.setOwner(this.getOwner().clone());
+		}
+		
+		List<User> sharedWith = new ArrayList<User>();
+		for(User user : this.getSharedWith()){
+			if (user != null){
+				sharedWith.add(user.clone());
+			}
+		}
+		template.setSharedWith(sharedWith);
 		return template;
 	}
 

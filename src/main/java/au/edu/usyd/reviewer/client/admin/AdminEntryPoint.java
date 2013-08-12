@@ -2,6 +2,8 @@ package au.edu.usyd.reviewer.client.admin;
 
 
 import java.util.Collection;
+
+
 import java.util.Date;
 import java.util.List;
 
@@ -31,12 +33,12 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
+import com.google.gwt.user.client.Window.ClosingHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -164,6 +166,12 @@ public class AdminEntryPoint implements EntryPoint {
 	private boolean toolsLoaded = false;
 	
 	private Command logoutCommand;
+	
+	private MenuItem logoutItem;
+	
+	private FlexTable headerTable = new FlexTable();
+	
+	
 	/** 
 	 * <p>Main method of the entry point that loads the "Glosser sites" and menus for user impersonation, courses, activities and review 
 	 * templates creation. It also loads the panels and trees with the course and review templates lists according to the defined filter (Year - Semester).</p>
@@ -174,73 +182,80 @@ public class AdminEntryPoint implements EntryPoint {
 		// uncaught exception handler
 		GWT.setUncaughtExceptionHandler( new CustomUncaughtExceptionHandler() );
 		
-		// Glosser sites panel
-		final ShowSitesComposite glosserPanel = new ShowSitesComposite();
-		glosserService.getAllSites(new AsyncCallback<List<SiteForm>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				if (caught instanceof MessageException){
-					processMessageException((MessageException) caught);
-				} else {
-					Window.alert("Failed to get Glosser sites: " + caught.getMessage());
-				}
-			}
-
-			@Override
-			public void onSuccess(final List<SiteForm> sites) {
-				glosserSites = sites;
-				glosserService.getToolList(new AsyncCallback<List<String>>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						if (caught instanceof MessageException){
-							processMessageException((MessageException) caught);
-						} else {
-							Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
-						}
-					}
-
-					@Override
-					public void onSuccess(final List<String> tools) {
-						glosserPanel.setSitesAndTools(sites, tools);
-					}
-				});
-			}
-		});
-
-		final TabLayoutPanel tabs = new TabLayoutPanel(25, Unit.PX);
-		tabs.add(new ScrollPanel(assignmentsPanel), "Assignments");
-		tabs.add(new ScrollPanel(gradeBookPanel), "GradeBook");
-		tabs.add(new ScrollPanel(reportsPanel), "Reports");
-		tabs.add(new ScrollPanel(glosserPanel), "Glosser");
-		tabs.add(new ScrollPanel(reviewTemplatesContentPanel), "Review Templates");
-		
-		// semesters 
-		courseSemester.addItem("1", "1");
-		courseSemester.addItem("2", "2");
-		Date today = new Date();
-		int month = today.getMonth();
-		if (month < 7) {
-			courseSemester.setSelectedIndex(0);
-		} else if (month > 6){
-			courseSemester.setSelectedIndex(1);
-		}	
-			
+					
 		// get logged user to show his/her name and organization in the page
 		if (loggedUser == null){
 			// get the logged user to obtain his/her organization
 			adminService.getLoggedUser(new AsyncCallback<User>(){
 				@Override
 				public void onFailure(Throwable caught) {
-					if (caught instanceof MessageException){
-						processMessageException((MessageException) caught);
+					caught.printStackTrace();					
+					if (Window.Location.getHostName().contains("usyd") || 
+						Window.Location.getHostName().contains("unsw") ||
+						Window.Location.getHostName().contains("uws")){
+							Window.Location.reload();
 					} else {
-						Window.alert("Failed get the logged user" + caught.getMessage());
+						Window.alert("Failed to get the logged user.\nPlease close the browser and try again");
 					}
 				}
 	
 				@Override
 				public void onSuccess(User user) {
 					if (user != null) {
+						
+						// Glosser sites panel
+						final ShowSitesComposite glosserPanel = new ShowSitesComposite();
+						glosserService.getAllSites(new AsyncCallback<List<SiteForm>>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								if (loggedUser != null){
+									if (caught instanceof MessageException){
+										processMessageException((MessageException) caught);
+									} else {
+										Window.alert("Failed to get Glosser sites: " + caught.getMessage());
+									}
+								}
+							}
+
+							@Override
+							public void onSuccess(final List<SiteForm> sites) {
+								glosserSites = sites;
+								glosserService.getToolList(new AsyncCallback<List<String>>() {
+									@Override
+									public void onFailure(Throwable caught) {
+										if (caught instanceof MessageException){
+											processMessageException((MessageException) caught);
+										} else {
+											Window.alert("Failed to get Glosser tools list: " + caught.getMessage());
+										}
+									}
+
+									@Override
+									public void onSuccess(final List<String> tools) {
+										glosserPanel.setSitesAndTools(sites, tools);
+									}
+								});
+							}
+						});
+
+						final TabLayoutPanel tabs = new TabLayoutPanel(25, Unit.PX);
+						tabs.add(new ScrollPanel(assignmentsPanel), "Assignments");
+						tabs.add(new ScrollPanel(gradeBookPanel), "GradeBook");
+						tabs.add(new ScrollPanel(reportsPanel), "Reports");
+						tabs.add(new ScrollPanel(glosserPanel), "Glosser");
+						tabs.add(new ScrollPanel(reviewTemplatesContentPanel), "Review Templates");
+						
+						// semesters 
+						courseSemester.addItem("1", "1");
+						courseSemester.addItem("2", "2");
+						Date today = new Date();
+						int month = today.getMonth();
+						if (month < 6) {
+							courseSemester.setSelectedIndex(0);
+						} else {
+							courseSemester.setSelectedIndex(1);
+						}	
+		
 						setLoggedUser(user);
 						if (user.isSuperAdmin()){
 							// Get Organizations to populate  a drop down list
@@ -255,636 +270,681 @@ public class AdminEntryPoint implements EntryPoint {
 						    yearSemesterPanel.add(refreshCourseTreeButton);
 						}
 						refreshCoursesTree(tabs);
+						
+						// Save Course
+						Command newCourseCmd = new Command() {
+							@Override
+							public void execute() {
+								final DialogBox dialogBox = new DialogBox();
+								final CourseForm courseForm = new CourseForm();
+								final SubmitButton createButton = new SubmitButton("Create", "Creating...", "Created");
+								createButton.addClickHandler(new ClickHandler() {
+									@Override
+									public void onClick(ClickEvent event) {
+										try{
+											Course course = courseForm.getCourse();
+											if (isValidCourse(course)){
+												createButton.updateStateSubmitting();
+												adminService.saveCourse(course, new AsyncCallback<Course>() {
+													@Override
+													public void onFailure(Throwable caught) {
+														if (caught instanceof MessageException){
+															processMessageException((MessageException) caught);
+														} else {
+															Window.alert("Failed to create course: " + caught.getMessage());
+														}
+														createButton.updateStateSubmit();
+													}
+
+													@Override
+													public void onSuccess(Course course) {
+														dialogBox.hide();
+														refreshCoursesTree(tabs);
+														createButton.updateStateSubmit();
+													}
+												});
+											} else {
+												createButton.updateStateSubmit();
+											}
+										} catch(Exception e){
+											createButton.updateStateSubmit();
+										}
+									}
+								});
+
+								HorizontalPanel buttonsPanel = new HorizontalPanel();
+								buttonsPanel.setWidth("100%");
+								buttonsPanel.add(createButton);
+								buttonsPanel.add(new Button("Close", new ClickHandler() {
+									@Override
+									public void onClick(ClickEvent event) {
+										dialogBox.hide();
+									}
+								}));
+
+								VerticalPanel panel = new VerticalPanel();
+								panel.add(courseForm);
+								panel.add(buttonsPanel);
+								dialogBox.setHTML("<b>Course</b>");
+								dialogBox.setWidget(panel);
+								//dialogBox.center();
+								dialogBox.show();
+							}
+						};
+						
+						// Save Writing activity
+						Command newActivityCmd = new Command() {
+							@Override
+							public void execute() {
+								WritingActivity writingActivity = new WritingActivity();
+								writingActivity.getDeadlines().add(new Deadline("Final"));
+								if (courses.isEmpty()){
+									Window.alert(Constants.EXCEPTION_NOT_COURSES_FOR_ACTIVITY);
+								} else {
+									
+									activityForm.setCourses(courses);
+									activityForm.setLoggedUser(loggedUser);
+									activityForm.setGlosserSites(glosserSites);
+									activityForm.setWritingActivity(writingActivity);
+									final DialogBox dialogBox = new DialogBox();
+									final SubmitButton createButton = new SubmitButton("Create", "Creating...", "Created");
+									createButton.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											createButton.updateStateSubmitting();
+											if (isValidActivity(activityForm.getWritingActivity())){
+												adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
+													@Override
+													public void onFailure(Throwable caught) {
+														if (caught instanceof MessageException){
+															processMessageException((MessageException) caught);
+														} else {
+															Window.alert("Failed to create activity: " + caught.getMessage());
+														}
+														createButton.updateStateSubmit();
+													}
+						
+													@Override
+													public void onSuccess(WritingActivity writingActivity) {
+														dialogBox.hide();
+														refreshCoursesTree(tabs);
+														createButton.updateStateSubmit();
+													}
+												});
+											} else {
+												createButton.updateStateSubmit();
+											}
+										}
+									});
+									HorizontalPanel buttonsPanel = new HorizontalPanel();
+									buttonsPanel.setWidth("100%");
+									buttonsPanel.add(createButton);
+									buttonsPanel.add(new Button("Close", new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											dialogBox.hide();
+										}
+									}));
+									
+									VerticalPanel panel = new VerticalPanel();
+									panel.add(activityForm);
+									panel.add(buttonsPanel);
+									dialogBox.setHTML("<b>Activity</b>");
+									dialogBox.setWidget(panel);
+									dialogBox.center();
+									dialogBox.show();
+
+								}
+							}
+						};
+						// Save Review template
+						Command newReviewTemplateCmd = new Command() {
+							@Override
+							public void execute() {
+								final DialogBox dialogBox = new DialogBox();
+								final ReviewTemplateForm reviewTemplateForm = new ReviewTemplateForm();
+								final SubmitButton createButton = new SubmitButton("Create", "Creating...", "Created");
+								createButton.addClickHandler(new ClickHandler() {
+									@Override
+									public void onClick(ClickEvent event) {
+										createButton.updateStateSubmitting();
+										adminService.saveReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
+											@Override
+											public void onFailure(Throwable caught) {
+												if (caught instanceof MessageException){
+													processMessageException((MessageException) caught);
+												} else {
+													Window.alert("Failed to create Review Template: " + caught.getMessage());
+												}
+												createButton.updateStateSubmit();
+											}
+
+											@Override
+											public void onSuccess(ReviewTemplate reviewTemplate) {
+												Window.alert("Review Template saved.");		
+												refreshTemplateTree();
+												dialogBox.hide();								
+											}
+										});
+									}
+								});
+
+								HorizontalPanel buttonsPanel = new HorizontalPanel();
+								buttonsPanel.setWidth("100%");
+								buttonsPanel.add(createButton);
+								buttonsPanel.add(new Button("Close", new ClickHandler() {
+									@Override
+									public void onClick(ClickEvent event) {
+										dialogBox.hide();
+									}
+								}));
+
+								VerticalPanel panel = new VerticalPanel();
+								panel.add(reviewTemplateForm);
+								panel.add(buttonsPanel);
+								dialogBox.setHTML("<b>Review Template</b>");
+								dialogBox.setWidget(panel);
+								dialogBox.center();
+								dialogBox.show();
+							}
+						};		
+						
+						// Create new menu
+						MenuBar newMenu = new MenuBar(true);
+						MenuItem newCourseMenuItem = WidgetFactory.createNewMenuItem("Course", newCourseCmd, "newCourseMenuItem");
+						newMenu.addItem(newCourseMenuItem);
+						MenuItem newActivityMenuItem = WidgetFactory.createNewMenuItem("Activity", newActivityCmd, "newActivityMenuItem");
+						newMenu.addItem(newActivityMenuItem);
+						MenuItem newReviewTemplateMenuItem = WidgetFactory.createNewMenuItem("Review Template", newReviewTemplateCmd, "newReviewTemplateMenuItem");
+						newMenu.addItem(newReviewTemplateMenuItem);
+						MenuItem createNewMenuItem = WidgetFactory.createNewMenuItem("Create new >", newMenu, "createNewMenuItem");
+
+						// Impersonate user
+						Command mockUserCmd = new Command() {
+							@Override
+							public void execute() {
+								final DialogBox dialogBox = new DialogBox();
+								final UserForm userForm = new UserForm();
+								userForm.setMockUser(true);
+								final Button mockUserButton = new Button("Impersonate");
+								mockUserButton.addClickHandler(new ClickHandler() {
+									@Override
+									public void onClick(ClickEvent event) {
+										mockUserButton.setEnabled(false);
+										User user = userForm.getUser();
+										if (validateUser(user)){
+											adminService.mockUser(user, new AsyncCallback<User>() {
+												@Override
+												public void onFailure(Throwable caught) {
+													String message =  "Failed to mock user: ";
+													if (caught instanceof MessageException){
+														processMessageException((MessageException) caught);
+													} else {
+														message = message + caught.getMessage();
+														Window.alert(message);
+													}
+													mockUserButton.setEnabled(true);
+												}
+					
+												@Override
+												public void onSuccess(User user) {
+													Window.alert("You are now logged in as '" + user.getUsername() + "'");
+													dialogBox.hide();
+												}
+											});
+										} else {
+											Window.alert("Please enter a username or an email");
+										}
+									}
+								});
+
+								HorizontalPanel buttonsPanel = new HorizontalPanel();
+								buttonsPanel.setWidth("100%");
+								buttonsPanel.add(mockUserButton);
+								buttonsPanel.add(new Button("Close", new ClickHandler() {
+									@Override
+									public void onClick(ClickEvent event) {
+										dialogBox.hide();
+									}
+								}));
+
+								VerticalPanel panel = new VerticalPanel();
+								panel.add(userForm);
+								panel.add(buttonsPanel);
+								dialogBox.setHTML("<b>User</b>");
+								dialogBox.setWidget(panel);
+								dialogBox.center();
+								dialogBox.show();
+							}
+						};
+
+						// Testing menu
+						MenuBar testingMenu = new MenuBar(true);
+						MenuItem mockUserMenuItem = WidgetFactory.createNewMenuItem("Impersonate user", mockUserCmd, "mockUserMenuItem");
+						testingMenu.addItem(mockUserMenuItem);
+						MenuItem testingMenuItem = WidgetFactory.createNewMenuItem("Test >", testingMenu, "testingMenuItem");
+
+						// Menu bar
+						MenuBar menu = new MenuBar();
+						menu.setAutoOpen(false);
+						menu.setWidth("100%");
+						menu.setAnimationEnabled(true);
+						menu.addItem(createNewMenuItem);
+						menu.addSeparator();
+						menu.addItem(testingMenuItem);
+
+						// Create courses tree		
+						coursesTree.setAnimationEnabled(true);
+						coursesTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
+							@Override
+							public void onSelection(SelectionEvent<TreeItem> event) {
+								final TreeItem treeItem = event.getSelectedItem();
+								tabs.selectTab(0);
+								if (treeItem.getUserObject() instanceof Course) {
+									Course course = (Course) treeItem.getUserObject();
+									activityLabel.setHTML("<b>" + course.getName() + "</b>");
+									final VerticalPanel panel = new VerticalPanel();
+									final CourseForm courseForm = new CourseForm();
+									courseForm.setCourse(course, loggedUser);
+									final SubmitButton saveButton = new SubmitButton("Save", "Saving...", "Saved");
+									final User user = loggedUser;
+									saveButton.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											try{
+												Course course = courseForm.getCourse();
+												saveButton.updateStateSubmitting();
+												adminService.saveCourse(course, new AsyncCallback<Course>() {
+													@Override
+													public void onFailure(Throwable caught) {
+														if (caught instanceof MessageException){
+															processMessageException((MessageException) caught);
+														} else {
+															Window.alert("Failed to save course: " + caught.getMessage());
+														}
+														saveButton.updateStateSubmit();
+													}
+					
+													@Override
+													public void onSuccess(Course course) {
+														Window.alert("Course saved.");
+														courseForm.setCourse(course, user);
+														saveButton.updateStateSubmit();
+													}
+												});
+											} catch(Exception e){
+												saveButton.updateStateSubmit();
+											}
+										}
+									});
+
+									final Button deleteButton = new Button("Delete");
+									deleteButton.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											deleteButton.setEnabled(false);
+											if (Window.confirm("Are you sure you want to delete this course?")) {
+												try{
+													Course course = courseForm.getCourse();
+													adminService.deleteCourse(course, new AsyncCallback<Course>() {
+														@Override
+														public void onFailure(Throwable caught) {
+															if (caught instanceof MessageException){
+																processMessageException((MessageException) caught);
+															} else {
+																Window.alert("Failed to delete course: " + caught.getMessage());
+															}
+															deleteButton.setEnabled(true);
+															refreshCoursesTree(tabs);
+														}
+					
+														@Override
+														public void onSuccess(Course course) {
+															Window.alert("Course deleted.");
+															refreshCoursesTree(tabs);
+															panel.removeFromParent();
+														}
+													});
+												} catch(Exception e){
+													deleteButton.setEnabled(true);
+												}
+											} else {
+												deleteButton.setEnabled(true);
+											}
+										}
+									});
+									
+									HorizontalPanel buttonsPanel = new HorizontalPanel();
+									buttonsPanel.add(saveButton);
+									buttonsPanel.add(new HTML("&nbsp;&nbsp;"));
+									buttonsPanel.add(deleteButton);
+									panel.add(buttonsPanel);
+									panel.add(new HTML("<hr/>"));
+									panel.add(courseForm);
+									nodePanel.setWidget(panel);
+								} else if (treeItem.getUserObject() instanceof WritingActivity) {
+									WritingActivity writingActivity = (WritingActivity) treeItem.getUserObject();
+									Course course = (Course) treeItem.getParentItem().getUserObject();
+									activityLabel.setHTML("<b>" + course.getName() + " > " + writingActivity.getName() + "</b>");
+									final ActivityForm activityForm = new ActivityForm();
+									activityForm.setGlosserSites(glosserSites);
+									activityForm.setLoggedUser(loggedUser);
+									activityForm.setWritingActivityAndCourse(writingActivity, course);
+									final VerticalPanel panel = new VerticalPanel();
+									final SubmitButton saveButton = new SubmitButton("Save", "Saving...", "Saved");
+									saveButton.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											saveButton.setEnabled(false);
+											saveButton.updateStateSubmitting();
+											adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
+												@Override
+												public void onFailure(Throwable caught) {
+													if (caught instanceof MessageException){
+														processMessageException((MessageException) caught);
+													} else {
+														Window.alert("Failed to save activity: " + caught.getMessage());
+													}
+													saveButton.updateStateSubmit();
+												}
+
+												@Override
+												public void onSuccess(WritingActivity writingActivity) {
+													Window.alert("Activity saved.");
+													activityForm.setWritingActivity(writingActivity);
+													saveButton.updateStateSubmit();
+												}
+											});
+										}
+									});
+									final Button deleteButton = new Button("Delete");
+									deleteButton.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											deleteButton.setEnabled(false);
+											if (Window.confirm("Are you sure you want to delete this activity?")) {
+												adminService.deleteWritingActivity(activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
+													@Override
+													public void onFailure(Throwable caught) {
+														if (caught instanceof MessageException){
+															processMessageException((MessageException) caught);
+														} else {
+															Window.alert("Failed to delete activity: " + caught.getMessage());
+														}
+														deleteButton.setEnabled(true);
+													}
+
+													@Override
+													public void onSuccess(WritingActivity writingActivity) {
+														Window.alert("Activity deleted.");
+														refreshCoursesTree(tabs);
+														panel.removeFromParent();
+													}
+												});
+											} else {
+												deleteButton.setEnabled(true);
+											}
+										}
+									});
+
+									GradeBook gradeBook = new GradeBook(adminService);
+									gradeBook.setWritingActivity(writingActivity);
+									gradeBookPanel.setWidget(gradeBook);
+									
+									ReportsTable reportsTable = new ReportsTable(adminService);
+									reportsTable.setWritingActivity(writingActivity);
+									reportsPanel.setWidget(reportsTable);
+
+									HorizontalPanel buttonsPanel = new HorizontalPanel();
+									buttonsPanel.add(saveButton);
+									buttonsPanel.add(new HTML("&nbsp;&nbsp;"));
+									buttonsPanel.add(deleteButton);
+									panel.add(buttonsPanel);
+									panel.add(new HTML("<hr/>"));
+									panel.add(activityForm);
+									nodePanel.setWidget(panel);
+								}
+							}
+						});
+						
+						HTML info = new HTML("<img src='images/icon-info.gif'/> Click on the tree to administer the writing activities for your course.");
+						nodePanel.setWidget(info);
+						assignmentsPanel.add(nodePanel);
+						
+						// Add handler for templates tree
+				    	reviewTemplateTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
+							@Override
+							public void onSelection(SelectionEvent<TreeItem> event) {
+									final TreeItem treeItem = event.getSelectedItem();
+									tabs.selectTab(4);
+									ReviewTemplate reviewTemplate = (ReviewTemplate) treeItem.getUserObject();
+									activityLabel.setHTML("<b>" + reviewTemplate.getName() + "</b>");
+									final ReviewTemplateForm reviewTemplateForm = new ReviewTemplateForm();
+									reviewTemplateForm.setReviewTemplate(reviewTemplate);
+									final SubmitButton saveButton = new SubmitButton("Save", "Saving...", "Saved");
+									saveButton.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											saveButton.updateStateSubmitting();
+											adminService.saveReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
+												@Override
+												public void onFailure(Throwable caught) {
+													if (caught instanceof MessageException){
+														processMessageException((MessageException) caught);
+													} else {
+														Window.alert("Failed to save Review Template: " + caught.getMessage());
+													}
+													saveButton.updateStateSubmit();
+												}
+
+												@Override
+												public void onSuccess(ReviewTemplate reviewTemplate) {
+													Window.alert("Review Template saved.");		
+													refreshTemplateTree();
+													reviewTemplateForm.setReviewTemplate(reviewTemplate);
+													saveButton.updateStateSubmit();
+													reviewTemplatesContentPanel.add(reviewTemplateForm);
+												}
+											});
+										}
+									});
+									
+									final Button deleteButton = new Button("Delete");
+									deleteButton.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent event) {
+											deleteButton.setEnabled(false);
+											if (Window.confirm("Are you sure you want to delete this template?")) {
+												adminService.deleteReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
+													@Override
+													public void onFailure(Throwable caught) {
+														if (caught instanceof MessageException){
+															processMessageException((MessageException) caught);
+														} else {
+															Window.alert("Failed to delete Review Template: " + caught.getMessage());
+														}
+														deleteButton.setEnabled(true);
+													}
+
+													@Override
+													public void onSuccess(ReviewTemplate reviewTemplate) {
+														Window.alert("Review Template deleted.");
+														refreshTemplateTree();
+														reviewTemplatesContentPanel.clear();
+													}
+												});
+											} else {
+												deleteButton.setEnabled(true);
+											}
+										}
+									});	
+									
+									// Button to see the emails of the users that share the review template.
+									// This form allows add new emails
+									final Button shareReviewTemplateButton = new Button("Share");
+									shareReviewTemplateButton.addClickHandler(new ClickHandler(){		
+										@Override
+										public void onClick(ClickEvent event) {
+											final ShareReviewTemplateWithForm shareReviewTemplateForm = new ShareReviewTemplateWithForm(adminService, reviewTemplateForm.getReviewTemplate());
+										    final DialogBox dialogBox = new DialogBox();
+										    dialogBox.setWidth("100px");
+										    HorizontalPanel buttonsPanel = new HorizontalPanel();
+											buttonsPanel.setWidth("100%");
+											
+											buttonsPanel.add(new Button("Close", new ClickHandler() {
+												@Override
+												public void onClick(ClickEvent event) {
+													dialogBox.hide();
+													// reload all the reviews of the organization
+													ReviewTemplate reviewTemplate = shareReviewTemplateForm.getReviewTemplate();
+													reviewTemplateForm.setReviewTemplate(reviewTemplate);
+													treeItem.setUserObject(reviewTemplate);
+													refreshTemplateTree();
+												}
+											}));
+											
+										    VerticalPanel panel = new VerticalPanel();
+											panel.add(shareReviewTemplateForm);
+											panel.add(buttonsPanel);
+											dialogBox.setHTML("Review Template shared with");
+											dialogBox.setWidget(panel);
+											dialogBox.center();
+											dialogBox.show();
+								    	}				
+									});
+
+									
+									reviewTemplatesContentPanel.clear();
+									HorizontalPanel reviewTemplateButtonsPanel = new HorizontalPanel();
+									reviewTemplateButtonsPanel.add(saveButton);
+									reviewTemplateButtonsPanel.add(deleteButton);
+									reviewTemplateButtonsPanel.add(shareReviewTemplateButton);
+									reviewTemplatesContentPanel.add(reviewTemplateButtonsPanel);
+									reviewTemplatesContentPanel.add(new HTML("<hr/>"));
+									reviewTemplatesContentPanel.add(reviewTemplateForm);
+							}
+						});
+				 	
+				    	// Add change event handler to the organizations list
+				    	organizationsList.addChangeHandler(new ChangeHandler(){
+							@Override
+							public void onChange(ChangeEvent event) {
+								Long organizationId = null;
+								
+								if (loggedUser != null && loggedUser.isSuperAdmin()){
+									if (organizationsList.getItemCount() > 0){
+										organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
+									} else { // organization list size = 0 then get organization from logged user 
+										organizationId = loggedUser.getOrganization().getId();
+									}
+									activityForm.setOrganizationId(organizationId);
+								} else { // logged user is not manager and 
+									if (loggedUser != null && loggedUser.getOrganization()!= null){
+										organizationId = loggedUser.getOrganization().getId();
+										activityForm.setOrganizationId(organizationId);
+									}
+								}
+							} 
+				    	});
+				    	
+				    	
+						tabs.setPixelSize(690, 650);
+						tabs.selectTab(0);
+
+						VerticalPanel contentPanel = new VerticalPanel();
+						contentPanel.add(activityLabel);
+						contentPanel.add(new HTML("<hr/>"));
+						contentPanel.add(tabs);
+						
+						DecoratorPanel contentDeco = new DecoratorPanel();
+						contentDeco.setStyleName("contentDeco");
+						contentDeco.setWidget(contentPanel);
+
+						DecoratorPanel menuDeco = new DecoratorPanel();
+						menuDeco.setStyleName("menuDeco");
+						menuDeco.setWidth("100%");
+						menuDeco.setWidget(menu);
+
+						VerticalPanel menuPanel = new VerticalPanel();
+						menuPanel.add(menuDeco);
+						menuPanel.add(courseStackPanel);
+						menuPanel.add(new HTML("<hr/>"));
+						
+						
+						menuPanel.add(new HTML("<b/>Review Templates:<b/>"));
+						menuPanel.add(reviewTemplateTree);
+						
+						HorizontalPanel mainPanel = new HorizontalPanel();
+						mainPanel.add(menuPanel);
+						mainPanel.add(contentDeco);
+						
+						VerticalPanel adminPanel = new VerticalPanel();
+						adminPanel.setSize("75%", "75%");
+						adminPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+						adminPanel.add(mainPanel);	
+							
+						refreshCourseTreeButton.addClickHandler(new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {				
+								refreshCoursesTree(tabs);				
+							}
+					    	
+					    });
+
+								
+						// get Current year and 5 years ago
+						adminService.getYears(new AsyncCallback<Collection<Integer>>(){
+							@Override
+							public void onFailure(Throwable caught) {
+								if (loggedUser != null){
+									if (caught instanceof MessageException){
+										processMessageException((MessageException) caught);
+									} else {
+										Window.alert("Failed get the years " + caught.getMessage());
+									}
+								}
+							}
+
+							@Override
+							public void onSuccess(Collection<Integer> years) {
+								setYearsPanel(years); 
+							}
+						});
+								
+						// Add Logout command
+						logoutCommand = new Command(){
+							public void execute() {
+								logout();
+							}
+						};
+
+						// logout header menu
+						MenuBar logoutMenu = new MenuBar(true);
+						logoutItem = new MenuItem("Logout",logoutCommand);
+						logoutItem.setEnabled(true);	
+						logoutMenu.addItem(logoutItem);
+						
+						
+						headerTable.setSize("76%", "5%");
+						headerTable.setWidget(0, 0, new HTML ("<div "+cssDivStyle +" align='center'><h1 "+cssH1Style +">ADMIN PAGE </h1>"));
+						headerTable.setWidget(0, 2, logoutMenu);
+						headerTable.getCellFormatter().setAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT, HasVerticalAlignment.ALIGN_MIDDLE);
+						headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);;
+						headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
+						
+						RootPanel.get("adminPanel").add(headerTable);
+						RootPanel.get("adminPanel").add(headerPanel);
+						RootPanel.get("adminPanel").add(new HTML("</br>"));
+					    RootPanel.get("adminPanel").add(yearSemesterPanel);
+					    RootPanel.get("adminPanel").add(new HTML("</br>"));
+						RootPanel.get("adminPanel").add(adminPanel);
+						
+						refreshCoursesTree(tabs);
+
 					} 
 				}
 			});
-		} 	
-				
-		
-		// Save Course
-		Command newCourseCmd = new Command() {
-			@Override
-			public void execute() {
-				final DialogBox dialogBox = new DialogBox();
-				final CourseForm courseForm = new CourseForm();
-				final SubmitButton createButton = new SubmitButton("Create", "Creating...", "Created");
-				createButton.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						Course course = courseForm.getCourse();
-						if (isValidCourse(course)){
-							createButton.updateStateSubmitting();
-							adminService.saveCourse(course, new AsyncCallback<Course>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									if (caught instanceof MessageException){
-										processMessageException((MessageException) caught);
-									} else {
-										Window.alert("Failed to create course: " + caught.getMessage());
-									}
-									createButton.updateStateSubmit();
-								}
-
-								@Override
-								public void onSuccess(Course course) {
-									dialogBox.hide();
-									refreshCoursesTree(tabs);
-									createButton.updateStateSubmit();
-								}
-							});
-						} else {
-							createButton.updateStateSubmit();
-						}
-					}
-				});
-
-				HorizontalPanel buttonsPanel = new HorizontalPanel();
-				buttonsPanel.setWidth("100%");
-				buttonsPanel.add(createButton);
-				buttonsPanel.add(new Button("Close", new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						dialogBox.hide();
-					}
-				}));
-
-				VerticalPanel panel = new VerticalPanel();
-				panel.add(courseForm);
-				panel.add(buttonsPanel);
-				dialogBox.setHTML("<b>Course</b>");
-				dialogBox.setWidget(panel);
-				//dialogBox.center();
-				dialogBox.show();
-			}
-		};
-		
-		// Save Writing activity
-		Command newActivityCmd = new Command() {
-			@Override
-			public void execute() {
-				WritingActivity writingActivity = new WritingActivity();
-				writingActivity.getDeadlines().add(new Deadline("Final"));
-				if (courses.isEmpty()){
-					Window.alert(Constants.EXCEPTION_NOT_COURSES_FOR_ACTIVITY);
-				} else {
-					
-					activityForm.setCourses(courses);		
-					activityForm.setGlosserSites(glosserSites);
-					activityForm.setWritingActivity(writingActivity);
-					final DialogBox dialogBox = new DialogBox();
-					final SubmitButton createButton = new SubmitButton("Create", "Creating...", "Created");
-					createButton.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							createButton.updateStateSubmitting();
-							if (isValidActivity(activityForm.getWritingActivity())){
-								adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
-									@Override
-									public void onFailure(Throwable caught) {
-										if (caught instanceof MessageException){
-											processMessageException((MessageException) caught);
-										} else {
-											Window.alert("Failed to create activity: " + caught.getMessage());
-										}
-										createButton.updateStateSubmit();
-									}
-		
-									@Override
-									public void onSuccess(WritingActivity writingActivity) {
-										dialogBox.hide();
-										refreshCoursesTree(tabs);
-										createButton.updateStateSubmit();
-									}
-								});
-							} else {
-								createButton.updateStateSubmit();
-							}
-						}
-					});
-					HorizontalPanel buttonsPanel = new HorizontalPanel();
-					buttonsPanel.setWidth("100%");
-					buttonsPanel.add(createButton);
-					buttonsPanel.add(new Button("Close", new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							dialogBox.hide();
-						}
-					}));
-					
-					VerticalPanel panel = new VerticalPanel();
-					panel.add(activityForm);
-					panel.add(buttonsPanel);
-					dialogBox.setHTML("<b>Activity</b>");
-					dialogBox.setWidget(panel);
-					dialogBox.center();
-					dialogBox.show();
-
-				}
-			}
-		};
-		// Save Review template
-		Command newReviewTemplateCmd = new Command() {
-			@Override
-			public void execute() {
-				final DialogBox dialogBox = new DialogBox();
-				final ReviewTemplateForm reviewTemplateForm = new ReviewTemplateForm();
-				final SubmitButton createButton = new SubmitButton("Create", "Creating...", "Created");
-				createButton.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						createButton.updateStateSubmitting();
-						adminService.saveReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
-							@Override
-							public void onFailure(Throwable caught) {
-								if (caught instanceof MessageException){
-									processMessageException((MessageException) caught);
-								} else {
-									Window.alert("Failed to create Review Template: " + caught.getMessage());
-								}
-								createButton.updateStateSubmit();
-							}
-
-							@Override
-							public void onSuccess(ReviewTemplate reviewTemplate) {
-								Window.alert("Review Template saved.");		
-								refreshTemplateTree();
-								dialogBox.hide();								
-							}
-						});
-					}
-				});
-
-				HorizontalPanel buttonsPanel = new HorizontalPanel();
-				buttonsPanel.setWidth("100%");
-				buttonsPanel.add(createButton);
-				buttonsPanel.add(new Button("Close", new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						dialogBox.hide();
-					}
-				}));
-
-				VerticalPanel panel = new VerticalPanel();
-				panel.add(reviewTemplateForm);
-				panel.add(buttonsPanel);
-				dialogBox.setHTML("<b>Review Template</b>");
-				dialogBox.setWidget(panel);
-				dialogBox.center();
-				dialogBox.show();
-			}
-		};		
-
-		// Create new menu
-		MenuBar newMenu = new MenuBar(true);
-		MenuItem newCourseMenuItem = WidgetFactory.createNewMenuItem("Course", newCourseCmd, "newCourseMenuItem");
-		newMenu.addItem(newCourseMenuItem);
-		MenuItem newActivityMenuItem = WidgetFactory.createNewMenuItem("Activity", newActivityCmd, "newActivityMenuItem");
-		newMenu.addItem(newActivityMenuItem);
-		MenuItem newReviewTemplateMenuItem = WidgetFactory.createNewMenuItem("Review Template", newReviewTemplateCmd, "newReviewTemplateMenuItem");
-		newMenu.addItem(newReviewTemplateMenuItem);
-		MenuItem createNewMenuItem = WidgetFactory.createNewMenuItem("Create new >", newMenu, "createNewMenuItem");
-
-		// Impersonate user
-		Command mockUserCmd = new Command() {
-			@Override
-			public void execute() {
-				final DialogBox dialogBox = new DialogBox();
-				final UserForm userForm = new UserForm();
-				userForm.setMockUser(true);
-				final Button mockUserButton = new Button("Impersonate");
-				mockUserButton.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						mockUserButton.setEnabled(false);
-						User user = userForm.getUser();
-						if (validateUser(user)){
-							adminService.mockUser(user, new AsyncCallback<User>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									String message =  "Failed to mock user: ";
-									if (caught instanceof MessageException){
-										processMessageException((MessageException) caught);
-									} else {
-										message = message + caught.getMessage();
-										Window.alert(message);
-									}
-									mockUserButton.setEnabled(true);
-								}
-	
-								@Override
-								public void onSuccess(User user) {
-									Window.alert("You are now logged in as '" + user.getUsername() + "'");
-									dialogBox.hide();
-								}
-							});
-						} else {
-							Window.alert("Please enter a username or an email");
-						}
-					}
-				});
-
-				HorizontalPanel buttonsPanel = new HorizontalPanel();
-				buttonsPanel.setWidth("100%");
-				buttonsPanel.add(mockUserButton);
-				buttonsPanel.add(new Button("Close", new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						dialogBox.hide();
-					}
-				}));
-
-				VerticalPanel panel = new VerticalPanel();
-				panel.add(userForm);
-				panel.add(buttonsPanel);
-				dialogBox.setHTML("<b>User</b>");
-				dialogBox.setWidget(panel);
-				dialogBox.center();
-				dialogBox.show();
-			}
-		};
-
-		// Testing menu
-		MenuBar testingMenu = new MenuBar(true);
-		MenuItem mockUserMenuItem = WidgetFactory.createNewMenuItem("Impersonate user", mockUserCmd, "mockUserMenuItem");
-		testingMenu.addItem(mockUserMenuItem);
-		MenuItem testingMenuItem = WidgetFactory.createNewMenuItem("Test >", testingMenu, "testingMenuItem");
-
-		// Menu bar
-		MenuBar menu = new MenuBar();
-		menu.setAutoOpen(false);
-		menu.setWidth("100%");
-		menu.setAnimationEnabled(true);
-		menu.addItem(createNewMenuItem);
-		menu.addSeparator();
-		menu.addItem(testingMenuItem);
-
-		// Create courses tree		
-		coursesTree.setAnimationEnabled(true);
-		coursesTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
-			@Override
-			public void onSelection(SelectionEvent<TreeItem> event) {
-				final TreeItem treeItem = event.getSelectedItem();
-				tabs.selectTab(0);
-				if (treeItem.getUserObject() instanceof Course) {
-					Course course = (Course) treeItem.getUserObject();
-					activityLabel.setHTML("<b>" + course.getName() + "</b>");
-					final VerticalPanel panel = new VerticalPanel();
-					final CourseForm courseForm = new CourseForm();
-					courseForm.setCourse(course);
-					final SubmitButton saveButton = new SubmitButton("Save", "Saving...", "Saved");
-					saveButton.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							saveButton.updateStateSubmitting();
-							adminService.saveCourse(courseForm.getCourse(), new AsyncCallback<Course>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									if (caught instanceof MessageException){
-										processMessageException((MessageException) caught);
-									} else {
-										Window.alert("Failed to save course: " + caught.getMessage());
-									}
-									saveButton.updateStateSubmit();
-								}
-
-								@Override
-								public void onSuccess(Course course) {
-									Window.alert("Course saved.");
-									courseForm.setCourse(course);
-									saveButton.updateStateSubmit();
-								}
-							});
-						}
-					});
-
-					final Button deleteButton = new Button("Delete");
-					deleteButton.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							deleteButton.setEnabled(false);
-							if (Window.confirm("Are you sure you want to delete this course?")) {
-								adminService.deleteCourse(courseForm.getCourse(), new AsyncCallback<Course>() {
-									@Override
-									public void onFailure(Throwable caught) {
-										if (caught instanceof MessageException){
-											processMessageException((MessageException) caught);
-										} else {
-											Window.alert("Failed to delete course: " + caught.getMessage());
-										}
-										deleteButton.setEnabled(true);
-										refreshCoursesTree(tabs);
-									}
-
-									@Override
-									public void onSuccess(Course course) {
-										Window.alert("Course deleted.");
-										refreshCoursesTree(tabs);
-										panel.removeFromParent();
-									}
-								});
-							} else {
-								deleteButton.setEnabled(true);
-							}
-						}
-					});
-					
-					HorizontalPanel buttonsPanel = new HorizontalPanel();
-					buttonsPanel.add(saveButton);
-					buttonsPanel.add(new HTML("&nbsp;&nbsp;"));
-					buttonsPanel.add(deleteButton);
-					panel.add(buttonsPanel);
-					panel.add(new HTML("<hr/>"));
-					panel.add(courseForm);
-					nodePanel.setWidget(panel);
-				} else if (treeItem.getUserObject() instanceof WritingActivity) {
-					WritingActivity writingActivity = (WritingActivity) treeItem.getUserObject();
-					Course course = (Course) treeItem.getParentItem().getUserObject();
-					activityLabel.setHTML("<b>" + course.getName() + " > " + writingActivity.getName() + "</b>");
-					final ActivityForm activityForm = new ActivityForm();
-					activityForm.setGlosserSites(glosserSites);
-					activityForm.setWritingActivityAndCourse(writingActivity, course);
-					final VerticalPanel panel = new VerticalPanel();
-					final SubmitButton saveButton = new SubmitButton("Save", "Saving...", "Saved");
-					saveButton.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							saveButton.setEnabled(false);
-							saveButton.updateStateSubmitting();
-							adminService.saveWritingActivity(activityForm.getCourse().getId(), activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									if (caught instanceof MessageException){
-										processMessageException((MessageException) caught);
-									} else {
-										Window.alert("Failed to save activity: " + caught.getMessage());
-									}
-									saveButton.updateStateSubmit();
-								}
-
-								@Override
-								public void onSuccess(WritingActivity writingActivity) {
-									Window.alert("Activity saved.");
-									activityForm.setWritingActivity(writingActivity);
-									saveButton.updateStateSubmit();
-								}
-							});
-						}
-					});
-					final Button deleteButton = new Button("Delete");
-					deleteButton.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							deleteButton.setEnabled(false);
-							if (Window.confirm("Are you sure you want to delete this activity?")) {
-								adminService.deleteWritingActivity(activityForm.getWritingActivity(), new AsyncCallback<WritingActivity>() {
-									@Override
-									public void onFailure(Throwable caught) {
-										if (caught instanceof MessageException){
-											processMessageException((MessageException) caught);
-										} else {
-											Window.alert("Failed to delete activity: " + caught.getMessage());
-										}
-										deleteButton.setEnabled(true);
-									}
-
-									@Override
-									public void onSuccess(WritingActivity writingActivity) {
-										Window.alert("Activity deleted.");
-										refreshCoursesTree(tabs);
-										panel.removeFromParent();
-									}
-								});
-							} else {
-								deleteButton.setEnabled(true);
-							}
-						}
-					});
-
-					GradeBook gradeBook = new GradeBook(adminService);
-					gradeBook.setWritingActivity(writingActivity);
-					gradeBookPanel.setWidget(gradeBook);
-					
-					ReportsTable reportsTable = new ReportsTable(adminService);
-					reportsTable.setWritingActivity(writingActivity);
-					reportsPanel.setWidget(reportsTable);
-
-					HorizontalPanel buttonsPanel = new HorizontalPanel();
-					buttonsPanel.add(saveButton);
-					buttonsPanel.add(new HTML("&nbsp;&nbsp;"));
-					buttonsPanel.add(deleteButton);
-					panel.add(buttonsPanel);
-					panel.add(new HTML("<hr/>"));
-					panel.add(activityForm);
-					nodePanel.setWidget(panel);
-				}
-			}
-		});
-		
-		HTML info = new HTML("<img src='images/icon-info.gif'/> Click on the tree to administer the writing activities for your course.");
-		nodePanel.setWidget(info);
-		assignmentsPanel.add(nodePanel);
-		
-		// Add handler for templates tree
-    	reviewTemplateTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
-			@Override
-			public void onSelection(SelectionEvent<TreeItem> event) {
-					final TreeItem treeItem = event.getSelectedItem();
-					tabs.selectTab(4);
-					ReviewTemplate reviewTemplate = (ReviewTemplate) treeItem.getUserObject();
-					activityLabel.setHTML("<b>" + reviewTemplate.getName() + "</b>");
-					final ReviewTemplateForm reviewTemplateForm = new ReviewTemplateForm();
-					reviewTemplateForm.setReviewTemplate(reviewTemplate);
-					final SubmitButton saveButton = new SubmitButton("Save", "Saving...", "Saved");
-					saveButton.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							saveButton.updateStateSubmitting();
-							adminService.saveReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									if (caught instanceof MessageException){
-										processMessageException((MessageException) caught);
-									} else {
-										Window.alert("Failed to save Review Template: " + caught.getMessage());
-									}
-									saveButton.updateStateSubmit();
-								}
-
-								@Override
-								public void onSuccess(ReviewTemplate reviewTemplate) {
-									Window.alert("Review Template saved.");		
-									refreshTemplateTree();
-									reviewTemplateForm.setReviewTemplate(reviewTemplate);
-									saveButton.updateStateSubmit();
-									reviewTemplatesContentPanel.add(reviewTemplateForm);
-								}
-							});
-						}
-					});
-					
-					final Button deleteButton = new Button("Delete");
-					deleteButton.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							deleteButton.setEnabled(false);
-							if (Window.confirm("Are you sure you want to delete this template?")) {
-								adminService.deleteReviewTemplate(reviewTemplateForm.getReviewTemplate(), new AsyncCallback<ReviewTemplate>() {
-									@Override
-									public void onFailure(Throwable caught) {
-										if (caught instanceof MessageException){
-											processMessageException((MessageException) caught);
-										} else {
-											Window.alert("Failed to delete Review Template: " + caught.getMessage());
-										}
-										deleteButton.setEnabled(true);
-									}
-
-									@Override
-									public void onSuccess(ReviewTemplate reviewTemplate) {
-										Window.alert("Review Template deleted.");
-										refreshTemplateTree();
-										reviewTemplatesContentPanel.clear();
-									}
-								});
-							} else {
-								deleteButton.setEnabled(true);
-							}
-						}
-					});					
-					
-					reviewTemplatesContentPanel.clear();
-					HorizontalPanel reviewTemplateButtonsPanel = new HorizontalPanel();
-					reviewTemplateButtonsPanel.add(saveButton);
-					reviewTemplateButtonsPanel.add(deleteButton);
-					reviewTemplatesContentPanel.add(reviewTemplateButtonsPanel);
-					reviewTemplatesContentPanel.add(new HTML("<hr/>"));
-					reviewTemplatesContentPanel.add(reviewTemplateForm);
-			}
-		});
- 	
-    	// Add change event handler to the organizations list
-    	organizationsList.addChangeHandler(new ChangeHandler(){
-			@Override
-			public void onChange(ChangeEvent event) {
-				Long organizationId = null;
-				
-				if (loggedUser != null && loggedUser.isSuperAdmin()){
-					if (organizationsList.getItemCount() > 0){
-						organizationId = Long.valueOf(organizationsList.getValue(organizationsList.getSelectedIndex()));
-					} else { // organization list size = 0 then get organization from logged user 
-						organizationId = loggedUser.getOrganization().getId();
-					}
-					activityForm.setOrganizationId(organizationId);
-				} else { // logged user is not manager and 
-					if (loggedUser != null && loggedUser.getOrganization()!= null){
-						organizationId = loggedUser.getOrganization().getId();
-						activityForm.setOrganizationId(organizationId);
-					}
-				}
-			} 
-    	});
-    	
-    	
-		tabs.setPixelSize(690, 650);
-		tabs.selectTab(0);
-
-		VerticalPanel contentPanel = new VerticalPanel();
-		contentPanel.add(activityLabel);
-		contentPanel.add(new HTML("<hr/>"));
-		contentPanel.add(tabs);
-		
-		DecoratorPanel contentDeco = new DecoratorPanel();
-		contentDeco.setStyleName("contentDeco");
-		contentDeco.setWidget(contentPanel);
-
-		DecoratorPanel menuDeco = new DecoratorPanel();
-		menuDeco.setStyleName("menuDeco");
-		menuDeco.setWidth("100%");
-		menuDeco.setWidget(menu);
-
-		VerticalPanel menuPanel = new VerticalPanel();
-		menuPanel.add(menuDeco);
-		menuPanel.add(courseStackPanel);
-		menuPanel.add(new HTML("<hr/>"));
-		
-		menuPanel.add(new HTML("<b/>Review Templates:<b/>"));
-		menuPanel.add(reviewTemplateTree);
-
-		HorizontalPanel mainPanel = new HorizontalPanel();
-		mainPanel.add(menuPanel);
-		mainPanel.add(contentDeco);
-		
-		VerticalPanel adminPanel = new VerticalPanel();
-		adminPanel.setSize("75%", "75%");
-		adminPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-		adminPanel.add(mainPanel);	
-			
-		refreshCourseTreeButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {				
-				refreshCoursesTree(tabs);				
-			}
-	    	
-	    });
-
-				
-		// get Current year and 5 years ago
-		adminService.getYears(new AsyncCallback<Collection<Integer>>(){
-			@Override
-			public void onFailure(Throwable caught) {
-				if (caught instanceof MessageException){
-					processMessageException((MessageException) caught);
-				} else {
-					Window.alert("Failed get the years" + caught.getMessage());
-				}
-			}
-
-			@Override
-			public void onSuccess(Collection<Integer> years) {
-				setYearsPanel(years); 
-			}
-		});
-				
-		// Add Logout command
-		logoutCommand = new Command(){
-			public void execute() {
-				adminService.logout(new AsyncCallback<Void>(){
-					@Override
-					public void onFailure(Throwable caught) {
-						if (caught instanceof MessageException){
-							processMessageException((MessageException) caught);
-						} else {
-							Window.alert("Logout failed" + caught.getMessage());
-						}
-					}
-
-					@Override
-					public void onSuccess(Void result) {
-						Window.Location.replace(GWT.getHostPageBaseURL()+"Admin.html");
-					}
-				});
-			}
-		};
-
-		// logout header menu
-		MenuBar logoutMenu = new MenuBar(true);
-		logoutMenu.addItem("Logout",logoutCommand);
-		
-		FlexTable headerTable = new FlexTable();
-		headerTable.setSize("100%", "5%");
-		headerTable.setWidget(0, 0, new HTML ("<div "+cssDivStyle +" align='center'><h1 "+cssH1Style +">ADMIN PAGE </h1>"));
-		headerTable.setWidget(0, 1, logoutMenu);
-		headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT, HasVerticalAlignment.ALIGN_MIDDLE);
-		headerTable.getCellFormatter().setAlignment(0, 2, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);
-		
-		RootPanel.get("adminPanel").add(headerTable);
-		RootPanel.get("adminPanel").add(headerPanel);
-		RootPanel.get("adminPanel").add(new HTML("</br>"));
-	    RootPanel.get("adminPanel").add(yearSemesterPanel);
-	    RootPanel.get("adminPanel").add(new HTML("</br>"));
-		RootPanel.get("adminPanel").add(adminPanel);
-		
-		refreshCoursesTree(tabs);
+		} 			
 	}
 
 	
@@ -914,8 +974,8 @@ public class AdminEntryPoint implements EntryPoint {
 
 			@Override
 			public void onSuccess(Collection<ReviewTemplate> templateList) {
-				// review templates tree
 				reviewTemplateTree.clear();
+				// review templates tree		
 				for (ReviewTemplate reviewTemplate : templateList) {
 					Label name = new Label();
 					name.setText(reviewTemplate.getName());
@@ -960,10 +1020,13 @@ public class AdminEntryPoint implements EntryPoint {
 		adminService.getCourses(semester, year,organizationId, new AsyncCallback<Collection<Course>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				if (caught instanceof MessageException){
-					processMessageException((MessageException) caught);
-				} else {
-					Window.alert("Failed get courses. " + caught.getMessage());
+				if (loggedUser != null){
+					
+					if (caught instanceof MessageException){
+						processMessageException((MessageException) caught);
+					} else {
+						Window.alert("Failed get courses. " + caught.getMessage());
+					}
 				}
 				refreshCourseTreeButton.updateStateSubmit();
 			}
@@ -1043,13 +1106,24 @@ public class AdminEntryPoint implements EntryPoint {
 	private void setLoggedUser(User user){
 		loggedUser = user;
 		Organization organization = user.getOrganization();
-		VerticalPanel userPanel = new VerticalPanel();
-		userPanel.add(new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName()));
-		userPanel.setStyleName("contentDeco");
-		headerPanel.add(new HTML("</br>"));
-		headerPanel.add(userPanel);
-		HTML htmlAssigments = new HTML ("<a href='Assignments.html'><< Go to the Assignments List</a></br></br><img src='images/icon-info.gif'/> If you have selected the option 'Impersonate User' then by clicking the link above you will see the assignments list of that user. </br>In order to go back to your normal 'Assignments list' you have to click the 'Assginments' link at the top of the page again.</div></br>");
+		HTML htmlUser = new HTML(user.getFirstname() +"&nbsp;&nbsp;" + user.getLastname() + "&nbsp;-&nbsp;" + user.getEmail() + "&nbsp;-&nbsp;" +organization.getName());
+		htmlUser.setStyleName("userText");
+		headerTable.setWidget(0, 1, htmlUser);
+		headerTable.getCellFormatter().setAlignment(0, 1, HasHorizontalAlignment.ALIGN_LEFT, HasVerticalAlignment.ALIGN_MIDDLE);;
+		
+		HTML htmlAssigments = new HTML ("<a href='Assignments.html'><< Go to the Assignments List</a></br></br><img src='images/icon-info.gif'/> If you have selected the option 'Impersonate User' then by clicking the link above you will see the assignments list of that user. </br>In order to go back to your normal 'Assignments list' you have to click the 'Assignments' link at the top of the page again.</div></br>");
 		headerPanel.add(htmlAssigments);
+
+//		// Add a link to Google Doc to get user authorization access code
+//		if (StringUtil.isBlank(loggedUser.getGoogleToken())){
+//			// this method gets the code url parameter and call Google oAuth2 to obtain the user token
+//			String code = Window.Location.getParameter("code");
+//			if (StringUtil.isBlank(code)){
+//				getGoogleAuthorizationUrl();
+//			} else {
+//				getUserToken(code);
+//			}
+//		}
 		
 	}
 	
@@ -1085,8 +1159,10 @@ public class AdminEntryPoint implements EntryPoint {
 		} else {
 			Date today = new Date();
 			int month = today.getMonth();
-			if ((month < 7 && course.getSemester() == 2) || (month > 6 && course.getSemester() == 1)){
-				valid = false;
+			int year = today.getYear();
+			if ((course.getSemester() == 1 && month > 7 && course.getYear() <= year) || 
+						(course.getYear() < year )){
+				valid = false;		
 				Window.alert(Constants.EXCEPTION_WRONG_SEMESTER);
 			}
 		}
@@ -1113,7 +1189,61 @@ public class AdminEntryPoint implements EntryPoint {
 			logoutCommand.execute();
 		}
 	}
+	
 	class ListChangeEvent extends ChangeEvent {}
+	
+	private void logout() {
+		logoutItem.setEnabled(false);
+		adminService.logout(new AsyncCallback<Void>(){
+			@Override
+			public void onFailure(Throwable caught) {
+				caught.printStackTrace();
+			}
+
+			@Override
+			public void onSuccess(Void result) {
+				if (loggedUser !=  null && loggedUser.getOrganization() != null && loggedUser.getOrganization().isShibbolethEnabled()){
+					Window.Location.replace("https://" + loggedUser.getOrganization().getReviewerDomain() + "/Shibboleth.sso/Logout");
+				} else {
+					Window.Location.replace(GWT.getHostPageBaseURL()+"Admin.html");
+				}
+			}
+		});
+	}
+	
+	private void getGoogleAuthorizationUrl() {
+		
+		adminService.getGoogleAuthorizationUrl(GWT.getHostPageBaseURL()+"Admin.html", new AsyncCallback<String>(){
+			@Override
+			public void onFailure(Throwable caught) {
+				if (caught instanceof MessageException){
+					Window.alert(((MessageException) caught).getMessage());
+				} 
+			}
+
+			@Override
+			public void onSuccess(String sUrl) {
+				String htmlForm = "<br>You have currently not given permissions to access your data. Please authenticate this app with the Google OAuth provider." + 
+						   "<form action="+  sUrl + " method='POST'><input type='submit' value='Ok, authorize this app with my id'/></form>";
+				HTML htmlGoogleAutorization = new HTML (htmlForm);
+				headerPanel.add(htmlGoogleAutorization);
+			}
+		});		
+	}
+	
+	private void getUserToken(String code) {
+		adminService.getUserToken(code, GWT.getHostPageBaseURL()+"Admin.html", new AsyncCallback<User>(){
+			@Override
+			public void onFailure(Throwable caught) {		
+			}
+
+			@Override
+			public void onSuccess(User user) {
+				loggedUser = user;
+			}
+		});
+	}
+	
 }
  
  

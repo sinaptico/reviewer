@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.admin.glosser;
 
 import java.util.HashMap;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -305,17 +306,18 @@ public class ShowSitesComposite extends Composite {
 		horzPanel.add(harvesterUsername);
 		flexTable.setWidget(row, 9, horzPanel);
 
-		horzPanel = new HorizontalPanel();
-		horzPanel.setBorderWidth(1);
-		MyLabel harvesterPassword = new MyLabel(siteForm.getHarvesterPassword());
-		harvesterPassword.setFieldName("harvesterPassword");
-		harvesterPassword.setRow(row);
-		harvesterPassword.setColumn(10);
-		harvesterPassword.addClickHandler(new MyClickHandler());
-		harvesterPassword.setWidth("100px");
-		harvesterPassword.setHeight(siteForm.getHarvesterPassword() == null || "".equals(siteForm.getHarvesterPassword()) ? "20px" : "");
-		horzPanel.add(harvesterPassword);
-		flexTable.setWidget(row, 10, horzPanel);
+//		horzPanel = new HorizontalPanel();
+//		horzPanel.setBorderWidth(1);
+//		MyLabel harvesterPassword = new MyLabel(siteForm.getHarvesterPassword());
+//		harvesterPassword.setFieldName("harvesterPassword");
+//		harvesterPassword.setRow(row);
+//		harvesterPassword.setColumn(10);
+//		harvesterPassword.addClickHandler(new MyClickHandler());
+//		harvesterPassword.setWidth("100px");
+//		harvesterPassword.setHeight(siteForm.getHarvesterPassword() == null || "".equals(siteForm.getHarvesterPassword()) ? "20px" : "");
+//		horzPanel.add(harvesterPassword);
+//		flexTable.setWidget(row, 10, horzPanel);
+
 
 	}
 
@@ -537,7 +539,7 @@ public class ShowSitesComposite extends Composite {
 		flexTable.setHTML(0, 7, "");
 		flexTable.setHTML(0, 8, "<b>Harvester Type</b>");
 		flexTable.setHTML(0, 9, "<b>Harvester Username</b>");
-		flexTable.setHTML(0, 10, "<b>Harvester Password</b>");
+//		flexTable.setHTML(0, 10, "<b>Harvester Password</b>");
 
 		mainPanel.add(flexTable);
 

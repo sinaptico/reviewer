@@ -219,7 +219,7 @@ a span {
 }
 
 .gridOrganizationNameColumn{
-	width: 30px;
+	width: 70px;
 } 
 
 .gridOrganizationPropertyValueColumn{
@@ -236,4 +236,7 @@ gridOrganizationPropertyLargButtonColumn{
      top:50%;
      left:50%;
      margin:-150px 0 0 -200px;
+}
+.userText{
+	text-align: right;
 }

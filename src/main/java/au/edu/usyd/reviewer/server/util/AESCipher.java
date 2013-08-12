@@ -75,7 +75,7 @@ public class AESCipher {
 			encryptedValue = DatatypeConverter.printBase64Binary(encrypted);
             
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_ENCRYPT);
 		}
 		return encryptedValue;
@@ -105,7 +105,7 @@ public class AESCipher {
 			decryptedValue = new String(original,chartset);
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_DECRYPT);
 		} 
 		

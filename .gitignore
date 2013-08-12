@@ -29,3 +29,6 @@ bin/
 lucene/*
 logos/*
 organizations/
+.classpath
+.settings/org.eclipse.jdt.core.prefs
+

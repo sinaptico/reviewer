@@ -16,11 +16,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -62,7 +60,10 @@ public class OrganizationForm extends Composite {
 		Grid grid = new Grid(2, 2);
 		grid.setWidget(0, 0, new Label("Name:"));
 		grid.setWidget(0,1, organizationName);
-		
+		organizationName.setWidth("300px");
+		grid.getColumnFormatter().setWidth(0, "20%");
+	    grid.getColumnFormatter().setWidth(1, "100%");
+	    
 		// Set save button click handler
 		final SubmitButton saveButton = new SubmitButton("Save", "Saving...", "Saved");
 		setSaveButtonClickHandler(saveButton);

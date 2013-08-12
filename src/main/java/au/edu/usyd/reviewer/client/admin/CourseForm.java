@@ -3,12 +3,15 @@ package au.edu.usyd.reviewer.client.admin;
 import java.util.Date;
 
 import au.edu.usyd.reviewer.client.core.Course;
+import au.edu.usyd.reviewer.client.core.User;
 
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.gwt.DocEntryWidget;
 import au.edu.usyd.reviewer.client.core.gwt.WidgetFactory;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
@@ -68,7 +71,6 @@ public class CourseForm extends Composite {
 	
 	/** The course. */
 	private Course course = new Course();
-
 	/**
 	 * Instantiates a new course form.
 	 */
@@ -82,8 +84,7 @@ public class CourseForm extends Composite {
 			courseSemester.setSelectedIndex(0);
 		} else {
 			courseSemester.setSelectedIndex(1);
-		}
-		
+		}	
 	}
 
 	/**
@@ -91,13 +92,18 @@ public class CourseForm extends Composite {
 	 *
 	 * @return the course
 	 */
-	public Course getCourse() {
+	public Course getCourse() throws MessageException{
 		course.setName(courseName.getText());
 		course.setSemester(Integer.valueOf(courseSemester.getItemText(courseSemester.getSelectedIndex())));
 		course.setYear((int) courseYear.getSpinner().getValue());
 		course.setTutorials(StringUtil.csvToStrings(courseTutorials.getText()));
-		course.setLecturers(StringUtil.csvToUsers(courseLecturers.getText()));
-		course.setTutors(StringUtil.csvToUsers(courseTutors.getText()));
+		try{
+			course.setLecturers(StringUtil.csvToUsers(courseLecturers.getText()));
+			course.setTutors(StringUtil.csvToUsers(courseTutors.getText()));
+		} catch(MessageException me){
+			Window.alert(me.getMessage());
+			throw me;
+		}
 //		course.setSupervisors(StringUtil.csvToUsers(courseSupervisors.getText()));
 //		course.setAutomaticReviewers(StringUtil.csvToUsers(courseAutomaticReviewers.getText()));
 		return course;
@@ -142,7 +148,7 @@ public class CourseForm extends Composite {
 	 *
 	 * @param course the new course
 	 */
-	public void setCourse(Course course) {
+	public void setCourse(Course course, User loggedUser) {
 		this.course = course;
 		courseName.setText(course.getName());
 		courseName.setEnabled(false);
@@ -156,7 +162,7 @@ public class CourseForm extends Composite {
 
 		// students panel
 		HorizontalPanel studentsPanel = new HorizontalPanel();
-		studentsPanel.add(new DocEntryWidget(course.getSpreadsheetId(), "Students",course.getDomainName(), false));
+		studentsPanel.add(new DocEntryWidget(course.getSpreadsheetId(), "Students",course.getDomainName(), false, loggedUser));
 		int students = 0;
 		for (UserGroup studentGroup : course.getStudentGroups()) {
 			students += studentGroup.getUsers().size();

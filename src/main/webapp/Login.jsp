@@ -9,7 +9,7 @@ if(error==null || error=="null"){
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <link type="text/css" rel="stylesheet" href="Reviewer.css">
-    <title>iWrite - Login</title>    
+    <title>Reviewer - Login</title>    
  </head>
  <body>
   		<div class="loginDiv">
@@ -18,7 +18,7 @@ if(error==null || error=="null"){
 			  		<tr>
 			  			<td colspan="2">
 			  				<center>
-			  					<h2>iWrite - Login</h2>
+			  					<h2>Reviewer - Login</h2>
 			  				</center>
 			  			</td>
 			  		</tr>

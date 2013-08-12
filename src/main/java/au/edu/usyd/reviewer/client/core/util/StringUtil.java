@@ -1,10 +1,14 @@
 package au.edu.usyd.reviewer.client.core.util;
 
 import java.util.Collection;
+
+
 import java.util.HashSet;
 import java.util.Set;
 
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
+
 
 /**
  * <p>Class with String management methods; Includes:</p>
@@ -35,7 +39,7 @@ public class StringUtil {
 	 * @param csv the csv
 	 * @return the sets the
 	 */
-	public static Set<User> csvToUsers(String csv) {
+	public static Set<User> csvToUsers(String csv) throws MessageException {
 		Set<User> users = new HashSet<User>();
 		for (String row : csv.split("[\\n]+")) {
 			String[] details = row.split(",");
@@ -46,6 +50,8 @@ public class StringUtil {
 				user.setLastname(details[2].trim());
 				user.setEmail(details[3].trim());
 				users.add(user);
+			} else if (details.length !=  1 || (details.length == 1 && !StringUtil.isBlank(details[0].trim()))){
+				throw new MessageException(Constants.EXCEPTION_COURSE_LECTURERS_TUTORS);
 			}
 		}
 		return users;
@@ -101,5 +107,19 @@ public class StringUtil {
 			csv += user.getUsername() + "," + user.getFirstname() + "," + user.getLastname() + "," + user.getEmail();
 		}
 		return csv;
+	}
+	
+	public static boolean stringToBool(String s) {
+		if (s!= null && s.toUpperCase().equals(Constants.YES)){
+			return true;
+		} else { //if (s.equals("0"))
+		    return false;
+		}
+	}
+
+	public static boolean isValidateEmail(String email) throws MessageException {
+		boolean isValidEmail = !StringUtil.isBlank(email);
+		isValidEmail |= email.matches("[a-zA-Z0-9_.]*@[a-zA-Z]*.[a-zA-Z]*");
+        return isValidEmail;
 	}
 }
