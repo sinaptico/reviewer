@@ -34,7 +34,7 @@ public class AssignmentServiceImpl extends ReviewerServiceImpl implements Assign
 	public Collection<Course> getUserActivities(int semester, int year,  Long organizationId) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (isAdminOrSuperAdmin()){
+		if (isGuestOrAdminOrSuperAdminOrStaff()){
 			return assignmentDao.loadUserActivities(semester, year,mockedUser);
 		} else {
 			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
@@ -45,7 +45,7 @@ public class AssignmentServiceImpl extends ReviewerServiceImpl implements Assign
 	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews,  Long organizationId) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (isGuestOrAdminOrSuperAdmin()){
+		if (isGuestOrAdminOrSuperAdminOrStaff()){
 			return assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, mockedUser);
 		} else {
 			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
@@ -56,7 +56,7 @@ public class AssignmentServiceImpl extends ReviewerServiceImpl implements Assign
 	public Collection<Course> getUserWritingTasks(int semester, int year, Long organizationId ) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
-		if (isGuestOrAdminOrSuperAdmin()){
+		if (isGuestOrAdminOrSuperAdminOrStaff()){
 				return assignmentDao.loadUserWritingTasks(semester, year, mockedUser);
 		} else {
 			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
@@ -69,20 +69,24 @@ public class AssignmentServiceImpl extends ReviewerServiceImpl implements Assign
 	@Override
 	public DocEntry submitDocEntry(DocEntry docEntry) throws Exception {
 		initialize();
-		DocEntry currentDocEntry =assignmentDao.loadDocEntry(docEntry.getDocumentId());
-		if (!currentDocEntry.getLocked()) {
-			User mockedUser = getMockedUser();
-			if(currentDocEntry.getOwner() != null && currentDocEntry.getOwner().equals(this.getMockedUser()) || 
-				currentDocEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(mockedUser)) {
-				docEntry = assignmentManager.submitDocument(currentDocEntry);
+		if (isGuestOrAdminOrSuperAdminOrStaff()){
+			DocEntry currentDocEntry =assignmentDao.loadDocEntry(docEntry.getDocumentId());
+			if (!currentDocEntry.getLocked()) {
+				User mockedUser = getMockedUser();
+				if(currentDocEntry.getOwner() != null && currentDocEntry.getOwner().equals(mockedUser) || 
+					currentDocEntry.getOwnerGroup() != null && docEntry.getOwnerGroup().getUsers().contains(mockedUser)) {
+					docEntry = assignmentManager.submitDocument(currentDocEntry);
+				} else {
+					throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SUBMIT_DOCUMENT);
+				}
 			} else {
-				throw new MessageException(Constants.EXCEPTION_SESSION_EXPIRED_SUBMIT_DOCUMENT);
+				throw new MessageException(Constants.EXCEPTION_DEADLINE_ALREADY_PASSED);
+			}
+			if (docEntry != null){
+				docEntry = docEntry.clone();
 			}
 		} else {
-			throw new MessageException(Constants.EXCEPTION_DEADLINE_ALREADY_PASSED);
-		}
-		if (docEntry != null){
-			docEntry = docEntry.clone();
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 		return docEntry;
 	}
@@ -92,7 +96,7 @@ public class AssignmentServiceImpl extends ReviewerServiceImpl implements Assign
 		initialize();
 		WritingActivity writingActivity = assignmentDao.loadWritingActivityWhereDocEntry(updatedEntry);
 		Course course = assignmentDao.loadCourseWhereWritingActivity(writingActivity);
-		if (isCourseInstructor(course)) {
+		if (isCourseInstructor(course) || isStaff() || isAdminOrSuperAdmin()) {
 			// update document permissions
 			DocEntry docEntry = assignmentDao.loadDocEntry(updatedEntry.getDocumentId());
 			docEntry.setLocked(updatedEntry.getLocked());
@@ -106,46 +110,49 @@ public class AssignmentServiceImpl extends ReviewerServiceImpl implements Assign
 	@Override
 	public User getUserDetails() throws Exception {
 		initialize();
-		User mockedUser = getMockedUser();
-		if ( mockedUser != null){
-//			logger.info("Getting user details, email=" + mockedUser.getEmail());
+		User mockedUser = null;
+		if (isGuestOrAdminOrSuperAdminOrStaff()){
+			mockedUser = getMockedUser();
+			if ( mockedUser == null){
+				mockedUser = user;
+			}
 		} else {
-			mockedUser = user;
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
+
 		return mockedUser;
 	}
 
 	@Override
 	public User updateUserPassword(User user, String newPassword) throws Exception {
 		initialize();
-//		logger.info("Changing user password, email =" + user.getEmail());
-		User storedUser = userDao.load(user.getId());
-		
-		String typedPasswordDigested = RealmBase.Digest(user.getPassword(), "MD5",null);
-		
-		if (storedUser.getPassword().equalsIgnoreCase(typedPasswordDigested)){
-			storedUser.setPassword(RealmBase.Digest(newPassword, "MD5",null));
-			storedUser = userDao.save(storedUser);
-		}else{
-			throw new MessageException(Constants.EXCEPTION_WRONG_PASSWORD);
+		User storedUser = null;
+		if (isGuestOrAdminOrSuperAdminOrStaff()){
+			storedUser = userDao.load(user.getId());
+			
+			String typedPasswordDigested = RealmBase.Digest(user.getPassword(), "MD5",null);
+			
+			if (storedUser.getPassword().equalsIgnoreCase(typedPasswordDigested)){
+				storedUser.setPassword(RealmBase.Digest(newPassword, "MD5",null));
+				storedUser = userDao.save(storedUser);
+			}else{
+				throw new MessageException(Constants.EXCEPTION_WRONG_PASSWORD);
+			}
+		} else {
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
-		
 		return storedUser;
 	}
 	
+	@Override
 	public Collection<Organization> getOrganizations() throws Exception{
 		initialize();
 		Collection organizations = new ArrayList<Organization>();
-		if (isAdminOrSuperAdmin()){
+		if (isSuperAdmin()){
 			OrganizationManager organizationManager = OrganizationManager.getInstance();
 			organizations = organizationManager.getOrganizations();
 		} 
 		return organizations;
-	}
-	
-	public void logout() throws Exception{
-
-		ConnectionUtil.logout(this.getThreadLocalRequest());
 	}
 }
 	

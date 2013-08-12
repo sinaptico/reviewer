@@ -6,6 +6,7 @@ import java.util.Date;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
+import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.gwt.ReviewWidget;
 import au.edu.usyd.reviewer.client.core.util.StyleLib;

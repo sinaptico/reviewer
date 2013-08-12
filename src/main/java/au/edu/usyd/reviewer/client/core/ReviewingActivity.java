@@ -2,11 +2,13 @@ package au.edu.usyd.reviewer.client.core;
 
 import java.util.Date;
 
+
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+
 
 /**
  * <p>Class that extends {@link Activity Activity} class and it is used for Reviewing Activities management, it contains
@@ -338,7 +340,9 @@ public class ReviewingActivity extends Activity<ReviewEntry> {
 		activity.setNumTutorReviewers(this.getNumTutorReviewers());
 		activity.setRatings(this.getRatings());
 		activity.setReviewTemplateId(this.getReviewTemplateId());
-		activity.setStartDate(this.getStartDate());
+		if (this.getStartDate() != null){
+			activity.setStartDate(this.getStartDate().clone());
+		}
 		activity.setStatus(this.getStatus());
 		activity.setDeleted(this.isDeleted());
 		return activity;

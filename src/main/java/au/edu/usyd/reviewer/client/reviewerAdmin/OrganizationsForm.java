@@ -72,9 +72,9 @@ public class OrganizationsForm extends Composite {
 	public  String TITLE_PROPERTIES = "Organization Properties";  
 	public  String MESSAGE_EMPTY_SEARCH_RESULT = "No results found for your search";
 	private String STYLE_TEXT="RichTextToolbar";
-	private String MESSAGE_DELETED ="Organization deleted.";
 	private String MESSAGE_PROPERTIES_OK ="Proproperties OK, Organization activated.";
-	
+	private String MESSAGE_ALL_PROPERTIES_SAVED="All the properties were saved";
+	private String TITLE_RESET_USERS_PASSWORD = "Force users to change his password in Google";
 	private User loggedUser = null;
 	/**
 	 * Constructor
@@ -93,7 +93,10 @@ public class OrganizationsForm extends Composite {
 		
 		Grid searchGrid = new Grid(2, 2);
 		searchGrid.setWidget(0, 0, searchLabel);
+		searchText.setWidth("300px");
 		searchGrid.setWidget(0,1, searchText);
+		searchGrid.getColumnFormatter().setWidth(0, "20%");
+		searchGrid.getColumnFormatter().setWidth(1, "100%");
 		
 		// Load Button
 		loadButton = createLoadButton();
@@ -224,6 +227,7 @@ public class OrganizationsForm extends Composite {
 		
 			 // Add a text column to show the organization name. 
 			 TextInputCell nameInputCell = new TextInputCell();
+			 
 			 Column<Organization, String> nameColumn = new Column<Organization, String>(nameInputCell) {
 				 @Override
 				 public String getValue(Organization organization) {
@@ -237,16 +241,14 @@ public class OrganizationsForm extends Composite {
 					newOrganizationName = ((String)value);
 				}
 			});
+		    
+		   
 		    organizationsTable.addColumn(nameColumn, "Name");
 		    organizationsTable.addColumnStyleName(2, "gridOrganizationNameColumn");
 		    // Add column with save button to save the value of the property
 		    Column<Organization,String> saveButtonColumn = createSaveButtonColumn(nameColumn);
 		    organizationsTable.addColumn(saveButtonColumn);
-		    
-//		    // Add column to delete the organization
-//		    Column<Organization, String> deleteOrganization = deleteOrganizationColumn();
-//		    organizationsTable.addColumn(deleteOrganization);
-		    
+		    		    
 		    // Add column with edit properties button to save the value of the property
 		    Column<Organization,String> editProperpetiesColumn = createEditPropertiesColumn();
 		    organizationsTable.addColumn(editProperpetiesColumn);
@@ -255,12 +257,18 @@ public class OrganizationsForm extends Composite {
 		    // Add column with check properties button
 		    Column<Organization,String> checkPropertiesColumn = checkPropertiesColumn();
 		    organizationsTable.addColumn(checkPropertiesColumn);
-		    organizationsTable.addColumnStyleName(3, "gridOrganizationPropertyLargButtonColumn");
+		    organizationsTable.addColumnStyleName(4, "gridOrganizationPropertyLargButtonColumn");
 		    
 		    // Add column with edit users button to edit the users belong to the organization selected by the user
 		    Column<Organization, String> editUsersColumn = createEditUsersColumn();
 		    organizationsTable.addColumn(editUsersColumn);
-		    organizationsTable.addColumnStyleName(4, "gridOrganizationPropertyLargButtonColumn");
+		    organizationsTable.addColumnStyleName(5, "gridOrganizationPropertyLargButtonColumn");
+		    
+		    // Add column with a button to force all the users to change his/her password the next time that they login in Google.
+		    // Before force, the loggged user must choose the role of users
+		    Column<Organization, String> resetUsersPasswordColumn = createResetUsersPasswordColumn();
+		    organizationsTable.addColumn(resetUsersPasswordColumn);
+		    organizationsTable.addColumnStyleName(6, "gridOrganizationPropertyLargButtonColumn");
 		    
 		    // Set organizations in table
 	    	organizationsList = new ArrayList<Organization>(organizations);
@@ -304,8 +312,8 @@ public class OrganizationsForm extends Composite {
 	    saveButtonColumn.setFieldUpdater(new FieldUpdater<Organization, String>() {
 	    	@Override
 	    	public void update(int index, final Organization organization, String value) {
-	    		final String name = newOrganizationName;
-	    	    // verify if the organization name entered by the is empty
+	    		final String name = organization.getName();
+	    		// verify if the organization name entered by the is empty
 	    		if (!StringUtil.isBlank(name)){
 	    			organization.setName(name);
 	    			saveOrganization(organization);
@@ -343,9 +351,9 @@ public class OrganizationsForm extends Composite {
 					@Override
 					public void onClick(ClickEvent event) {
 						dialogBox.hide();
+						loadButton.click();
 					}
 				}));
-				
 			    VerticalPanel panel = new VerticalPanel();
 				panel.add(editPropertiesForm);
 				panel.add(buttonsPanel);
@@ -382,6 +390,7 @@ public class OrganizationsForm extends Composite {
 			public void onSuccess(final Organization organization) {
 				Window.setTitle(TAB_TITLE_ORGANIZATION);
 				Window.alert(MESSAGE_SAVED);
+				loadButton.click();
 			}
 		});
 		
@@ -428,6 +437,41 @@ public class OrganizationsForm extends Composite {
 	    return editUsersButtonColumn;
 	}
 	
+	private Column<Organization,String> createResetUsersPasswordColumn(){
+		ButtonCell resetUsersPasswordButton = new ButtonCell();
+	    Column<Organization,String> resetUsersPasswordButtonColumn = new Column<Organization,String>(resetUsersPasswordButton) {
+	    	public String getValue(Organization user) {
+	    		return "Reset Users Password"; //button name
+	    	}
+	    };
+	    	
+	    resetUsersPasswordButtonColumn.setFieldUpdater(new FieldUpdater<Organization, String>() {
+	    	@Override
+	    	public void update(int index, Organization organization, String value) {
+	    	    // The user clicked on the button so show the reset password form
+	    		final ResetUsersPasswordForm resetUsersPasswordForm = new ResetUsersPasswordForm(reviewerAdminService,organization);
+			    final DialogBox dialogBox = new DialogBox();
+			    HorizontalPanel buttonsPanel = new HorizontalPanel();
+				buttonsPanel.setWidth("100%");
+				buttonsPanel.add(new Button("Close", new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						dialogBox.hide();
+					}
+				}));
+				
+			    VerticalPanel panel = new VerticalPanel();
+				panel.add(resetUsersPasswordForm);
+				panel.add(buttonsPanel);
+				dialogBox.setHTML(TITLE_RESET_USERS_PASSWORD);
+				dialogBox.setWidget(panel);
+				dialogBox.center();
+				dialogBox.show();
+	    	}
+	    });
+	    return resetUsersPasswordButtonColumn;
+	}
+
 	
 //	private Column<Organization, String> deleteOrganizationColumn(){
 //		ButtonCell deleteOrganizationButton = new ButtonCell();

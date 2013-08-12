@@ -44,11 +44,9 @@ public class EditPropertiesForm extends Composite {
     
 	
 	/** Constants **/
-	private String TAB_TITLE_PROPERTIES="Properties";
 	private String EXCEPTION_ERROR_MESSSAGE="Failed to load organization properties: ";
 	private String MESSAGE_NAME_EMPTY="Please, enter a property value. This field is mandatory";
 	private String TAB_TITLE_PROPERTY ="Property";
-	private String MESSAGE_PROPERTIES_NOT_EXIST="There is not properties for this organization";
 	private String MESSAGE_SAVED = "Property saved.";
 	
 	/**
@@ -68,8 +66,8 @@ public class EditPropertiesForm extends Composite {
 	@Override
 	public void onLoad() {
   
-	    // Display 10 rows in one page
-	    propertiesTable.setPageSize(10);
+	    // Display 15 rows in one page
+	    propertiesTable.setPageSize(20);
 	    
 	    
 	    // Add a text column to show the name. 
@@ -79,7 +77,7 @@ public class EditPropertiesForm extends Composite {
 		        return property.getProperty().getName();
 		   }
 	    };
-	    
+	   
 	    propertiesTable.addColumn(nameColumn, "Name");
 	    
 	    // Add column with an input cell to edit the value of the property
@@ -150,45 +148,47 @@ public class EditPropertiesForm extends Composite {
 	    		// The user clicked on the button 
 	    		// there is not an organization with the same name
 	    		final String oldValue = property.getValue();
-	    		
-	    		if (!StringUtil.isBlank(newPropertyValue) ){
-	    			property.setValue(newPropertyValue);
+	    		if (newPropertyValue == null){
+	    			newPropertyValue = oldValue;
+	    		}
+	    		property.setValue(newPropertyValue);
+	    		if (!StringUtil.isBlank(property.getValue()) ){
 	    			reviewerAdminService.saveOrganizationProperty(property, new AsyncCallback<OrganizationProperty>(){
-						@Override
-						public void onFailure(Throwable caught) {
-							String message = EXCEPTION_ERROR_MESSSAGE;
-							if (caught instanceof MessageException){
-								message = caught.getMessage();
-							} else {
-								message += caught.getMessage();
-							}
-							String name = "";
-							if (property != null && property.getProperty() != null){
-								name = " " + property.getProperty().getName();
-							}
-							Window.setTitle(TAB_TITLE_PROPERTY + name);
-							Window.alert(message);
-							property.setValue(oldValue);
-						}
-		
-						@Override
-						public void onSuccess(OrganizationProperty property) {
-							String name = "";
-							if (property != null && property.getProperty() != null){
-								name = " " + property.getProperty().getName();
-							}
-							Window.setTitle(TAB_TITLE_PROPERTY + name);
-							Window.alert(MESSAGE_SAVED);
-						}
-					});
+	    				@Override
+	   					public void onFailure(Throwable caught) {
+	   						String message = EXCEPTION_ERROR_MESSSAGE;
+	   						if (caught instanceof MessageException){
+	    						message = caught.getMessage();
+	    					} else {
+	    						message += caught.getMessage();
+	    					}
+	   						String name = "";
+	    					if (property != null && property.getProperty() != null){
+	    						name = " " + property.getProperty().getName();
+	    					}
+	    					Window.setTitle(TAB_TITLE_PROPERTY + name);
+	    					Window.alert(message);
+	    					property.setValue(oldValue);
+	    				}
+	
+    					@Override
+	    				public void onSuccess(OrganizationProperty property) {
+	    					String name = "";
+	    					if (property != null && property.getProperty() != null){
+	    						name = " " + property.getProperty().getName();
+	   						}
+	   						Window.setTitle(TAB_TITLE_PROPERTY + name);
+	   						Window.alert(MESSAGE_SAVED);
+	    				}
+	    			});
 	    		} else {
 	    			String name = "";
-	    			if (property != null && property.getProperty() != null){
-						name = " " + property.getProperty().getName();
-					}
-	    			Window.setTitle(TAB_TITLE_PROPERTY + name);
-	    			Window.alert(MESSAGE_NAME_EMPTY);
-	    		}
+	   				if (property != null && property.getProperty() != null){
+	   					name = " " + property.getProperty().getName();
+	   				}	
+	   				Window.setTitle(TAB_TITLE_PROPERTY + name);
+	   				Window.alert(MESSAGE_NAME_EMPTY);
+	   			}
 	    	}
 	    });
 	    return saveButtonColumn;

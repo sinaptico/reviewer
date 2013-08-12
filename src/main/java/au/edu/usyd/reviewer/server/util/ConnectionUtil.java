@@ -2,8 +2,12 @@ package au.edu.usyd.reviewer.server.util;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
@@ -18,12 +22,26 @@ public class ConnectionUtil {
 	
 	private static final Logger logger = LoggerFactory.getLogger("ConnectionUtil");
 	
+//	public static void logout(HttpServletRequest request, HttpServletResponse response, String domain) throws IOException {
 	public static void logout(HttpServletRequest request) throws IOException {
 		try{
-			HttpSession	 session = request.getSession();
-			if (session != null)
-			{
-				session.invalidate();
+			if ( request != null){
+				HttpSession	 session = request.getSession();
+				if (session != null)
+				{
+					session.invalidate();
+//					for(Cookie cookie :request.getCookies() ){
+//						
+//						if (cookie != null && cookie.getDomain() != null && domain != null &&
+//						    cookie.getDomain().equalsIgnoreCase(domain)){ 
+//						      cookie.setValue(null);
+//						    	cookie.setMaxAge(0);
+//						    	cookie.setValue("");
+//						    	response.addCookie(cookie);   	
+//						}
+//					}
+					
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -31,27 +49,4 @@ public class ConnectionUtil {
 		}
 	}
 	
-	public static User getLoggedUser(HttpServletRequest request) {
-		User user = null;
-		try {
-			Object obj = request.getSession().getAttribute("user");
-			
-			if (obj != null)
-			{
-				user = (User) obj;
-			}
-			Principal principal = request.getUserPrincipal();
-			UserDao userDao = UserDao.getInstance();
-			if  (user == null && principal != null && principal.getName() != null){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-			} else if (principal != null && principal.getName() != null && !principal.getName().equals(user.getEmail())){
-				user = userDao.getUserByEmail(principal.getName());
-				request.getSession().setAttribute("user", user);
-			}
-		} catch (MessageException e) {
-			e.printStackTrace();
-		}
-		return user;
-	}
 }

@@ -636,7 +636,35 @@ public class CourseDao extends ObjectDao{
 				session.getTransaction().rollback();
 			}
 			throw new MessageException(Constants.EXCEPTION_GET_DELETED_COURSES);
-		}
-		
+		}		
 	}
+	/**
+	 * Return the courses with semester and year equals to the ones received as parameters and where the user staff is lecturer or tutor
+	 * @param semester
+	 * @param year
+	 * @param organization
+	 * @param staff
+	 * @return
+	 * @throws MessageException
+	 */
+	public List<Course> loadStaffCourses(Integer semester, Integer year, Organization organization, User staff) throws MessageException{
+		Session session = null;
+		List<Course> resultList = new ArrayList<Course>();
+		try{
+			List<Course> courses = loadCourses(semester, year, organization);
+			for(Course course : courses){
+				if (course != null && (course.getLecturers().contains(staff) || course.getTutors().contains(staff))){
+					resultList.add(course.clone());
+				}
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+		}
+		return resultList;
+	}
+
 }

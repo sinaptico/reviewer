@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.core.gwt;
 
 import au.edu.usyd.reviewer.client.core.DocEntry;
+import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.UrlLib;
 
 import com.google.gwt.user.client.ui.Anchor;
@@ -29,14 +30,17 @@ public class DocEntryWidget extends Composite {
 	private Boolean locked;
 	//
 	
+	private User loggedUser;
+	
 	/**
 	 * Instantiates a new doc entry widget.
 	 *
 	 * @param docEntry the doc entry
 	 * @param title the title
+	 * @param User loggedUser
 	 */
-	public DocEntryWidget(DocEntry docEntry, String title) {		
-		this(docEntry.getDocumentId(), title, docEntry.getDomainName(), docEntry.getLocked());
+	public DocEntryWidget(DocEntry docEntry, String title, User user) {		
+		this(docEntry.getDocumentId(), title, docEntry.getDomainName(), docEntry.getLocked(), user);
 		//docEntrylocal = docEntry;
 	}
 
@@ -47,12 +51,14 @@ public class DocEntryWidget extends Composite {
 	 * @param title the title
 	 * @param domainName the domain name
 	 * @param locked the locked
+	 * @param User loggedUser
 	 */
-	public DocEntryWidget(String id, String title, String domainName, boolean locked) {
+	public DocEntryWidget(String id, String title, String domainName, boolean locked, User user) {
 		this.id = id;
 		this.title = title;
 		this.domainName = domainName;
 		this.locked = locked;		
+		this.loggedUser = user;
 		formatHTML();
 		initWidget(panel);
 	}
@@ -66,16 +72,16 @@ public class DocEntryWidget extends Composite {
 		link.setTitle("Open in Google Docs");
 		link.setTarget("_blank");
 		if (id.startsWith("document:")) {
-			link.setHref(UrlLib.documentUrl(id, domainName));
+			link.setHref(UrlLib.documentUrl(id, domainName, loggedUser));
 			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("presentation:")) {
-			link.setHref(UrlLib.presentationUrl(id, domainName));
+			link.setHref(UrlLib.presentationUrl(id, domainName, loggedUser));
 			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_pres.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("spreadsheet:")) {
-			link.setHref(UrlLib.spreadsheetUrl(id, domainName));
+			link.setHref(UrlLib.spreadsheetUrl(id, domainName, loggedUser));
 			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_spread.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("folder:")) {
-			link.setHref(UrlLib.folderUrl(id, domainName));
+			link.setHref(UrlLib.folderUrl(id, domainName, loggedUser));
 			if (title.startsWith("* See ")){
 				link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 			}else{

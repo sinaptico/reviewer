@@ -14,6 +14,7 @@ import au.edu.usyd.reviewer.client.core.Deadline;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.ReviewEntry;
 import au.edu.usyd.reviewer.client.core.ReviewingActivity;
+import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.UserGroup;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.gwt.DocEntryWidget;
@@ -71,7 +72,7 @@ public class InstructorPanel extends Composite {
 	 *
 	 * @param course the course
 	 */
-	private void addDocEntriesToTable(final Course course) {
+	private void addDocEntriesToTable(final Course course, final User user) {
 
 		// course folder tree
 		Anchor editCourseLink = new Anchor();
@@ -81,10 +82,10 @@ public class InstructorPanel extends Composite {
 		editCourseLink.setTitle("Edit Course");
 		HorizontalPanel coursePanel = new HorizontalPanel();
 		coursePanel.add(editCourseLink);
-		coursePanel.add(new DocEntryWidget(course.getFolderId(), course.getName(),course.getDomainName(), false));
+		coursePanel.add(new DocEntryWidget(course.getFolderId(), course.getName(),course.getDomainName(), false, user));
 		TreeItem courseItem = new TreeItem(coursePanel);
-		courseItem.addItem(new DocEntryWidget(course.getSpreadsheetId(), "Students", course.getDomainName(), false));
-		courseItem.addItem(new DocEntryWidget(course.getTemplatesFolderId(), "Templates", course.getDomainName(), false));
+		courseItem.addItem(new DocEntryWidget(course.getSpreadsheetId(), "Students", course.getDomainName(), false, user ));
+		courseItem.addItem(new DocEntryWidget(course.getTemplatesFolderId(), "Templates", course.getDomainName(), false, user));
 		Tree courseTree = new Tree();
 		courseTree.addItem(courseItem);
 
@@ -98,14 +99,14 @@ public class InstructorPanel extends Composite {
 		for (final WritingActivity writingActivity : course.getWritingActivities()) {
 			// activity folder tree
 			String activityName = writingActivity.getName() + (!writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) ? " (" + writingActivity.getTutorial() + ")" : "");
-			DocEntryWidget activityLink = new DocEntryWidget(writingActivity.getFolderId(), activityName, course.getDomainName(), false);
+			DocEntryWidget activityLink = new DocEntryWidget(writingActivity.getFolderId(), activityName, course.getDomainName(), false, user);
 			TreeItem activityItem = new TreeItem(activityLink);
 			List<DocEntry> sortedDocEntries = new ArrayList<DocEntry>(writingActivity.getEntries());
 			Collections.sort(sortedDocEntries, new EntryTitleComparator());
 			if (sortedDocEntries.size() < 31) {				
 				for (final DocEntry docEntry : sortedDocEntries) {
 					final SimplePanel documentLink = new SimplePanel();
-					documentLink.setWidget(new DocEntryWidget(docEntry, (docEntry.getOwner() != null ? docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() : "Group " + docEntry.getOwnerGroup().getName())));
+					documentLink.setWidget(new DocEntryWidget(docEntry, (docEntry.getOwner() != null ? docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() : "Group " + docEntry.getOwnerGroup().getName()), user));
 					Image editDocumentImage = new Image("images/icon-edit.gif");
 					editDocumentImage.setTitle("Edit Permissions");
 					editDocumentImage.addClickHandler(new ClickHandler() {
@@ -113,7 +114,7 @@ public class InstructorPanel extends Composite {
 						public void onClick(ClickEvent event) {
 							final DialogBox dialogBox = new DialogBox();
 							final DocEntryForm docEntryForm = new DocEntryForm();
-							docEntryForm.setDocEntry(docEntry);
+							docEntryForm.setDocEntry(docEntry, user);
 							final SubmitButton updateButton = new SubmitButton("Update", "Updating...", "Updated");
 							updateButton.addClickHandler(new ClickHandler() {
 								@Override
@@ -129,7 +130,7 @@ public class InstructorPanel extends Composite {
 	
 											@Override
 											public void onSuccess(DocEntry docEntry) {
-												documentLink.setWidget(new DocEntryWidget(docEntry, (docEntry.getOwner() != null ? docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() : "Group " + docEntry.getOwnerGroup().getName())));
+												documentLink.setWidget(new DocEntryWidget(docEntry, (docEntry.getOwner() != null ? docEntry.getOwner().getLastname() + ", " + docEntry.getOwner().getFirstname() : "Group " + docEntry.getOwnerGroup().getName()), user));
 												updateButton.updateStateSubmit();
 												dialogBox.hide();
 											}
@@ -163,7 +164,7 @@ public class InstructorPanel extends Composite {
 					activityItem.addItem(documentLinks);
 				}
 			}else{
-				DocEntryWidget groupActivityLink = new DocEntryWidget(writingActivity.getFolderId(), "* See "+activityName+" in Google Docs", course.getDomainName(), false);
+				DocEntryWidget groupActivityLink = new DocEntryWidget(writingActivity.getFolderId(), "* See "+activityName+" in Google Docs", course.getDomainName(), false, user);
 				activityItem.addItem(groupActivityLink);
 			}
 			Tree editLinks = new Tree();
@@ -251,7 +252,7 @@ public class InstructorPanel extends Composite {
 	 *
 	 * @param courses the new table entries
 	 */
-	public void setTableEntries(Collection<Course> courses) {
+	public void setTableEntries(Collection<Course> courses, User user) {
 		if (courses.size() > 0){
 			activityFlexTable.clear();
 			activityFlexTable.removeAllRows();
@@ -262,7 +263,7 @@ public class InstructorPanel extends Composite {
 			activityFlexTable.getRowFormatter().setStyleName(0, "documentsTableHeader");
 
 			for (Course course : courses) {
-				addDocEntriesToTable(course);
+				addDocEntriesToTable(course, user);
 			}
 		}else{
 			activityFlexTable.clear();

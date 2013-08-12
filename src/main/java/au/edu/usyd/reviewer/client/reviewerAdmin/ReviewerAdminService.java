@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.reviewerAdmin;
 
 import java.util.Collection;
+import java.util.List;
 
 
 import au.edu.usyd.reviewer.client.core.Organization;
@@ -38,4 +39,6 @@ public interface ReviewerAdminService extends RemoteService {
 	public Organization checkOrganizationProperties(Organization organization) throws Exception;
 	
 	public void logout() throws Exception;
+	
+	public void forceUsersChangePassword(Organization organization,List<String> roles) throws Exception;
 }

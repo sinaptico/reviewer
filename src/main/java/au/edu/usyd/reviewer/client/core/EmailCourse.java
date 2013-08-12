@@ -12,7 +12,7 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 /**
- * <p>Class used for email management of the course</p> 
+ * <p>Class used to admin the templates of the emails of a course</p> 
  */
 @Entity
 public class EmailCourse extends Email implements Serializable {

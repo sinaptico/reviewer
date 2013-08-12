@@ -167,4 +167,18 @@ interface AdminServiceAsync {
 	
 	
 	public void logout(AsyncCallback<Void> callback);
+	
+	
+	/**
+	 * Share a review template with the user with the email received as parameter
+	 */
+	public void shareReviewTemplateWith(ReviewTemplate reviewTemplate, String email, AsyncCallback<ReviewTemplate> asyncCallback);
+	
+	/**
+	 * Remove a user from the list of users that share the review template
+	 */	public void noShareReviewTemplateWith(ReviewTemplate reviewTemplate, String email, AsyncCallback<ReviewTemplate> asyncCallback);
+
+	 public void getGoogleAuthorizationUrl(String currentUrl, AsyncCallback<String> asyncCallback);
+	 public void getUserToken(String code,String currentUrl, AsyncCallback<User> asyncCallback);
+	 
 }

@@ -75,14 +75,14 @@ public class DocEntryForm extends Composite {
 	 *
 	 * @param docEntry the new doc entry
 	 */
-	public void setDocEntry(final DocEntry docEntry) {
+	public void setDocEntry(final DocEntry docEntry, final User loggedUser) {
 		this.docEntry = docEntry;
-		document.setWidget(new DocEntryWidget(docEntry.getDocumentId(), docEntry.getTitle(), docEntry.getDomainName(), docEntry.getLocked()));
+		document.setWidget(new DocEntryWidget(docEntry.getDocumentId(), docEntry.getTitle(), docEntry.getDomainName(), docEntry.getLocked(),loggedUser));
 		locked.setValue(docEntry.getLocked());
 		locked.addValueChangeHandler(new ValueChangeHandler<Boolean>(){
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				document.setWidget(new DocEntryWidget(docEntry.getDocumentId(), docEntry.getTitle(), docEntry.getDomainName(), locked.getValue()));
+				document.setWidget(new DocEntryWidget(docEntry.getDocumentId(), docEntry.getTitle(), docEntry.getDomainName(), locked.getValue(),loggedUser));
 			}});
 		
 		String users = new String();

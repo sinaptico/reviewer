@@ -317,7 +317,7 @@ public class ActivityReviewForm extends Composite {
 			case ReviewingActivity.STATUS_START:
 				name.setEnabled(false);
 				startDate.setEnabled(false);
-				finishDate.setEnabled(false);
+				finishDate.setEnabled(true);
 				reviewType.setEnabled(false);
 				reviewTemplateLst.setEnabled(false);
 				allocationStrategy.setEnabled(false);
@@ -354,7 +354,7 @@ public class ActivityReviewForm extends Composite {
 		
 		startDate.clear();
 		for (int i = 0; i < deadLineNameList.size(); i++) {
-			startDate.addItem(deadLineNameList.get(i));
+			startDate.addItem(deadLineNameList.get(i)); 
 		}
 		
 		status.setSelectedIndex(reviewingActivity.getStatus());

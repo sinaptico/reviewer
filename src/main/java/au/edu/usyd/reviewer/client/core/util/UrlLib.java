@@ -1,5 +1,7 @@
 package au.edu.usyd.reviewer.client.core.util;
 
+import au.edu.usyd.reviewer.client.core.User;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -15,10 +17,13 @@ public class UrlLib {
 	 *
 	 * @param id the id
 	 * @param domain the domain
+	 * @param User user to obtain the token and id
 	 * @return the string
 	 */
-	public static String documentUrl(String id, String domain) {
-		return "http://docs.google.com/a/" + domain + "/document/edit?id=" + id.replace("document:", "");
+	public static String documentUrl(String id, String domain, User user) {
+		String url = "http://docs.google.com/a/" + domain + "/document/edit?id=" + id.replace("document:", "");
+		url = addGoogleParameters(url, user, false);
+		return url;
 	}
 
 /**
@@ -26,10 +31,13 @@ public class UrlLib {
  *
  * @param id the id
  * @param domain the domain
+ * @param User user to obtain the token and id
  * @return the string
  */
-public static String folderUrl(String id, String domain) {
-		return "http://docs.google.com/a/" + domain + "/#folders/" + id.replace(":", ".0.");
+	public static String folderUrl(String id, String domain, User user) {
+		String url = "http://docs.google.com/a/" + domain + "/#folders/" + id.replace(":", ".0.");
+		url = addGoogleParameters(url, user, true);
+		return url;
 	}
 
 	/**
@@ -41,8 +49,6 @@ public static String folderUrl(String id, String domain) {
 	 */
 	//public static String glosserUrl(Long siteId, String docId) {
     public static void glosserUrl(Anchor glosserLink, Long siteId, String docId){
-//		return "http://129.78.13.24:8080/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
-    	//return "http://"+getGlosserHost()+":"+getGlosserHost()+"/glosser/siteauth.htm?siteId=" + siteId + "&docId=" + docId;
     	getGlosserUrl(glosserLink, siteId, docId);
 	}
 
@@ -74,10 +80,13 @@ public static String folderUrl(String id, String domain) {
 	 *
 	 * @param id the id
 	 * @param domain the domain
+	 * @param User user to obtain the token and id
 	 * @return the string
 	 */
-	public static String presentationUrl(String id, String domain) {
-		return "http://docs.google.com/a/" + domain + "/presentation/edit?id=" + id.replace("presentation:", "");
+	public static String presentationUrl(String id, String domain, User user) {
+		String url = "http://docs.google.com/a/" + domain + "/presentation/edit?id=" + id.replace("presentation:", "");
+		url = addGoogleParameters(url, user, false);
+		return url;
 	}
 
 	/**
@@ -85,10 +94,13 @@ public static String folderUrl(String id, String domain) {
 	 *
 	 * @param id the id
 	 * @param domain the domain
+	 * @param User user to obtain the token and id
 	 * @return the string
 	 */
-	public static String spreadsheetUrl(String id, String domain) {			
-		return "http://spreadsheets.google.com/a/" + domain + "/ccc?key=" + id.replace("spreadsheet:", "");
+	public static String spreadsheetUrl(String id, String domain, User user) {			
+		String url = "http://spreadsheets.google.com/a/" + domain + "/ccc?key=" + id.replace("spreadsheet:", "");
+		url = addGoogleParameters(url, user, false);
+		return url;
 	}
 
 	/**
@@ -125,5 +137,28 @@ public static String folderUrl(String id, String domain) {
 				glosserLink.setHref(result);
 			}
 		});
-	}		
+	}
+    
+    /**
+     * This method add the token and user id parameter to access Google with Rest without login
+     * @param url url to add the parameters
+     * @param token token to add
+     * @param userId user id to add
+     * @return url with Google parameters
+     */
+    private static String addGoogleParameters(String url, User user, boolean isFolder){
+    	String token = user.getGoogleToken();
+    	Long userId = user.getId();
+    	String connector = "&";
+    	if (isFolder){
+    		connector = "?";
+    	}
+    	if (!StringUtil.isBlank(token)){
+			url += connector + "access_token=" + token;
+		}
+		if (userId > 0){
+			url += connector + "aquotaUser=" + userId;
+		}
+		return url;
+    }
 }

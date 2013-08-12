@@ -3,6 +3,6 @@
 	<inherits name='com.google.gwt.user.User' />  
 	<inherits name='com.google.gwt.user.theme.standard.Standard'/>
 	<inherits name='com.google.gwt.libideas.validation.Validation'/>
-	<inherits name='com.google.gwt.libideas.LibIdeas'/>	
+	<inherits name='com.google.gwt.libideas.LibIdeas'/>
 	<source path="client/core"/>
 </module>

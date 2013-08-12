@@ -6,8 +6,6 @@ import java.io.Serializable;
 
 import java.util.HashSet;
 import java.util.Set;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -72,6 +70,8 @@ public class User implements Serializable {
 	private Organization organization;
 
 	private String username;
+	private String googleToken;
+	private String googleRefreshToken;
 	
 	public User(){
 		
@@ -123,10 +123,6 @@ public class User implements Serializable {
 	public String getUsername() {
 		String usernameResult = null;
 		if ( username == null && this.email != null){
-//			String  expression="^[_a-z0-9-]+(\\.[_a-z0-9-]+)*"; 
-//			Pattern pattern = Pattern.compile(expression,Pattern.CASE_INSENSITIVE); 
-//			Matcher matcher = pattern.matcher(email);
-//			username = matcher.group(0);
 			String email = getEmail();
 			int i = email.indexOf("@");
 			if ( i > 0){
@@ -266,7 +262,6 @@ public class User implements Serializable {
 
 	public User clone(){
 		User user = new User();
-		
 		user.setId(this.getId());
 		user.setEmail(this.getEmail());
 		user.setFirstname(this.getFirstname());
@@ -284,6 +279,9 @@ public class User implements Serializable {
 		}
 		user.setRole_name(roles);
 		user.setWasmuser(this.getWasmuser());
+		user.setUsername(this.getUsername());
+		user.setGoogleRefreshToken(this.getGoogleRefreshToken());
+		user.setGoogleToken(this.getGoogleToken());
 		return user;
 	}
 		
@@ -311,14 +309,73 @@ public class User implements Serializable {
 		return this.getRole_name().contains(Constants.ROLE_GUEST);
 	}
 	
+	public boolean isStaff(){
+		return this.getRole_name().contains(Constants.ROLE_STAFF);
+	}
+	
+	
+	
 	public String getDomain(){
+		String domain = null;
 		String email = getEmail();
-		int i = email.indexOf("@");
-		String domain = email.substring(i+1,email.length());
+		if (email !=  null){
+			int i = email.indexOf("@");
+			domain = email.substring(i+1,email.length());
+			if (domain != null){
+				domain = domain.toLowerCase();
+			}
+		}
 		return domain;
 	}
 	
 	public void setUsername(String username) {
 		this.username = username;
 	}
+	
+	/**
+	 * If the Google Domain of the organization is the only domain into the domains emails table of the Organization, then 
+	 * the format of the returned emails should be  username@googleDomain otherwise username.emailDomain@googleDomain 
+	 *  
+	 * @return email to access to Google
+	 */
+	public String getGoogleAppsEmail(){
+		String googleEmail = null;
+		if (organization.isGoogleDomianTheOnlyDomainInEmailDomains()) {
+			googleEmail = this.getUsername() + "@" + this.getOrganization().getGoogleDomain();
+		} else {
+			googleEmail = this.getUsername() + "." + this.getDomain() + "@" + this.getOrganization().getGoogleDomain();
+		}
+		return googleEmail;
+	}
+	
+	public String getGoogleAppsEmailUsername(){
+		String usernameEmail = "";
+		String googleAppsEmail = this.getGoogleAppsEmail();
+		if ( googleAppsEmail != null){
+			int i = googleAppsEmail.indexOf("@");
+			if ( i > 0){
+				usernameEmail = googleAppsEmail.substring(0,i);
+			}
+		}
+		return usernameEmail;	
+	}
+
+	public String getGoogleToken() {
+		return googleToken;
+	}
+
+	public void setGoogleToken(String googleToken) {
+		this.googleToken = googleToken;
+	}
+
+	public String getGoogleRefreshToken() {
+		return googleRefreshToken;
+	}
+
+	public void setGoogleRefreshToken(String googleRefreshToken) {
+		this.googleRefreshToken = googleRefreshToken;
+	}
+	
+	
+	
 }
