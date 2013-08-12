@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.server.rpc;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,4 +94,9 @@ public class ReviewerAdminServiceImpl extends ReviewerServiceImpl implements Rev
 		return aUser;
 	}
 
+	public void forceUsersChangePassword(Organization organization,List<String> roles) throws Exception {
+		if (isSuperAdmin()){
+			organizationManager.forceUsersChangePassword(organization, roles);
+		}
+	}
 }

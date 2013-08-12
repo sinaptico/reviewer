@@ -173,7 +173,7 @@ public class ReviewerAdminEntryPoint implements EntryPoint {
 		
 		// By default show create organization form
 		menuTree.setSelectedItem(createOrganizationItem);
-		tabs.setPixelSize(850, 600);
+		tabs.setPixelSize(950, 600);
 		tabs.selectTab(0);
 
 		VerticalPanel contentPanel = new VerticalPanel();

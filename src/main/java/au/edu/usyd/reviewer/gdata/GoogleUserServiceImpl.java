@@ -72,6 +72,7 @@ public class GoogleUserServiceImpl {
 	        login.setUserName(username);
 	        login.setPassword(password);
 	        entry.addExtension(login);
+	        entry.getLogin().setChangePasswordAtNextLogin(true);
 	        Name name = new Name();
 	        name.setGivenName(firstname);
 	        name.setFamilyName(lastname);
@@ -157,4 +158,25 @@ public class GoogleUserServiceImpl {
     	}
     	return userEntry;
     }
+    
+    
+    /**
+    * Force user to change password.
+    *
+    * @param username the username
+    * @return the user entry
+    * @throws AppsForYourDomainException the apps for your domain exception
+    * @throws ServiceException the service exception
+    * @throws IOException Signals that an I/O exception has occurred.
+    */
+   public UserEntry forceUserToChangePassword(String username) throws AppsForYourDomainException, ServiceException, IOException {
+
+      URL retrieveUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
+      UserEntry userEntry = userService.getEntry(retrieveUrl, UserEntry.class);
+      userEntry.getLogin().setChangePasswordAtNextLogin(true);
+
+      URL updateUrl = new URL(domainUrlBase + "user/" + SERVICE_VERSION + "/" + username);
+      return userService.update(updateUrl, userEntry);
+   }
+    
 }

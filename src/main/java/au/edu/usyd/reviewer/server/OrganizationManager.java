@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.server;
 
 import java.net.MalformedURLException;
+
 import java.util.ArrayList;
 
 
@@ -26,6 +27,7 @@ import au.edu.usyd.reviewer.client.core.util.Constants;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
 import au.edu.usyd.reviewer.client.core.util.exception.MessageException;
 import au.edu.usyd.reviewer.gdata.GoogleDocsServiceImpl;
+import au.edu.usyd.reviewer.gdata.GoogleUserServiceImpl;
 import au.edu.usyd.reviewer.server.util.AESCipher;
 
 /**
@@ -547,5 +549,42 @@ public class OrganizationManager {
 			logger.error(message);
 		}
 		return users;
+	}
+	
+	public void forceUsersChangePassword(Organization organization,List<String> roles) throws MessageException{
+		try{
+			List<User> users = new ArrayList<User>(); 
+			for (String role: roles){
+				
+				if (role != null && role.equals(Constants.ROLE_ADMIN)){
+					users.addAll(userDao.getUsersByRole(organization, role));
+				} else if (role != null && role.equals(Constants.ROLE_GUEST)){
+					users.addAll(userDao.getUsersByRole(organization, role));
+				} else if (role != null && role.equals(Constants.ROLE_STAFF)){
+					users.addAll(userDao.getUsersByRole(organization, role));
+				} else if (role != null && role.equals(Constants.ROLE_SUPER_ADMIN)){
+					users.addAll(userDao.getUsersByRole(organization, role));
+				}
+			}
+			AESCipher aesCipher = AESCipher.getInstance();
+			String password = aesCipher.decrypt(organization.getGooglePassword());
+			GoogleUserServiceImpl googleUserServiceImpl = new GoogleUserServiceImpl(organization.getGoogleUsername(), password, organization.getGoogleDomain());
+			for(User user : users){
+				if (user != null){
+					try{
+						googleUserServiceImpl.forceUserToChangePassword(user.getGoogleAppsEmailUsername());
+					} catch(Exception e){
+						String username = "";
+						if ( user != null && user.getGoogleAppsEmailUsername() != null){
+							username = user.getGoogleAppsEmailUsername();
+						}
+						logger.error(Constants.EXCEPTION_FORCE_USERS_CHANGE_PASSWORD + "\n" + username);
+					}
+				}
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+			throw new MessageException(Constants.EXCEPTION_FORCE_USERS_CHANGE_PASSWORD);
+		}
 	}
 }

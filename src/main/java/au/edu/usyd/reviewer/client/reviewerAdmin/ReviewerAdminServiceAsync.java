@@ -1,6 +1,7 @@
 package au.edu.usyd.reviewer.client.reviewerAdmin;
 
 import java.util.Collection;
+import java.util.List;
 
 import au.edu.usyd.reviewer.client.core.Organization;
 import au.edu.usyd.reviewer.client.core.OrganizationProperty;
@@ -37,4 +38,6 @@ public interface ReviewerAdminServiceAsync {
 	public void checkOrganizationProperties(Organization organization,AsyncCallback<Organization> callback);
 	
 	public void logout(AsyncCallback<Void> callback);
+	
+	public void forceUsersChangePassword(Organization organization,List<String> roles, AsyncCallback<Void> callback);
 }

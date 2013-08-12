@@ -74,7 +74,7 @@ public class OrganizationsForm extends Composite {
 	private String STYLE_TEXT="RichTextToolbar";
 	private String MESSAGE_PROPERTIES_OK ="Proproperties OK, Organization activated.";
 	private String MESSAGE_ALL_PROPERTIES_SAVED="All the properties were saved";
-	
+	private String TITLE_RESET_USERS_PASSWORD = "Force users to change his password in Google";
 	private User loggedUser = null;
 	/**
 	 * Constructor
@@ -257,12 +257,18 @@ public class OrganizationsForm extends Composite {
 		    // Add column with check properties button
 		    Column<Organization,String> checkPropertiesColumn = checkPropertiesColumn();
 		    organizationsTable.addColumn(checkPropertiesColumn);
-		    organizationsTable.addColumnStyleName(3, "gridOrganizationPropertyLargButtonColumn");
+		    organizationsTable.addColumnStyleName(4, "gridOrganizationPropertyLargButtonColumn");
 		    
 		    // Add column with edit users button to edit the users belong to the organization selected by the user
 		    Column<Organization, String> editUsersColumn = createEditUsersColumn();
 		    organizationsTable.addColumn(editUsersColumn);
-		    organizationsTable.addColumnStyleName(4, "gridOrganizationPropertyLargButtonColumn");
+		    organizationsTable.addColumnStyleName(5, "gridOrganizationPropertyLargButtonColumn");
+		    
+		    // Add column with a button to force all the users to change his/her password the next time that they login in Google.
+		    // Before force, the loggged user must choose the role of users
+		    Column<Organization, String> resetUsersPasswordColumn = createResetUsersPasswordColumn();
+		    organizationsTable.addColumn(resetUsersPasswordColumn);
+		    organizationsTable.addColumnStyleName(6, "gridOrganizationPropertyLargButtonColumn");
 		    
 		    // Set organizations in table
 	    	organizationsList = new ArrayList<Organization>(organizations);
@@ -431,6 +437,41 @@ public class OrganizationsForm extends Composite {
 	    return editUsersButtonColumn;
 	}
 	
+	private Column<Organization,String> createResetUsersPasswordColumn(){
+		ButtonCell resetUsersPasswordButton = new ButtonCell();
+	    Column<Organization,String> resetUsersPasswordButtonColumn = new Column<Organization,String>(resetUsersPasswordButton) {
+	    	public String getValue(Organization user) {
+	    		return "Reset Users Password"; //button name
+	    	}
+	    };
+	    	
+	    resetUsersPasswordButtonColumn.setFieldUpdater(new FieldUpdater<Organization, String>() {
+	    	@Override
+	    	public void update(int index, Organization organization, String value) {
+	    	    // The user clicked on the button so show the reset password form
+	    		final ResetUsersPasswordForm resetUsersPasswordForm = new ResetUsersPasswordForm(reviewerAdminService,organization);
+			    final DialogBox dialogBox = new DialogBox();
+			    HorizontalPanel buttonsPanel = new HorizontalPanel();
+				buttonsPanel.setWidth("100%");
+				buttonsPanel.add(new Button("Close", new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						dialogBox.hide();
+					}
+				}));
+				
+			    VerticalPanel panel = new VerticalPanel();
+				panel.add(resetUsersPasswordForm);
+				panel.add(buttonsPanel);
+				dialogBox.setHTML(TITLE_RESET_USERS_PASSWORD);
+				dialogBox.setWidget(panel);
+				dialogBox.center();
+				dialogBox.show();
+	    	}
+	    });
+	    return resetUsersPasswordButtonColumn;
+	}
+
 	
 //	private Column<Organization, String> deleteOrganizationColumn(){
 //		ButtonCell deleteOrganizationButton = new ButtonCell();

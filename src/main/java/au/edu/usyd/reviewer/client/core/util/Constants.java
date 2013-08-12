@@ -220,6 +220,7 @@ public class Constants {
 	public static String EXCEPTION_STUDENT_LASTNAME_EMPTY="Please enter the lastname of the student.\n" +
 														"This field is mandatary";
 	public static String EXCEPTION_REVIEW_TEMPLATE_USED_BY_USER="The user can not be deleted because one of his courses is using the review template";
+	public static String EXCEPTION_FORCE_USERS_CHANGE_PASSWORD ="Failed to force the users to change their Googel passwords.";
 	
 	
 	// Roles
