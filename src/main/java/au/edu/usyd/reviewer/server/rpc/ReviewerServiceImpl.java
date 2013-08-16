@@ -103,7 +103,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 												
 				if (organization == null){
 					// ERROR we need the organization to know if shibboleth property is enabled or not
-					logger.error("organization is null");
+					logger.error("Organization is null for user " + email);
 					MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
 					me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 					throw me;

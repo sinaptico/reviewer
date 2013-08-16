@@ -300,6 +300,7 @@ public class AssignmentManager {
 							}
 						}, deadline.getFinishDate());
 					} catch(IllegalStateException ise) {
+						ise.printStackTrace();
 						timer = new Timer();
 						timer.schedule(new TimerTask() {
 							@Override
@@ -500,6 +501,7 @@ public class AssignmentManager {
 						}
 					}, deadline.getFinishDate());
 				} catch(IllegalStateException ise) {
+					ise.printStackTrace();
 					timer = new Timer();
 					timer.schedule(new TimerTask() {
 						@Override
@@ -1144,6 +1146,7 @@ public class AssignmentManager {
 				}, new Date());		
 				coursesTimers.put(course.getId(), timer);
 			} catch(IllegalStateException ise) {
+				ise.printStackTrace();
 				timer = new Timer();
 				// create task to save the students, process activities for new users and send email notification to admin users
 				timer.schedule(new TimerTask() {
@@ -1478,6 +1481,7 @@ public class AssignmentManager {
 						newLogpageEntry = assignmentDao.save(newLogpageEntry);
 					} catch (Exception e) {
 						// unlock document
+						e.printStackTrace();
 						logpageDocEntry.setLocked(false);
 						assignmentRepository.updateDocument(logpageDocEntry);
 						throw e;
@@ -1676,6 +1680,7 @@ public class AssignmentManager {
 					writingActivity.getEntries().add(newDocEntry);
 					writingActivity = assignmentDao.save(writingActivity);
 				} catch (Exception e) {
+					e.printStackTrace();
 					logger.error("Failed to create document: " + newDocEntry.getTitle(), e);
 				}
 			}
@@ -1703,6 +1708,7 @@ public class AssignmentManager {
 						docEntries.addAll(writingActivity.getEntries());
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					logger.error("Error loading revisions.", e);					
 				}	
 			} else {
@@ -1950,6 +1956,7 @@ public class AssignmentManager {
 					entries.add(entry);	
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				logger.error("Error reading empty document.", e);					
 			}										
 		}
@@ -1962,6 +1969,7 @@ public class AssignmentManager {
 			try {
 				docEntry = assignmentRepository.updateDocument(docEntry);
 			} catch (Exception e) {
+				e.printStackTrace();
 				logger.error("Error updating document permission.", e);
 				throw e;
 			}
@@ -1973,6 +1981,7 @@ public class AssignmentManager {
 			try {
 				docEntry = submitDocument(docEntry);
 			} catch (Exception e) {
+				e.printStackTrace();
 				logger.error("Error submitting document.", e);
 			}
 		}
@@ -2296,6 +2305,7 @@ public class AssignmentManager {
 			}
 				
 		} catch(Exception e){
+			e.printStackTrace();
 			if (e instanceof MessageException){
 				throw (MessageException) e;
 			} else {
@@ -2409,6 +2419,7 @@ public class AssignmentManager {
 						}
 					}, deadline.getFinishDate());
 				} catch(IllegalStateException ise) {
+					ise.printStackTrace();
 					timer = new Timer();
 					timer.schedule(new TimerTask() {
 						@Override

@@ -73,8 +73,7 @@ public class OrganizationsForm extends Composite {
 	public  String MESSAGE_EMPTY_SEARCH_RESULT = "No results found for your search";
 	private String STYLE_TEXT="RichTextToolbar";
 	private String MESSAGE_PROPERTIES_OK ="Proproperties OK, Organization activated.";
-	private String MESSAGE_ALL_PROPERTIES_SAVED="All the properties were saved";
-	private String TITLE_RESET_USERS_PASSWORD = "Force users to change his password in Google";
+	private String TITLE_RESET_USERS_PASSWORD = "Force users to change their passwords in Google";
 	private User loggedUser = null;
 	/**
 	 * Constructor

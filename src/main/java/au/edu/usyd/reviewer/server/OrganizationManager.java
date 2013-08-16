@@ -233,12 +233,13 @@ public class OrganizationManager {
 						
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					try{
 						AESCipher aescipher = AESCipher.getInstance();
 						value = aescipher.encrypt(value);
 						organizationProperty.setValue(value);
 					} catch(Exception ex){
-							
+						ex.printStackTrace();
 					}
 				}
 			}
@@ -574,6 +575,7 @@ public class OrganizationManager {
 					try{
 						googleUserServiceImpl.forceUserToChangePassword(user.getGoogleAppsEmailUsername());
 					} catch(Exception e){
+						e.printStackTrace();
 						String username = "";
 						if ( user != null && user.getGoogleAppsEmailUsername() != null){
 							username = user.getGoogleAppsEmailUsername();

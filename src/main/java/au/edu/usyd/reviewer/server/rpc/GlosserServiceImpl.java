@@ -122,6 +122,7 @@ public class GlosserServiceImpl extends RemoteServiceServlet implements GlosserS
 		try {
 			prop.load(this.getClass().getResourceAsStream("/site-default.properties"));
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SiteException("Failed to add site. Cannot load default messages.");
 		}
 		Enumeration<String> elements = (Enumeration<String>) prop.propertyNames();
@@ -141,6 +142,7 @@ public class GlosserServiceImpl extends RemoteServiceServlet implements GlosserS
 			Site site = siteDao.save(tmp);
 			return siteToSiteFrom(site);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SiteException("Failed to add site. Site name may already exist.");
 		}
 	}
@@ -150,6 +152,7 @@ public class GlosserServiceImpl extends RemoteServiceServlet implements GlosserS
 		try {
 			BeanUtils.copyProperties(siteForm, site);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 		// sf.setSite_id(site.getId());

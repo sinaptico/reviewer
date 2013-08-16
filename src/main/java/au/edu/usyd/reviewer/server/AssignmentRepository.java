@@ -97,6 +97,7 @@ public class AssignmentRepository {
 			FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
 			writingActivity.setFolderId(folderEntry.getResourceId());
 		} catch(ResourceNotFoundException e){
+			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_SAVED_GOOGLE_COURSE_NOT_EXIST);
 		}
 	}
@@ -186,6 +187,7 @@ public class AssignmentRepository {
 //			googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
 			googleDownloadServiceImpl.download(documentListEntry, filePath);
 		} catch(AuthenticationException ae){
+			ae.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
 		}
 	}
@@ -450,6 +452,7 @@ public class AssignmentRepository {
 			UserEntry userEntry = googleUserServiceImpl.retrieveUser(username);
 			userExists = (userEntry != null);
 		} catch(MessageException e){
+			e.printStackTrace();
 		}
 		return userExists;
 	}
