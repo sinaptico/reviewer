@@ -129,11 +129,11 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 						if (user != null){
 							// set user in session
 							user.setOrganization(organization);
-							logger.debug("Information received from IDP");
+//							logger.debug("Information received from IDP");
 							String firstname = (String) request.getAttribute("givenName");
-							logger.debug("givenName " + firstname);
+//							logger.debug("givenName " + firstname);
 							String lastname = (String) request.getAttribute("surname");
-							logger.debug("surname " + lastname);
+//							logger.debug("surname " + lastname);
 							if (StringUtil.isBlank(user.getFirstname()) || StringUtil.isBlank(user.getLastname()) ||
 							 (firstname != null && !firstname.toLowerCase().equals(user.getFirstname())) || 
 							 (lastname != null && !lastname.toLowerCase().equals(user.getLastname()))){								
@@ -299,12 +299,12 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 		if (request.getUserPrincipal() != null) {
 			// Get email from reviewer login page
 			email = request.getUserPrincipal().getName();
-			logger.debug("email " + email);
+//			logger.debug("email " + email);
 		} else if (request.getAttribute("email") != null){
 			// Get email from AAF IdP property
 			email = (String) request.getAttribute("email");
-			logger.debug("Information received from IDP");
-			logger.debug("email " + email);
+//			logger.debug("Information received from IDP");
+//			logger.debug("email " + email);
 		}
 		return email;
 	}
@@ -342,11 +342,11 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 		User newUser = null;
 		try{
 			// add user into the database as a guest
-			logger.debug("Information received from IDP");
+//			logger.debug("Information received from IDP");
 			String firstname = (String) request.getAttribute("givenName");
-			logger.debug("givenName " + firstname);
+//			logger.debug("givenName " + firstname);
 			String lastname = (String) request.getAttribute("surname");
-			logger.debug("surname " + lastname);
+//			logger.debug("surname " + lastname);
 			newUser = userDao.getUserByEmail(email);
 			
 			if (newUser == null){

@@ -229,6 +229,9 @@ public class AssignmentManager {
 			return;
 		}
 		
+		writingActivity.setSaving(true);
+		writingActivity = assignmentDao.save(writingActivity);
+		
 		Deadline finalDeadline = writingActivity.getFinalDeadline();
 		//if deadline is the final deadline then finish de activity
 		if (finalDeadline != null && finalDeadline.equals(deadline)) {
@@ -250,18 +253,29 @@ public class AssignmentManager {
 		// download PDF documents
 		downloadDocuments(course, writingActivity, deadline);
 
+		
 		// create reviews
+		List<ReviewingActivity> reviewingActivities = new ArrayList<ReviewingActivity>();
 		for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
 			if (deadline.equals(reviewingActivity.getStartDate())) {
-				updateActivityReviews(course, writingActivity, reviewingActivity,deadline);
+				reviewingActivity = updateActivityReviews(course, writingActivity, reviewingActivity,deadline);
 				reviewingActivity.setStatus(Activity.STATUS_START);
 				reviewingActivity = assignmentDao.save(reviewingActivity);
 			}
+			reviewingActivities.add(reviewingActivity);
 		}
 
+		writingActivity.setReviewingActivities(reviewingActivities);
 		// update activity deadline status
 		deadline.setStatus(Deadline.STATUS_DEADLINE_FINISH);
 		deadline = assignmentDao.save(deadline);
+	
+		for(Deadline oldDeadline: writingActivity.getDeadlines()){
+			if (oldDeadline != null && oldDeadline.getId() != null &&
+				oldDeadline.getId().equals(deadline.getId())){
+				oldDeadline.setStatus(deadline.getStatus());
+			}
+		}
 		
 		// schedule next activity deadline
 		scheduleActivityDeadline(course, writingActivity);
@@ -313,6 +327,26 @@ public class AssignmentManager {
 			}
 			studentsTimers.put(activityId, timer);
 		}
+		
+		writingActivity.setSaving(false);
+		writingActivity = assignmentDao.save(writingActivity);
+		
+		if (writingActivity.getEmailStudents()){
+			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+			// send notification to admin to inform that the start activity process has finished
+			for(User admin: admins){
+				try{
+					emailNotifier.sendNotificationToAdmin(course,writingActivity, null, deadline,admin, Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_FINISHED);
+				} catch(Exception e){
+					e.printStackTrace();
+					String message = "Failed to send notification of activity saved.";
+					if ( admin != null ){
+						message +="Admin: " + admin.getEmail();
+					}
+					logger.error(message,e);
+				}
+			}
+		}
 	}
 
 	/**
@@ -325,37 +359,39 @@ public class AssignmentManager {
 	 */
 	private void sendReviwingActivityStartNotificationToStudents(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline deadline){
 		int iEmailsSent = 0;
-		for (UserGroup studentGroup : course.getStudentGroups()) {
-			if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
-				for (User student : studentGroup.getUsers()) {
-					try {
-						emailNotifier.sendStudentReviewStartNotification(student, course, writingActivity, deadline);
-						iEmailsSent++;
-					} catch (Exception e) {
-						e.printStackTrace();
-						String mesagge = "Failed to send review start notification.";
-						if (student != null){
-							mesagge += " Student: " + student.getEmail();
+		if (writingActivity.getEmailStudents()){
+			for (UserGroup studentGroup : course.getStudentGroups()) {
+				if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
+					for (User student : studentGroup.getUsers()) {
+						try {
+							emailNotifier.sendStudentReviewStartNotification(student, course, writingActivity, deadline);
+							iEmailsSent++;
+						} catch (Exception e) {
+							e.printStackTrace();
+							String mesagge = "Failed to send review start notification.";
+							if (student != null){
+								mesagge += " Student: " + student.getEmail();
+							}
+							logger.error(mesagge, e);
 						}
-						logger.error(mesagge, e);
 					}
 				}
 			}
-		}
-		
-		if (iEmailsSent > 0){
-			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
-			// send notification to admin to inform that the task finish
-			for(User admin: admins){
-				try{
-					emailNotifier.sendReviewingNotificationToAdmin(course,writingActivity, reviewingActivity, admin, Constants.EMAIL_STUDENT_REVIEW_START);
-				} catch(Exception e){
-					e.printStackTrace();
-					String message = "Failed to send notification of email sent.";
-					if ( admin != null ){
-						message +="Admin: " + admin.getEmail();
+			
+			if (iEmailsSent > 0){
+				List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+				// send notification to admin to inform that the task finish
+				for(User admin: admins){
+					try{
+						emailNotifier.sendReviewingNotificationToAdmin(course,writingActivity, reviewingActivity, admin, Constants.EMAIL_STUDENT_REVIEW_START);
+					} catch(Exception e){
+						e.printStackTrace();
+						String message = "Failed to send notification of email sent.";
+						if ( admin != null ){
+							message +="Admin: " + admin.getEmail();
+						}
+						logger.error(message,e);
 					}
-					logger.error(message,e);
 				}
 			}
 		}
@@ -374,6 +410,9 @@ public class AssignmentManager {
 			return;
 		}
 
+		reviewingActivity.setSaving(true);
+		reviewingActivity = assignmentDao.save(reviewingActivity);
+		
 		Organization organization = course.getOrganization();
 		
 		// download HTML reviews
@@ -408,7 +447,7 @@ public class AssignmentManager {
 						continue;
 					}				
 				}else{
-					 
+					 	
 					studentGroup = new UserGroup();
 					studentGroup.setTutorial(writingActivity.getTutorial());				
 				}	
@@ -526,6 +565,25 @@ public class AssignmentManager {
 				logger.error("Failed to read the excel.", e);
 			}
 		}
+		
+		reviewingActivity.setSaving(false);
+		reviewingActivity = assignmentDao.save(reviewingActivity);
+		if (writingActivity.getEmailStudents()){
+			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+			// send notification to admin to inform that the start activity process has finished
+			for(User admin: admins){
+				try{
+					emailNotifier.sendNotificationToAdmin(course,writingActivity, reviewingActivity, null, admin, Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_FINISHED);
+				} catch(Exception e){
+					e.printStackTrace();
+					String message = "Failed to send notification of activity saved.";
+					if ( admin != null ){
+						message +="Admin: " + admin.getEmail();
+					}
+					logger.error(message,e);
+				}
+			}
+		}
 	}
 
 	
@@ -537,47 +595,49 @@ public class AssignmentManager {
 	 * @param deadline
 	 */
 	private void sendReviewingActivityFinishNotificationToStudents(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline deadline){
-		List<DocEntry> notifiedDocEntries = new ArrayList<DocEntry>();
-		int iEmailsSent =0;
-		for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
-			if (!reviewEntry.isDeleted()){
-				//Reviewed User
-				User user = reviewEntry.getDocEntry().getOwner();
-				if (!notifiedDocEntries.contains(reviewEntry.getDocEntry())){
-					try {
-						if (user != null){
-							emailNotifier.sendReviewFinishNotification(user, course, writingActivity, deadline.getName());
-						}else{ 
-							//it's a document owned by a group
-							Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
-							for (User userToNotify : students) {
-								emailNotifier.sendReviewFinishNotification(userToNotify, course, writingActivity, deadline.getName());								
+		if (writingActivity.getEmailStudents()){
+			List<DocEntry> notifiedDocEntries = new ArrayList<DocEntry>();
+			int iEmailsSent =0;
+			for (ReviewEntry reviewEntry : reviewingActivity.getEntries()) {
+				if (!reviewEntry.isDeleted()){
+					//Reviewed User
+					User user = reviewEntry.getDocEntry().getOwner();
+					if (!notifiedDocEntries.contains(reviewEntry.getDocEntry())){
+						try {
+							if (user != null){
+								emailNotifier.sendReviewFinishNotification(user, course, writingActivity, deadline.getName());
+							}else{ 
+								//it's a document owned by a group
+								Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
+								for (User userToNotify : students) {
+									emailNotifier.sendReviewFinishNotification(userToNotify, course, writingActivity, deadline.getName());								
+								}
 							}
+							notifiedDocEntries.add(reviewEntry.getDocEntry());
+							iEmailsSent++;
+							
+						} catch (Exception e) {
+							e.printStackTrace();
+							logger.error("Failed to send review finish notification.", e);
 						}
-						notifiedDocEntries.add(reviewEntry.getDocEntry());
-						iEmailsSent++;
-						
-					} catch (Exception e) {
-						e.printStackTrace();
-						logger.error("Failed to send review finish notification.", e);
 					}
 				}
 			}
-		}
-		
-		if (iEmailsSent > 0){
-			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
-			// send notification to admin to inform that the task finish
-			for(User admin: admins){
-				try{
-					emailNotifier.sendReviewingNotificationToAdmin(course,writingActivity, reviewingActivity,admin, Constants.EMAIL_STUDENT_REVIEW_FINISH);
-				} catch(Exception e){
-					e.printStackTrace();
-					String message = "Failed to send notification of email sent.";
-					if ( admin != null ){
-						message +="Admin: " + admin.getEmail();
+			
+			if (iEmailsSent > 0){
+				List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+				// send notification to admin to inform that the task finish
+				for(User admin: admins){
+					try{
+						emailNotifier.sendReviewingNotificationToAdmin(course,writingActivity, reviewingActivity,admin, Constants.EMAIL_STUDENT_REVIEW_FINISH);
+					} catch(Exception e){
+						e.printStackTrace();
+						String message = "Failed to send notification of email sent.";
+						if ( admin != null ){
+							message +="Admin: " + admin.getEmail();
+						}
+						logger.error(message,e);
 					}
-					logger.error(message,e);
 				}
 			}
 		}
@@ -611,6 +671,12 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public WritingActivity saveActivity(Course course, WritingActivity writingActivity) throws Exception {
+		
+		if (course.isSaving() || writingActivity.isSaving() || someReviewingActivityIsSaving(writingActivity)){
+			MessageException me = new MessageException(Constants.EXCEPTION_ACTIVITY_OR_COURSE_SAVING);
+			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			throw me;
+		}
 		
 		// check if status is valid
 		validateActivity(writingActivity);
@@ -965,12 +1031,12 @@ public class AssignmentManager {
 			
 			// create documents for new users
 			if (writingActivity.getStatus() >= Activity.STATUS_START && writingActivity.getStatus() < Activity.STATUS_FINISH) {
-				updateActivityDocuments(course, writingActivity);
+				writingActivity = updateActivityDocuments(course, writingActivity);
 			}
 			// create reviews for new users
 			for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()) {
 				if (reviewingActivity.getStatus() == Activity.STATUS_START) {
-					updateActivityReviews(course, writingActivity, reviewingActivity, null);
+					reviewingActivity = updateActivityReviews(course, writingActivity, reviewingActivity, null);
 				}
 			}
 		}
@@ -1048,6 +1114,13 @@ public class AssignmentManager {
 	 * @throws Exception
 	 */
 	public Course saveCourse(Course course, User user) throws Exception {
+		
+		if (course.isSaving() || someWritingActivityIsSaving(course)){
+			MessageException me = new MessageException(Constants.EXCEPTION_ACTIVITY_OR_COURSE_SAVING);
+			me.setStatusCode(Constants.HTTP_CODE_MESSAGE);
+			throw me;
+		}
+		
 		// Validate the course
 		Calendar cal = Calendar.getInstance();
 		int month = cal.get(Calendar.MONTH);
@@ -1102,6 +1175,7 @@ public class AssignmentManager {
 			Set<UserGroup> userGroups = course.getStudentGroups();
 			course.setStudentGroups(new HashSet<UserGroup>());
 			
+			course.setSaving(true);
 			// save course in DB
 			course = courseDao.save(course);
 			
@@ -1131,6 +1205,10 @@ public class AssignmentManager {
 								
 								// for each activity create documents and reviewers for new users
 								processActivitiesForNewUsers(courseTimer);
+								
+								courseTimer.setSaving(false);
+								// save course in DB
+								courseDao.save(courseTimer);
 								
 								// Get the admin users of the organization
 								List<User> admins = organizationManager.getAdminUsers(courseTimer.getOrganization());
@@ -1213,7 +1291,7 @@ public class AssignmentManager {
 		}
 		timer = new Timer();
 		activityTimers.put(activityId, timer);
-
+		
 		// schedule new Activity deadline
 		if (writingActivity.getStatus() < Activity.STATUS_START && writingActivity.getStartDate() != null) {
 			timer.schedule(new TimerTask() {
@@ -1307,12 +1385,16 @@ public class AssignmentManager {
 	 */
 	public void startActivity(Course course, WritingActivity writingActivity) throws MessageException{
 
+		
 		// check activity status
 		if (writingActivity.getStatus() >= Activity.STATUS_START) {
 			return;
 		}
 
-		updateActivityDocuments(course, writingActivity);
+		writingActivity.setSaving(true);
+		writingActivity = assignmentDao.save(writingActivity);
+		
+		writingActivity = updateActivityDocuments(course, writingActivity);
 
 		// update activity status
 		writingActivity.setStatus(Activity.STATUS_START);		
@@ -1362,6 +1444,25 @@ public class AssignmentManager {
 			}, writingActivity.getStartDate());
 		}
 		studentsTimers.put(activityId, timer);
+		
+		if (writingActivity.getEmailStudents()){
+			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+			// send notification to admin to inform that the start activity process has finished
+			for(User admin: admins){
+				try{
+					emailNotifier.sendNotificationToAdmin(course,writingActivity, null,null, admin, Constants.EMAIL_ADMIN_ACTIVITY_STARTED);
+				} catch(Exception e){
+					e.printStackTrace();
+					String message = "Failed to send notification of activity saved.";
+					if ( admin != null ){
+						message +="Admin: " + admin.getEmail();
+					}
+					logger.error(message,e);
+				}
+			}
+		}
+		writingActivity.setSaving(false);
+		writingActivity = assignmentDao.save(writingActivity);
 	}
 	
 	/**
@@ -1371,41 +1472,43 @@ public class AssignmentManager {
 	 * @param writingActivity
 	 */
 	private void sendActivityStartNotificationToStudents(Course course, WritingActivity writingActivity){
-		// get final deadline   
-		Deadline finalDeadline = writingActivity.getFinalDeadline();
-		if (finalDeadline != null){
-			// send assessment start notification to students
-			if (writingActivity.getEmailStudents()) {
-				int iEmailsSent = 0;
-				for (UserGroup studentGroup : course.getStudentGroups()) {
-					if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
-						for (User student : studentGroup.getUsers()) {
-							try {
-								emailNotifier.sendStudentActivityStartNotification(student, course, writingActivity, finalDeadline);
-								iEmailsSent++;
-							} catch (Exception e) {
-								e.printStackTrace();
-								logger.error("Failed to send assessment start notification.", e);
-								if ( student != null ){
-									logger.error("Start notification not sent to " + student.getEmail());
+		if (writingActivity.getEmailStudents()){
+			// get final deadline   
+			Deadline finalDeadline = writingActivity.getFinalDeadline();
+			if (finalDeadline != null){
+				// send assessment start notification to students
+				if (writingActivity.getEmailStudents()) {
+					int iEmailsSent = 0;
+					for (UserGroup studentGroup : course.getStudentGroups()) {
+						if (writingActivity.getTutorial().equals(WritingActivity.TUTORIAL_ALL) || writingActivity.getTutorial().equals(studentGroup.getTutorial())) {
+							for (User student : studentGroup.getUsers()) {
+								try {
+									emailNotifier.sendStudentActivityStartNotification(student, course, writingActivity, finalDeadline);
+									iEmailsSent++;
+								} catch (Exception e) {
+									e.printStackTrace();
+									logger.error("Failed to send assessment start notification.", e);
+									if ( student != null ){
+										logger.error("Start notification not sent to " + student.getEmail());
+									}
 								}
 							}
 						}
 					}
-				}
-				if (iEmailsSent > 0){
-					List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
-					// send notification to admin to inform that the task finish
-					for(User admin: admins){
-						try{
-							emailNotifier.sendActivityNotificationToAdmin(course,writingActivity, admin, Constants.EMAIL_STUDENT_ACTIVITY_START);
-						} catch(Exception e){
-							e.printStackTrace();
-							String message = "Failed to send notification of email sent.";
-							if ( admin != null ){
-								message +="Admin: " + admin.getEmail();
+					if (iEmailsSent > 0){
+						List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+						// send notification to admin to inform that the task finish
+						for(User admin: admins){
+							try{
+								emailNotifier.sendActivityNotificationToAdmin(course,writingActivity, admin, Constants.EMAIL_STUDENT_ACTIVITY_START);
+							} catch(Exception e){
+								e.printStackTrace();
+								String message = "Failed to send notification of email sent.";
+								if ( admin != null ){
+									message +="Admin: " + admin.getEmail();
+								}
+								logger.error(message,e);
 							}
-							logger.error(message,e);
 						}
 					}
 				}
@@ -1422,8 +1525,10 @@ public class AssignmentManager {
 	 */
 	public void startDeadlines(Course course, WritingActivity writingActivity,Deadline deadline) throws MessageException{
 
+		writingActivity.setSaving(true);
+		writingActivity = assignmentDao.save(writingActivity);
 		
-		updateActivityDocuments(course, writingActivity);
+		writingActivity = updateActivityDocuments(course, writingActivity);
 
 		// update document entry domains
 		Organization organization = course.getOrganization();
@@ -1440,8 +1545,34 @@ public class AssignmentManager {
 		deadline.setStatus(Deadline.STATUS_DEADLINE_START);
 		deadline = assignmentDao.save(deadline);
 		
+		for(Deadline oldDeadline: writingActivity.getDeadlines()){
+			if (oldDeadline != null && oldDeadline.getId() != null &&
+				oldDeadline.getId().equals(deadline.getId())){
+				oldDeadline.setStatus(deadline.getStatus());
+			}
+		}
+		
 		// schedule the activity deadlines
-		scheduleActivityDeadline(course, writingActivity);		
+		scheduleActivityDeadline(course, writingActivity);
+		writingActivity.setSaving(false);
+		writingActivity = assignmentDao.save(writingActivity);
+		
+		if (writingActivity.getEmailStudents()){
+			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+			// send notification to admin to inform that the start activity process has finished
+			for(User admin: admins){
+				try{
+					emailNotifier.sendNotificationToAdmin(course,writingActivity,null,deadline, admin, Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_STARTED);
+				} catch(Exception e){
+					e.printStackTrace();
+					String message = "Failed to send notification of activity saved.";
+					if ( admin != null ){
+						message +="Admin: " + admin.getEmail();
+					}
+					logger.error(message,e);
+				}
+			}
+		}
 	}
 
 	/**
@@ -1590,7 +1721,7 @@ public class AssignmentManager {
 	 * @param writingActivity
 	 * @throws MessageException
 	 */
-	private void updateActivityDocuments(Course course, WritingActivity writingActivity) throws MessageException {
+	private WritingActivity updateActivityDocuments(Course course, WritingActivity writingActivity) throws MessageException {
 		synchronized (writingActivity.getFolderId().intern()) {
 			Organization organization = course.getOrganization();
 			String domainName = organization.getGoogleDomain();
@@ -1685,6 +1816,7 @@ public class AssignmentManager {
 				}
 			}
 		}
+		return writingActivity;
 	}
 	
 	/**
@@ -1696,7 +1828,7 @@ public class AssignmentManager {
 	 * @param currentDeadline
 	 * @throws Exception
 	 */
-	private void updateActivityReviews(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline currentDeadline) throws Exception{
+	private ReviewingActivity updateActivityReviews(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline currentDeadline) throws Exception{
 		synchronized (writingActivity.getFolderId().intern()) {
 			// get documents to be reviewed
 			List<DocEntry> docEntries = new ArrayList<DocEntry>();
@@ -1903,6 +2035,7 @@ public class AssignmentManager {
 				}
 			}
 		}
+		return reviewingActivity;
 	}
 	
 	private String getDocumentsFolder( Course course, long activityId, long activityDeadlineId, String tutorial)  {
@@ -2292,16 +2425,49 @@ public class AssignmentManager {
 		
 		try{
 			Organization org = course.getOrganization();
-			if ( org != null && course != null && !course.hasEmails()){
-				createEmail(org.getEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH),course);
-				createEmail(org.getEmail(Constants.EMAIL_PASSWORD_DETAILS), course);
-				createEmail(org.getEmail(Constants.EMAIL_STUDENT_ACTIVITY_START),course);
-				createEmail(org.getEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW),course);
-				createEmail(org.getEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH),course);
-				createEmail(org.getEmail(Constants.EMAIL_STUDENT_REVIEW_START),course);
-				createEmail(org.getEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT),course);
-				createEmail(org.getEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT),course);
-				createEmail(org.getEmail(Constants.EMAIL_SAVE_COURSE_FINISHED),course);
+			if ( org != null && course != null){
+				if (course.getEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH) == null){
+					createEmail(org.getEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH),course);
+				}
+				if (course.getEmail(Constants.EMAIL_PASSWORD_DETAILS) == null){
+					createEmail(org.getEmail(Constants.EMAIL_PASSWORD_DETAILS), course);
+				}
+				if (course.getEmail(Constants.EMAIL_STUDENT_ACTIVITY_START) == null){
+					createEmail(org.getEmail(Constants.EMAIL_STUDENT_ACTIVITY_START),course);
+				}
+				if (course.getEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW) == null){
+					createEmail(org.getEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW),course);
+				}
+				if (course.getEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH) == null){
+					createEmail(org.getEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH),course);
+				}
+				if (course.getEmail(Constants.EMAIL_STUDENT_REVIEW_START) == null){
+					createEmail(org.getEmail(Constants.EMAIL_STUDENT_REVIEW_START),course);
+				}
+				if (course.getEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT) == null){
+					createEmail(org.getEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT),course);
+				}
+				if (course.getEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT) == null){
+					createEmail(org.getEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT),course);
+				}
+				if (course.getEmail(Constants.EMAIL_SAVE_COURSE_FINISHED) == null){
+					createEmail(org.getEmail(Constants.EMAIL_SAVE_COURSE_FINISHED),course);
+				}
+				if (course.getEmail(Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_FINISHED) == null){
+					createEmail(org.getEmail(Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_FINISHED),course);
+				}
+				if (course.getEmail(Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_FINISHED) == null){
+					createEmail(org.getEmail(Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_FINISHED),course);
+				}
+				if (course.getEmail(Constants.EMAIL_ADMIN_ACTIVITY_STARTED) == null){
+					createEmail(org.getEmail(Constants.EMAIL_ADMIN_ACTIVITY_STARTED),course);
+				}
+				if (course.getEmail(Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_STARTED) == null){
+					createEmail(org.getEmail(Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_STARTED),course);
+				}
+				if (course.getEmail(Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_DEADLINE_STARTED) == null){
+					createEmail(org.getEmail(Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_DEADLINE_STARTED),course);
+				}
 			}
 				
 		} catch(Exception e){
@@ -2392,8 +2558,11 @@ public class AssignmentManager {
 			return;
 		}
 		
+		reviewingActivity.setSaving(true);
+		reviewingActivity = assignmentDao.save(reviewingActivity);
+		
 		if (deadline.equals(reviewingActivity.getStartDate())) {
-			updateActivityReviews(course, writingActivity, reviewingActivity, deadline);
+			reviewingActivity = updateActivityReviews(course, writingActivity, reviewingActivity, deadline);
 			reviewingActivity.setStatus(Activity.STATUS_START);
 			reviewingActivity = assignmentDao.save(reviewingActivity);
 		}
@@ -2431,6 +2600,25 @@ public class AssignmentManager {
 				studentsTimers.put(activityId, timer);
 			}
 		}
+		reviewingActivity.setSaving(false);
+		reviewingActivity = assignmentDao.save(reviewingActivity);
+		
+		if (writingActivity.getEmailStudents()){
+			List<User> admins = organizationManager.getAdminUsers(course.getOrganization());
+			// send notification to admin to inform that the start activity process has finished
+			for(User admin: admins){
+				try{
+					emailNotifier.sendNotificationToAdmin(course,writingActivity, reviewingActivity,null,admin, Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_DEADLINE_STARTED);
+				} catch(Exception e){
+					e.printStackTrace();
+					String message = "Failed to send notification of activity saved.";
+					if ( admin != null ){
+						message +="Admin: " + admin.getEmail();
+					}
+					logger.error(message,e);
+				}
+			}
+		}
 	}
 
 	/**
@@ -2464,4 +2652,35 @@ public class AssignmentManager {
 			}
 		}
 	}
+	
+	private boolean someReviewingActivityIsSaving(WritingActivity writingActivity ){
+		boolean saving = false;
+		try{
+			for(ReviewingActivity reviewingActivity: writingActivity.getReviewingActivities()){
+				if (reviewingActivity.isSaving()){
+					saving = true;
+					break;
+				}
+			}
+		} catch(Exception e){
+			
+		}
+		return saving;
+	}
+	
+	private boolean someWritingActivityIsSaving(Course course ){
+		boolean saving = false;
+		try{
+			for(WritingActivity writingActivity: course.getWritingActivities()){
+				if (writingActivity.isSaving() || someReviewingActivityIsSaving(writingActivity)){
+					saving = true;
+					break;
+				}
+			}
+		} catch(Exception e){
+			
+		}
+		return saving;
+	}
+	
 }

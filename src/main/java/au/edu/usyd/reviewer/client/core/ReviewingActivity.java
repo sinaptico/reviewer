@@ -345,6 +345,7 @@ public class ReviewingActivity extends Activity<ReviewEntry> {
 		}
 		activity.setStatus(this.getStatus());
 		activity.setDeleted(this.isDeleted());
+		activity.setSaving(this.isSaving());
 		return activity;
 	}
 	

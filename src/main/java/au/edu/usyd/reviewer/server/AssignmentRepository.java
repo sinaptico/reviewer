@@ -289,7 +289,7 @@ public class AssignmentRepository {
 		for (ListEntry listEntry : googleSpreadsheetServiceImpl.getWorksheetRows(worksheetEntry)) {
 			User student = new User();
 			for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 3)) {
-				logger.debug("Information read from students spreadsheet " + property + " value " + StringUtils.trim(listEntry.getCustomElements().getValue(property)));
+//				logger.debug("Information read from students spreadsheet " + property + " value " + StringUtils.trim(listEntry.getCustomElements().getValue(property)));
 				BeanUtils.setProperty(student, property, StringUtils.trim(listEntry.getCustomElements().getValue(property)));
 		
 			}

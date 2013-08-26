@@ -12,7 +12,9 @@ public class UrlLib {
 	// Service to get Glosser url
 	private static ReviewerUtilServiceAsync reviewerUtilService = (ReviewerUtilServiceAsync) GWT.create(ReviewerUtilService.class);
 	
-	/**
+	private String GOOGLE_DRIVE_FILES ="https://www.googleapis.com/drive/v2/files/";
+	
+		/**
 	 * Document url.
 	 *
 	 * @param id the id

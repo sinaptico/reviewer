@@ -112,7 +112,7 @@ public class RetryDocsService extends DocsService {
 				requestFactory.setAuthToken(getAuthTokenFactory().getAuthToken());
 			}
 		}
-        logger.info("Retrying service call after failed attempt " + retryAttempts, e);
+//        logger.info("Retrying service call after failed attempt " + retryAttempts, e);
 	}
 
 	@Override

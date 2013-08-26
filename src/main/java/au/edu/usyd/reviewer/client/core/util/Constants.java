@@ -212,7 +212,7 @@ public class Constants {
 	public static String EXCEPTION_STUDENT_LASTNAME_EMPTY="Please enter the lastname of the student.";
 	public static String EXCEPTION_REVIEW_TEMPLATE_USED_BY_USER="The user can not be deleted because one of his courses is using the review template";
 	public static String EXCEPTION_FORCE_USERS_CHANGE_PASSWORD ="Failed to force the users to change their Googel passwords.";
-	
+	public static String EXCEPTION_ACTIVITY_OR_COURSE_SAVING = "The activity is being generated, you will be notified by email when is ready";
 	
 	// Roles
 	// Role of the admin of all the organizations
@@ -258,6 +258,11 @@ public class Constants {
 	public static String EMAIL_ACTIVITY_NOTIFICATIONS_SENT ="Emails of activity notifications sent";
 	public static String EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT ="Emails of reviewing activity notifications sent";
 	public static String EMAIL_SAVE_COURSE_FINISHED ="Save course process has finished";
+	public static String EMAIL_ADMIN_ACTIVITY_DEADLINE_FINISHED ="The finishing process of the activity deadline has finished";
+	public static String EMAIL_ADMIN_REVIEWING_ACTIVITY_FINISHED ="The finishing process of the reviewing activity has finished";
+	public static String EMAIL_ADMIN_ACTIVITY_STARTED = "The starting process of the activity has finished";
+	public static String EMAIL_ADMIN_ACTIVITY_DEADLINE_STARTED = "The starting process of activity deadline has finished";
+	public static String EMAIL_ADMIN_REVIEWING_ACTIVITY_DEADLINE_STARTED = "The starting process of reviewing activity has finished";
 	
 	
 	// Emails messages
@@ -308,6 +313,36 @@ public class Constants {
 															  "The process of save course corresponding to course @CourseName@ " +
 															  "has finished.\n\n" + "@FromName@";
 
+	
+	public static String EMAIL_ADMIN_ACTIVITY_DEADLINE_FINISHED_MESSAGE = "Dear @UserName@,\n" +
+	  															  		  "The finishing process of the activity deadline @ActivityName@ @DeadlineName@  " +
+	  															  		  "has finished.\n\n" +
+	  															  		  "@FromName@";
+
+	public static String EMAIL_ADMIN_REVIEWING_ACTIVITY_FINISHED_MESSAGE ="Dear @UserName@,\n" +
+		  																  "The finishing process of reviewing activity @ActivityName@ @ReviewingActivityName@ " + 
+		  																  "has finished.\n\n" +
+		  																  "@FromName@";
+		
+	public static String EMAIL_ADMIN_ACTIVITY_STARTED_MESSAGE = "Dear @UserName@,\n" +
+		  														"The starting process of the activity @ActivityName@ has finished.\n\n" +
+		  														"@FromName@";
+
+	
+	
+	public static String EMAIL_ADMIN_ACTIVITY_DEADLINE_STARTED_MESSAGE = "Dear @UserName@,\n" +
+		  																 "The finishing process of activity deadline @ActivityName@ @DeadlineName@  " + 
+		  																 "has finished.\n\n" +
+		  																 "@FromName@";
+
+	
+	public static String EMAIL_ADMIN_REVIEWING_ACTIVITY_DEADLINE_STARTED_MESSAGE ="Dear @UserName@,\n" +
+	  																	"The starting process of reviewing activity @ActivityName@ @ReviewingActivityName@ " + 
+	  																	"has finished.\n\n" +
+	  																	"@FromName@";
+
+	
+	
 	// Google user service messages
 	public static String EXCEPTION_GOOGLE_USER_DELETED_RECENTLY="The request instructs Google to create a new user but uses the username of an account that was deleted in the previous five days";
 	public static String EXCEPTION_GOOGLE_USER_SUSPENDED="The user identified in the request is suspended";

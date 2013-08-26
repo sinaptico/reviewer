@@ -62,6 +62,10 @@ public abstract class Activity<E extends Entry> implements Serializable {
 	protected Set<E> entries = new HashSet<E>();
 
 	protected boolean deleted = false;
+	
+	/** this property indicates if the activity is still being saving or not **/
+	protected boolean saving = false;
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -172,5 +176,14 @@ public abstract class Activity<E extends Entry> implements Serializable {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
+
+	public boolean isSaving() {
+		return saving;
+	}
+
+	public void setSaving(boolean saving) {
+		this.saving = saving;
+	}
+	
 	
 }

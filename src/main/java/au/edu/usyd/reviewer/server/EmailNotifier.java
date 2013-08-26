@@ -255,4 +255,28 @@ public class EmailNotifier {
 		sendNotification(admin, subject, content);
 	}
 	
+	
+	public void sendNotificationToAdmin(Course course, WritingActivity writingActivity, ReviewingActivity reviewingActivity, Deadline deadline, User admin, String title) throws MessagingException, UnsupportedEncodingException, MessageException {
+		String to = admin.getFirstname() + " " + admin.getLastname(); 
+		String subject = "[" + course.getName().toUpperCase() + "] " + writingActivity.getName();
+		EmailCourse email = course.getEmail(title);
+		String content = email.getMessage();
+		if (StringUtil.isBlank(to)){
+			to="Admin";
+		}
+		content = content.replaceAll("@UserName@", to);
+		content = content.replaceAll("@EmailName@", title);
+		content = content.replaceAll("@CourseName@", course.getName());
+		if (writingActivity != null){
+			content = content.replaceAll("@ActivityName@", writingActivity.getName());
+		}
+		if (reviewingActivity != null){
+			content = content.replaceAll("@ReviewingActivityName@", reviewingActivity.getName());
+		}
+		if (deadline != null){
+			content = content.replaceAll("@DeadlineName@", deadline.getName());
+		}
+		content = content.replaceAll("@FromName@", fromName);
+		sendNotification(admin, subject, content);
+	}
 }

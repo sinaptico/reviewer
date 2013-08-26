@@ -36,7 +36,7 @@ public class Reviewer {
 			config = new PropertiesConfiguration("reviewer.properties");
 			for (Iterator<String> keys = config.getKeys(); keys.hasNext();) {
 				String property = keys.next();
-				logger.debug("Setting property: " + property + "=" + config.getString(property));
+//				logger.debug("Setting property: " + property + "=" + config.getString(property));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -123,7 +123,7 @@ public class Reviewer {
 		for (OrganizationProperty property : organization.getOrganizationProperties()){
 			String propertyName = property.getProperty().getName();
 			String value = property.getValue();
-			logger.debug("Setting property: " + property + "=" + value);
+//			logger.debug("Setting property: " + property + "=" + value);
 			
 		}
 	}

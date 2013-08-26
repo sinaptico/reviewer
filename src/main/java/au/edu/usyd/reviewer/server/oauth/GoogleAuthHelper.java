@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.StringUtil;
+import au.edu.usyd.reviewer.server.UserDao;
 
 
 /**
@@ -34,15 +35,19 @@ public class GoogleAuthHelper {
 	
 	// Client Id for Web Applications
 	private final String CLIENT_ID = "894979939992.apps.googleusercontent.com";
+	
 	// Client Secret
 	private final String CLIENT_SECRET = "RAEdhNj8lEFfpOos9_0CL5Z9"; 
 	
 	// Scope has the Url of Google (drive, user info) that we want to access without login
 	private final String SCOPE_DRIVE_URL="https://www.googleapis.com/auth/drive.file";
-	private final String SCOPE_USERINFO_EMAIL ="https://www.googleapis.com/auth/userinfo.email";
-	private final String SCOPE_USERINFO_PROFILE="https://www.googleapis.com/auth/userinfo.profile";
+//	private final String SCOPE_USERINFO_EMAIL ="https://www.googleapis.com/auth/userinfo.email";
+//	private final String SCOPE_USERINFO_PROFILE="https://www.googleapis.com/auth/userinfo.profile";
+	
+	private UserDao userDao;
 	
 	public GoogleAuthHelper(){	
+		userDao = UserDao.getInstance();
 	}
 	
 	
@@ -59,12 +64,14 @@ public class GoogleAuthHelper {
 		try{
 			StringBuilder content = new StringBuilder();
 			content.append(AUTHORIZATION_URL);
-			content.append("response_type=code");
-			content.append("&access_type=offline");
-			content.append("&client_id=").append(CLIENT_ID);
 			content.append("&redirect_uri=").append(URLEncoder.encode(currentUrl, "UTF-8"));
-			content.append("&scope=").append(URLEncoder.encode(SCOPE_DRIVE_URL + " " + SCOPE_USERINFO_EMAIL + " " + SCOPE_USERINFO_PROFILE, "UTF-8"));
+			content.append("response_type=code");
+			content.append("&client_id=").append(CLIENT_ID);
+			content.append("&scope=").append(URLEncoder.encode(SCOPE_DRIVE_URL, "UTF-8"));
+			content.append("&access_type=offline");
 			content.append("&login_hint=").append(user.getGoogleAppsEmail());
+//			content.append("&scope=").append(URLEncoder.encode(SCOPE_DRIVE_URL + " " + SCOPE_USERINFO_EMAIL + " " + SCOPE_USERINFO_PROFILE, "UTF-8"));
+			
 			url = content.toString();
 			logger.error("MARIELA - Authorization URL: " + url);
 		} catch(Exception e){
@@ -87,10 +94,11 @@ public class GoogleAuthHelper {
 			HttpClient httpclient = new HttpClient();
 			PostMethod post = new PostMethod(TOKEN_URL);
 			post.addParameter("code",authCode);
-			post.addParameter("grant_type","authorization_code");
+			post.addParameter("redirect_uri",currentUrl);
 			post.addParameter("client_id",CLIENT_ID);
 			post.addParameter("client_secret",CLIENT_SECRET);
-			post.addParameter("redirect_uri",currentUrl);
+			post.addParameter("grant_type","authorization_code");
+			
 			httpclient.executeMethod(post);
 		    String responseBody = post.getResponseBodyAsString();
 		    JSONParser parser = new JSONParser();
@@ -110,6 +118,11 @@ public class GoogleAuthHelper {
 				logger.error("MARIELA - User : "  + user.getEmail() + " refresh token " + user.getGoogleRefreshToken());
 				user.setGoogleRefreshToken(refreshToken);
 			}
+			
+			if (!StringUtil.isBlank(token) && !StringUtil.isBlank(refreshToken)){
+				user = userDao.save(user);
+			}
+			
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -117,6 +130,13 @@ public class GoogleAuthHelper {
 	}	
 	
 	
+	/**
+	 * This method is used to update the token after its expiration
+	 * @param user
+	 * @param currentUrl
+	 * @return
+	 * @throws Exception
+	 */
 	public User refreshUserTokens (User user, String currentUrl) throws Exception {
 		try{
 			HttpClient httpclient = new HttpClient();

@@ -580,7 +580,7 @@ public class AssignmentDao {
 	public Rating loadUserRatingForEditing(User owner, Review review)throws MessageException {
 		Session session = null;
 		try{
-			logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
+//			logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
 			session = this.getSession();
 			session.beginTransaction();
 			Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("owner").eq(owner)).add(Property.forName("review").eq(review)).uniqueResult();
@@ -601,7 +601,7 @@ public class AssignmentDao {
 	public Course loadUserReviewForEditing(User user, long reviewId) throws MessageException{
 		Session session = null;
 		try{
-			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
+//			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
 			String query = "select distinct course from Course course " + 
 			"left join fetch course.lecturers lecturer " + 
 			"left join fetch course.tutors tutor " + 

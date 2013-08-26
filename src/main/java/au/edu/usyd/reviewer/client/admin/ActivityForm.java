@@ -361,8 +361,9 @@ public class ActivityForm extends Composite {
 
 		HorizontalPanel emailStudentsPanel = new HorizontalPanel();
 		emailStudentsPanel.add(emailStudents);
-		emailStudentsPanel.add(new Label(" send email notifications to students."));
-
+		emailStudentsPanel.add(new Label(" send email notifications to students, staff and admins."));
+//		emailStudentsPanel.add(new Label(" send email notifications to students."));
+		
 		Grid activityGrid = new Grid(6, 2);
 		activityGrid.setWidget(0, 0, new Label("Course:"));
 		activityGrid.setWidget(0, 1, courseList);

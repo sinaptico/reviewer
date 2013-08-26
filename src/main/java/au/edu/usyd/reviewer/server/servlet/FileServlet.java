@@ -137,7 +137,7 @@ public class FileServlet extends HttpServlet {
 					response.setContentType("application/octet-stream");
 					response.setHeader("Content-Disposition", "attachment; filename=\"" + FileUtil.escapeFilename(filename) + "\"");			
 					response.setContentLength((int) file.length());
-					logger.info("Serving file: " + file.getAbsolutePath());
+//					logger.info("Serving file: " + file.getAbsolutePath());
 					int length = 0;
 					byte[] bbuf = new byte[1024];
 					in = new DataInputStream(new FileInputStream(file));
@@ -269,7 +269,7 @@ public class FileServlet extends HttpServlet {
                   
             } catch (Exception e) {
             	e.printStackTrace();
-            	logger.info("An error occurred while creating the file : " + e.getMessage());
+            	logger.error("An error occurred while creating the file : " + e.getMessage());
             	throw new ServletException("An error occurred while creating the file : " + e.getMessage());
             }
         } else {
@@ -348,7 +348,7 @@ public class FileServlet extends HttpServlet {
 												
 				if (organization == null){
 					// ERROR we need the organization to know if shibboleth property is enabled or not
-					logger.info("Organization is null so we can not verify the shibboleth property");
+					logger.error("Organization is null so we can not verify the shibboleth property");
 					MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
 					me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 					throw me;
