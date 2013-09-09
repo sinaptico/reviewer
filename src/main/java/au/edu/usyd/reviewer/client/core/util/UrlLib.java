@@ -12,7 +12,9 @@ public class UrlLib {
 	// Service to get Glosser url
 	private static ReviewerUtilServiceAsync reviewerUtilService = (ReviewerUtilServiceAsync) GWT.create(ReviewerUtilService.class);
 	
-	private String GOOGLE_DRIVE_FILES ="https://www.googleapis.com/drive/v2/files/";
+//	private static String GOOGLE_DRIVE_FILES ="https://www.googleapis.com/drive/v2/files/";
+//	private static String GOOGLE_URL_PROCESSOR = "google?redirect=";
+	
 	
 		/**
 	 * Document url.
@@ -22,9 +24,11 @@ public class UrlLib {
 	 * @param User user to obtain the token and id
 	 * @return the string
 	 */
-	public static String documentUrl(String id, String domain, User user) {
+	public static String documentUrl(String id, String domain, User user, String hostPageBaseURL) {
+		
+//		String url = hostPageBaseURL + GOOGLE_URL_PROCESSOR + "http://docs.google.com/a/" + domain + "/document/edit?id=" + id.replace("document:", "");
+//		String url = hostPageBaseURL + GOOGLE_URL_PROCESSOR + GOOGLE_DRIVE_FILES + id.replace("document:", "");
 		String url = "http://docs.google.com/a/" + domain + "/document/edit?id=" + id.replace("document:", "");
-		url = addGoogleParameters(url, user, false);
 		return url;
 	}
 
@@ -36,9 +40,10 @@ public class UrlLib {
  * @param User user to obtain the token and id
  * @return the string
  */
-	public static String folderUrl(String id, String domain, User user) {
+	public static String folderUrl(String id, String domain, User user, String hostPageBaseURL) {
+//		String url =  hostPageBaseURL + GOOGLE_URL_PROCESSOR + GOOGLE_DRIVE_FILES + id.replace(":", ".0.");
+//		String url = hostPageBaseURL + GOOGLE_URL_PROCESSOR + "http://docs.google.com/a/" + domain + "/#folders/" + id.replace(":", ".0.");
 		String url = "http://docs.google.com/a/" + domain + "/#folders/" + id.replace(":", ".0.");
-		url = addGoogleParameters(url, user, true);
 		return url;
 	}
 
@@ -85,9 +90,10 @@ public class UrlLib {
 	 * @param User user to obtain the token and id
 	 * @return the string
 	 */
-	public static String presentationUrl(String id, String domain, User user) {
-		String url = "http://docs.google.com/a/" + domain + "/presentation/edit?id=" + id.replace("presentation:", "");
-		url = addGoogleParameters(url, user, false);
+	public static String presentationUrl(String id, String domain, User user, String hostPageBaseURL) {
+//		String url = hostPageBaseURL + GOOGLE_URL_PROCESSOR + GOOGLE_DRIVE_FILES + id.replace("presentation:", "");
+//		String url = hostPageBaseURL + GOOGLE_URL_PROCESSOR + "http://docs.google.com/a/" + domain + "/presentation/edit?id=" + id.replace("presentation:", "");
+		String url = "http://docs.google.com/a/" + domain + "/presentation/edit?id=" + id.replace("presentation:", "");		
 		return url;
 	}
 
@@ -99,9 +105,10 @@ public class UrlLib {
 	 * @param User user to obtain the token and id
 	 * @return the string
 	 */
-	public static String spreadsheetUrl(String id, String domain, User user) {			
+	public static String spreadsheetUrl(String id, String domain, User user, String hostPageBaseURL) {
+//		String url = hostPageBaseURL + GOOGLE_URL_PROCESSOR + GOOGLE_DRIVE_FILES + id.replace("spreadsheet:", "");
+//		String url = hostPageBaseURL + GOOGLE_URL_PROCESSOR + "http://spreadsheets.google.com/a/" + domain + "/ccc?key=" + id.replace("spreadsheet:", "");
 		String url = "http://spreadsheets.google.com/a/" + domain + "/ccc?key=" + id.replace("spreadsheet:", "");
-		url = addGoogleParameters(url, user, false);
 		return url;
 	}
 
@@ -140,27 +147,4 @@ public class UrlLib {
 			}
 		});
 	}
-    
-    /**
-     * This method add the token and user id parameter to access Google with Rest without login
-     * @param url url to add the parameters
-     * @param token token to add
-     * @param userId user id to add
-     * @return url with Google parameters
-     */
-    private static String addGoogleParameters(String url, User user, boolean isFolder){
-    	String token = user.getGoogleToken();
-    	Long userId = user.getId();
-    	String connector = "&";
-    	if (isFolder){
-    		connector = "?";
-    	}
-    	if (!StringUtil.isBlank(token)){
-			url += connector + "access_token=" + token;
-		}
-		if (userId > 0){
-			url += connector + "aquotaUser=" + userId;
-		}
-		return url;
-    }
-}
+ }

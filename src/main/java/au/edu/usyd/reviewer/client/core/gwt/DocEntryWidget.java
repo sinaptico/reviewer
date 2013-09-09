@@ -4,6 +4,7 @@ import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.util.UrlLib;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -71,17 +72,18 @@ public class DocEntryWidget extends Composite {
 		Anchor link = new Anchor();
 		link.setTitle("Open in Google Docs");
 		link.setTarget("_blank");
+		String hostPageBaseURL = GWT.getHostPageBaseURL();
 		if (id.startsWith("document:")) {
-			link.setHref(UrlLib.documentUrl(id, domainName, loggedUser));
+			link.setHref(UrlLib.documentUrl(id, domainName, loggedUser, hostPageBaseURL));
 			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("presentation:")) {
-			link.setHref(UrlLib.presentationUrl(id, domainName, loggedUser));
+			link.setHref(UrlLib.presentationUrl(id, domainName, loggedUser,hostPageBaseURL));
 			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_pres.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("spreadsheet:")) {
-			link.setHref(UrlLib.spreadsheetUrl(id, domainName, loggedUser));
+			link.setHref(UrlLib.spreadsheetUrl(id, domainName, loggedUser,hostPageBaseURL));
 			link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_spread.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 		} else if (id.startsWith("folder:")) {
-			link.setHref(UrlLib.folderUrl(id, domainName, loggedUser));
+			link.setHref(UrlLib.folderUrl(id, domainName, loggedUser,hostPageBaseURL));
 			if (title.startsWith("* See ")){
 				link.setHTML("<div style='padding-top: 4.5px;'><img style='width: 12px; height: 11px;' src='images/" + (!locked ? "google/icon_6_doc.gif" : "icon-padlock.jpg") + "'></img><span>" + title + "</span></a></div>");
 			}else{

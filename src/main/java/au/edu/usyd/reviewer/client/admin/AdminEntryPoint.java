@@ -1115,15 +1115,15 @@ public class AdminEntryPoint implements EntryPoint {
 		headerPanel.add(htmlAssigments);
 
 		// Add a link to Google Doc to get user authorization access code
-//		if (StringUtil.isBlank(loggedUser.getGoogleToken())){
-//			// this method gets the code url parameter and call Google oAuth2 to obtain the user token
-//			String code = Window.Location.getParameter("code");
-//			if (StringUtil.isBlank(code)){
-//				getGoogleAuthorizationUrl();
-//			} else {
-//				getUserToken(code);
-//			}
-//		}
+		if (StringUtil.isBlank(loggedUser.getGoogleToken())){
+			// this method gets the code url parameter and call Google oAuth2 to obtain the user token
+			String code = Window.Location.getParameter("code");
+			if (StringUtil.isBlank(code) ){
+				getGoogleAuthorizationUrl();
+			} else {
+				getUserTokens(code);
+			}
+		}
 		
 	}
 	
@@ -1231,8 +1231,9 @@ public class AdminEntryPoint implements EntryPoint {
 		});		
 	}
 	
-	private void getUserToken(String code) {
-		adminService.getUserToken(code, GWT.getHostPageBaseURL()+"Admin.html", new AsyncCallback<User>(){
+	private void getUserTokens(String code) {
+		String state = Window.Location.getParameter("state");
+		adminService.getUserTokens(code, state, GWT.getHostPageBaseURL()+"Admin.html", new AsyncCallback<User>(){
 			@Override
 			public void onFailure(Throwable caught) {	
 				caught.printStackTrace();

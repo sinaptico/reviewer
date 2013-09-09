@@ -70,9 +70,10 @@ public class User implements Serializable {
 	private Organization organization;
 
 	private String username;
+	
+	// Google Tokens
 	private String googleToken;
 	private String googleRefreshToken;
-	
 	public User(){
 		
 	}
@@ -375,7 +376,4 @@ public class User implements Serializable {
 	public void setGoogleRefreshToken(String googleRefreshToken) {
 		this.googleRefreshToken = googleRefreshToken;
 	}
-	
-	
-	
 }

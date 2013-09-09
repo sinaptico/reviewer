@@ -179,6 +179,6 @@ interface AdminServiceAsync {
 	 */	public void noShareReviewTemplateWith(ReviewTemplate reviewTemplate, String email, AsyncCallback<ReviewTemplate> asyncCallback);
 
 	 public void getGoogleAuthorizationUrl(String currentUrl, AsyncCallback<String> asyncCallback);
-	 public void getUserToken(String code,String currentUrl, AsyncCallback<User> asyncCallback);
+	 public void getUserTokens(String code,String state, String currentUrl, AsyncCallback<User> asyncCallback);
 	 
 }

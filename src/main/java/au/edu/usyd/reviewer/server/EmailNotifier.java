@@ -6,6 +6,7 @@ import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -58,20 +59,12 @@ public class EmailNotifier {
 		properties.put("mail.smtp.port", this.smtpPort);
 		
 		properties.put("mail.smtp.auth", "true");
-		properties.put("mail.smtp.socketFactory.port", smtpPort);
+		properties.put("mail.smtp.socketFactory.port", this.smtpPort);
 		properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 		properties.put("mail.smtp.socketFactory.fallback", "false");
 		
 		mailSession = Session.getDefaultInstance(properties);
 		transport = mailSession.getTransport();
-	}
-
-	public void close() throws MessagingException {
-		transport.close();
-	}
-
-	public Properties getProperties() {
-		return properties;
 	}
 
 	public void sendLecturerDeadlineFinishNotification(User lecturer, Course course, Activity activity, String deadlineName) throws MessagingException, UnsupportedEncodingException, MessageException {
@@ -106,19 +99,55 @@ public class EmailNotifier {
 		sendNotification(user, subject, content);
 	}	
 
-	public void sendNotification(User user, String subject, String content) throws MessagingException, UnsupportedEncodingException {
-		if (!transport.isConnected()) {
-			transport.connect(username, password);			
+	public void sendNotification(User user, String subject, String content) {
+//		throws MessagingException, UnsupportedEncodingException {
+		
+		String emailTo = "";
+		try{
+			if (transport == null) {
+				transport = mailSession.getTransport();
+							
+			}
+			if (!transport.isConnected()){
+				transport.connect(username, password);
+			}
+	
+			if ( user != null && user.getEmail() != null){
+				emailTo = user.getEmail();
+				InternetAddress[] internetAddress = new InternetAddress[1];
+				internetAddress[0] = new InternetAddress(emailTo);
+				MimeMessage message = new MimeMessage(mailSession);
+				message.setFrom(new InternetAddress(fromAddress, fromName));
+				message.setContent(content, "text/plain");
+				message.setSubject(subject);
+				message.addRecipients(Message.RecipientType.TO, internetAddress);
+				message.saveChanges();
+				int i =0;
+				SEND_EMAIL: for (i=0;i<3;i++){
+					try{
+						transport.sendMessage(message, message.getRecipients(Message.RecipientType.TO));
+						break;
+					} catch (Exception e){
+						if (transport == null) {
+							transport = mailSession.getTransport();				
+						}
+						if (!transport.isConnected()){
+							transport.connect(username, password);
+						}
+						if (i < 3) {
+							continue SEND_EMAIL;
+						} else {
+							e.printStackTrace();
+							throw new Exception ("Failed to send email " + e.getMessage()) ;
+						}
+					}
+				}
+			}
+			//				
+		} catch(Exception e){
+			e.printStackTrace();
+			logger.error("Failed to send email notification " + subject + " to " + emailTo);
 		}
-		InternetAddress[] internetAddress = new InternetAddress[1];
-		internetAddress[0] = new InternetAddress(user.getEmail());
-		MimeMessage message = new MimeMessage(mailSession);
-		message.setFrom(new InternetAddress(fromAddress, fromName));
-		message.setContent(content, "text/plain");
-		message.setSubject(subject);
-		message.addRecipients(Message.RecipientType.TO, internetAddress);
-		message.saveChanges();
-		transport.sendMessage(message, message.getRecipients(Message.RecipientType.TO));
 	}
 
 	public void sendStudentActivityStartNotification(User student, Course course, WritingActivity writingActivity, Deadline deadline) throws MessagingException, UnsupportedEncodingException, MessageException {
@@ -168,7 +197,7 @@ public class EmailNotifier {
 		content = content.replaceAll("@Password@", user.getPassword());
 		content = content.replaceAll("@iWriteLink@", getReviewerLinkForUser(user));
 		content = content.replaceAll("@FromName@", fromName);
-		this.sendNotification(user, "iWrite user details", content);
+		this.sendNotification(user, "Reviewer user details", content);
 	}
 	
 	public void sendReviewEarlyFinishNotification(User user, Course course, ReviewingActivity reviewingActivity) throws MessagingException, UnsupportedEncodingException, MessageException {

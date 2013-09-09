@@ -285,6 +285,7 @@ public class AssignmentManager {
 			for (User lecturer : course.getLecturers()) {
 				try {
 					emailNotifier.sendLecturerDeadlineFinishNotification(lecturer, course, writingActivity, deadline.getName());
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 					logger.error("Failed to send assessment finish notification.", e);
@@ -1256,19 +1257,23 @@ public class AssignmentManager {
 				coursesTimers.put(course.getId(), timer);
 			}
 			
-			
 		} catch(Exception e){
 			e.printStackTrace();
 			// rollback TODO COMPLETE ROLLBACK
-			if (course != null && course.getId() == null){
-				// delete orphans emails, whose organizationId and courseId are equals to null
-				emailDao.deleteOrphanEmails();
+			if (course != null) { 
+					if (course.getId() == null){
+						// delete orphans emails, whose organizationId and courseId are equals to null
+						emailDao.deleteOrphanEmails();
+					} 
+					course.setSaving(false);
+					course = courseDao.save(course);
 			}
 			if (e instanceof MessageException){
 				throw (MessageException)e;
 			} else {
 				throw new MessageException(Constants.EXCEPTION_SAVE_COURSE);
 			}
+			
 		}
 		return course;
 	}

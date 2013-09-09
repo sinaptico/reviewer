@@ -34,6 +34,8 @@ public class Constants {
 	public static String ORGANIZATION_TITLE_LINK_TO_SHOW_IN_ASSIGNMENTS ="organization.title.link.to.show.in.assignments";
 	public static String REVIEWER_SUPPORT_EMAIL ="reviewer.support.email";
 	public static String ORGANIZATION_TIMEZONE="organization.timezone";
+	public static String ORGANIZATION_GOOGLE_CLIENT_ID="organization.google.client.id";
+	public static String ORGANIZATION_GOOGLE_CLIENT_SECRET="organization.google.client.secret";
 		
 	/** Exception messages to the user  **/
 	public static String EXCEPTION_USER_EXISTS="User exists in the database with the same email.";
@@ -212,7 +214,7 @@ public class Constants {
 	public static String EXCEPTION_STUDENT_LASTNAME_EMPTY="Please enter the lastname of the student.";
 	public static String EXCEPTION_REVIEW_TEMPLATE_USED_BY_USER="The user can not be deleted because one of his courses is using the review template";
 	public static String EXCEPTION_FORCE_USERS_CHANGE_PASSWORD ="Failed to force the users to change their Googel passwords.";
-	public static String EXCEPTION_ACTIVITY_OR_COURSE_SAVING = "The activity is being generated, you will be notified by email when is ready";
+	public static String EXCEPTION_ACTIVITY_OR_COURSE_SAVING = "The activity/course is being generated, you will be notified by email when is ready";
 	
 	// Roles
 	// Role of the admin of all the organizations

@@ -50,6 +50,7 @@ public class FileServlet extends HttpServlet {
 	private static String EMPTY_FILE = null;
 	private User user;
 	private Organization organization;
+	protected UserDao userDao = UserDao.getInstance();
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -331,6 +332,9 @@ public class FileServlet extends HttpServlet {
 			
 			if (email == null && user == null){
 				// ERROR we need the email o the user to continue. 
+				logger.error("email is null or user is null");
+				logger.error("email " + email);
+				logger.error("user " + user);
 				MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
 				me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 				throw me;
@@ -348,19 +352,21 @@ public class FileServlet extends HttpServlet {
 												
 				if (organization == null){
 					// ERROR we need the organization to know if shibboleth property is enabled or not
-					logger.error("Organization is null so we can not verify the shibboleth property");
+					logger.error("Organization is null for user " + email + " so we can not verify the shibboleth property");
 					MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
 					me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 					throw me;
 				} else {
 					// Verify if the organization is activated and deleted
 					if (!organization.isActivated() ){
+						logger.error("organization " + organization.getName() + " is no activated");
 						MessageException me = new MessageException(Constants.EXCEPTION_ORGANIZATION_UNACTIVATED);;
 						me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 						throw me;
 					} else if (organization.isDeleted()){
 						organization = null;
 						user = null;
+						logger.error("organization " + organization.getName() + "  was deleted");
 						request.getSession().setAttribute("user", null);
 						MessageException me = new MessageException(Constants.EXCEPTION_ORGANIZATION_DELETED);;
 						me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
@@ -375,9 +381,18 @@ public class FileServlet extends HttpServlet {
 							if (StringUtil.isBlank(user.getFirstname()) || StringUtil.isBlank(user.getLastname())){
 								String firstname = (String) request.getAttribute("givenName");
 								String lastname = (String) request.getAttribute("surname");
-								user.setFirstname(firstname);
-								user.setLastname(lastname);
-								UserDao userDao = UserDao.getInstance();
+								if (StringUtil.isBlank(user.getFirstname()) || StringUtil.isBlank(user.getLastname()) ||
+										 (firstname != null && !firstname.toLowerCase().equals(user.getFirstname())) || 
+										 (lastname != null && !lastname.toLowerCase().equals(user.getLastname()))){								
+											user.setFirstname(firstname);
+											user.setLastname(lastname);
+									try{
+										user = userDao.save(user);
+									} catch(Exception e){
+										e.printStackTrace();
+										logger.error("Error to save the user to update the firstname and lastname " + firstname + lastname);
+									}
+								}
 								user = userDao.save(user);
 							}
 							request.getSession().setAttribute("user", user);
@@ -395,6 +410,7 @@ public class FileServlet extends HttpServlet {
 							
 							request.getSession().setAttribute("user", user);
 						} else {
+							logger.error("user is null");
 							MessageException me = new MessageException(Constants.EXCEPTION_INVALID_LOGIN);;
 							me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 							throw me;
@@ -413,15 +429,19 @@ public class FileServlet extends HttpServlet {
 		return user;
 	}
 	
+	
 	private String getEmail(HttpServletRequest request, HttpServletResponse response){
 		// Get email from request
 		String email = null;
 		if (request.getUserPrincipal() != null) {
 			// Get email from reviewer login page
 			email = request.getUserPrincipal().getName();
+//			logger.debug("email " + email);
 		} else if (request.getAttribute("email") != null){
 			// Get email from AAF IdP property
 			email = (String) request.getAttribute("email");
+//			logger.debug("Information received from IDP");
+//			logger.debug("email " + email);
 		}
 		return email;
 	}
@@ -447,6 +467,7 @@ public class FileServlet extends HttpServlet {
 		return organization;
 	}
 	
+	
 	/**
 	 * Create a user in the database. This method should be called only the first time that a new user loggin in reviewer and organization use shibboleht (AAF login)
 	 * @param request Request to obtain the givenName and the surname of the user
@@ -455,20 +476,29 @@ public class FileServlet extends HttpServlet {
 	 * @throws MessageException
 	 */
 	private User createUser(HttpServletRequest request, String email, Organization anOrganization) throws MessageException{
-		
-		// add user into the database as a guest 
-		String firstname = (String) request.getAttribute("givenName");
-		String lastname = (String) request.getAttribute("surname");
-		UserDao userDao = UserDao.getInstance();
-		User newUser = userDao.getUserByEmail(email);
-		if (newUser == null){
-			newUser = new User();
-			newUser.setFirstname(firstname);
-			newUser.setLastname(lastname);
-			newUser.setEmail(email);
-			newUser.setOrganization(anOrganization);
-			newUser.addRole(Constants.ROLE_GUEST);
-			newUser = userDao.save(newUser);
+		User newUser = null;
+		try{
+			// add user into the database as a guest
+//			logger.debug("Information received from IDP");
+			String firstname = (String) request.getAttribute("givenName");
+//			logger.debug("givenName " + firstname);
+			String lastname = (String) request.getAttribute("surname");
+//			logger.debug("surname " + lastname);
+			newUser = userDao.getUserByEmail(email);
+			
+			if (newUser == null){
+				newUser = new User();
+				newUser.setFirstname(firstname);
+				newUser.setLastname(lastname);
+				newUser.setEmail(email);
+				newUser.setOrganization(anOrganization);
+				newUser.addRole(Constants.ROLE_GUEST);
+				newUser = userDao.save(newUser);
+			}
+		} catch(Exception e){
+			logger.error("error creating user with the IDP information");
+			e.printStackTrace();
+			
 		}
 		return newUser;
 	}
