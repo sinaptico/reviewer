@@ -1050,7 +1050,6 @@ public class AssignmentManager {
 	 */
 	private void validateActivity(WritingActivity writingActivity) throws MessageException{
 		MessageException me = null;		
-		int index = 0;
 		// All the reviewing finish date must be greater than the corresponding writing activity deadline finish date
 		for (ReviewingActivity reviewingActivity : writingActivity.getReviewingActivities()){
 			

@@ -281,8 +281,13 @@ public class ActivityForm extends Composite {
 			public void onClick(ClickEvent arg0) {
 				for(int i=0; i< reviewTable.getRowCount(); i++) {
 					if(remove.equals(reviewTable.getWidget(i, 1))) {
-						writingActivity.getReviewingActivities().remove(i);
-						reviewTable.removeRow(i);
+						ReviewingActivity reviewingActivity = writingActivity.getReviewingActivities().get(i);
+						if (reviewingActivity.getStatus() != reviewingActivity.STATUS_START){
+							writingActivity.getReviewingActivities().remove(i);
+							reviewTable.removeRow(i);
+						} else {
+							Window.alert("The reviewing activity only can be detelet if its state is NONE or FINISHED");
+						}
 					}
 				}
 			}});	
@@ -362,7 +367,6 @@ public class ActivityForm extends Composite {
 		HorizontalPanel emailStudentsPanel = new HorizontalPanel();
 		emailStudentsPanel.add(emailStudents);
 		emailStudentsPanel.add(new Label(" send email notifications to students, staff and admins."));
-//		emailStudentsPanel.add(new Label(" send email notifications to students."));
 		
 		Grid activityGrid = new Grid(6, 2);
 		activityGrid.setWidget(0, 0, new Label("Course:"));
