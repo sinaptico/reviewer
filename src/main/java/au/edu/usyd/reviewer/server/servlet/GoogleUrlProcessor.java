@@ -44,11 +44,11 @@ public class GoogleUrlProcessor extends HttpServlet {
 					GoogleAuthHelper helper = new GoogleAuthHelper();
 					// verify if the tokes has expired and get a new one
 					user = helper.refreshUserTokens(user);
-					String accessToken = user.getGoogleToken();
+//					String accessToken = user.getGoogleToken();
 //					logger.error("Access Token " + accessToken);
 					// add the access_token parameter to the url
-					redirect += "&access_token=" + accessToken;
-					response.setHeader("Authorization", "Bearer " + accessToken);
+//					redirect += "&access_token=" + accessToken;
+//					response.setHeader("Authorization", "Bearer " + accessToken);
 					response.setHeader("Content-Type", "application/http");
 				}
 			}

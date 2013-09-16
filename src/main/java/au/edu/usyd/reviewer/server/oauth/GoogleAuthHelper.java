@@ -104,13 +104,13 @@ public class GoogleAuthHelper {
 		    // Get token
 			String token = (String) jsonObject.get("access_token");
 			if (!StringUtil.isBlank(token)){
-				user.setGoogleToken(token);
+//				user.setGoogleToken(token);
 			}
 			
 			// Get refresh token
 			String refreshToken = (String) jsonObject.get("refresh_token");
 			if (!StringUtil.isBlank(refreshToken)){
-				user.setGoogleRefreshToken(refreshToken);
+//				user.setGoogleRefreshToken(refreshToken);
 			}
 			
 			if (!StringUtil.isBlank(token) && !StringUtil.isBlank(refreshToken) && !StringUtil.isBlank(token)){
@@ -139,7 +139,7 @@ public class GoogleAuthHelper {
 			Organization organization = user.getOrganization();
 			post.addParameter("client_secret",organization.getGoogleClientSecret());
 			post.addParameter("grant_type","refresh_token");
-			post.addParameter("refresh_token",user.getGoogleRefreshToken());
+//			post.addParameter("refresh_token",user.getGoogleRefreshToken());
 			post.addParameter("client_id",organization.getGoogleClientId());
 			
 			httpclient.executeMethod(post);
@@ -151,8 +151,8 @@ public class GoogleAuthHelper {
 			String token = (String) jsonObject.get("access_token");
 			
 			if (!StringUtil.isBlank(token)){
-				logger.error("User : "  + user.getEmail() + " token " + user.getGoogleToken());
-				user.setGoogleToken(token);
+//				logger.error("User : "  + user.getEmail() + " token " + user.getGoogleToken());
+//				user.setGoogleToken(token);
 				user = userDao.save(user);
 			}
 		} catch(Exception e){
