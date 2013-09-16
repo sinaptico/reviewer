@@ -75,8 +75,8 @@ INSERT INTO ReviewerProperty (name) VALUE ('organization.link.to.show.in.assignm
 INSERT INTO ReviewerProperty (name) VALUE ('organization.title.link.to.show.in.assignments');
 INSERT INTO ReviewerProperty (name) VALUE ('reviewer.support.email');
 INSERT INTO ReviewerProperty (name) VALUE ('organization.timezone');
-INSERT INTO ReviewerProperty (name) VALUE ('organization.google.client.id');
-INSERT INTO ReviewerProperty (name) VALUE ('organization.google.client.secret');
+-- INSERT INTO ReviewerProperty (name) VALUE ('organization.google.client.id');
+-- INSERT INTO ReviewerProperty (name) VALUE ('organization.google.client.secret');
 
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,1,'admin@demo-sinaptico.com');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,2,'3fe44aff77c3a349');
@@ -96,8 +96,8 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,16,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,17,'mariela@sinapti.co');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,18,'Australia/Sydney');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,19,'894979939992.apps.googleusercontent.com');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,20,'RAEdhNj8lEFfpOos9_0CL5Z9');
+-- INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,19,'894979939992.apps.googleusercontent.com');
+-- INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (1,20,'RAEdhNj8lEFfpOos9_0CL5Z9');
 
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,1,'admin@smart-sourcing.com.ar');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,2,'3f923c4d96751840');
@@ -117,6 +117,6 @@ INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId,
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,16,'');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,17,'mariela@sinapti.co');
 INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,18,'America/Argentina/Buenos Aires');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,19,'717652121196.apps.googleusercontent.com');
-INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,20,'poHBUBdwhMAbNYFXo8dagBvy');
+-- INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,19,'717652121196.apps.googleusercontent.com');
+-- INSERT INTO Organization_Properties_ReviewerProperty (organizationId,propertyId, value) VALUES (2,20,'poHBUBdwhMAbNYFXo8dagBvy');
 

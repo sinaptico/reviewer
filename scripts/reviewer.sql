@@ -874,8 +874,6 @@ CREATE TABLE `User` (
   `username` varchar(255) DEFAULT NULL,
   `wasmuser` bit(1) DEFAULT NULL,
   `organizationId` bigint(20) DEFAULT NULL,
-  `googleRefreshToken` varchar(255) DEFAULT NULL,
-  `googleToken` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `email_2` (`email`),
