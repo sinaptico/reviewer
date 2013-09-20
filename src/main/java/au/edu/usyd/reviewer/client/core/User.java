@@ -72,10 +72,9 @@ public class User implements Serializable {
 	private String username;
 	
 	// Google Tokens
-//	private String googleToken;
-//	private String googleRefreshToken;
-	
-	
+	private String googleToken;
+	private String googleRefreshToken;
+		
 	public User(){
 		
 	}
@@ -363,19 +362,19 @@ public class User implements Serializable {
 		return usernameEmail;	
 	}
 
-//	public String getGoogleToken() {
-//		return googleToken;
-//	}
-//
-//	public void setGoogleToken(String googleToken) {
-//		this.googleToken = googleToken;
-//	}
-//
-//	public String getGoogleRefreshToken() {
-//		return googleRefreshToken;
-//	}
-//
-//	public void setGoogleRefreshToken(String googleRefreshToken) {
-//		this.googleRefreshToken = googleRefreshToken;
-//	}
+	public String getGoogleToken() {
+		return googleToken;
+	}
+
+	public void setGoogleToken(String googleToken) {
+		this.googleToken = googleToken;
+	}
+
+	public String getGoogleRefreshToken() {
+		return googleRefreshToken;
+	}
+
+	public void setGoogleRefreshToken(String googleRefreshToken) {
+		this.googleRefreshToken = googleRefreshToken;
+	}
 }

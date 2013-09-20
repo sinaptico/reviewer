@@ -437,11 +437,15 @@ public class AssignmentManager {
 					//If null, the document is owned by a group
 					User firstStudentFromGroup=null;
 					if (studentGroup == null) {
-						Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
-						for (User user : students) {
-							firstStudentFromGroup = user;
-						}				
-						studentGroup = assignmentDao.loadUserGroupWhereUser(course, firstStudentFromGroup);
+						if (reviewEntry != null && reviewEntry.getDocEntry() != null && 
+							reviewEntry.getDocEntry().getOwnerGroup() != null && 
+							reviewEntry.getDocEntry().getOwnerGroup().getUsers() != null) {
+							Set<User> students = reviewEntry.getDocEntry().getOwnerGroup().getUsers();
+							for (User user : students) {
+								firstStudentFromGroup = user;
+							}				
+							studentGroup = assignmentDao.loadUserGroupWhereUser(course, firstStudentFromGroup);
+						}
 					}			
 					
 					if (studentGroup == null) {
