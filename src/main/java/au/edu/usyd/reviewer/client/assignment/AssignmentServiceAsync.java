@@ -1,11 +1,14 @@
 package au.edu.usyd.reviewer.client.assignment;
 
 import java.util.Collection;
+import java.util.List;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.WritingActivity;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -30,9 +33,9 @@ interface AssignmentServiceAsync {
 	 * @param semester the semester
 	 * @param year the year
 	 * @param includeFinishedReviews the include finished reviews
-	 * @param asyncCallback the callback
+	 * @param callback the callback
 	 */
-	public void getUserReviewingTasks(int semester, int year,Boolean orgaincludeFinishedReviews,Long OrganizationId, AsyncCallback<Collection<Course>> asyncCallback);
+	public void getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, int start,int length,AsyncCallback<List<ReviewTask>> callback);
 
 	/**
 	 * Gets the user writing tasks for the semester and year given.
@@ -84,4 +87,7 @@ interface AssignmentServiceAsync {
 	public void getOrganizations(AsyncCallback<Collection<Organization>> callback);
 
 	public void logout(AsyncCallback<Void> callback);
+	
+	
+	public void getUserReviewingTasksTotalAccount(int semester, int year, Boolean includeFinishedReviews, Long organizationId,AsyncCallback<Integer> asyncCallback);
 }

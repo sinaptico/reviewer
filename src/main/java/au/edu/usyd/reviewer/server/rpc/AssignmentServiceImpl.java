@@ -3,6 +3,7 @@ package au.edu.usyd.reviewer.server.rpc;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
 import org.apache.catalina.realm.RealmBase;
@@ -10,9 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.edu.usyd.reviewer.client.assignment.AssignmentService;
+import au.edu.usyd.reviewer.client.assignment.ReviewTask;
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.ReviewEntry;
+import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
 import au.edu.usyd.reviewer.client.core.WritingActivity;
 import au.edu.usyd.reviewer.client.core.util.Constants;
@@ -31,7 +35,7 @@ public class AssignmentServiceImpl extends ReviewerServiceImpl implements Assign
 	private User user = null;
 		
 	@Override
-	public Collection<Course> getUserActivities(int semester, int year,  Long organizationId) throws Exception {
+	public Collection<Course> getUserActivities(int semester, int year,Long organizationId) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
 		if (isGuestOrAdminOrSuperAdminOrStaff()){
@@ -42,18 +46,32 @@ public class AssignmentServiceImpl extends ReviewerServiceImpl implements Assign
 	}
 
 	@Override
-	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews,  Long organizationId) throws Exception {
+	public List<ReviewTask> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, int start,int length) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
 		if (isGuestOrAdminOrSuperAdminOrStaff()){
-			return assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, mockedUser);
+			return assignmentDao.loadUserReviewingTasks(semester, year, includeFinishedReviews, mockedUser, start,length);
 		} else {
 			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
 		}
 	}
 
 	@Override
-	public Collection<Course> getUserWritingTasks(int semester, int year, Long organizationId ) throws Exception {
+	public Integer getUserReviewingTasksTotalAccount(int semester, int year, Boolean includeFinishedReviews,Long organizationId) throws Exception {
+		initialize();
+		User mockedUser = getMockedUser();
+		if (isGuestOrAdminOrSuperAdminOrStaff()){
+			int reviewTasksSize = assignmentDao.loadUserReviewingTasksSize(semester, year, includeFinishedReviews, mockedUser);
+			
+			return reviewTasksSize;
+		} else {
+			throw new MessageException(Constants.EXCEPTION_PERMISSION_DENIED);
+		}
+	}
+	
+	
+	@Override
+	public Collection<Course> getUserWritingTasks(int semester, int year,Long organizationId) throws Exception {
 		initialize();
 		User mockedUser = getMockedUser();
 		if (isGuestOrAdminOrSuperAdminOrStaff()){

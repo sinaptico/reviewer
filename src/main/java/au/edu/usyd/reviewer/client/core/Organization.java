@@ -335,31 +335,46 @@ public class Organization implements Serializable {
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getReviewerDomain(){
 		String value = getPropertyValue(Constants.REVIEWER_DOMAIN);
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getReviewerEmailNotificationDomain(){
 		String value = getPropertyValue(Constants.REVIEWER_EMAIL_NOTIFICATION_DOMAIN);
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getOrganizationLinkToShowInAssignmest(){
 		String value = getPropertyValue(Constants.ORGANIZATION_LINK_TO_SHOW_IN_ASSIGNMENTS);
 		return value;
 	}
 	
+	@JsonIgnore
 	public String getOrganizationTitleLinkToShowInAssignmest(){
 		String value = getPropertyValue(Constants.ORGANIZATION_TITLE_LINK_TO_SHOW_IN_ASSIGNMENTS);
 		return value;
 	}
-	
+	@JsonIgnore
 	public String getReviewerSupportEmail(){
 		String value = getPropertyValue(Constants.REVIEWER_SUPPORT_EMAIL);
 		return value;
 	}
 	
+	@JsonIgnore
+	public String getGoogleClientId(){
+		String value = getPropertyValue(Constants.ORGANIZATION_GOOGLE_CLIENT_ID);
+		return value;
+	}
+	
+	@JsonIgnore
+	public String getGoogleClientSecret(){
+		String value = getPropertyValue(Constants.ORGANIZATION_GOOGLE_CLIENT_SECRET);
+		return value;
+	}
 	
 	
 	/**
@@ -382,6 +397,7 @@ public class Organization implements Serializable {
 	 * Returns a boolean to indicate if the organization uses AAF authentication (shibboleth) or not
 	 * @return boolean
 	 */
+	@JsonIgnore
 	public  boolean isShibbolethEnabled() {
 		String value = getPropertyValue(Constants.ORGANIZATION_SHIBBOLETH_ENABLED);
 		return StringUtil.stringToBool(value);
@@ -391,17 +407,19 @@ public class Organization implements Serializable {
 	 * Return a string with the begining of the password of the new users in Google Apps
 	 * @return
 	 */
+	@JsonIgnore
 	public String getOrganizationPasswordNewUsers(){
 		String value = getPropertyValue(Constants.ORGANIZATION_PASSWORD_NEW_USERS);
 		return value;
 	}
 	
-	
+	@JsonIgnore
 	public String getOrganizationTimeZone(){
 		String value = getPropertyValue(Constants.ORGANIZATION_TIMEZONE);
 		return value;
 	}
 	
+	@JsonIgnore
 	public boolean hasEmails(){
 		return getEmails().size() > 0;
 	}
@@ -431,6 +449,7 @@ public class Organization implements Serializable {
 	 * Add a domain to emails domains
 	 * @param domain
 	 */
+	@JsonIgnore
 	public void addDomainToEmailsDomains(String domain){
 		this.emailDomains.add(domain);
 	}
@@ -440,6 +459,7 @@ public class Organization implements Serializable {
 	 * only email in this table for this organization
 	 * @return true or false
 	 */
+	@JsonIgnore
 	public boolean isGoogleDomianTheOnlyDomainInEmailDomains() {
 		return  this.emailDomains.contains(this.getGoogleDomain()) && 
 			   (this.emailDomains.size() == 1);

@@ -4,6 +4,7 @@ package au.edu.usyd.reviewer.server.rpc;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,14 +104,14 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 												
 				if (organization == null){
 					// ERROR we need the organization to know if shibboleth property is enabled or not
-					logger.error("organization is null");
+					logger.error("Organization is null for user " + email + " so we can not verify the shibboleth property");
 					MessageException me = new MessageException(Constants.EXCEPTION_GET_LOGGED_USER);;
 					me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 					throw me;
 				} else {
 					// Verify if the organization is activated and deleted
 					if (!organization.isActivated() ){
-						logger.error("organization is no activated");
+						logger.error("organization " + organization.getName() + " is no activated");
 						MessageException me = new MessageException(Constants.EXCEPTION_ORGANIZATION_UNACTIVATED);;
 						me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 						throw me;
@@ -118,7 +119,7 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 						organization = null;
 						user = null;
 						request.getSession().setAttribute("user", null);
-						logger.error("organization was deleted");
+						logger.error("organization " + organization.getName() + "  was deleted");
 						MessageException me = new MessageException(Constants.EXCEPTION_ORGANIZATION_DELETED);;
 						me.setStatusCode(Constants.HTTP_CODE_LOGOUT);
 						throw me;
@@ -129,11 +130,11 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 						if (user != null){
 							// set user in session
 							user.setOrganization(organization);
-							logger.debug("Information received from IDP");
+//							logger.debug("Information received from IDP");
 							String firstname = (String) request.getAttribute("givenName");
-							logger.debug("givenName " + firstname);
+//							logger.debug("givenName " + firstname);
 							String lastname = (String) request.getAttribute("surname");
-							logger.debug("surname " + lastname);
+//							logger.debug("surname " + lastname);
 							if (StringUtil.isBlank(user.getFirstname()) || StringUtil.isBlank(user.getLastname()) ||
 							 (firstname != null && !firstname.toLowerCase().equals(user.getFirstname())) || 
 							 (lastname != null && !lastname.toLowerCase().equals(user.getLastname()))){								
@@ -299,12 +300,12 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 		if (request.getUserPrincipal() != null) {
 			// Get email from reviewer login page
 			email = request.getUserPrincipal().getName();
-			logger.debug("email " + email);
+//			logger.debug("email " + email);
 		} else if (request.getAttribute("email") != null){
 			// Get email from AAF IdP property
 			email = (String) request.getAttribute("email");
-			logger.debug("Information received from IDP");
-			logger.debug("email " + email);
+//			logger.debug("Information received from IDP");
+//			logger.debug("email " + email);
 		}
 		return email;
 	}
@@ -342,11 +343,11 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 		User newUser = null;
 		try{
 			// add user into the database as a guest
-			logger.debug("Information received from IDP");
+//			logger.debug("Information received from IDP");
 			String firstname = (String) request.getAttribute("givenName");
-			logger.debug("givenName " + firstname);
+//			logger.debug("givenName " + firstname);
 			String lastname = (String) request.getAttribute("surname");
-			logger.debug("surname " + lastname);
+//			logger.debug("surname " + lastname);
 			newUser = userDao.getUserByEmail(email);
 			
 			if (newUser == null){
@@ -377,8 +378,9 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 		String url = null;
 		
 		try{
+			HttpServletRequest request = this.getThreadLocalRequest();
 			GoogleAuthHelper helper = new GoogleAuthHelper();
-			url = helper.getGoogleAuthorizationUrl(user, currentUrl);
+			url = helper.getGoogleAuthorizationUrl(request, user, currentUrl);
 			
 		} catch(Exception e){
 			e.printStackTrace();
@@ -394,12 +396,16 @@ public class ReviewerServiceImpl extends RemoteServiceServlet {
 	 * @return user wiht his/her tokens
 	 * @throws Exception
 	 */
-	public User getUserToken(String code, String currentUrl) throws Exception {
+	public User getUserTokens(String code, String state, String currentUrl) throws Exception {
 		try{
 			HttpServletRequest request = this.getThreadLocalRequest();
-			GoogleAuthHelper helper = new GoogleAuthHelper();
-			// Get user informatino to obtain the token
-			user = helper.getUserTokens(user, code, currentUrl);
+			if (request != null){
+				String sessionState = request.getParameter("session");	
+				GoogleAuthHelper helper = new GoogleAuthHelper();
+				//Get user informatino to obtain the token
+				user = helper.getUserTokens(user, code, currentUrl);
+				request.getSession().setAttribute("user", user);
+			}
 		} catch(Exception e){
 			e.printStackTrace();
 		}

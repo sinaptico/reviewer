@@ -137,6 +137,8 @@
 	</repositories>
 	<properties>
 		<spring.version>3.0.5.RELEASE</spring.version>
+		<project.http.version>1.16.0-rc</project.http.version>
+    	<project.oauth.version>1.16.0-rc</project.oauth.version>
 	</properties>
 	<pluginRepositories>
 		<pluginRepository>
@@ -174,11 +176,11 @@
 			<version>2.2</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>au.edu.usyd.iwrite</groupId>
 			<artifactId>wasm</artifactId>
 			<version>1.0.0</version>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -318,30 +320,36 @@
         </dependency>
         <!-- Google OAuth 2 dependencies  -->
         <!-- <dependency>
-			<groupId>com.google.http-client</groupId>
-			<artifactId>google-http-client</artifactId>
-			<version>1.15.0-rc</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.http-client</groupId>
-			<artifactId>google-http-client-jackson</artifactId>
-			<version>1.15.0-rc</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.apis</groupId>
-			<artifactId>google-api-services-oauth2</artifactId>
-			<version>v2-rev39-1.15.0-rc</version>
-		</dependency>
-		<dependency>
+      		<groupId>com.google.oauth-client</groupId>
+      		<artifactId>google-oauth-client</artifactId>
+      		<version>${project.oauth.version}</version>
+    	</dependency>
+    	<dependency>
+      		<groupId>com.google.oauth-client</groupId>
+      		<artifactId>google-oauth-client-java6</artifactId>
+      		<version>${project.oauth.version}</version>
+    	</dependency>
+    	<dependency>
       		<groupId>com.google.oauth-client</groupId>
       		<artifactId>google-oauth-client-jetty</artifactId>
-      		<version>1.15.0-rc</version>
-    	</dependency>      -->	
+      		<version>${project.oauth.version}</version>
+    	</dependency>
+    	<dependency>
+      		<groupId>com.google.http-client</groupId>
+      		<artifactId>google-http-client-jackson2</artifactId>
+      		<version>${project.http.version}</version>
+    	</dependency>
+    	<dependency>
+      		<groupId>com.google.apis</groupId>
+      		<artifactId>google-api-services-drive</artifactId>
+      		<version>v2-rev95-1.16.0-rc</version>
+    	</dependency> -->
     	<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
 			<version>1.1</version>
-  		</dependency>
+  		</dependency> 
+  		
   	</dependencies>	
 		
 	<reporting>

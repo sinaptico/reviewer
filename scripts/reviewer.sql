@@ -53,13 +53,12 @@ CREATE TABLE `Activity` (
   `reviewTemplateId` bigint(20) DEFAULT NULL,
   `startDate_id` bigint(20) DEFAULT NULL,
   `deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `saving` bit(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FKA126572F4F68B324` (`startDate_id`),
   CONSTRAINT `FKA126572F4F68B324` FOREIGN KEY (`startDate_id`) REFERENCES `Deadline` (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `Activity` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Activity_Entries_Entry`
@@ -95,7 +94,6 @@ CREATE TABLE `Choice` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-ALTER TABLE `Choice` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `Course`
 --
@@ -114,13 +112,13 @@ CREATE TABLE `Course` (
   `year` int(11) NOT NULL,
   `organizationId` bigint(20) DEFAULT NULL,
   `deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `saving` bit(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FK78A7CC3B340139E3` (`organizationId`),
   CONSTRAINT `FK78A7CC3B340139E3` FOREIGN KEY (`organizationId`) REFERENCES `Organization` (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-ALTER TABLE `Course` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `Course_Activities_Activity`
 --
@@ -279,10 +277,9 @@ CREATE TABLE `Deadline` (
   `name` varchar(255) DEFAULT NULL,
   `status` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-ALTER TABLE `Deadline` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `DocEntry_Reviews_Review`
 --
@@ -315,10 +312,9 @@ CREATE TABLE `DocumentType` (
   `number` int(11) DEFAULT NULL,
   `genre` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-ALTER TABLE `DocumentType` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `DocumentType_Rubrics`
 --
@@ -356,8 +352,6 @@ CREATE TABLE `Email` (
   CONSTRAINT `FK3FF5B7CE6BD0C7C` FOREIGN KEY (`course_id`) REFERENCES `Course` (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `Email` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Entry`
@@ -400,10 +394,8 @@ CREATE TABLE `Entry` (
   CONSTRAINT `FK4001852C5CD675C` FOREIGN KEY (`review_id`) REFERENCES `Review` (`id`),
   CONSTRAINT `FK4001852C6249F14` FOREIGN KEY (`owner_id`) REFERENCES `User` (`id`),
   CONSTRAINT `FK4001852EE964196` FOREIGN KEY (`reviewReply_id`) REFERENCES `TemplateReply` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `Entry` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Entry_Entry`
@@ -441,10 +433,8 @@ CREATE TABLE `FeedbackTemplate` (
   `descriptionA` longtext,
   `descriptionB` longtext,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `FeedbackTemplate` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Grade`
@@ -463,10 +453,8 @@ CREATE TABLE `Grade` (
   KEY `FK41DCFB75A3DEEFC` (`user_id`),
   CONSTRAINT `FK41DCFB75A3DEEFC` FOREIGN KEY (`user_id`) REFERENCES `User` (`id`),
   CONSTRAINT `FK41DCFB7BB5BE6DC` FOREIGN KEY (`deadline_id`) REFERENCES `Deadline` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `Grade` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Organization`
@@ -484,8 +472,6 @@ CREATE TABLE `Organization` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `Organization` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Organization_Emails_Domains`
@@ -535,10 +521,9 @@ CREATE TABLE `Question` (
   `docId` varchar(255) DEFAULT NULL,
   `sourceSentence` longtext,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-ALTER TABLE `Question` AUTO_INCREMENT = 1;
 --
 -- Table structure for table `QuestionScore`
 --
@@ -555,8 +540,6 @@ CREATE TABLE `QuestionScore` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `QuestionScore` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Question_Owner`
@@ -619,8 +602,6 @@ CREATE TABLE `Rating` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-ALTER TABLE `Rating` AUTO_INCREMENT = 1;
-
 --
 -- Table structure for table `Review`
 --
@@ -636,10 +617,8 @@ CREATE TABLE `Review` (
   `feedbackTemplateType` varchar(255) DEFAULT NULL,
   `saved` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `Review` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `ReviewTemplate`
@@ -654,13 +633,49 @@ CREATE TABLE `ReviewTemplate` (
   `name` varchar(255) DEFAULT NULL,
   `organizationId` bigint(20) DEFAULT NULL,
   `deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `userId` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `FK124A1C12340139E3` (`organizationId`),
+  KEY `FK124A1C12312E3313` (`userId`),
+  CONSTRAINT `FK124A1C12312E3313` FOREIGN KEY (`userId`) REFERENCES `User` (`id`),
   CONSTRAINT `FK124A1C12340139E3` FOREIGN KEY (`organizationId`) REFERENCES `Organization` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-ALTER TABLE `ReviewTemplate` AUTO_INCREMENT = 1;
+--
+-- Table structure for table `ReviewTemplate_Sections`
+--
+
+DROP TABLE IF EXISTS `ReviewTemplate_Sections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ReviewTemplate_Sections` (
+  `ReviewTemplate_id` bigint(20) NOT NULL,
+  `sections_id` bigint(20) NOT NULL,
+  UNIQUE KEY `sections_id` (`sections_id`),
+  KEY `FK583F4BDBBB0FFB4F` (`sections_id`),
+  KEY `FK583F4BDB3AE4FF3C` (`ReviewTemplate_id`),
+  CONSTRAINT `FK583F4BDB3AE4FF3C` FOREIGN KEY (`ReviewTemplate_id`) REFERENCES `ReviewTemplate` (`id`),
+  CONSTRAINT `FK583F4BDBBB0FFB4F` FOREIGN KEY (`sections_id`) REFERENCES `Section` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ReviewTemplate_Users`
+--
+
+DROP TABLE IF EXISTS `ReviewTemplate_Users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ReviewTemplate_Users` (
+  `ReviewTemplate_id` bigint(20) NOT NULL,
+  `sharedWith_id` bigint(20) NOT NULL,
+  KEY `FK4075477B3F214C1C` (`sharedWith_id`),
+  KEY `FK4075477B3AE4FF3C` (`ReviewTemplate_id`),
+  CONSTRAINT `FK4075477B3AE4FF3C` FOREIGN KEY (`ReviewTemplate_id`) REFERENCES `ReviewTemplate` (`id`),
+  CONSTRAINT `FK4075477B3F214C1C` FOREIGN KEY (`sharedWith_id`) REFERENCES `User` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `ReviewTemplates_Sections`
@@ -750,10 +765,8 @@ CREATE TABLE `ReviewerProperty` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `ReviewerProperty` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Rubric`
@@ -768,10 +781,8 @@ CREATE TABLE `Rubric` (
   `number` varchar(255) DEFAULT NULL,
   `link` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `Rubric` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Rubric_FeedbackTemplates`
@@ -805,8 +816,6 @@ CREATE TABLE `Section` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `Section` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `Sections_Choices`
@@ -848,8 +857,6 @@ CREATE TABLE `TemplateReply` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
-ALTER TABLE `TemplateReply` AUTO_INCREMENT = 1;
-
 --
 -- Table structure for table `User`
 --
@@ -872,10 +879,8 @@ CREATE TABLE `User` (
   UNIQUE KEY `email_2` (`email`),
   KEY `FK285FEB340139E3` (`organizationId`),
   CONSTRAINT `FK285FEB340139E3` FOREIGN KEY (`organizationId`) REFERENCES `Organization` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `User` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `UserGroup`
@@ -891,8 +896,6 @@ CREATE TABLE `UserGroup` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-ALTER TABLE `UserGroup` AUTO_INCREMENT = 1;
 
 --
 -- Table structure for table `UserGroup_Users_User`
@@ -985,24 +988,6 @@ CREATE TABLE `WritingActivity_ReviewingActivities_ReviewingActivity` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-
---
--- Table structure for table `ReviewTemplate_Users`
---
-
-DROP TABLE IF EXISTS `ReviewTemplate_Users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ReviewTemplate_Users` (
-  `ReviewTemplate_id` bigint(20) NOT NULL,
-  `sharedWith_id` bigint(20) NOT NULL,
-  KEY `FK4075477B3F214C1C` (`sharedWith_id`),
-  KEY `FK4075477B3AE4FF3C` (`ReviewTemplate_id`),
-  CONSTRAINT `FK4075477B3AE4FF3C` FOREIGN KEY (`ReviewTemplate_id`) REFERENCES `ReviewTemplate` (`id`),
-  CONSTRAINT `FK4075477B3F214C1C` FOREIGN KEY (`sharedWith_id`) REFERENCES `User` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
@@ -1011,4 +996,4 @@ CREATE TABLE `ReviewTemplate_Users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-06-05  9:32:39
+-- Dump completed on 2013-08-27 16:37:21

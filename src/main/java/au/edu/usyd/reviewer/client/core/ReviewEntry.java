@@ -15,11 +15,11 @@ public class ReviewEntry extends Entry {
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
-	/** The review. */
+	/** The review with the comments added by the reviewer */
 	@OneToOne
 	protected Review review;
 	
-	/** The doc entry. */
+	/** The doc entry to be reviewed */
 	@ManyToOne
 	protected DocEntry docEntry;
 	

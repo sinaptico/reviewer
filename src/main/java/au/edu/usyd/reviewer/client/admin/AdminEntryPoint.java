@@ -1114,14 +1114,14 @@ public class AdminEntryPoint implements EntryPoint {
 		HTML htmlAssigments = new HTML ("<a href='Assignments.html'><< Go to the Assignments List</a></br></br><img src='images/icon-info.gif'/> If you have selected the option 'Impersonate User' then by clicking the link above you will see the assignments list of that user. </br>In order to go back to your normal 'Assignments list' you have to click the 'Assignments' link at the top of the page again.</div></br>");
 		headerPanel.add(htmlAssigments);
 
-//		// Add a link to Google Doc to get user authorization access code
+		// Add a link to Google Doc to get user authorization access code
 //		if (StringUtil.isBlank(loggedUser.getGoogleToken())){
 //			// this method gets the code url parameter and call Google oAuth2 to obtain the user token
 //			String code = Window.Location.getParameter("code");
-//			if (StringUtil.isBlank(code)){
+//			if (StringUtil.isBlank(code) ){
 //				getGoogleAuthorizationUrl();
 //			} else {
-//				getUserToken(code);
+//				getUserTokens(code);
 //			}
 //		}
 		
@@ -1231,10 +1231,12 @@ public class AdminEntryPoint implements EntryPoint {
 		});		
 	}
 	
-	private void getUserToken(String code) {
-		adminService.getUserToken(code, GWT.getHostPageBaseURL()+"Admin.html", new AsyncCallback<User>(){
+	private void getUserTokens(String code) {
+		String state = Window.Location.getParameter("state");
+		adminService.getUserTokens(code, state, GWT.getHostPageBaseURL()+"Admin.html", new AsyncCallback<User>(){
 			@Override
-			public void onFailure(Throwable caught) {		
+			public void onFailure(Throwable caught) {	
+				caught.printStackTrace();
 			}
 
 			@Override

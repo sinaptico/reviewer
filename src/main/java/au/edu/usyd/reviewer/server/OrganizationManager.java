@@ -90,9 +90,7 @@ public class OrganizationManager {
 			if (!organization.hasProperties()){
 				organization = addProperties(organization);
 			}
-			if (!organization.hasEmails()){
-				organization = addEmails(organization);
-			}
+			organization = addEmails(organization);
 			saveOrganizationProperties(organization.getOrganizationProperties());	
 		} else {
 			// there is an organization with the same name
@@ -233,12 +231,13 @@ public class OrganizationManager {
 						
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					try{
 						AESCipher aescipher = AESCipher.getInstance();
 						value = aescipher.encrypt(value);
 						organizationProperty.setValue(value);
 					} catch(Exception ex){
-							
+						ex.printStackTrace();
 					}
 				}
 			}
@@ -315,15 +314,49 @@ public class OrganizationManager {
 	
 	public Organization addEmails(Organization organization) throws MessageException {
 		try{
-			organization = createEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH,Constants.EMAIL_LECTURER_DEADLINE_FINISH_MESSAGE, organization);
-			organization = createEmail(Constants.EMAIL_PASSWORD_DETAILS,Constants.EMAIL_PASSWORD_DETAILS_MESSAGE, organization);
-			organization = createEmail(Constants.EMAIL_STUDENT_ACTIVITY_START,Constants.EMAIL_STUDENT_ACTIVITY_START_MESSAGE, organization);
-			organization = createEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW,Constants.EMAIL_STUDENT_RECEIVED_REVIEW_MESSAGE, organization);
-			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH,Constants.EMAIL_STUDENT_REVIEW_FINISH_MESSAGE, organization);
-			organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_START,Constants.EMAIL_STUDENT_REVIEW_START_MESSAGE, organization);
-			organization = createEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
-			organization = createEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
-			organization = createEmail(Constants.EMAIL_SAVE_COURSE_FINISHED,Constants.EMAIL_SAVE_COURSE_FINISHED_MESSAGE, organization);
+			if (organization.getEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH) == null){
+				organization = createEmail(Constants.EMAIL_LECTURER_DEADLINE_FINISH,Constants.EMAIL_LECTURER_DEADLINE_FINISH_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_PASSWORD_DETAILS) == null){
+				organization = createEmail(Constants.EMAIL_PASSWORD_DETAILS,Constants.EMAIL_PASSWORD_DETAILS_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_STUDENT_ACTIVITY_START) == null){
+				organization = createEmail(Constants.EMAIL_STUDENT_ACTIVITY_START,Constants.EMAIL_STUDENT_ACTIVITY_START_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW) == null){
+				organization = createEmail(Constants.EMAIL_STUDENT_RECEIVED_REVIEW,Constants.EMAIL_STUDENT_RECEIVED_REVIEW_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH) == null){
+				organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_FINISH,Constants.EMAIL_STUDENT_REVIEW_FINISH_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_STUDENT_REVIEW_START) == null){
+				organization = createEmail(Constants.EMAIL_STUDENT_REVIEW_START,Constants.EMAIL_STUDENT_REVIEW_START_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT) == null){
+				organization = createEmail(Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT) == null){
+				organization = createEmail(Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT,Constants.EMAIL_REVIEWING_ACTIVITY_NOTIFICATIONS_SENT_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_SAVE_COURSE_FINISHED) == null){
+				organization = createEmail(Constants.EMAIL_SAVE_COURSE_FINISHED,Constants.EMAIL_SAVE_COURSE_FINISHED_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_FINISHED) == null){
+				organization = createEmail(Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_FINISHED,Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_FINISHED_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_FINISHED) == null){
+				organization = createEmail(Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_FINISHED,Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_FINISHED_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_ADMIN_ACTIVITY_STARTED) == null){
+				organization = createEmail(Constants.EMAIL_ADMIN_ACTIVITY_STARTED,Constants.EMAIL_ADMIN_ACTIVITY_STARTED_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_STARTED) == null){
+				organization = createEmail(Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_STARTED,Constants.EMAIL_ADMIN_ACTIVITY_DEADLINE_STARTED_MESSAGE, organization);
+			}
+			if (organization.getEmail(Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_DEADLINE_STARTED) == null){
+				organization = createEmail(Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_DEADLINE_STARTED,Constants.EMAIL_ADMIN_REVIEWING_ACTIVITY_DEADLINE_STARTED_MESSAGE, organization);
+			}
+			
 		} catch(Exception e){
 			throw new MessageException(Constants.EXCEPTION_GENERATE_ORGANIZATION_EMAILS);
 		}
@@ -574,6 +607,7 @@ public class OrganizationManager {
 					try{
 						googleUserServiceImpl.forceUserToChangePassword(user.getGoogleAppsEmailUsername());
 					} catch(Exception e){
+						e.printStackTrace();
 						String username = "";
 						if ( user != null && user.getGoogleAppsEmailUsername() != null){
 							username = user.getGoogleAppsEmailUsername();

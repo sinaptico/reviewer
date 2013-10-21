@@ -2,12 +2,11 @@ package au.edu.usyd.reviewer.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -16,6 +15,7 @@ import org.hibernate.criterion.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.edu.usyd.reviewer.client.assignment.ReviewTask;
 import au.edu.usyd.reviewer.client.core.Activity;
 import au.edu.usyd.reviewer.client.core.Choice;
 import au.edu.usyd.reviewer.client.core.Course;
@@ -72,7 +72,8 @@ public class AssignmentDao {
 			Course course = (Course) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
 			session.getTransaction().commit();
 			if (course != null){
-				course = course.clone();
+//				course = course.clone();
+				course = this.loadCourse(course.getId());
 			}
 			return course;
 		} catch (Exception e){
@@ -98,7 +99,8 @@ public class AssignmentDao {
 			Course course = (Course) session.createQuery(query).setParameter("reviewingActivity", reviewingActivity).uniqueResult();
 			session.getTransaction().commit();
 			if (course != null){
-				course = course.clone();
+//				course = course.clone();
+				course = this.loadCourse(course.getId());
 			}
 			return course;
 		} catch (Exception e){
@@ -123,7 +125,8 @@ public class AssignmentDao {
 			Course course = (Course) session.createQuery(query).setParameter("writingActivity", writingActivity).uniqueResult();
 			session.getTransaction().commit();
 			if (course != null){
-				course = course.clone();
+//				course = course.clone();
+				course = this.loadCourse(course.getId());
 			}
 			return course;
 		} catch (Exception e){
@@ -580,7 +583,7 @@ public class AssignmentDao {
 	public Rating loadUserRatingForEditing(User owner, Review review)throws MessageException {
 		Session session = null;
 		try{
-			logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
+//			logger.debug("Loading rating: owner.username=" + owner.getUsername() + ", review.id=" + review.getId());
 			session = this.getSession();
 			session.beginTransaction();
 			Rating rating = (Rating) session.createCriteria(Rating.class).add(Property.forName("owner").eq(owner)).add(Property.forName("review").eq(review)).uniqueResult();
@@ -601,7 +604,7 @@ public class AssignmentDao {
 	public Course loadUserReviewForEditing(User user, long reviewId) throws MessageException{
 		Session session = null;
 		try{
-			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
+//			logger.debug("Loading user review: user.username=" + user.getUsername() + ", review.id=" + reviewId);
 			String query = "select distinct course from Course course " + 
 			"left join fetch course.lecturers lecturer " + 
 			"left join fetch course.tutors tutor " + 
@@ -677,6 +680,120 @@ public class AssignmentDao {
 		}
 	}
 
+	public List<ReviewTask> loadUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, User user,Integer start,Integer length) throws MessageException{
+		Session session = null;
+		List<ReviewTask> reviewTasks = new ArrayList<ReviewTask>();
+		try{
+			
+			String sQuery = "select distinct course.name,review.id,docEntry.title,review.saved,reviewingAcitvity.finishDate from Course course "   
+				+ "left join course.lecturers lecturer " 
+				+ "left join course.tutors tutor " 
+				+ "left join course.supervisors supervisor " 
+				+ "left join course.automaticReviewers automaticReviewer "
+				+ "join course.studentGroups studentGroup " 
+				+ "join studentGroup.users student " 
+				+ "join course.writingActivities writingActivity " 
+				+ "join writingActivity.reviewingActivities reviewingAcitvity " 
+				+ "join reviewingAcitvity.entries reviewEntry "
+				+ "join reviewEntry.docEntry docEntry "
+				+ "join reviewEntry.review review "
+				+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) "
+				+ "AND (reviewEntry.owner=:user)"
+				+ "AND (course.semester=:semester AND course.year=:year) "
+				+ " and course.deleted = false and writingActivity.deleted=false AND reviewEntry.deleted=false ";
+			
+			if (!includeFinishedReviews){
+				sQuery = sQuery + "AND (reviewingAcitvity.status = 1)";	
+			}	
+			
+			sQuery = sQuery + " ORDER BY review.saved";
+			
+			if (length == null || (length != null && length < 1)){
+				length = 10;
+			}
+			if (start == null || (start!=null && start < 1)){
+				start = 1;
+			} 
+			
+			session = this.getSession();
+			session.beginTransaction();
+			
+			Query query= session.createQuery(sQuery).setParameter("user", user).setParameter("semester", semester).setParameter("year", year);
+			query.setMaxResults(length);
+//			query.setFirstResult(length * (start - 1));
+			query.setFirstResult(start);
+			
+			List<Object[]> objects = query.list();
+			session.getTransaction().commit();
+
+			for(Object obj[]: objects){
+				if (obj.length ==5){
+					ReviewTask reviewTask = new ReviewTask();
+					reviewTask.setCourseName((String)obj[0]);
+					reviewTask.setReviewId((Long)obj[1]);
+					reviewTask.setDocEntryTitle((String)obj[2]);
+					reviewTask.setSavedDate((Date)obj[3]);
+					reviewTask.setFinishDate((Date)obj[4]);
+					reviewTasks.add(reviewTask.clone());
+				}
+			}
+						
+			return reviewTasks;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
+		}
+	}
+
+	public int loadUserReviewingTasksSize(int semester, int year, Boolean includeFinishedReviews, User user) throws MessageException{
+		Session session = null;
+		int reviewTasksSize = 0;
+		try{
+			
+			String sQuery = "select distinct course.name, docEntry.id, docEntry.title,review.saved,reviewingAcitvity.finishDate from Course course " 
+				+ "left join course.lecturers lecturer " 
+				+ "left join course.tutors tutor " 
+				+ "left join course.supervisors supervisor " 
+				+ "left join course.automaticReviewers automaticReviewer "
+				+ "join course.studentGroups studentGroup " 
+				+ "join studentGroup.users student " 
+				+ "join course.writingActivities writingActivity " 
+				+ "join writingActivity.reviewingActivities reviewingAcitvity " 
+				+ "join reviewingAcitvity.entries reviewEntry "
+				+ "join reviewEntry.docEntry docEntry "
+				+ "join reviewEntry.review review "
+				+ "where (student=:user OR supervisor=:user OR tutor=:user OR lecturer=:user OR automaticReviewer=:user) "
+				+ "AND (reviewEntry.owner=:user)"
+				+ "AND (course.semester=:semester AND course.year=:year) "
+				+ " and course.deleted = false and writingActivity.deleted=false AND reviewEntry.deleted=false ";
+			
+			if (!includeFinishedReviews){
+				sQuery = sQuery + "AND (reviewingAcitvity.status = 1)";	
+			}
+				
+			
+			session = this.getSession();
+			session.beginTransaction();
+			
+			Query query= session.createQuery(sQuery).setParameter("user", user).setParameter("semester", semester).setParameter("year", year);
+			
+			List<ReviewTask> tasks = query.list();
+			session.getTransaction().commit();
+			
+			return tasks.size();
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSES);
+		}
+	}
+
+	
 	public List<Course> loadUserWritingTasks(int semester, int year, User user) throws MessageException{
 		Session session = null;
 		List<Course> resultList = new ArrayList<Course>();
@@ -716,6 +833,29 @@ public class AssignmentDao {
 		}
 	}
 
+	public Course loadCourse(long courseId)throws MessageException {
+		Session session = null;
+		try{
+			session = this.getSession();
+			session.beginTransaction();
+			Course course = (Course) session.createCriteria(Course.class)
+																		.add(Property.forName("id").eq(courseId))
+																		.add(Property.forName("deleted").eq(false))
+																		.uniqueResult();
+			session.getTransaction().commit();
+			if (course != null){
+				course = course.clone();
+			}
+			return course;
+		} catch (Exception e){
+			e.printStackTrace();
+			if ( session != null && session.getTransaction() != null){
+				session.getTransaction().rollback();
+			}
+			throw new MessageException(Constants.EXCEPTION_GET_COURSE);
+		}
+	}
+	
 	public WritingActivity loadWritingActivity(long writingActivityId)throws MessageException {
 		Session session = null;
 		try{
@@ -750,8 +890,9 @@ public class AssignmentDao {
 			WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("deadline", deadline).uniqueResult();
 			session.getTransaction().commit();
 			if (writingActivity != null){
-				writingActivity = writingActivity.clone();
-			}
+				writingActivity = loadWritingActivity(writingActivity.getId());
+
+			}			
 			return writingActivity;
 		} catch (Exception e){
 			e.printStackTrace();
@@ -774,7 +915,8 @@ public class AssignmentDao {
 			WritingActivity writingActivity = (WritingActivity) session.createQuery(query).setParameter("docEntry", docEntry).uniqueResult();
 			session.getTransaction().commit();
 			if (writingActivity != null){
-				writingActivity = writingActivity.clone();
+//				writingActivity = writingActivity.clone();
+				writingActivity = loadWritingActivity(writingActivity.getId());
 			}
 			return writingActivity;
 		} catch (Exception e){
@@ -1346,3 +1488,5 @@ public class AssignmentDao {
 		return result;
 	}
 }
+
+

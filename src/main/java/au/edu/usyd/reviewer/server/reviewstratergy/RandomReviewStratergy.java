@@ -46,10 +46,10 @@ public class RandomReviewStratergy implements ReviewStratergy {
 		}
 
 		// check if there are enough documents to review
-		if (docEntries.size() < 2 || docEntries.size() < reviewingActivity.getNumStudentReviewers() || docEntries.size() < reviewingActivity.getNumTutorReviewers() || docEntries.size() < reviewingActivity.getNumLecturerReviewers()) {
-			logger.error("Failed to start review: too few documents.");
-			return reviewSetup;
-		}
+//		if (docEntries.size() < 2 || docEntries.size() < reviewingActivity.getNumStudentReviewers() || docEntries.size() < reviewingActivity.getNumTutorReviewers() || docEntries.size() < reviewingActivity.getNumLecturerReviewers()) {
+//			logger.error("Failed to start review: too few documents.");
+//			return reviewSetup;
+//		}
 
 		// assign students to review random documents
 		List<DocEntry> shuffledDocEntries = new ArrayList<DocEntry>(docEntries);

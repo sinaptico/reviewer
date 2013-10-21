@@ -281,7 +281,7 @@ public class CourseDao extends ObjectDao{
 	}
 
 	/**
-	 * Return a list of courses belong to the organization received as parameter
+	 * Return a list of courses not deleted belong to the organization received as parameter
 	 * @param organization owner of the courses
 	 * @return list of courses of the organization
 	 * @throws MessageException message to the logged user

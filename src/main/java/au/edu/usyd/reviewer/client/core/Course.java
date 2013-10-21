@@ -59,6 +59,9 @@ public class Course implements Serializable {
 	/** The domain name. */
 	private String domainName;
 	
+	/** this property is using to indicate if the course if still being saved or not **/
+	private boolean saving = false;
+	
 	/** The tutorials. */
 	@ElementCollection
 	@JoinTable(name = "Course_Tutorials")
@@ -468,6 +471,15 @@ public class Course implements Serializable {
 		this.emails = emails;
 	}
 
+	
+	public boolean isSaving() {
+		return saving;
+	}
+
+	public void setSaving(boolean saving) {
+		this.saving = saving;
+	}
+
 	public Course clone(){
 		Course course = new Course();
 		
@@ -557,6 +569,7 @@ public class Course implements Serializable {
 		course.setEmails(emailsCourse);
 		
 		course.setYear(this.getYear());
+		course.setSaving(this.isSaving());
 		return course;
 	}
 	

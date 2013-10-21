@@ -1,4 +1,4 @@
-	package au.edu.usyd.reviewer.server;
+package au.edu.usyd.reviewer.server;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -45,7 +45,7 @@ public class AssignmentRepository {
 	private String SPREADSHEET_HEADER = "firstname,lastname,email,group,tutorial";
 	private GoogleDocsServiceImpl googleDocsServiceImpl;
 	private GoogleSpreadsheetServiceImpl googleSpreadsheetServiceImpl;
-	private GoogleUserServiceImpl googleUserServiceImpl;	
+	private GoogleUserServiceImpl googleUserServiceImpl;
 	private GoogleDownloadService googleDownloadServiceImpl;
 	private String googleUserEmail = null;
 	private UserDao userDao = UserDao.getInstance();
@@ -97,6 +97,7 @@ public class AssignmentRepository {
 			FolderEntry folderEntry = googleDocsServiceImpl.createFolder(folderName, course.getFolderId());
 			writingActivity.setFolderId(folderEntry.getResourceId());
 		} catch(ResourceNotFoundException e){
+			e.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_ACTIVITY_NOT_SAVED_GOOGLE_COURSE_NOT_EXIST);
 		}
 	}
@@ -186,6 +187,7 @@ public class AssignmentRepository {
 //			googleDocsServiceImpl.downloadDocumentFile(documentListEntry, filePath);
 			googleDownloadServiceImpl.download(documentListEntry, filePath);
 		} catch(AuthenticationException ae){
+			ae.printStackTrace();
 			throw new MessageException(Constants.EXCEPTION_GOOGLE_AUTHENTICATION);
 		}
 	}
@@ -274,29 +276,6 @@ public class AssignmentRepository {
 			spreadsheetEntry = googleDocsServiceImpl.getSpreadsheet(course.getSpreadsheetId());
 		}
 		
-//		//check if lecturers exist in database, if not, then create passwords them
-//		for (User lecturer : course.getLecturers()){
-//			if (!userDao.containsUser(lecturer)){
-//				lecturer.addRole(Constants.ROLE_ADMIN);
-//				lecturer.addRole(Constants.ROLE_GUEST);
-//				if (lecturer!=null && lecturer.getOrganization() != null && 
-//					!lecturer.getOrganization().isShibbolethEnabled()){
-//					lecturer.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-//				}
-//			}
-//		}
-		
-//		//check if tutors exist in database, if not, then create passwords them
-//		for (User tutor : course.getTutors()){
-//			if (!userDao.containsUser(tutor)){
-//				tutor.addRole(Constants.ROLE_ADMIN);					
-//				tutor.addRole(Constants.ROLE_GUEST);
-//				if (tutor != null && tutor.getOrganization() != null && !tutor.getOrganization().isShibbolethEnabled()){
-//					tutor.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-//				}
-//			}
-//		}
-
 		// get student groups from spreadsheet Reviewer.getGoogleDomain();
 		WorksheetEntry worksheetEntry = googleSpreadsheetServiceImpl.getSpreadsheetWorksheets(spreadsheetEntry).get(0);
 				
@@ -305,20 +284,16 @@ public class AssignmentRepository {
 		for (UserGroup studentGroup : studentGroups) {
 			studentGroup.getUsers().clear();
 		}
-
+		
 		// add students to groups
 		for (ListEntry listEntry : googleSpreadsheetServiceImpl.getWorksheetRows(worksheetEntry)) {
 			User student = new User();
 			for (String property : Arrays.copyOf(SPREADSHEET_HEADER.split(","), 3)) {
-				logger.debug("Information read from students spreadsheet " + property + " value " + StringUtils.trim(listEntry.getCustomElements().getValue(property)));
+//				logger.debug("Information read from students spreadsheet " + property + " value " + StringUtils.trim(listEntry.getCustomElements().getValue(property)));
 				BeanUtils.setProperty(student, property, StringUtils.trim(listEntry.getCustomElements().getValue(property)));
-				
+		
 			}
-			// Update user information with database information.
-			// I Added it because the id is null
-//			if (userDao.containsUser(student)){
-//				student = userDao.getUserByEmail(student.getEmail());
-//			}
+	
 			String studentGroupName = StringUtils.trim(listEntry.getCustomElements().getValue("group"));
 			UserGroup studentGroup = new UserGroup();
 			studentGroup.setName(studentGroupName);
@@ -338,18 +313,7 @@ public class AssignmentRepository {
 			if (!organization.domainBelongsToEmailsDomain(student.getDomain())){
 				throw new MessageException("Email: " + student.getEmail() + ". " + Constants.EXCEPTION_SPREADSHEET_EMAIL);
 			}
-			
-//			//check if student is a wasm user, (create passwords for non wasm users)
-//			if (!userDao.containsUser(student)){
-//				if (student.getEmail().contains("sydney.edu.au") || student.getEmail().contains("usyd.edu.au") ){
-//					student.setWasmuser(true);
-//				} else {
-//					student.setWasmuser(false);
-//				}
-//				student.setPassword(Long.toHexString(Double.doubleToLongBits(Math.random())));
-//				student.getRole_name().add(Constants.ROLE_GUEST);
-//			}
-	
+				
 			// check if student group already exists
 			if (studentGroups.contains(studentGroup)) {
 				studentGroup = studentGroups.get(studentGroups.indexOf(studentGroup));
@@ -488,6 +452,7 @@ public class AssignmentRepository {
 			UserEntry userEntry = googleUserServiceImpl.retrieveUser(username);
 			userExists = (userEntry != null);
 		} catch(MessageException e){
+			e.printStackTrace();
 		}
 		return userExists;
 	}

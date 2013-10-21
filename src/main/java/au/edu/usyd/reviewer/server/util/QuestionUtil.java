@@ -40,7 +40,7 @@ public class QuestionUtil {
 				googleDownloadServiceImpl.download(documentListEntry, filePath);
 			} catch (Exception e) {
 				e.printStackTrace();
-				logger.info("document " + docEntry.getId() + " is not found");
+				logger.error("document " + docEntry.getId() + " is not found");
 			}
 		}
 	}
@@ -103,7 +103,7 @@ public class QuestionUtil {
 			excelEditor.read(filepath);
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.info("Excel file not found:" + filepath);
+			logger.error("Excel file not found:" + filepath);
 		}
 		ArrayList<String> questionlist = excelEditor.getColumn1data();
 		ArrayList<String> generatorlist = excelEditor.getColumn2data();

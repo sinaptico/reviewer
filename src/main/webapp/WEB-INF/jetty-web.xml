@@ -5,7 +5,7 @@
 	<Get name="securityHandler">
 		<Set name="userRealm">
 			<New class="org.mortbay.jetty.security.HashUserRealm">
-				<Set name="name">iWrite</Set>
+				<Set name="name">Reviewer</Set>
 				<Set name="config"><SystemProperty name="jetty.home" default="."/>/target/reviewer/WEB-INF/jetty-realm.properties</Set>
 			</New>
 		</Set>

@@ -204,6 +204,6 @@ public interface AdminService extends RemoteService {
 	 
 	 
 	 public String getGoogleAuthorizationUrl(String currentUrl) throws Exception;
-	 public User getUserToken(String code,String currentUrl) throws Exception;
+	 public User getUserTokens(String code,String state, String currentUrl) throws Exception;
 	 
 }
