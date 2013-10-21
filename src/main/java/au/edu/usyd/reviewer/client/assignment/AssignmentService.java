@@ -1,11 +1,14 @@
 package au.edu.usyd.reviewer.client.assignment;
 
 import java.util.Collection;
+import java.util.List;
 
 import au.edu.usyd.reviewer.client.core.Course;
 import au.edu.usyd.reviewer.client.core.DocEntry;
 import au.edu.usyd.reviewer.client.core.Organization;
+import au.edu.usyd.reviewer.client.core.ReviewingActivity;
 import au.edu.usyd.reviewer.client.core.User;
+import au.edu.usyd.reviewer.client.core.WritingActivity;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -37,7 +40,7 @@ public interface AssignmentService extends RemoteService {
 	 * @return the user reviewing tasks
 	 * @throws Exception the exception
 	 */
-	public Collection<Course> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, Long organizationId) throws Exception;
+	public List<ReviewTask> getUserReviewingTasks(int semester, int year, Boolean includeFinishedReviews, int start,int length) throws Exception;
 
 	/**
 	 * Gets the user writing tasks for the semester and year given.
@@ -95,4 +98,7 @@ public interface AssignmentService extends RemoteService {
 	public Collection<Organization> getOrganizations() throws Exception;
 	
 	public void logout() throws Exception;
+
+	public Integer getUserReviewingTasksTotalAccount(int semester, int year, Boolean includeFinishedReviews, Long organizationId) throws Exception;
+
 }

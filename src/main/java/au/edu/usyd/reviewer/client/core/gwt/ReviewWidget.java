@@ -43,12 +43,14 @@ public class ReviewWidget extends Composite {
 	 */
 	private void formatHTML() {
 		Anchor link = new Anchor();
-		link.setHref("Review.html?"+(edit?"edit":"view")+"="+review.getId());
-		link.setHTML("<img height='19px' src='images/review.png'></img><span>" + title + "</span>");
-		//link.setTarget("_blank");
-		link.setTitle("Open Review");
-		
+		if (review != null){
+			link.setHref("Review.html?"+(edit?"edit":"view")+"="+review.getId());
+			link.setHTML("<img height='19px' src='images/review.png'></img><span>" + title + "</span>");
+			//link.setTarget("_blank");
+			link.setTitle("Open Review");
+		}
 		panel.clear();
 		panel.add(link);
 	}
+	
 }

@@ -1268,8 +1268,6 @@ public class AssignmentManager {
 						// delete orphans emails, whose organizationId and courseId are equals to null
 						emailDao.deleteOrphanEmails();
 					} 
-					course.setSaving(false);
-					course = courseDao.save(course);
 			}
 			if (e instanceof MessageException){
 				throw (MessageException)e;

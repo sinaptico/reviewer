@@ -198,7 +198,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 					}
 				}
 				
-				// if the organization doesn't use shibboleht then show change passwod button
+				// if the organization doesn't use shibboleht then show change password button
 				if (!organization.isShibbolethEnabled()){	
 					userDetailsFlexTable.setHTML(0, 0, "<p "+cssTextStyle +" >If you need to change your password, please click here: </p>");							
 					userDetailsFlexTable.setWidget(0, 1, userDetailsButton);
@@ -320,7 +320,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 					
 					// reviews panel
 					reviewsPanel = new TabPanel();
-					final ReviewingTasks reviewingTasks = new ReviewingTasks();
+					final ReviewingTasks reviewingTasks = new ReviewingTasks(assignmentService);
 					reviewsPanel.add(reviewingTasks, "Reviewing Tasks");
 					reviewsPanel.setWidth(panelWidth);
 					reviewsPanel.selectTab(0);
@@ -371,20 +371,22 @@ public class AssignmentEntryPoint implements EntryPoint {
 							//mainPanel.remove(reviewsPanel);
 							refreshPanelButton.updateStateSubmitting();
 							reviewingTasks.setLoadingMessage();
-							assignmentService.getUserReviewingTasks(semester, year, includeFinishedReviews.getValue(), organizationId, new AsyncCallback<Collection<Course>>() {
-								@Override
-								public void onFailure(Throwable caught) {
-									 //Window.alert("Failed to get reviews. ");
-									reviewingTasks.setTableEntries(new ArrayList<Course>());
-									refreshPanelButton.updateStateSubmit();
-								}
-
-								@Override
-								public void onSuccess(Collection<Course> courses) {
-										reviewingTasks.setTableEntries(courses);
-										refreshPanelButton.updateStateSubmit();
-								}
-							});						
+//							assignmentService.getUserReviewingTasks(semester, year, includeFinishedReviews.getValue(), organizationId, new AsyncCallback<Collection<Course>>() {
+//								@Override
+//								public void onFailure(Throwable caught) {
+//									 //Window.alert("Failed to get reviews. ");
+//									reviewingTasks.setTableEntries(new ArrayList<Course>());
+//									refreshPanelButton.updateStateSubmit();
+//								}
+//
+//								@Override
+//								public void onSuccess(Collection<Course> courses) {
+//										reviewingTasks.setTableEntries(courses);
+//										refreshPanelButton.updateStateSubmit();
+//								}
+//							});	
+							reviewingTasks.setTableEntries(semester, year, includeFinishedReviews.getValue(), organizationId);
+							refreshPanelButton.updateStateSubmit();
 							/****************************************************************************/
 							
 							/****************************************************************************/
@@ -404,7 +406,7 @@ public class AssignmentEntryPoint implements EntryPoint {
 											!loggedUser.getOrganization().isShibbolethEnabled()){
 											mainPanel.add(new HTML("</br>"));											
 											mainPanel.add(userDetailsFlexTable);
-											mainPanel.add(new HTML("</br>"));
+//											mainPanel.add(new HTML("</br>"));
 										}
 										mainPanel.add(htmlAdminLink);
 										mainPanel.add(activitiesPanel);	
