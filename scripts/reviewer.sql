@@ -53,7 +53,7 @@ CREATE TABLE `Activity` (
   `reviewTemplateId` bigint(20) DEFAULT NULL,
   `startDate_id` bigint(20) DEFAULT NULL,
   `deleted` tinyint(1) NOT NULL DEFAULT '0',
-  `saving` bit(1) NOT NULL,
+  `saving` bit(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `FKA126572F4F68B324` (`startDate_id`),
   CONSTRAINT `FKA126572F4F68B324` FOREIGN KEY (`startDate_id`) REFERENCES `Deadline` (`id`)
@@ -112,7 +112,7 @@ CREATE TABLE `Course` (
   `year` int(11) NOT NULL,
   `organizationId` bigint(20) DEFAULT NULL,
   `deleted` tinyint(1) NOT NULL DEFAULT '0',
-  `saving` bit(1) NOT NULL,
+  `saving` bit(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `FK78A7CC3B340139E3` (`organizationId`),
   CONSTRAINT `FK78A7CC3B340139E3` FOREIGN KEY (`organizationId`) REFERENCES `Organization` (`id`)
