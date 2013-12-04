@@ -1,4 +1,3 @@
-use reviewer
 
 INSERT INTO Organization (name) VALUES ('University of Sydney');
 INSERT INTO Organization (name) VALUES ('University of Western Sydney');
