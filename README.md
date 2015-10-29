@@ -1,7 +1,7 @@
 == Welcome to reviewer
 Reviewer is a tool to support collaborative writing activities using Google Docs.
 
-You might also be interested in our [https://bitbucket.org/latteresearch/glosserproject/|Glosser project] that provides automated feedback and allows for human feedback and reviewing.
+You might also be interested in our Glosser project (https://bitbucket.org/latteresearch/glosserproject/) that provides automated feedback and allows for human feedback and reviewing.
 
 The following papers describe both systems:
 * R.A. Calvo. Affect-Aware Reflective Writing Studios. (2015). In R.A. Calvo, S.K. D’Mello, J. Gratch and A. Kappas (Eds). Chapter 33. Handbook of Affective Computing. Oxford University Press.
@@ -11,7 +11,7 @@ The following papers describe both systems:
 
 == Acknowledgements
 This project was supported by a Google Research Award, and grants from the Australian research Council and The Office of Learning and Teaching.
-Improvements were made by [[Southern-Path|http://southern-path.com/]]. For commercial support contact them directly.
+Improvements were made by southern-path.com. For commercial support contact them directly.
 
 == Installation
 
