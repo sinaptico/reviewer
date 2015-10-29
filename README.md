@@ -4,14 +4,14 @@ Reviewer is a tool to support collaborative writing activities using Google Docs
 You might also be interested in our [[https://bitbucket.org/latteresearch/glosserproject/|Glosser project]] that provides automated feedback and allows for human feedback and reviewing.
 
 The following papers describe both systems:
-R.A. Calvo. Affect-Aware Reflective Writing Studios. (2015). In R.A. Calvo, S.K. D’Mello, J. Gratch and A. Kappas (Eds). Chapter 33. Handbook of Affective Computing. Oxford University Press.
-Southavilay, V, Yacef, K, Reimann P. Calvo RA “Analysis of Collaborative Writing Processes Using Revision Maps and Probabilistic Topic Models” Learning Analytics and Knowledge – LAK 2013. Leuven, Belgium, 8-12 April, 2013
-R.A. Calvo, A. Aditomo, V. Southavilay and K. Yacef. (2012) “The use of text and process mining techniques to study the impact of feedback on students’ writing processes”. International Conference on the Learning Sciences. Sydney, pp 416-423
-R.A Calvo, S.T O’Rourke, J. Jones, K. Yacef, P. Reimann. (2011) “Collaborative Writing Support Tools on the Cloud”. IEEE Transactions on Learning Technologies. 4 (1) pp 88-97
+* R.A. Calvo. Affect-Aware Reflective Writing Studios. (2015). In R.A. Calvo, S.K. D’Mello, J. Gratch and A. Kappas (Eds). Chapter 33. Handbook of Affective Computing. Oxford University Press.
+* Southavilay, V, Yacef, K, Reimann P. Calvo RA “Analysis of Collaborative Writing Processes Using Revision Maps and Probabilistic Topic Models” Learning Analytics and Knowledge – LAK 2013. Leuven, Belgium, 8-12 April, 2013
+* R.A. Calvo, A. Aditomo, V. Southavilay and K. Yacef. (2012) “The use of text and process mining techniques to study the impact of feedback on students’ writing processes”. International Conference on the Learning Sciences. Sydney, pp 416-423
+* R.A Calvo, S.T O’Rourke, J. Jones, K. Yacef, P. Reimann. (2011) “Collaborative Writing Support Tools on the Cloud”. IEEE Transactions on Learning Technologies. 4 (1) pp 88-97
 
 == Acknowledgements
 This project was supported by a Google Research Award, and grants from the Australian research Council and The Office of Learning and Teaching.
-
+Improvements were made by [[Southern-Path|http://southern-path.com/]]. For commercial support contact them directly.
 
 == Installation
 
